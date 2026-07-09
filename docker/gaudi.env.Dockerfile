@@ -2,12 +2,12 @@
 #
 # Build cmd:
 #
-# docker build --secret id=internal_ca,src=$CERTS -f docker/gaudi.env.Dockerfile -t gaudi-env:latest .
+# docker build --secret id=internal_ca,src=$CERTS -f docker/gaudi.env.Dockerfile -t gaudi-env-cafl4ds:latest .
 #
 # CERTS:            <your/PEM/or/CRT/file>. Adding this --secret is optional.
 
 # ---- STAGE 1: Builder ------------------------------------------------------------------------------------------------
-FROM python:3.12-slim-bookworm AS builder
+FROM python:3.10-slim-bookworm AS builder
 
 # Bring in uv just for the lightning-fast export
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
@@ -16,7 +16,7 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 
 # Export requirements text locally (No internet or certs required here!)
-RUN uv export --frozen --no-dev --group training --group gaudi --no-hashes --no-emit-project --format requirements-txt > requirements.txt
+RUN uv export --frozen --no-dev --extra gaudi --no-hashes --no-emit-project --format requirements-txt > requirements.txt
 
 # Filter out hardware-specific packages to protect the base image binaries
 RUN grep -vE '^(torch|torchvision|torchaudio|vllm|nvidia|triton)' requirements.txt > requirements.final.txt
@@ -56,8 +56,7 @@ COPY --link --from=builder /app/requirements.final.txt .
 COPY --link --from=builder /app/pyproject.toml .
 
 # Install dependencies
-# 1. We use --system because ROCm images don't use virtual environments by default
-# 2. We use --no-deps so uv strictly installs ONLY what is in our filtered list
+# 1. We use --no-deps so uv strictly installs ONLY what is in our filtered list
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install --python "$(which python)" --system --break-system-packages --no-deps -r requirements.final.txt
 

@@ -20,6 +20,7 @@ plugins:
 nav:
   - Home: index.md
   - Getting Started: user-guide.md
+  - Developing: developing.md
   - Project Plan: project-plan.md
   - API Reference: reference.md
   - Tests: exported/pytest.html
