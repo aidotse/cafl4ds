@@ -1,0 +1,321 @@
+# GitHub release pipeline. Mirrors the GitLab version + release stages.
+#
+# THIS FILE SHIPS. It is dual-purpose: it runs the template repo's own CI *and* is copied
+# verbatim into every generated GitHub project via a copier.yml `_tasks` entry. It is not a
+# `.jinja` file and does not live under `template/`, so editing it silently changes every
+# generated project. Keep it generic — no template-repo-specific logic. Behaviour is toggled by the
+# caller (see .github/workflows/ci.yml here, and template/.github/workflows/ci.yml.jinja in
+# generated projects) via the build_docker / publish_pypi inputs below.
+#
+# CONCEPT (same as GitLab): on push to main, `cz bump` computes the next version from
+# conventional commits. If there is something to release it writes CHANGELOG + tag, and
+# publish/docs/release run as a CONTINUATION (via `needs:`) in this same run -- never via
+# a tag-triggered workflow (a GITHUB_TOKEN-pushed tag would not re-trigger anyway, and the
+# bump commit carries [skip ci]).
+#
+# Actions are SHA-pinned (with a version comment, kept current by Renovate) for supply-chain
+# safety and to satisfy zizmor's unpinned-uses check.
+#
+# REQUIRED SETUP (see docs/getting-started.md):
+#   - Allow the workflow to push to the protected `main` branch (branch-protection bypass
+#     for github-actions[bot], or a PAT in `secrets.RELEASE_TOKEN` used below if set).
+#   - GitHub Pages: enable it once by hand -- Settings > Pages > Source = "GitHub Actions" --
+#     BEFORE your first release. CI cannot enable Pages itself (creating the site needs
+#     administration:write, which the default GITHUB_TOKEN never has). Until it is enabled the
+#     deploy-docs job fails; once enabled, every release publishes the docs.
+#   - Publishing (package + Docker image) is OPT-IN via repo variables, so a project that
+#     hasn't set it up never sees a failed pipeline. Package publish runs only when
+#     PUBLISH_TARGET is set: `pypi-oidc` -> PyPI via OIDC Trusted Publishing (configure a
+#     trusted publisher on PyPI; no secrets); `private-index` -> also set variable
+#     PRIVATE_INDEX_URL and secrets PRIVATE_INDEX_{USERNAME,PASSWORD}. The Docker image builds
+#     only when BUILD_DOCKER=true (pushes to ghcr.io via GITHUB_TOKEN; no extra setup).
+
+# ARCHITECTURE NOTE: GITHUB vs. GITLAB PARADIGMS
+# Unlike the GitLab CI pipeline—which relies on a "Container-First" approach
+# (building and pulling a custom `ci.base.Dockerfile` to provide tools like `uv`)—
+# this GitHub workflow uses a "Runner-First + Tool Cache" approach.
+#
+# Jobs execute directly on the `ubuntu-latest` VM. We leverage the highly optimized
+# `astral-sh/setup-uv` action to pull pre-compiled binaries from GitHub's local
+# network cache in 1-2 seconds. This SOTA approach is significantly faster on
+# GitHub infrastructure than pulling and extracting custom Docker base images.
+# ==============================================================================
+
+name: CI/CD
+
+on:
+  workflow_call:
+    inputs:
+      build_docker:
+        description: "Build and push a Docker image to GitHub Container Registry"
+        required: false
+        type: boolean
+        default: false
+      publish_pypi:
+        description: "Publish the package to PyPI (or private index)"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  # ==========================================
+  #  QUALITY GATE (Runs on PRs and Main)
+  # ==========================================
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+        with:
+          enable-cache: true
+      - run: uv sync --all-extras --dev
+      - name: Lint, format & type-check
+        run: uv run poe lint
+      - name: Dependency hygiene
+        run: uv run poe deps-check
+      - name: Security audit
+        run: uv run poe audit
+        continue-on-error: true
+      - name: Tests + coverage
+        run: |
+          uv run poe test 4
+          uv run poe export-test-artifacts
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-artifacts
+          path: docs/exported/
+          retention-days: 7
+
+  test-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+        with:
+          enable-cache: true
+      - name: Run the test matrix
+        run: |
+          uv sync --all-extras --dev
+          uv run poe test-all
+
+  # ==========================================
+  #  VERSION (Runs ONLY on Main, AFTER Quality Gate)
+  # ==========================================
+  bump:
+    needs: [quality, test-matrix]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    outputs:
+      bumped: ${{ steps.cz.outputs.bumped }}
+      version: ${{ steps.cz.outputs.version }}
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1  # zizmor: ignore[artipacked]
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          token: ${{ secrets.RELEASE_TOKEN || secrets.GITHUB_TOKEN }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+        with:
+          enable-cache: true
+      - run: uv sync
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: Bump version from conventional commits
+        id: cz
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: uv run poe bump "$GITHUB_OUTPUT"
+
+  # ==========================================
+  #  RELEASE (Runs ONLY if Bumped)
+  # ==========================================
+  publish:
+    needs: bump
+    # Opt-in: runs only when PUBLISH_TARGET is explicitly set to a real target. Unset (the
+    # default) -> skipped, so an unconfigured project never fails. See docs "Publishing".
+    if: >-
+      inputs.publish_pypi == true && needs.bump.outputs.bumped == 'true'
+      && (vars.PUBLISH_TARGET == 'pypi-oidc' || vars.PUBLISH_TARGET == 'private-index')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: "v${{ needs.bump.outputs.version }}"
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+      - name: Build
+        run: uv build
+      - name: Publish to PyPI
+        if: vars.PUBLISH_TARGET == 'pypi-oidc'
+        run: uv publish
+      - name: Publish to a private index
+        if: vars.PUBLISH_TARGET == 'private-index'
+        env:
+          UV_PUBLISH_USERNAME: ${{ secrets.PRIVATE_INDEX_USERNAME }}
+          UV_PUBLISH_PASSWORD: ${{ secrets.PRIVATE_INDEX_PASSWORD }}
+          PUBLISH_URL: ${{ vars.PRIVATE_INDEX_URL }}
+        run: uv publish --publish-url "$PUBLISH_URL"
+
+
+  # Docker Build (Mirrors GitLab Optimizations)
+  # - setup-buildx-action: Replaces `docker buildx create` lifecycle management.
+  # - metadata-action: Generates standard OCI labels/tags.
+  # - build-push-action: Maps BuildKit caching (cache-from/to), build-args,
+  #   and provenance directly from the declarative YAML to the Docker daemon.
+  build-and-push-image:
+    needs: bump
+    # Opt-in: set repo variable BUILD_DOCKER=true to build/push an image (ghcr via GITHUB_TOKEN,
+    # no extra setup). Unset (the default) -> skipped, so no image and no failed pipeline.
+    if: inputs.build_docker == true && needs.bump.outputs.bumped == 'true' && vars.BUILD_DOCKER == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: "v${{ needs.bump.outputs.version }}"
+          persist-credentials: false
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}},value=v${{ needs.bump.outputs.version }}
+            type=raw,value=latest
+      - name: Build and push Docker image
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: true
+          # Provenance attestation is disabled: it produces a multi-arch image index that
+          # many private/self-hosted registries (and the GitLab mirror) reject. Re-enable if
+          # your registry supports OCI attestation manifests and you want SLSA provenance.
+          provenance: false
+          build-args: |
+            VERSION=${{ needs.bump.outputs.version }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository }}:buildcache,mode=max
+
+  docs:
+    needs: bump
+    if: needs.bump.outputs.bumped == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: "v${{ needs.bump.outputs.version }}"
+          persist-credentials: false
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+        with:
+          enable-cache: true
+      - name: Download test artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: test-artifacts
+          path: docs/exported/
+      - name: Build docs
+        run: |
+          uv sync
+          uv run poe docs
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: public
+
+  deploy-docs:
+    needs: docs
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write      # deploy to GitHub Pages
+      id-token: write   # OIDC for the Pages deployment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # Enable Pages via the API with build_type=workflow (source = "GitHub Actions").
+      # This makes deployment self-configuring: no manual Settings > Pages step, and it
+      # overrides a stale "Deploy from a branch" source that would otherwise make
+      # deploy-pages 404 ("ensure Pages enabled") or "Deployment failed, try again later".
+      - name: Configure Pages
+        # Pages must be enabled once by hand: Settings > Pages > Source = "GitHub Actions".
+        # We deliberately do NOT pass `enablement: true` -- creating the Pages site needs
+        # administration:write, which the default GITHUB_TOKEN never has, so CI cannot enable
+        # Pages for you. See the project's Pages setup docs. This step only reads the existing
+        # Pages config to expose the deploy URL to the next step.
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
+
+  github-release:
+    needs: bump
+    if: needs.bump.outputs.bumped == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: v${{ needs.bump.outputs.version }}
+          fetch-depth: 0
+          fetch-tags: true
+          persist-credentials: false
+      - name: Install uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+        with:
+          enable-cache: true
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.bump.outputs.version }}
+        run: |
+          uv sync
+          NOTES=$(uv run cz changelog "v${VERSION}" --dry-run 2>/dev/null || true)
+          gh release create "v${VERSION}" --title "v${VERSION}" --notes "${NOTES:-Release v${VERSION}}"

@@ -1,0 +1,45 @@
+# ==============================================================================
+# NOTE FOR TEMPLATE CONTRIBUTORS:
+# 1. This file has a `.jinja` extension so GitHub Actions ignores it in the
+#    PyMaxQ repo. Copier will strip the extension when generating the project.
+# 2. We use  ...  blocks around native GitHub Actions
+#    variables (like `${{ github.ref }}`). This prevents Jinja from confusing
+#    GitHub's syntax with its own and attempting to evaluate it.
+# 3. `build_docker` and `publish_pypi` are hardcoded `true`: they only *enable the capability*.
+#    Actual publishing is OPT-IN via repo variables (PUBLISH_TARGET for the package, BUILD_DOCKER
+#    for the image) -- unset, both jobs skip, so an unconfigured project never fails. See the
+#    generated docs' "Publishing" section. Set the inputs to `false` to hard-disable regardless.
+# 4. The reusable-pipeline.yml this calls is NOT rendered from template/ — it's copied in
+#    verbatim by a copier.yml post-copy `_task`, so you won't find it next to this file in
+#    the template tree; it appears in .github/workflows/ only after generation.
+# ==============================================================================
+name: CI/CD
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  core-pipeline:
+    # A called workflow's jobs can never hold more permissions than the caller
+    # job grants, so this caller must request the union of every permission the
+    # nested jobs in reusable-pipeline.yml declare (bump/github-release need
+    # contents: write; publish/deploy-docs need id-token: write; the image build
+    # needs packages: write; deploy-docs needs pages: write).
+    permissions:
+      contents: write
+      id-token: write
+      packages: write
+      pages: write
+    uses: ./.github/workflows/reusable-pipeline.yml
+    with:
+      build_docker: true
+      publish_pypi: true
+    # `inherit` forwards this repo's secrets (e.g. RELEASE_TOKEN) to the called workflow;
+    # safe here because both files live in this same repo. zizmor flags blanket inherit.
+    secrets: inherit # zizmor: ignore[secrets-inherit]

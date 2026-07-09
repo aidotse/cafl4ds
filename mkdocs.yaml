@@ -1,0 +1,96 @@
+site_name: "cafl4ds"
+site_author: "Mauricio Munoz"
+site_description: "Continuous, Active Federated Learning for Data Streams"
+site_url: "https://aidotse.github.io/cafl4ds/"
+repo_url: "https://github.com/aidotse/cafl4ds"
+site_dir: public
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: true
+
+# Note: docs/user-guide.md is the generated project's own Getting Started page. PyMaxQ's own docs site uses
+# docs/getting-started.md as its Getting Started and additionally surfaces user-guide.md under a
+# "Generated Project Guide" nav entry (labelled to show it documents a generated project); see docs/developing.md.
+nav:
+  - Home: index.md
+  - Getting Started: user-guide.md
+  - API Reference: reference.md
+  - Tests: exported/pytest.html
+  - Coverage: exported/coverage/index.html
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - meta
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.details
+  - pymdownx.superfences
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/git-alt
+  font: false
+  palette:
+    - scheme: default
+      accent: blue
+      media: "(prefers-color-scheme: light)"
+      primary: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      accent: blue
+      media: "(prefers-color-scheme: dark)"
+      primary: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - header.autohide
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.instant.preview
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.prune
+    - navigation.top
+    - toc.follow
+    - toc.integrate
+    - content.action.edit
+    - content.action.view
+    - content.code.copy
+    - search
+    - search.highlight
+    - search.suggest
+    - tags
+
+copyright: "Copyright © 2026 Mauricio Munoz"

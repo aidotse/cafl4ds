@@ -1,0 +1,38 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits"
+  ],
+  "description": "Keeps the repo's own dev tooling, pre-commit hook revs, and SHA-pinned GitHub Actions current. Enable the Mend Renovate app on the GitHub repo.",
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  "packageRules": [
+    {
+      "description": "Group dev tooling updates into a single PR.",
+      "matchManagers": [
+        "pep621"
+      ],
+      "matchDepTypes": [
+        "dependency-groups"
+      ],
+      "groupName": "dev tooling"
+    },
+    {
+      "description": "Keep pre-commit hook versions current.",
+      "matchManagers": [
+        "pre-commit"
+      ],
+      "groupName": "pre-commit hooks"
+    },
+    {
+      "description": "Keep SHA-pinned GitHub Actions current (bumps the pin and its version comment).",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "groupName": "github actions"
+    }
+  ]
+}

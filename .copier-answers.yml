@@ -1,0 +1,14 @@
+# This file is managed by Copier; do not edit it by hand.
+# It records the answers used to generate this project so that `copier update`
+# can re-apply future improvements from the PyMaxQ template.
+_commit: v0.3.0
+_src_path: https://github.com/aidotse/pymaxq
+author: Mauricio Munoz
+ci_platform: github
+description: Continuous, Active Federated Learning for Data Streams
+docs_url: https://aidotse.github.io/cafl4ds
+email: mauricio.munoz@ai.se
+group: aidotse
+package_name: cafl4ds
+project_name: cafl4ds
+repo_url: https://github.com/aidotse/cafl4ds
