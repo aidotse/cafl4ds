@@ -1,0 +1,72 @@
+<svg width="100%" viewBox="0 0 680 432" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>The coupled learning loop</title>
+<desc>A transient data stream feeds a label-free selection filter; accepted frames adapt a self-supervised backbone while the rest are discarded unstored. A health monitor reads the backbone's representation. Two feedback edges return to the filter: a fast edge from the backbone (the filter scores against the current model) and a slow edge from the monitor (health re-aims selection).</desc>
+<style>
+  :root{
+    --arrow:#888780; --label:#5F5E5A; --fast:#D85A30; --slow:#BA7517;
+    --gray-fill:#F1EFE8; --gray-stroke:#5F5E5A; --gray-title:#444441; --gray-sub:#5F5E5A;
+    --pur-fill:#EEEDFE; --pur-stroke:#534AB7; --pur-title:#3C3489; --pur-sub:#534AB7;
+    --cor-fill:#FAECE7; --cor-stroke:#993C1D; --cor-title:#712B13; --cor-sub:#993C1D;
+    --amb-fill:#FAEEDA; --amb-stroke:#854F0B; --amb-title:#633806; --amb-sub:#854F0B;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --arrow:#B4B2A9; --label:#D3D1C7; --fast:#F0997B; --slow:#EF9F27;
+      --gray-fill:#444441; --gray-stroke:#B4B2A9; --gray-title:#D3D1C7; --gray-sub:#B4B2A9;
+      --pur-fill:#3C3489; --pur-stroke:#AFA9EC; --pur-title:#CECBF6; --pur-sub:#AFA9EC;
+      --cor-fill:#712B13; --cor-stroke:#F0997B; --cor-title:#F5C4B3; --cor-sub:#F0997B;
+      --amb-fill:#633806; --amb-stroke:#EF9F27; --amb-title:#FAC775; --amb-sub:#EF9F27;
+    }
+  }
+  text{font-family:sans-serif}
+  .t{font-size:14px;font-weight:500}
+  .s{font-size:12px}
+</style>
+<defs>
+<marker id="arrowc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+</defs>
+
+<path d="M545 120 C545 72 280 72 280 120" fill="none" stroke="var(--fast)" stroke-width="2" marker-end="url(#arrowc)"/>
+<text class="s" x="412" y="58" text-anchor="middle" fill="var(--label)">fast — scored against the current model</text>
+
+<path d="M545 344 L545 378 Q545 392 531 392 L192 392 Q178 392 178 378 L178 184 Q178 170 192 170 L197 170" fill="none" stroke="var(--slow)" stroke-width="2" marker-end="url(#arrowc)"/>
+<text class="s" x="352" y="384" text-anchor="middle" fill="var(--label)">slow — health re-aims selection</text>
+
+<line x1="162" y1="148" x2="197" y2="148" stroke="var(--arrow)" stroke-width="1.5" marker-end="url(#arrowc)"/>
+<line x1="360" y1="148" x2="466" y2="148" stroke="var(--arrow)" stroke-width="1.5" marker-end="url(#arrowc)"/>
+<text class="s" x="413" y="137" text-anchor="middle" fill="var(--label)">accepted</text>
+<line x1="545" y1="176" x2="545" y2="285" stroke="var(--arrow)" stroke-width="1.5" marker-end="url(#arrowc)"/>
+<text class="s" x="560" y="232" text-anchor="start" fill="var(--label)">reads</text>
+<line x1="280" y1="176" x2="280" y2="285" stroke="var(--arrow)" stroke-width="1.5" marker-end="url(#arrowc)"/>
+<text class="s" x="296" y="232" text-anchor="start" fill="var(--label)">rejected</text>
+
+<g>
+<rect x="40" y="120" width="120" height="56" rx="8" fill="var(--gray-fill)" stroke="var(--gray-stroke)" stroke-width="1"/>
+<text class="t" x="100" y="140" text-anchor="middle" dominant-baseline="central" fill="var(--gray-title)">Data stream</text>
+<text class="s" x="100" y="160" text-anchor="middle" dominant-baseline="central" fill="var(--gray-sub)">transient</text>
+</g>
+
+<g>
+<rect x="200" y="120" width="160" height="56" rx="8" fill="var(--pur-fill)" stroke="var(--pur-stroke)" stroke-width="1"/>
+<text class="t" x="280" y="140" text-anchor="middle" dominant-baseline="central" fill="var(--pur-title)">Selection filter</text>
+<text class="s" x="280" y="160" text-anchor="middle" dominant-baseline="central" fill="var(--pur-sub)">coverage ↔ novelty</text>
+</g>
+
+<g>
+<rect x="470" y="120" width="150" height="56" rx="8" fill="var(--cor-fill)" stroke="var(--cor-stroke)" stroke-width="1"/>
+<text class="t" x="545" y="140" text-anchor="middle" dominant-baseline="central" fill="var(--cor-title)">SSL backbone</text>
+<text class="s" x="545" y="160" text-anchor="middle" dominant-baseline="central" fill="var(--cor-sub)">adapts online</text>
+</g>
+
+<g>
+<rect x="470" y="288" width="150" height="56" rx="8" fill="var(--amb-fill)" stroke="var(--amb-stroke)" stroke-width="1"/>
+<text class="t" x="545" y="308" text-anchor="middle" dominant-baseline="central" fill="var(--amb-title)">Health monitor</text>
+<text class="s" x="545" y="328" text-anchor="middle" dominant-baseline="central" fill="var(--amb-sub)">health signals</text>
+</g>
+
+<g opacity="0.9">
+<rect x="205" y="288" width="150" height="52" rx="8" fill="var(--gray-fill)" stroke="var(--gray-stroke)" stroke-width="1"/>
+<text class="t" x="280" y="306" text-anchor="middle" dominant-baseline="central" fill="var(--gray-title)">Discarded</text>
+<text class="s" x="280" y="325" text-anchor="middle" dominant-baseline="central" fill="var(--gray-sub)">not stored</text>
+</g>
+</svg>
