@@ -54,7 +54,10 @@ docstrings, `docs/` excluded). Canonical runner is **pre-commit** (`uv run pre-c
 
 - `docker/Dockerfile` — production image; **requires `--build-arg VERSION=...`** (no `.git` in context). Private deps +
     CA certs via build secrets; see the file's header comment.
-- `docker/gaudi.env.Dockerfile` — Gaudi HPU dev environment; see `docs/developing.md`.
+- `docker/gaudi.env.Dockerfile` — Gaudi HPU dev environment (default image is `gaudi-env-cafl4ds:latest`). Run things on
+    the HPUs with `scripts/run_gaudi_dev.sh <image> <device_id|all> [cmd...]` (smoke test:
+    `./scripts/run_gaudi_dev.sh gaudi-env-cafl4ds:latest 0 python scripts/gaudi_simple_test.py`). Host check:
+    `HABANA_LOGS=/tmp/hllog hl-smi` (no sudo). Full setup, isolation modes, and RDMA prereqs → `docs/developing.md`.
 
 ## Claude Code in this repo
 

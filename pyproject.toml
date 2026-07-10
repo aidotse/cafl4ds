@@ -26,7 +26,7 @@ Documentation = "https://aidotse.github.io/cafl4ds"
 # Optional runtime feature: Hardware support for Gaudi HPUs
 # Install with: `uv sync --extra gaudi` (or `pip install .[gaudi]`)
 gaudi = [
-    "optimum-habana==1.20.0",
+    "optimum-habana==1.20.0", # Works on driver v1.23, and 1.24 (despite warnings)
 ]
 
 [dependency-groups]

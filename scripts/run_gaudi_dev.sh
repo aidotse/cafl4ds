@@ -34,6 +34,15 @@ shift 2
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
+# Allocate a TTY only when stdin is one. Lets the script drive an interactive
+# shell normally, while still working headlessly (CI, piped commands) where
+# `docker run -t` would fail with "cannot attach stdin to a TTY-enabled container".
+if [ -t 0 ]; then
+    TTY_FLAGS="-it"
+else
+    TTY_FLAGS="-i"
+fi
+
 # --- KERNEL & STABILITY FLAGS ---
 # --ipc=host:            Prevents PyTorch DataLoader crashes (Shared Mem).
 # --ulimit memlock=-1:   Allows unlimited memory pinning for DMA transfers.
@@ -66,7 +75,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 #--device /dev/hl*:/dev/hl* \
 #--device /dev/infiniband:/dev/infiniband \
 # -v /sys/class/infiniband:/sys/class/infiniband:ro \
-docker run -it --rm \
+docker run $TTY_FLAGS --rm \
   --runtime=habana \
   $ISOLATION_FLAGS \
   --cap-add=sys_nice \
