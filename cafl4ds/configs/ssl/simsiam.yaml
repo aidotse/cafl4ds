@@ -1,0 +1,7 @@
+# C = SimSiam: joint-embedding (predictor + stop-gradient, no negatives, no EMA). The
+# collapse-capable backbone; BYOL/SimCLR are later drop-ins behind the same interface.
+# Built via a factory that sizes the heads to the shared encoder (script passes `encoder=`).
+_target_: cafl4ds.ssl.factory.build_simsiam
+proj_hidden: 256
+proj_dim: 128
+pred_hidden: 64

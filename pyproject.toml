@@ -32,8 +32,11 @@ Documentation = "https://aidotse.github.io/cafl4ds"
 #   uv sync --extra cu124   # NVIDIA GPU boxes          (CUDA 12.4 training wheels)
 # Gaudi HPUs do NOT use either: torch comes from the Habana base image and is stripped
 # from the exported requirements (see docker/gaudi.env.Dockerfile).
-cpu = ["torch>=2.2"]
-cu124 = ["torch>=2.2"]
+# torchvision is pinned alongside torch: it must be built against the same torch/backend,
+# so it rides the same per-extra PyTorch wheel index (see [tool.uv.sources] below). On
+# Gaudi it likewise comes from the Habana base image, not from either extra.
+cpu = ["torch>=2.2", "torchvision>=0.17"]
+cu124 = ["torch>=2.2", "torchvision>=0.17"]
 
 # Optional runtime feature: Hardware support for Gaudi HPUs
 # Install with: `uv sync --extra gaudi` (or `pip install .[gaudi]`)
@@ -92,6 +95,10 @@ explicit = true
 
 [tool.uv.sources]
 torch = [
+    { index = "pytorch-cpu", extra = "cpu" },
+    { index = "pytorch-cu124", extra = "cu124" },
+]
+torchvision = [
     { index = "pytorch-cpu", extra = "cpu" },
     { index = "pytorch-cu124", extra = "cu124" },
 ]
