@@ -50,6 +50,9 @@ WORKDIR /app
 # change our source code
 COPY pyproject.toml uv.lock ./
 
+# `--extra cpu` selects the CPU torch build for this slim image (see pyproject torch extras).
+# For a GPU serving image, base this off a CUDA image and swap `--extra cpu` -> `--extra cu124`.
+
 # IF YOU NEED PRIVATE PACKAGES:
 # 1. Uncomment the --mount and UV_INDEX lines below.
 # 2. Add the corresponding --secret flags to your docker build command in CI.
@@ -58,7 +61,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     #--mount=type=secret,id=uv_password \
     #UV_INDEX_CAFL4DS_USERNAME=$(cat /run/secrets/uv_username) \
     #UV_INDEX_CAFL4DS_PASSWORD=$(cat /run/secrets/uv_password) \
-    uv sync --frozen --no-dev --no-install-project
+    uv sync --frozen --no-dev --extra cpu --no-install-project
 
 # Application layer. `--no-editable`: installs our project dependency straight into `site-packages` = no messing around
 # with env variables to find the package
@@ -67,7 +70,7 @@ COPY README.md LICENSE.md ./
 COPY ./cafl4ds ./cafl4ds
 
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev --no-editable
+    uv sync --frozen --no-dev --extra cpu --no-editable
 
 
 # ---- STAGE 3: Production ---------------------------------------------------------------------------------------------

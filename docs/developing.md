@@ -1,5 +1,17 @@
 # Developing
 
+## Local (non-Gaudi) setup
+
+`torch`'s build is hardware-selected via a mutually-exclusive extra, so pick one when syncing (a bare `uv sync` installs
+no torch):
+
+```bash
+uv sync --group dev --extra cpu     # laptops / CI / CPU boxes (lean, no CUDA payload)
+uv sync --group dev --extra cu124   # NVIDIA GPU boxes (CUDA 12.4 training wheels)
+```
+
+Gaudi HPUs use neither — see below (torch comes from the Habana base image).
+
 ## On the Edgelab's Gaudi VM
 
 This repo provides a Docker development environment for Gaudi HPUs: `docker/gaudi.env.Dockerfile`.
