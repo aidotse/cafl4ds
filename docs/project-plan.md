@@ -241,7 +241,8 @@ initialization threads through: from-scratch (small/toy) to *elicit* the dynamic
 ### Scientific spine (sequential)
 
 **Phase 0 — Instrument `[STD]`.** *(M1)* Streaming loop + health metrics + B5 + positive control, on STL-10. **Exit:**
-instruments validated **and PC collapses on RankMe**.
+instruments validated **and PC collapses on RankMe**. → **Progress & latest results:
+[Phase 0 docs](experiments/phase0/index.md).**
 
 **Phase 1 — Degradation envelope `[NEW]`.** *(M2)*
 

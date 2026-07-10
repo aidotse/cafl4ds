@@ -1,0 +1,11 @@
+# F = correlated: class-blocked ordering (all of class 0, then class 1, ...). Eras = class
+# blocks. This is the synthetic correlation of Phase 1a. `source` is the chosen data group.
+_target_: cafl4ds.data.streams.EraStream
+source: ${data}
+order: class_blocked
+batch_size: ${batch_size}
+support_per_class: 20
+query_per_class: 20
+era_eval_per_class: 10
+max_train_per_class: ${max_train_per_class}
+seed: ${seed}
