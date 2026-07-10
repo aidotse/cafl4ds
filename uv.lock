@@ -2,18 +2,44 @@ version = 1
 revision = 3
 requires-python = ">=3.10"
 resolution-markers = [
-    "python_full_version >= '3.15'",
-    "python_full_version == '3.14.*' and sys_platform == 'win32'",
-    "python_full_version == '3.14.*' and sys_platform != 'win32'",
-    "python_full_version == '3.13.*' and sys_platform == 'win32'",
-    "python_full_version == '3.12.*' and sys_platform == 'win32'",
-    "python_full_version == '3.11.*' and sys_platform == 'win32'",
-    "python_full_version < '3.11' and sys_platform == 'win32'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32'",
-    "python_full_version == '3.11.*' and sys_platform != 'win32'",
-    "python_full_version < '3.11' and sys_platform != 'win32'",
+    "python_full_version >= '3.15' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
 ]
+conflicts = [[
+    { package = "cafl4ds", extra = "cpu" },
+    { package = "cafl4ds", extra = "cu124" },
+]]
 
 [[package]]
 name = "accelerate"
@@ -21,14 +47,17 @@ version = "1.10.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "huggingface-hub" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
-    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
     { name = "packaging" },
     { name = "psutil" },
     { name = "pyyaml" },
     { name = "safetensors" },
-    { name = "torch" },
+    { name = "torch", version = "2.6.0+cu124", source = { registry = "https://download.pytorch.org/whl/cu124" }, marker = "extra == 'extra-7-cafl4ds-cu124'" },
+    { name = "torch", version = "2.13.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "torch", version = "2.13.0", source = { registry = "https://pypi.org/simple" }, marker = "(extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124')" },
+    { name = "torch", version = "2.13.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/b1/72/ff3961c19ee395c3d30ac630ee77bfb0e1b46b87edc504d4f83bb4a89705/accelerate-1.10.1.tar.gz", hash = "sha256:3dea89e433420e4bfac0369cae7e36dcd6a56adfcfd38cdda145c6225eab5df8", size = 392446, upload-time = "2025-08-25T13:57:06.21Z" }
 wheels = [
@@ -49,15 +78,15 @@ name = "aiohttp"
 version = "3.14.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "aiohappyeyeballs", marker = "python_full_version < '3.14'" },
-    { name = "aiosignal", marker = "python_full_version < '3.14'" },
-    { name = "async-timeout", marker = "python_full_version < '3.11'" },
-    { name = "attrs", marker = "python_full_version < '3.14'" },
-    { name = "frozenlist", marker = "python_full_version < '3.14'" },
-    { name = "multidict", marker = "python_full_version < '3.14'" },
-    { name = "propcache", marker = "python_full_version < '3.14'" },
-    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
-    { name = "yarl", marker = "python_full_version < '3.14'" },
+    { name = "aiohappyeyeballs" },
+    { name = "aiosignal" },
+    { name = "async-timeout", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "attrs" },
+    { name = "frozenlist" },
+    { name = "multidict" },
+    { name = "propcache" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "yarl" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/82/78/8ea7308cac6934de8c74a14f3d5f65d1c89287426688be79538d0e5c013d/aiohttp-3.14.1.tar.gz", hash = "sha256:307f2cff90a764d329e77040603fa032db89c5c24fdad50c4c15334cba744035", size = 7955794, upload-time = "2026-06-07T21:09:35.529Z" }
 wheels = [
@@ -186,8 +215,8 @@ name = "aiosignal"
 version = "1.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "frozenlist", marker = "python_full_version < '3.14'" },
-    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
+    { name = "frozenlist" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/61/62/06741b579156360248d1ec624842ad0edf697050bbaf7c3e46394e106ad1/aiosignal-1.4.0.tar.gz", hash = "sha256:f47eecd9468083c2029cc99945502cb7708b082c232f9aca65da147157b251c7", size = 25007, upload-time = "2025-07-03T22:54:43.528Z" }
 wheels = [
@@ -223,9 +252,9 @@ name = "anyio"
 version = "4.14.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "exceptiongroup", marker = "python_full_version < '3.11'" },
+    { name = "exceptiongroup", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
     { name = "idna" },
-    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/3b/72/5562aabb8dd7181e8e860622a38bea08d17842b99ecd4c91f84ac95251b0/anyio-4.14.1.tar.gz", hash = "sha256:8d648a3544c1a700e3ff78615cd679e4c5c3f149904287e73687b2596963629e", size = 254831, upload-time = "2026-06-24T20:56:06.017Z" }
 wheels = [
@@ -343,10 +372,22 @@ source = { editable = "." }
 dependencies = [
     { name = "hydra-core" },
     { name = "loguru" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
     { name = "omegaconf" },
+    { name = "scikit-learn", version = "1.7.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "scikit-learn", version = "1.9.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 
 [package.optional-dependencies]
+cpu = [
+    { name = "torch", version = "2.13.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "torch", version = "2.13.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+]
+cu124 = [
+    { name = "torch", version = "2.6.0+cu124", source = { registry = "https://download.pytorch.org/whl/cu124" } },
+]
 gaudi = [
     { name = "optimum-habana" },
 ]
@@ -377,10 +418,14 @@ dev = [
 requires-dist = [
     { name = "hydra-core", specifier = ">=1.3.2" },
     { name = "loguru", specifier = ">=0.7.3" },
+    { name = "numpy", specifier = ">=1.26" },
     { name = "omegaconf", specifier = ">=2.3.0" },
     { name = "optimum-habana", marker = "extra == 'gaudi'", specifier = "==1.20.0" },
+    { name = "scikit-learn", specifier = ">=1.4" },
+    { name = "torch", marker = "extra == 'cpu'", specifier = ">=2.2", index = "https://download.pytorch.org/whl/cpu", conflict = { package = "cafl4ds", extra = "cpu" } },
+    { name = "torch", marker = "extra == 'cu124'", specifier = ">=2.2", index = "https://download.pytorch.org/whl/cu124", conflict = { package = "cafl4ds", extra = "cu124" } },
 ]
-provides-extras = ["gaudi"]
+provides-extras = ["cpu", "cu124", "gaudi"]
 
 [package.metadata.requires-dev]
 agent = [{ name = "headroom-ai", extras = ["code", "html", "mcp", "otel", "proxy", "relevance", "reports", "spreadsheet"], specifier = ">=0.27.0" }]
@@ -416,7 +461,7 @@ name = "cffi"
 version = "2.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "pycparser", marker = "implementation_name != 'PyPy'" },
+    { name = "pycparser", marker = "implementation_name != 'PyPy' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/57/5f/ff100cae70ebe9d8df1c01a00e510e45d9adb5c1fdda84791b199141de97/cffi-2.1.0.tar.gz", hash = "sha256:efc1cdd798b1aaf39b4610bba7aad28c9bea9b910f25c784ccf9ec1fa719d1f9", size = 531036, upload-time = "2026-07-06T21:34:30.382Z" }
 wheels = [
@@ -622,7 +667,7 @@ name = "click"
 version = "8.4.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32'" },
+    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/76/d4/81420972a676e8ffea40450d8c8c92943e7218a78fe9b64359836cc9876b/click-8.4.2.tar.gz", hash = "sha256:9a6cea6e60b17ebe0a44c5cc636d94f09bd66142c1cd7d8b4cd731c4917a15f6", size = 338000, upload-time = "2026-06-24T17:45:15.148Z" }
 wheels = [
@@ -643,7 +688,7 @@ name = "coloredlogs"
 version = "15.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "humanfriendly", marker = "python_full_version < '3.11'" },
+    { name = "humanfriendly", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/cc/c7/eed8f27100517e8c0e6b923d5f0845d0cb99763da6fdee00478f91db7325/coloredlogs-15.0.1.tar.gz", hash = "sha256:7c991aa71a4577af2f82600d8f8f3a89f936baeaf9b50a9c197da014e5bf16b0", size = 278520, upload-time = "2021-06-11T10:22:45.202Z" }
 wheels = [
@@ -655,7 +700,7 @@ name = "colorlog"
 version = "6.10.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32'" },
+    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/a2/61/f083b5ac52e505dfc1c624eafbf8c7589a0d7f32daa398d2e7590efa5fda/colorlog-6.10.1.tar.gz", hash = "sha256:eb4ae5cb65fe7fec7773c2306061a8e63e02efc2c72eba9d27b0fa23c94f1321", size = 17162, upload-time = "2025-10-16T16:14:11.978Z" }
 wheels = [
@@ -679,7 +724,7 @@ dependencies = [
     { name = "questionary" },
     { name = "termcolor" },
     { name = "tomlkit" },
-    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/50/8a/4fccfa29c95536ac6dc98dc09a676cc2bce60d72f68b8e280278c6674669/commitizen-4.16.4.tar.gz", hash = "sha256:bb2fda50da381979e308d4a443d349598de2487d9e40d2e4f55a1f115ca38a8c", size = 66771, upload-time = "2026-06-22T06:32:50.06Z" }
 wheels = [
@@ -800,7 +845,7 @@ wheels = [
 
 [package.optional-dependencies]
 toml = [
-    { name = "tomli", marker = "python_full_version <= '3.11'" },
+    { name = "tomli", marker = "python_full_version <= '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 
 [[package]]
@@ -808,8 +853,8 @@ name = "cryptography"
 version = "49.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "cffi", marker = "platform_python_implementation != 'PyPy'" },
-    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
+    { name = "cffi", marker = "platform_python_implementation != 'PyPy' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/1f/99/d1c90d6041656cc6ee229dc99cd67fd0cd5aec3c5f7d72fffc27cc750054/cryptography-49.0.0.tar.gz", hash = "sha256:f89660a348f4f78a92366240a61404e337586ef7f5909a2fef59ca88ef505493", size = 854345, upload-time = "2026-06-12T20:02:30.512Z" }
 wheels = [
@@ -865,21 +910,27 @@ name = "cuda-bindings"
 version = "13.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "cuda-pathfinder", marker = "python_full_version < '3.15' and sys_platform != 'win32'" },
+    { name = "cuda-pathfinder", marker = "(python_full_version < '3.15' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a9/21/8464d133752951c154feafb3b65c297e7d80f301183d220bec4c830f1441/cuda_bindings-13.3.1-cp310-cp310-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:120fcc53d57903df529c3486962c56528cba5b7d6c57c99537320ed9922c8b86", size = 6073403, upload-time = "2026-05-29T23:11:36.22Z" },
     { url = "https://files.pythonhosted.org/packages/a8/1f/5ef51f5fbaa5d4d3201bb3d7555af028ec1aa4416275ccbf73c9e34e3d2d/cuda_bindings-13.3.1-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:9851b0caa8bfd3bc6fa054eaf57bea7c8e9c3a62db2d2621224677f49f3c53d0", size = 6675244, upload-time = "2026-05-29T23:11:38.664Z" },
+    { url = "https://files.pythonhosted.org/packages/fc/64/bb17e4d168569ef7be05c44474fe3dc19278d60a69ba228e45a431c86444/cuda_bindings-13.3.1-cp310-cp310-win_amd64.whl", hash = "sha256:c0c4b1a995098c46695c24257a342dc97d6e6d3f3050b944c9f43bd26d734051", size = 5625597, upload-time = "2026-05-29T23:11:40.808Z" },
     { url = "https://files.pythonhosted.org/packages/51/6b/457ca12dad3ee9bfcc9a545cfd6b64b359ba49de40f776f6e028e678f262/cuda_bindings-13.3.1-cp311-cp311-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:c5879712accf6e14bb01aa5e67440eb84998b8d104b509cc7a6dc0b8f656a474", size = 6053539, upload-time = "2026-05-29T23:11:43.19Z" },
     { url = "https://files.pythonhosted.org/packages/95/7a/c5e3c34a409b148f5c0f5a4ea374158f95d488862c1dffedf9aa5c639df9/cuda_bindings-13.3.1-cp311-cp311-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:04436a9364059c84b8f9636f359eccda1cf814341f5b670c71d80d2f79dbc708", size = 6674166, upload-time = "2026-05-29T23:11:45.478Z" },
+    { url = "https://files.pythonhosted.org/packages/93/f7/0e35987a21914f84068061dcf4b61466ccbce1c62ddc9727596d5ed0c26f/cuda_bindings-13.3.1-cp311-cp311-win_amd64.whl", hash = "sha256:507b0e19e7f934c5e30f30f0244ad70a75812619a7d3a0d742543caae1bd50f1", size = 5664286, upload-time = "2026-05-29T23:11:47.719Z" },
     { url = "https://files.pythonhosted.org/packages/ce/67/5e7dba1ba576dd73da5dee894ca076ca5e959450dfff66d6d510a255d1f7/cuda_bindings-13.3.1-cp312-cp312-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:c7855c4868aabc0cfae28abbe83d56734bdfbd08f08fc234ac1912a12858bf49", size = 6025351, upload-time = "2026-05-29T23:11:49.685Z" },
     { url = "https://files.pythonhosted.org/packages/39/2a/6d2e9047d1fb243dbaa364b01e0297534b9ed7fd27dba1c9f361519cf69b/cuda_bindings-13.3.1-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:e32d08f71ebcdf00f0f41eab2eb37e8da94c8ed411cc9f7f7a019ce6b34abe3a", size = 6657965, upload-time = "2026-05-29T23:11:52.227Z" },
+    { url = "https://files.pythonhosted.org/packages/7c/95/872a0392122f1fb43fcb06869790ef3171f37beee9f7db8f441739113570/cuda_bindings-13.3.1-cp312-cp312-win_amd64.whl", hash = "sha256:b134dd8c5c66ae4c4ad814f7aee88fd215353c077010cbc47e3b55ed35ec9eff", size = 5875099, upload-time = "2026-05-29T23:11:54.635Z" },
     { url = "https://files.pythonhosted.org/packages/cc/6e/2394f8163360f8391f8f1b7e72d300a82724edb81a7b7084c799fbd4c91f/cuda_bindings-13.3.1-cp313-cp313-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:9efb21c1ee64981e184b9e0ba5eb3179e5ba3d4b51665a6cb52b8ef3d01a7cbf", size = 5920504, upload-time = "2026-05-29T23:11:56.883Z" },
     { url = "https://files.pythonhosted.org/packages/34/c2/ef9b6a63f7dc432712a462c816662e662e00d38caa9b861c8c2588195d03/cuda_bindings-13.3.1-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:2732904099e0a4d4db774a5fc6d91ee95fae065b4d2ecabb4968c5fe2406c9d7", size = 6476660, upload-time = "2026-05-29T23:11:59.188Z" },
+    { url = "https://files.pythonhosted.org/packages/0c/2f/6a0dd496550c6fafbf6aeb1bf40242eeabb2fd138a43892aabb4be8224c2/cuda_bindings-13.3.1-cp313-cp313-win_amd64.whl", hash = "sha256:18c8c167c8907b8f02531ca810534315c458dabef31f7965095619bf647b9202", size = 5830027, upload-time = "2026-05-29T23:12:01.205Z" },
     { url = "https://files.pythonhosted.org/packages/b1/81/bff68ce829999c1e4209c761bbf903b1c06ec570416ddb25020864ad5907/cuda_bindings-13.3.1-cp314-cp314-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:1ab2f74ed65bfef4163ba07a8db16f1085e0729291db12a2423aff84ee8278b8", size = 6013639, upload-time = "2026-05-29T23:12:03.509Z" },
     { url = "https://files.pythonhosted.org/packages/d4/e0/c8a1f0c8f9ffdea4f5fe6dbab89b326cef4d85caf489dad39e209da89416/cuda_bindings-13.3.1-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:efd4c814d311ec08c981f6dded1dbe7d4b371067ee4f6c14cccec4bde9590f80", size = 6534419, upload-time = "2026-05-29T23:12:05.633Z" },
+    { url = "https://files.pythonhosted.org/packages/48/45/2734be44dbc80ac082ec23a86b41c8294992dcb90033645ed1bc50aafe4c/cuda_bindings-13.3.1-cp314-cp314-win_amd64.whl", hash = "sha256:8de12ef60bf40756852cb62bbb40460609269f6ece522903d1cc93d73a3ececb", size = 5961055, upload-time = "2026-05-29T23:12:07.971Z" },
     { url = "https://files.pythonhosted.org/packages/52/b8/83b1f563925b290f2d11a01a77a84013ba56052fe3653a5bef3ccfbb43d6/cuda_bindings-13.3.1-cp314-cp314t-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:c3c772dfff49681541d59630c90f858e173ac926b9c593a2b7123f2a1043cc76", size = 5809771, upload-time = "2026-05-29T23:12:10.422Z" },
     { url = "https://files.pythonhosted.org/packages/12/20/e79b4bfe98f075195afb6343d41c498f9dbd2d161d7021d4d28bceb83581/cuda_bindings-13.3.1-cp314-cp314t-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:36febb7c1079d68a981dbbd8d5a67235b399802b82075c9388624719607e52b9", size = 6358584, upload-time = "2026-05-29T23:12:12.767Z" },
+    { url = "https://files.pythonhosted.org/packages/27/2a/b59bcac016ab9985d6b48a5d05b0d698461a159ca03ee11c4abd54da2ac4/cuda_bindings-13.3.1-cp314-cp314t-win_amd64.whl", hash = "sha256:61120b5e4f4a63f67efd7e7396914cb9ef871bb1f0021e990fb70277be240a4d", size = 6740329, upload-time = "2026-05-29T23:12:15.153Z" },
 ]
 
 [[package]]
@@ -900,43 +951,43 @@ wheels = [
 
 [package.optional-dependencies]
 cublas = [
-    { name = "nvidia-cublas", marker = "(python_full_version >= '3.15' and platform_machine == 'AMD64' and sys_platform == 'win32') or (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')" },
-    { name = "nvidia-cuda-nvrtc", marker = "(python_full_version >= '3.15' and platform_machine == 'AMD64' and sys_platform == 'win32') or (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')" },
+    { name = "nvidia-cublas", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'x86_64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'AMD64' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-cuda-nvrtc", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'x86_64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'AMD64' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 cudart = [
-    { name = "nvidia-cuda-runtime", marker = "(python_full_version >= '3.15' and platform_machine == 'AMD64' and sys_platform == 'win32') or (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')" },
+    { name = "nvidia-cuda-runtime", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'x86_64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'AMD64' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 cufft = [
-    { name = "nvidia-cufft", marker = "(python_full_version >= '3.15' and platform_machine == 'AMD64' and sys_platform == 'win32') or (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')" },
-    { name = "nvidia-nvjitlink", marker = "(python_full_version >= '3.15' and platform_machine == 'AMD64' and sys_platform == 'win32') or (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')" },
+    { name = "nvidia-cufft", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'x86_64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'AMD64' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-nvjitlink", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'x86_64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'AMD64' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 cufile = [
-    { name = "nvidia-cufile", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')" },
+    { name = "nvidia-cufile", marker = "(platform_machine != 'aarch64' and platform_machine != 'x86_64' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (platform_machine == 'aarch64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'x86_64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'aarch64' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (platform_machine == 'x86_64' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 cupti = [
-    { name = "nvidia-cuda-cupti", marker = "(python_full_version >= '3.15' and platform_machine == 'AMD64' and sys_platform == 'win32') or (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')" },
+    { name = "nvidia-cuda-cupti", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'x86_64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'AMD64' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 curand = [
-    { name = "nvidia-curand", marker = "(python_full_version >= '3.15' and platform_machine == 'AMD64' and sys_platform == 'win32') or (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')" },
+    { name = "nvidia-curand", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'x86_64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'AMD64' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 cusolver = [
-    { name = "nvidia-cublas", marker = "(python_full_version >= '3.15' and platform_machine == 'AMD64' and sys_platform == 'win32') or (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')" },
-    { name = "nvidia-cusolver", marker = "(python_full_version >= '3.15' and platform_machine == 'AMD64' and sys_platform == 'win32') or (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')" },
-    { name = "nvidia-cusparse", marker = "(python_full_version >= '3.15' and platform_machine == 'AMD64' and sys_platform == 'win32') or (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')" },
-    { name = "nvidia-nvjitlink", marker = "(python_full_version >= '3.15' and platform_machine == 'AMD64' and sys_platform == 'win32') or (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')" },
+    { name = "nvidia-cublas", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'x86_64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'AMD64' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-cusolver", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'x86_64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'AMD64' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-cusparse", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'x86_64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'AMD64' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-nvjitlink", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'x86_64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'AMD64' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 cusparse = [
-    { name = "nvidia-cusparse", marker = "(python_full_version >= '3.15' and platform_machine == 'AMD64' and sys_platform == 'win32') or (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')" },
-    { name = "nvidia-nvjitlink", marker = "(python_full_version >= '3.15' and platform_machine == 'AMD64' and sys_platform == 'win32') or (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')" },
+    { name = "nvidia-cusparse", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'x86_64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'AMD64' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-nvjitlink", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'x86_64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'AMD64' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 nvjitlink = [
-    { name = "nvidia-nvjitlink", marker = "(python_full_version >= '3.15' and platform_machine == 'AMD64' and sys_platform == 'win32') or (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')" },
+    { name = "nvidia-nvjitlink", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'x86_64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'AMD64' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 nvrtc = [
-    { name = "nvidia-cuda-nvrtc", marker = "(python_full_version >= '3.15' and platform_machine == 'AMD64' and sys_platform == 'win32') or (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')" },
+    { name = "nvidia-cuda-nvrtc", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'x86_64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'AMD64' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 nvtx = [
-    { name = "nvidia-nvtx", marker = "(python_full_version >= '3.15' and platform_machine == 'AMD64' and sys_platform == 'win32') or (platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux')" },
+    { name = "nvidia-nvtx", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'x86_64' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (platform_machine == 'AMD64' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 
 [[package]]
@@ -978,7 +1029,7 @@ version = "1.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "packaging" },
-    { name = "tomli", marker = "python_full_version < '3.11'" },
+    { name = "tomli", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/62/55/f054de99871e7beb81935dea8a10b90cd5ce42122b1c3081d5282fdb3621/dependency_groups-1.3.1.tar.gz", hash = "sha256:78078301090517fd938c19f64a53ce98c32834dfe0dee6b88004a569a6adfefd", size = 10093, upload-time = "2025-05-02T00:34:29.452Z" }
 wheels = [
@@ -1003,10 +1054,10 @@ version = "0.25.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
-    { name = "colorama", marker = "sys_platform == 'win32'" },
+    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
     { name = "packaging" },
     { name = "requirements-parser" },
-    { name = "tomli", marker = "python_full_version < '3.15'" },
+    { name = "tomli", marker = "python_full_version < '3.15' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/b8/b2/50ccc99362ae7757342978b7ecb3b98e47fade721fd617d74db1948ec3a1/deptry-0.25.1.tar.gz", hash = "sha256:45c8cd982c85cd4faae573ddff6920de7eec735336db6973f26a765ae7950f7d", size = 509748, upload-time = "2026-03-18T23:22:18.139Z" }
 wheels = [
@@ -1035,9 +1086,9 @@ dependencies = [
     { name = "filelock" },
     { name = "huggingface-hub" },
     { name = "importlib-metadata" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
-    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
     { name = "pillow" },
     { name = "regex" },
     { name = "requests" },
@@ -1080,7 +1131,7 @@ name = "exceptiongroup"
 version = "1.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/50/79/66800aadf48771f6b62f7eb014e352e5d06856655206165d775e675a02c9/exceptiongroup-1.3.1.tar.gz", hash = "sha256:8b412432c6055b0b7d14c310000ae93352ed6754f70fa8f7c34141f91c4e3219", size = 30371, upload-time = "2025-11-21T23:01:54.787Z" }
 wheels = [
@@ -1120,11 +1171,11 @@ dependencies = [
     { name = "huggingface-hub" },
     { name = "loguru" },
     { name = "mmh3" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
-    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
-    { name = "onnxruntime", version = "1.23.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "onnxruntime", version = "1.27.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "onnxruntime", version = "1.23.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "onnxruntime", version = "1.27.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
     { name = "pillow" },
     { name = "py-rust-stemmers" },
     { name = "requests" },
@@ -1431,12 +1482,12 @@ source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ast-grep-cli" },
     { name = "click" },
-    { name = "litellm", marker = "python_full_version < '3.14'" },
+    { name = "litellm", marker = "python_full_version < '3.14' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
     { name = "opentelemetry-api" },
     { name = "pydantic" },
     { name = "rich" },
     { name = "tiktoken" },
-    { name = "tomli", marker = "python_full_version < '3.11'" },
+    { name = "tomli", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/fa/cf/61bc24c72c7c64a32f3d82a1193d1bd96892564160acfeb380ad381b34a0/headroom_ai-0.30.0.tar.gz", hash = "sha256:ede80f5a81f4d438301048a2123b266f1b2705d361018b172ad9f2487aca6c95", size = 1993582, upload-time = "2026-07-03T19:49:10.717Z" }
 wheels = [
@@ -1467,8 +1518,8 @@ proxy = [
     { name = "httpx", extra = ["http2"] },
     { name = "magika" },
     { name = "mcp" },
-    { name = "onnxruntime", version = "1.23.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "onnxruntime", version = "1.27.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "onnxruntime", version = "1.23.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "onnxruntime", version = "1.27.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
     { name = "openai" },
     { name = "sqlite-vec" },
     { name = "transformers" },
@@ -1479,9 +1530,9 @@ proxy = [
 ]
 relevance = [
     { name = "fastembed" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
-    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 reports = [
     { name = "jinja2" },
@@ -1597,7 +1648,7 @@ source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "filelock" },
     { name = "fsspec" },
-    { name = "hf-xet", marker = "platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64'" },
+    { name = "hf-xet", marker = "platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'arm64' or platform_machine == 'x86_64' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
     { name = "packaging" },
     { name = "pyyaml" },
     { name = "requests" },
@@ -1619,7 +1670,7 @@ name = "humanfriendly"
 version = "10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "pyreadline3", marker = "python_full_version < '3.11' and sys_platform == 'win32'" },
+    { name = "pyreadline3", marker = "(python_full_version < '3.11' and sys_platform == 'win32') or (python_full_version >= '3.11' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/cc/3f/2c29224acb2e2df4d2046e4c73ee2662023c58ff5b113c4c1adac0886c43/humanfriendly-10.0.tar.gz", hash = "sha256:6b0b831ce8f15f7300721aa49829fc4e83921a9a301cc7f606be6686a2288ddc", size = 360702, upload-time = "2021-09-17T21:40:43.31Z" }
 wheels = [
@@ -1825,8 +1876,8 @@ dependencies = [
     { name = "attrs" },
     { name = "jsonschema-specifications" },
     { name = "referencing" },
-    { name = "rpds-py", version = "0.30.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "rpds-py", version = "2026.6.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "rpds-py", version = "0.30.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "rpds-py", version = "2026.6.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/b3/fc/e067678238fa451312d4c62bf6e6cf5ec56375422aee02f9cb5f909b3047/jsonschema-4.26.0.tar.gz", hash = "sha256:0c26707e2efad8aa1bfc5b7ce170f3fccc2e4918ff85989ba9ffa9facb2be326", size = 366583, upload-time = "2026-01-07T13:41:07.246Z" }
 wheels = [
@@ -1949,18 +2000,18 @@ name = "litellm"
 version = "1.91.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "aiohttp", marker = "python_full_version < '3.14'" },
-    { name = "click", marker = "python_full_version < '3.14'" },
-    { name = "fastuuid", marker = "python_full_version < '3.14'" },
-    { name = "httpx", marker = "python_full_version < '3.14'" },
-    { name = "importlib-metadata", marker = "python_full_version < '3.14'" },
-    { name = "jinja2", marker = "python_full_version < '3.14'" },
-    { name = "jsonschema", marker = "python_full_version < '3.14'" },
-    { name = "openai", marker = "python_full_version < '3.14'" },
-    { name = "pydantic", marker = "python_full_version < '3.14'" },
-    { name = "python-dotenv", marker = "python_full_version < '3.14'" },
-    { name = "tiktoken", marker = "python_full_version < '3.14'" },
-    { name = "tokenizers", marker = "python_full_version < '3.14'" },
+    { name = "aiohttp" },
+    { name = "click" },
+    { name = "fastuuid" },
+    { name = "httpx" },
+    { name = "importlib-metadata" },
+    { name = "jinja2" },
+    { name = "jsonschema" },
+    { name = "openai" },
+    { name = "pydantic" },
+    { name = "python-dotenv" },
+    { name = "tiktoken" },
+    { name = "tokenizers" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/a7/70/1b419158085e0cc1615642dd62c7a5d4c3254db3de77df65dade3b25165b/litellm-1.91.1.tar.gz", hash = "sha256:49a24593df7e37262c52243a8e07572d451d37c100aa1b1f347d80d501d2e386", size = 14872532, upload-time = "2026-07-08T23:07:04.559Z" }
 wheels = [
@@ -1972,8 +2023,8 @@ name = "loguru"
 version = "0.7.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32'" },
-    { name = "win32-setctime", marker = "sys_platform == 'win32'" },
+    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "win32-setctime", marker = "sys_platform == 'win32' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/3a/05/a1dae3dffd1116099471c643b8924f5aa6524411dc6c63fdae648c4f1aca/loguru-0.7.3.tar.gz", hash = "sha256:19480589e77d47b8d85b2c827ad95d49bf31b0dcde16593892eb51dd18706eb6", size = 63559, upload-time = "2024-12-06T11:20:56.608Z" }
 wheels = [
@@ -2121,8 +2172,8 @@ version = "1.0.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
-    { name = "onnxruntime", version = "1.23.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "onnxruntime", version = "1.27.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "onnxruntime", version = "1.23.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "onnxruntime", version = "1.27.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/00/be/fa7d512ec15763ad7d8ba083e39bb445fa969ce5159361fa449a02569cf9/magika-1.0.3.tar.gz", hash = "sha256:ad3216012f6dd337be34c23ae3dfab36f0623bc62fbfb329f9a1852c9ad40304", size = 3041970, upload-time = "2026-05-04T08:41:53.124Z" }
 wheels = [
@@ -2251,12 +2302,12 @@ dependencies = [
     { name = "pydantic-settings" },
     { name = "pyjwt", extra = ["crypto"] },
     { name = "python-multipart" },
-    { name = "pywin32", marker = "sys_platform == 'win32'" },
+    { name = "pywin32", marker = "sys_platform == 'win32' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
     { name = "sse-starlette" },
     { name = "starlette" },
     { name = "typing-extensions" },
     { name = "typing-inspection" },
-    { name = "uvicorn", marker = "sys_platform != 'emscripten'" },
+    { name = "uvicorn", marker = "sys_platform != 'emscripten' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/6e/77/9450b8f251a13affb6281997d0523c4615f8a8b35d0b21ff30db3a5aac9d/mcp-1.28.1.tar.gz", hash = "sha256:d51e36a5f5644faea4f85ea649bfffa6bc6c26770d42798ad6a3de3d2ba69683", size = 638501, upload-time = "2026-06-26T12:57:29.093Z" }
 wheels = [
@@ -2287,7 +2338,7 @@ version = "1.6.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
-    { name = "colorama", marker = "sys_platform == 'win32'" },
+    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
     { name = "ghp-import" },
     { name = "jinja2" },
     { name = "markdown" },
@@ -2394,7 +2445,7 @@ dependencies = [
     { name = "griffelib" },
     { name = "mkdocs-autorefs" },
     { name = "mkdocstrings" },
-    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/b1/b6/e858701499d57eee8b3fd8e78168083956c6683ddbe727b46758b19e1119/mkdocstrings_python-2.0.5.tar.gz", hash = "sha256:3a4d92556ad39637e88af94a5374213af9a8e3040c3824ceaed04b486c017594", size = 199578, upload-time = "2026-06-19T10:41:08.868Z" }
 wheels = [
@@ -2529,7 +2580,7 @@ name = "multidict"
 version = "6.7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/1a/c2/c2d94cbe6ac1753f3fc980da97b3d930efe1da3af3c9f5125354436c073d/multidict-6.7.1.tar.gz", hash = "sha256:ec6652a1bee61c53a3e5776b6049172c53b6aaba34f18c9ad04f82712bac623d", size = 102010, upload-time = "2026-01-26T02:46:45.979Z" }
 wheels = [
@@ -2668,10 +2719,10 @@ version = "2.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ast-serialize" },
-    { name = "librt", marker = "platform_python_implementation != 'PyPy'" },
+    { name = "librt", marker = "platform_python_implementation != 'PyPy' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
     { name = "mypy-extensions" },
     { name = "pathspec" },
-    { name = "tomli", marker = "python_full_version < '3.11'" },
+    { name = "tomli", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
     { name = "typing-extensions" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/e9/7e/be536678c6ae49ef058aba4b483d8c7bc104f471479016066f345bc1f5f8/mypy-2.2.0.tar.gz", hash = "sha256:2cdd99d48590dce6f6b7f1961eda75386364398fcdaad86923bc0f0231bf9baf", size = 3950939, upload-time = "2026-07-08T01:37:27.335Z" }
@@ -2745,8 +2796,10 @@ name = "networkx"
 version = "3.4.2"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version < '3.11' and sys_platform == 'win32'",
-    "python_full_version < '3.11' and sys_platform != 'win32'",
+    "python_full_version < '3.11' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/fd/1d/06475e1cd5264c0b870ea2cc6fdb3e37177c1e565c43f56ff17a10e3937f/networkx-3.4.2.tar.gz", hash = "sha256:307c3669428c5362aab27c8a1260aa8f47c4e91d3891f48be0141738d8d053e1", size = 2151368, upload-time = "2024-10-21T12:39:38.695Z" }
 wheels = [
@@ -2758,15 +2811,35 @@ name = "networkx"
 version = "3.6.1"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.15'",
-    "python_full_version == '3.14.*' and sys_platform == 'win32'",
-    "python_full_version == '3.14.*' and sys_platform != 'win32'",
-    "python_full_version == '3.13.*' and sys_platform == 'win32'",
-    "python_full_version == '3.12.*' and sys_platform == 'win32'",
-    "python_full_version == '3.11.*' and sys_platform == 'win32'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32'",
-    "python_full_version == '3.11.*' and sys_platform != 'win32'",
+    "python_full_version >= '3.15' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/6a/51/63fe664f3908c97be9d2e4f1158eb633317598cfa6e1fc14af5383f17512/networkx-3.6.1.tar.gz", hash = "sha256:26b7c357accc0c8cde558ad486283728b65b6a95d85ee1cd66bafab4c8168509", size = 2517025, upload-time = "2025-12-08T17:02:39.908Z" }
 wheels = [
@@ -2793,7 +2866,7 @@ dependencies = [
     { name = "dependency-groups" },
     { name = "humanize" },
     { name = "packaging" },
-    { name = "tomli", marker = "python_full_version < '3.11'" },
+    { name = "tomli", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
     { name = "virtualenv" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/e7/6b/e672c862a43cfca704d32359221fa3780226daa1e5db5dfc401bcc8be9c9/nox-2026.4.10.tar.gz", hash = "sha256:2d0af5374f3f37a295428c927d1b04a8182aa01762897d172446dda2f1ce9692", size = 4034839, upload-time = "2026-04-10T17:42:42.209Z" }
@@ -2806,8 +2879,10 @@ name = "numpy"
 version = "2.2.6"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version < '3.11' and sys_platform == 'win32'",
-    "python_full_version < '3.11' and sys_platform != 'win32'",
+    "python_full_version < '3.11' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/76/21/7d2a95e4bba9dc13d043ee156a356c0a8f0c6309dff6b21b4d71a073b8a8/numpy-2.2.6.tar.gz", hash = "sha256:e29554e2bef54a90aa5cc07da6ce955accb83f21ab5de01a62c8478897b264fd", size = 20276440, upload-time = "2025-05-17T22:38:04.611Z" }
 wheels = [
@@ -2872,8 +2947,10 @@ name = "numpy"
 version = "2.4.6"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version == '3.11.*' and sys_platform == 'win32'",
-    "python_full_version == '3.11.*' and sys_platform != 'win32'",
+    "python_full_version == '3.11.*' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/d0/ad/fed0499ce6a338d2a03ebae59cd15093910c8875328855781952abf6c2fe/numpy-2.4.6.tar.gz", hash = "sha256:f3a3570c4a2a16746ac2c31a7c7c7b0c186b95ce902e33db6f28094ed7387dda", size = 20735807, upload-time = "2026-05-18T23:37:14.07Z" }
 wheels = [
@@ -2955,13 +3032,31 @@ name = "numpy"
 version = "2.5.1"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.15'",
-    "python_full_version == '3.14.*' and sys_platform == 'win32'",
-    "python_full_version == '3.14.*' and sys_platform != 'win32'",
-    "python_full_version == '3.13.*' and sys_platform == 'win32'",
-    "python_full_version == '3.12.*' and sys_platform == 'win32'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32'",
+    "python_full_version >= '3.15' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/22/fd/89965aa4ac08c74998539fcbf24fa3540f3e15237fbeb6bcf9c908f4aade/numpy-2.5.1.tar.gz", hash = "sha256:a48a113e6afea91f5608793bafa7ef2ad481fefbda87ec5069f483de61cb9fa3", size = 20755553, upload-time = "2026-07-04T17:08:00.933Z" }
 wheels = [
@@ -3015,11 +3110,22 @@ name = "nvidia-cublas"
 version = "13.1.1.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-cuda-nvrtc", marker = "python_full_version >= '3.15' or sys_platform != 'win32'" },
+    { name = "nvidia-cuda-nvrtc", marker = "(extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a7/a1/0bd24ee8c8d03adac032fd2909426a00c88f8c57961b1277ded97f91119f/nvidia_cublas-13.1.1.3-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:b7a210458267ac818974c53038fbec2e969d5c99f305ab15c72522fa9f001dd5", size = 542848918, upload-time = "2026-04-08T18:46:22.985Z" },
     { url = "https://files.pythonhosted.org/packages/3b/cd/154ca20c38269e05eff77c1464e6c1da89f50a6390b565e9d82e06bc11e1/nvidia_cublas-13.1.1.3-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:37936a16db8fe4ac1f065c2139360608a543a09275cb1a1af612e08cfa065436", size = 423138758, upload-time = "2026-04-08T18:46:58.655Z" },
+    { url = "https://files.pythonhosted.org/packages/45/9e/2f562daf80eb8f7a685fb7bea4fda71f6048e4f359d6fdd1b6e70206cb2f/nvidia_cublas-13.1.1.3-py3-none-win_amd64.whl", hash = "sha256:b6cdce694e47ff6aadf0a69df1cab6628d696f5ff56e8d16af50309d855fa20f", size = 404358158, upload-time = "2026-04-08T18:47:26.987Z" },
+]
+
+[[package]]
+name = "nvidia-cublas-cu12"
+version = "12.4.5.8"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7f/7f/7fbae15a3982dc9595e49ce0f19332423b260045d0a6afe93cdbe2f1f624/nvidia_cublas_cu12-12.4.5.8-py3-none-manylinux2014_aarch64.whl", hash = "sha256:0f8aa1706812e00b9f19dfe0cdb3999b092ccb8ca168c0db5b8ea712456fd9b3", size = 363333771, upload-time = "2024-06-18T19:28:09.881Z" },
+    { url = "https://files.pythonhosted.org/packages/ae/71/1c91302526c45ab494c23f61c7a84aa568b8c1f9d196efa5993957faf906/nvidia_cublas_cu12-12.4.5.8-py3-none-manylinux2014_x86_64.whl", hash = "sha256:2fc8da60df463fdefa81e323eef2e36489e1c94335b5358bcb38360adf75ac9b", size = 363438805, upload-time = "2024-04-03T20:57:06.025Z" },
+    { url = "https://files.pythonhosted.org/packages/e2/2a/4f27ca96232e8b5269074a72e03b4e0d43aa68c9b965058b1684d07c6ff8/nvidia_cublas_cu12-12.4.5.8-py3-none-win_amd64.whl", hash = "sha256:5a796786da89203a0657eda402bcdcec6180254a8ac22d72213abc42069522dc", size = 396895858, upload-time = "2024-04-03T21:03:31.996Z" },
 ]
 
 [[package]]
@@ -3029,6 +3135,17 @@ source = { registry = "https://pypi.org/simple" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2a/2a/80353b103fc20ce05ef51e928daed4b6015db4aaa9162ed0997090fe2250/nvidia_cuda_cupti-13.0.85-py3-none-manylinux_2_25_aarch64.whl", hash = "sha256:796bd679890ee55fb14a94629b698b6db54bcfd833d391d5e94017dd9d7d3151", size = 10310827, upload-time = "2025-09-04T08:26:42.012Z" },
     { url = "https://files.pythonhosted.org/packages/33/6d/737d164b4837a9bbd202f5ae3078975f0525a55730fe871d8ed4e3b952b0/nvidia_cuda_cupti-13.0.85-py3-none-manylinux_2_25_x86_64.whl", hash = "sha256:4eb01c08e859bf924d222250d2e8f8b8ff6d3db4721288cf35d14252a4d933c8", size = 10715597, upload-time = "2025-09-04T08:26:51.312Z" },
+    { url = "https://files.pythonhosted.org/packages/ad/df/b74b10025c1205695c5676373f2edd3e87a7202cc62ead0dfbc373b0f6ea/nvidia_cuda_cupti-13.0.85-py3-none-win_amd64.whl", hash = "sha256:683f58d301548deeefcb8f6fac1b8d907691b9d8b18eccab417f51e362102f00", size = 7736776, upload-time = "2025-09-04T08:38:08.38Z" },
+]
+
+[[package]]
+name = "nvidia-cuda-cupti-cu12"
+version = "12.4.127"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/93/b5/9fb3d00386d3361b03874246190dfec7b206fd74e6e287b26a8fcb359d95/nvidia_cuda_cupti_cu12-12.4.127-py3-none-manylinux2014_aarch64.whl", hash = "sha256:79279b35cf6f91da114182a5ce1864997fd52294a87a16179ce275773799458a", size = 12354556, upload-time = "2024-06-18T19:30:40.546Z" },
+    { url = "https://files.pythonhosted.org/packages/67/42/f4f60238e8194a3106d06a058d494b18e006c10bb2b915655bd9f6ea4cb1/nvidia_cuda_cupti_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl", hash = "sha256:9dec60f5ac126f7bb551c055072b69d85392b13311fcc1bcda2202d172df30fb", size = 13813957, upload-time = "2024-04-03T20:55:01.564Z" },
+    { url = "https://files.pythonhosted.org/packages/f3/79/8cf313ec17c58ccebc965568e5bcb265cdab0a1df99c4e674bb7a3b99bfe/nvidia_cuda_cupti_cu12-12.4.127-py3-none-win_amd64.whl", hash = "sha256:5688d203301ab051449a2b1cb6690fbe90d2b372f411521c86018b950f3d7922", size = 9938035, upload-time = "2024-04-03T21:01:01.109Z" },
 ]
 
 [[package]]
@@ -3038,6 +3155,17 @@ source = { registry = "https://pypi.org/simple" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c3/68/483a78f5e8f31b08fb1bb671559968c0ca3a065ac7acabfc7cee55214fd6/nvidia_cuda_nvrtc-13.0.88-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl", hash = "sha256:ad9b6d2ead2435f11cbb6868809d2adeeee302e9bb94bcf0539c7a40d80e8575", size = 90215200, upload-time = "2025-09-04T08:28:44.204Z" },
     { url = "https://files.pythonhosted.org/packages/b7/dc/6bb80850e0b7edd6588d560758f17e0550893a1feaf436807d64d2da040f/nvidia_cuda_nvrtc-13.0.88-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:d27f20a0ca67a4bb34268a5e951033496c5b74870b868bacd046b1b8e0c3267b", size = 43015449, upload-time = "2025-09-04T08:28:20.239Z" },
+    { url = "https://files.pythonhosted.org/packages/4a/af/345fedb9f4c76c84ab4fa445b36bd4048a4d9db60e6bc76b4f913ff4b852/nvidia_cuda_nvrtc-13.0.88-py3-none-win_amd64.whl", hash = "sha256:6bcd4e7f8e205cbe644f5a98f2f799bef9556fefc89dd786e79a16312ce49872", size = 76807835, upload-time = "2025-09-04T08:39:15.274Z" },
+]
+
+[[package]]
+name = "nvidia-cuda-nvrtc-cu12"
+version = "12.4.127"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/77/aa/083b01c427e963ad0b314040565ea396f914349914c298556484f799e61b/nvidia_cuda_nvrtc_cu12-12.4.127-py3-none-manylinux2014_aarch64.whl", hash = "sha256:0eedf14185e04b76aa05b1fea04133e59f465b6f960c0cbf4e37c3cb6b0ea198", size = 24133372, upload-time = "2024-06-18T19:32:00.576Z" },
+    { url = "https://files.pythonhosted.org/packages/2c/14/91ae57cd4db3f9ef7aa99f4019cfa8d54cb4caa7e00975df6467e9725a9f/nvidia_cuda_nvrtc_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl", hash = "sha256:a178759ebb095827bd30ef56598ec182b85547f1508941a3d560eb7ea1fbf338", size = 24640306, upload-time = "2024-04-03T20:56:01.463Z" },
+    { url = "https://files.pythonhosted.org/packages/7c/30/8c844bfb770f045bcd8b2c83455c5afb45983e1a8abf0c4e5297b481b6a5/nvidia_cuda_nvrtc_cu12-12.4.127-py3-none-win_amd64.whl", hash = "sha256:a961b2f1d5f17b14867c619ceb99ef6fcec12e46612711bcec78eb05068a60ec", size = 19751955, upload-time = "2024-04-03T21:01:51.133Z" },
 ]
 
 [[package]]
@@ -3047,6 +3175,29 @@ source = { registry = "https://pypi.org/simple" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/87/4f/17d7b9b8e285199c58ce28e31b5c5bbaa4d8271af06a89b6405258245de2/nvidia_cuda_runtime-13.0.96-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:ef9bcbe90493a2b9d810e43d249adb3d02e98dd30200d86607d8d02687c43f55", size = 2261060, upload-time = "2025-10-09T08:55:15.78Z" },
     { url = "https://files.pythonhosted.org/packages/2e/24/d1558f3b68b1d26e706813b1d10aa1d785e4698c425af8db8edc3dced472/nvidia_cuda_runtime-13.0.96-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:7f82250d7782aa23b6cfe765ecc7db554bd3c2870c43f3d1821f1d18aebf0548", size = 2243632, upload-time = "2025-10-09T08:55:36.117Z" },
+    { url = "https://files.pythonhosted.org/packages/b7/94/6b867483bec07da24ffa32736c79fabb94ef3a7af4d787a9d4a974868576/nvidia_cuda_runtime-13.0.96-py3-none-win_amd64.whl", hash = "sha256:f79298c8a098cec150a597c8eba58ecdab96e3bdc4b9bc4f9983635031740492", size = 2927037, upload-time = "2025-10-09T09:04:23.782Z" },
+]
+
+[[package]]
+name = "nvidia-cuda-runtime-cu12"
+version = "12.4.127"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a1/aa/b656d755f474e2084971e9a297def515938d56b466ab39624012070cb773/nvidia_cuda_runtime_cu12-12.4.127-py3-none-manylinux2014_aarch64.whl", hash = "sha256:961fe0e2e716a2a1d967aab7caee97512f71767f852f67432d572e36cb3a11f3", size = 894177, upload-time = "2024-06-18T19:32:52.877Z" },
+    { url = "https://files.pythonhosted.org/packages/ea/27/1795d86fe88ef397885f2e580ac37628ed058a92ed2c39dc8eac3adf0619/nvidia_cuda_runtime_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl", hash = "sha256:64403288fa2136ee8e467cdc9c9427e0434110899d07c779f25b5c068934faa5", size = 883737, upload-time = "2024-04-03T20:54:51.355Z" },
+    { url = "https://files.pythonhosted.org/packages/a8/8b/450e93fab75d85a69b50ea2d5fdd4ff44541e0138db16f9cd90123ef4de4/nvidia_cuda_runtime_cu12-12.4.127-py3-none-win_amd64.whl", hash = "sha256:09c2e35f48359752dfa822c09918211844a3d93c100a715d79b59591130c5e1e", size = 878808, upload-time = "2024-04-03T21:00:49.77Z" },
+]
+
+[[package]]
+name = "nvidia-cudnn-cu12"
+version = "9.1.0.70"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "nvidia-cublas-cu12", marker = "extra == 'extra-7-cafl4ds-cu124'" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9f/fd/713452cd72343f682b1c7b9321e23829f00b842ceaedcda96e742ea0b0b3/nvidia_cudnn_cu12-9.1.0.70-py3-none-manylinux2014_x86_64.whl", hash = "sha256:165764f44ef8c61fcdfdfdbe769d687e06374059fbb388b6c89ecb0e28793a6f", size = 664752741, upload-time = "2024-04-22T15:24:15.253Z" },
+    { url = "https://files.pythonhosted.org/packages/3f/d0/f90ee6956a628f9f04bf467932c0a25e5a7e706a684b896593c06c82f460/nvidia_cudnn_cu12-9.1.0.70-py3-none-win_amd64.whl", hash = "sha256:6278562929433d68365a07a4a1546c237ba2849852c0d4b2262a486e805b977a", size = 679925892, upload-time = "2024-04-22T15:24:53.333Z" },
 ]
 
 [[package]]
@@ -3054,11 +3205,12 @@ name = "nvidia-cudnn-cu13"
 version = "9.20.0.48"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-cublas", marker = "python_full_version >= '3.15' or sys_platform != 'win32'" },
+    { name = "nvidia-cublas", marker = "(extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/56/c5/83384d846b2fd17c44bd499b36c75a45ed4f095fbbb2252294e89cea5c5c/nvidia_cudnn_cu13-9.20.0.48-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:e31454ae00094b0c55319d9d15b6fa2fc50a9e1c0f5c8c80fb75258234e731e1", size = 444574296, upload-time = "2026-03-09T19:28:27.751Z" },
     { url = "https://files.pythonhosted.org/packages/6e/5e/edb9c0ae051602c3ccaffe424256463636d639e27d7f302dde9975ef9e7a/nvidia_cudnn_cu13-9.20.0.48-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:0c45dd8eeb50b603f07995b1b300c62ffe6a1980482b82b3bcf94a4ca9d49304", size = 366173588, upload-time = "2026-03-09T19:29:34.474Z" },
+    { url = "https://files.pythonhosted.org/packages/78/39/21507455b1bca8b5702a9e9fc6ce73735f216f558dac2c9ede58e4d456b8/nvidia_cudnn_cu13-9.20.0.48-py3-none-win_amd64.whl", hash = "sha256:af8139732b99c0118be65ea5aac97f0d46018f8c552889e49d2fb0c6261a4a24", size = 350712614, upload-time = "2026-03-09T19:31:11.398Z" },
 ]
 
 [[package]]
@@ -3066,11 +3218,25 @@ name = "nvidia-cufft"
 version = "12.0.0.61"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-nvjitlink", marker = "python_full_version >= '3.15' or sys_platform != 'win32'" },
+    { name = "nvidia-nvjitlink", marker = "(extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/8b/ae/f417a75c0259e85c1d2f83ca4e960289a5f814ed0cea74d18c353d3e989d/nvidia_cufft-12.0.0.61-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:2708c852ef8cd89d1d2068bdbece0aa188813a0c934db3779b9b1faa8442e5f5", size = 214053554, upload-time = "2025-09-04T08:31:38.196Z" },
     { url = "https://files.pythonhosted.org/packages/a8/2f/7b57e29836ea8714f81e9898409196f47d772d5ddedddf1592eadb8ab743/nvidia_cufft-12.0.0.61-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:6c44f692dce8fd5ffd3e3df134b6cdb9c2f72d99cf40b62c32dde45eea9ddad3", size = 214085489, upload-time = "2025-09-04T08:31:56.044Z" },
+    { url = "https://files.pythonhosted.org/packages/85/b2/f8af21a2ed1beed337a6a02c5a28aeb85441f4d578ec3d529543c775ea4b/nvidia_cufft-12.0.0.61-py3-none-win_amd64.whl", hash = "sha256:2abce5b39d2f5ae12730fb7e5db6696533e36c26e2d3e8fd1750bdd2853364eb", size = 213342123, upload-time = "2025-09-04T08:40:51.145Z" },
+]
+
+[[package]]
+name = "nvidia-cufft-cu12"
+version = "11.2.1.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "nvidia-nvjitlink-cu12", marker = "extra == 'extra-7-cafl4ds-cu124'" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7a/8a/0e728f749baca3fbeffad762738276e5df60851958be7783af121a7221e7/nvidia_cufft_cu12-11.2.1.3-py3-none-manylinux2014_aarch64.whl", hash = "sha256:5dad8008fc7f92f5ddfa2101430917ce2ffacd86824914c82e28990ad7f00399", size = 211422548, upload-time = "2024-06-18T19:33:39.396Z" },
+    { url = "https://files.pythonhosted.org/packages/27/94/3266821f65b92b3138631e9c8e7fe1fb513804ac934485a8d05776e1dd43/nvidia_cufft_cu12-11.2.1.3-py3-none-manylinux2014_x86_64.whl", hash = "sha256:f083fc24912aa410be21fa16d157fed2055dab1cc4b6934a0e03cba69eb242b9", size = 211459117, upload-time = "2024-04-03T20:57:40.402Z" },
+    { url = "https://files.pythonhosted.org/packages/f6/ee/3f3f8e9874f0be5bbba8fb4b62b3de050156d159f8b6edc42d6f1074113b/nvidia_cufft_cu12-11.2.1.3-py3-none-win_amd64.whl", hash = "sha256:d802f4954291101186078ccbe22fc285a902136f974d369540fd4a5333d1440b", size = 210576476, upload-time = "2024-04-03T21:04:06.422Z" },
 ]
 
 [[package]]
@@ -3089,6 +3255,17 @@ source = { registry = "https://pypi.org/simple" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/1e/72/7c2ae24fb6b63a32e6ae5d241cc65263ea18d08802aaae087d9f013335a2/nvidia_curand-10.4.0.35-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:133df5a7509c3e292aaa2b477afd0194f06ce4ea24d714d616ff36439cee349a", size = 61962106, upload-time = "2025-08-04T10:21:41.128Z" },
     { url = "https://files.pythonhosted.org/packages/a5/9f/be0a41ca4a4917abf5cb9ae0daff1a6060cc5de950aec0396de9f3b52bc5/nvidia_curand-10.4.0.35-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:1aee33a5da6e1db083fe2b90082def8915f30f3248d5896bcec36a579d941bfc", size = 59544258, upload-time = "2025-08-04T10:22:03.992Z" },
+    { url = "https://files.pythonhosted.org/packages/99/27/72103153b1ffc00e09fdc40ac970235343dcd1ea8bd762e84d2d73219ffa/nvidia_curand-10.4.0.35-py3-none-win_amd64.whl", hash = "sha256:65b1710aa6961d326b411e314b374290904c5ddf41dc3f766ebc3f1d7d4ca69f", size = 55242481, upload-time = "2025-08-04T10:30:41.831Z" },
+]
+
+[[package]]
+name = "nvidia-curand-cu12"
+version = "10.3.5.147"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/80/9c/a79180e4d70995fdf030c6946991d0171555c6edf95c265c6b2bf7011112/nvidia_curand_cu12-10.3.5.147-py3-none-manylinux2014_aarch64.whl", hash = "sha256:1f173f09e3e3c76ab084aba0de819c49e56614feae5c12f69883f4ae9bb5fad9", size = 56314811, upload-time = "2024-06-18T19:34:48.575Z" },
+    { url = "https://files.pythonhosted.org/packages/8a/6d/44ad094874c6f1b9c654f8ed939590bdc408349f137f9b98a3a23ccec411/nvidia_curand_cu12-10.3.5.147-py3-none-manylinux2014_x86_64.whl", hash = "sha256:a88f583d4e0bb643c49743469964103aa59f7f708d862c3ddb0fc07f851e3b8b", size = 56305206, upload-time = "2024-04-03T20:58:08.722Z" },
+    { url = "https://files.pythonhosted.org/packages/1c/22/2573503d0d4e45673c263a313f79410e110eb562636b0617856fdb2ff5f6/nvidia_curand_cu12-10.3.5.147-py3-none-win_amd64.whl", hash = "sha256:f307cc191f96efe9e8f05a87096abc20d08845a841889ef78cb06924437f6771", size = 55799918, upload-time = "2024-04-03T21:04:34.45Z" },
 ]
 
 [[package]]
@@ -3096,13 +3273,29 @@ name = "nvidia-cusolver"
 version = "12.0.4.66"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-cublas", marker = "python_full_version >= '3.15' or sys_platform != 'win32'" },
-    { name = "nvidia-cusparse", marker = "python_full_version >= '3.15' or sys_platform != 'win32'" },
-    { name = "nvidia-nvjitlink", marker = "python_full_version >= '3.15' or sys_platform != 'win32'" },
+    { name = "nvidia-cublas", marker = "(extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-cusparse", marker = "(extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-nvjitlink", marker = "(extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c8/c3/b30c9e935fc01e3da443ec0116ed1b2a009bb867f5324d3f2d7e533e776b/nvidia_cusolver-12.0.4.66-py3-none-manylinux_2_27_aarch64.whl", hash = "sha256:02c2457eaa9e39de20f880f4bd8820e6a1cfb9f9a34f820eb12a155aa5bc92d2", size = 223467760, upload-time = "2025-09-04T08:33:04.222Z" },
     { url = "https://files.pythonhosted.org/packages/5f/67/cba3777620cdacb99102da4042883709c41c709f4b6323c10781a9c3aa34/nvidia_cusolver-12.0.4.66-py3-none-manylinux_2_27_x86_64.whl", hash = "sha256:0a759da5dea5c0ea10fd307de75cdeb59e7ea4fcb8add0924859b944babf1112", size = 200941980, upload-time = "2025-09-04T08:33:22.767Z" },
+    { url = "https://files.pythonhosted.org/packages/99/ef/332a0101260ca78a1daef046bf0b06199e8ed4dac1d2aa698289c358169c/nvidia_cusolver-12.0.4.66-py3-none-win_amd64.whl", hash = "sha256:16515bd33a8e76bb54d024cfa068fa68d30e80fc34b9e1090813ea9362e0cb65", size = 193551444, upload-time = "2025-09-04T08:41:46.813Z" },
+]
+
+[[package]]
+name = "nvidia-cusolver-cu12"
+version = "11.6.1.9"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "nvidia-cublas-cu12", marker = "extra == 'extra-7-cafl4ds-cu124'" },
+    { name = "nvidia-cusparse-cu12", marker = "extra == 'extra-7-cafl4ds-cu124'" },
+    { name = "nvidia-nvjitlink-cu12", marker = "extra == 'extra-7-cafl4ds-cu124'" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/46/6b/a5c33cf16af09166845345275c34ad2190944bcc6026797a39f8e0a282e0/nvidia_cusolver_cu12-11.6.1.9-py3-none-manylinux2014_aarch64.whl", hash = "sha256:d338f155f174f90724bbde3758b7ac375a70ce8e706d70b018dd3375545fc84e", size = 127634111, upload-time = "2024-06-18T19:35:01.793Z" },
+    { url = "https://files.pythonhosted.org/packages/3a/e1/5b9089a4b2a4790dfdea8b3a006052cfecff58139d5a4e34cb1a51df8d6f/nvidia_cusolver_cu12-11.6.1.9-py3-none-manylinux2014_x86_64.whl", hash = "sha256:19e33fa442bcfd085b3086c4ebf7e8debc07cfe01e11513cc6d332fd918ac260", size = 127936057, upload-time = "2024-04-03T20:58:28.735Z" },
+    { url = "https://files.pythonhosted.org/packages/f2/be/d435b7b020e854d5d5a682eb5de4328fd62f6182507406f2818280e206e2/nvidia_cusolver_cu12-11.6.1.9-py3-none-win_amd64.whl", hash = "sha256:e77314c9d7b694fcebc84f58989f3aa4fb4cb442f12ca1a9bde50f5e8f6d1b9c", size = 125224015, upload-time = "2024-04-03T21:04:53.339Z" },
 ]
 
 [[package]]
@@ -3110,11 +3303,35 @@ name = "nvidia-cusparse"
 version = "12.6.3.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "nvidia-nvjitlink", marker = "python_full_version >= '3.15' or sys_platform != 'win32'" },
+    { name = "nvidia-nvjitlink", marker = "(extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f8/94/5c26f33738ae35276672f12615a64bd008ed5be6d1ebcb23579285d960a9/nvidia_cusparse-12.6.3.3-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:80bcc4662f23f1054ee334a15c72b8940402975e0eab63178fc7e670aa59472c", size = 162155568, upload-time = "2025-09-04T08:33:42.864Z" },
     { url = "https://files.pythonhosted.org/packages/fa/18/623c77619c31d62efd55302939756966f3ecc8d724a14dab2b75f1508850/nvidia_cusparse-12.6.3.3-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:2b3c89c88d01ee0e477cb7f82ef60a11a4bcd57b6b87c33f789350b59759360b", size = 145942937, upload-time = "2025-09-04T08:33:58.029Z" },
+    { url = "https://files.pythonhosted.org/packages/02/b0/b043d6f3480f102f885cf87fc3ffd3edcb5e23b855025a50e2ef4d059185/nvidia_cusparse-12.6.3.3-py3-none-win_amd64.whl", hash = "sha256:cbcf42feb737bd7ec15b4c0a63e62351886bd3f975027b8815d7f720a2b5ea79", size = 143783033, upload-time = "2025-09-04T08:42:12.391Z" },
+]
+
+[[package]]
+name = "nvidia-cusparse-cu12"
+version = "12.3.1.170"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "nvidia-nvjitlink-cu12", marker = "extra == 'extra-7-cafl4ds-cu124'" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/96/a9/c0d2f83a53d40a4a41be14cea6a0bf9e668ffcf8b004bd65633f433050c0/nvidia_cusparse_cu12-12.3.1.170-py3-none-manylinux2014_aarch64.whl", hash = "sha256:9d32f62896231ebe0480efd8a7f702e143c98cfaa0e8a76df3386c1ba2b54df3", size = 207381987, upload-time = "2024-06-18T19:35:32.989Z" },
+    { url = "https://files.pythonhosted.org/packages/db/f7/97a9ea26ed4bbbfc2d470994b8b4f338ef663be97b8f677519ac195e113d/nvidia_cusparse_cu12-12.3.1.170-py3-none-manylinux2014_x86_64.whl", hash = "sha256:ea4f11a2904e2a8dc4b1833cc1b5181cde564edd0d5cd33e3c168eff2d1863f1", size = 207454763, upload-time = "2024-04-03T20:58:59.995Z" },
+    { url = "https://files.pythonhosted.org/packages/a2/e0/3155ca539760a8118ec94cc279b34293309bcd14011fc724f87f31988843/nvidia_cusparse_cu12-12.3.1.170-py3-none-win_amd64.whl", hash = "sha256:9bc90fb087bc7b4c15641521f31c0371e9a612fc2ba12c338d3ae032e6b6797f", size = 204684315, upload-time = "2024-04-03T21:05:26.031Z" },
+]
+
+[[package]]
+name = "nvidia-cusparselt-cu12"
+version = "0.6.2"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/98/8e/675498726c605c9441cf46653bd29cb1b8666da1fb1469ffa25f67f20c58/nvidia_cusparselt_cu12-0.6.2-py3-none-manylinux2014_aarch64.whl", hash = "sha256:067a7f6d03ea0d4841c85f0c6f1991c5dda98211f6302cb83a4ab234ee95bef8", size = 149422781, upload-time = "2024-07-23T17:35:27.203Z" },
+    { url = "https://files.pythonhosted.org/packages/78/a8/bcbb63b53a4b1234feeafb65544ee55495e1bb37ec31b999b963cbccfd1d/nvidia_cusparselt_cu12-0.6.2-py3-none-manylinux2014_x86_64.whl", hash = "sha256:df2c24502fd76ebafe7457dbc4716b2fec071aabaed4fb7691a201cde03704d9", size = 150057751, upload-time = "2024-07-23T02:35:53.074Z" },
+    { url = "https://files.pythonhosted.org/packages/56/8f/2c33082238b6c5e783a877dc8786ab62619e3e6171c083bd3bba6e3fe75e/nvidia_cusparselt_cu12-0.6.2-py3-none-win_amd64.whl", hash = "sha256:0057c91d230703924c0422feabe4ce768841f9b4b44d28586b6f6d2eb86fbe70", size = 148755794, upload-time = "2024-07-23T02:35:00.261Z" },
 ]
 
 [[package]]
@@ -3124,6 +3341,15 @@ source = { registry = "https://pypi.org/simple" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/46/e1/cdc1797eadf82d3a9a575a19b33fdc871a97edbec42c00b5b5e914f4aff4/nvidia_cusparselt_cu13-0.8.1-py3-none-manylinux2014_aarch64.whl", hash = "sha256:4dca476c50bf4780d46cd0bfbd82e2bc10a08e4fef7950917ce8d7578d22a23f", size = 221051344, upload-time = "2025-09-05T18:49:51.289Z" },
     { url = "https://files.pythonhosted.org/packages/34/7d/2661f2fb3ac4302f3a246f5fc030213ac60c1fe0bce84f9783dbd831dbb7/nvidia_cusparselt_cu13-0.8.1-py3-none-manylinux2014_x86_64.whl", hash = "sha256:786ce87568c303fadb5afcc7102d454cd3040d75f6f8626f5db460d1871f4dd0", size = 170148586, upload-time = "2025-09-05T18:50:50.248Z" },
+    { url = "https://files.pythonhosted.org/packages/31/83/f3647ce26916c94a6ca4ff1810623e2c405cff2dea6e78d29516b2514df9/nvidia_cusparselt_cu13-0.8.1-py3-none-win_amd64.whl", hash = "sha256:dccbd362f91a7b9024d1f55ee9f548ac065027ff15d8c8b0db889ab3a8f31215", size = 156885108, upload-time = "2025-09-05T18:51:35.958Z" },
+]
+
+[[package]]
+name = "nvidia-nccl-cu12"
+version = "2.21.5"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/df/99/12cd266d6233f47d00daf3a72739872bdc10267d0383508b0b9c84a18bb6/nvidia_nccl_cu12-2.21.5-py3-none-manylinux2014_x86_64.whl", hash = "sha256:8579076d30a8c24988834445f8d633c697d42397e92ffc3f63fa26766d25e0a0", size = 188654414, upload-time = "2024-04-03T15:32:57.427Z" },
 ]
 
 [[package]]
@@ -3142,6 +3368,17 @@ source = { registry = "https://pypi.org/simple" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f0/ee/580ca6f29dcab0221db8706badca1bbbb084f1975c4d4e83329c3a7e31f0/nvidia_nvjitlink-13.3.33-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl", hash = "sha256:26a6de7fb4c8fdaa7703d3dad720d6d427ddfea5c48a528fd97c11733ad830e5", size = 40742423, upload-time = "2026-05-26T16:54:51.613Z" },
     { url = "https://files.pythonhosted.org/packages/69/30/45414e35ff2eee7db3da037e5707037ccf9d2b5218ffbdb055ea4d5aa98a/nvidia_nvjitlink-13.3.33-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:ce48b37dfeb3cb1eae4cf85adacb47d7a6539ea2272870c9a3628ce275c2037e", size = 39168635, upload-time = "2026-05-26T16:54:13.906Z" },
+    { url = "https://files.pythonhosted.org/packages/67/f2/ec9c05a108095828dfc58840978c627b3c313fdf2a567c6de9ffbbb46901/nvidia_nvjitlink-13.3.33-py3-none-win_amd64.whl", hash = "sha256:4297ee49639b4f2e07255a1d69b3acc7ab2d011bb892b403e91ac98368962e3b", size = 37766359, upload-time = "2026-05-26T17:11:28.96Z" },
+]
+
+[[package]]
+name = "nvidia-nvjitlink-cu12"
+version = "12.4.127"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/02/45/239d52c05074898a80a900f49b1615d81c07fceadd5ad6c4f86a987c0bc4/nvidia_nvjitlink_cu12-12.4.127-py3-none-manylinux2014_aarch64.whl", hash = "sha256:4abe7fef64914ccfa909bc2ba39739670ecc9e820c83ccc7a6ed414122599b83", size = 20552510, upload-time = "2024-06-18T20:20:13.871Z" },
+    { url = "https://files.pythonhosted.org/packages/ff/ff/847841bacfbefc97a00036e0fce5a0f086b640756dc38caea5e1bb002655/nvidia_nvjitlink_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl", hash = "sha256:06b3b9b25bf3f8af351d664978ca26a16d2c5127dbd53c0497e28d1fb9611d57", size = 21066810, upload-time = "2024-04-03T20:59:46.957Z" },
+    { url = "https://files.pythonhosted.org/packages/81/19/0babc919031bee42620257b9a911c528f05fb2688520dcd9ca59159ffea8/nvidia_nvjitlink_cu12-12.4.127-py3-none-win_amd64.whl", hash = "sha256:fd9020c501d27d135f983c6d3e244b197a7ccad769e34df53a42e276b0e25fa1", size = 95336325, upload-time = "2024-04-03T21:06:25.073Z" },
 ]
 
 [[package]]
@@ -3160,6 +3397,17 @@ source = { registry = "https://pypi.org/simple" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c2/f3/d86c845465a2723ad7e1e5c36dcd75ddb82898b3f53be47ebd429fb2fa5d/nvidia_nvtx-13.0.85-py3-none-manylinux1_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:4936d1d6780fbe68db454f5e72a42ff64d1fd6397df9f363ae786930fd5c1cd4", size = 148047, upload-time = "2025-09-04T08:29:01.761Z" },
     { url = "https://files.pythonhosted.org/packages/a8/64/3708a90d1ebe202ffdeb7185f878a3c84d15c2b2c31858da2ce0583e2def/nvidia_nvtx-13.0.85-py3-none-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:cb7780edb6b14107373c835bf8b72e7a178bac7367e23da7acb108f973f157a6", size = 148878, upload-time = "2025-09-04T08:28:53.627Z" },
+    { url = "https://files.pythonhosted.org/packages/d2/50/0e2220f8620a177de994211186ffc5bfa9f2ce1e1282797f8f90096f9f88/nvidia_nvtx-13.0.85-py3-none-win_amd64.whl", hash = "sha256:d66ea44254dd3c6eacc300047af6e1288d2269dd072b417e0adffbf479e18519", size = 137066, upload-time = "2025-09-04T08:39:25.649Z" },
+]
+
+[[package]]
+name = "nvidia-nvtx-cu12"
+version = "12.4.127"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/06/39/471f581edbb7804b39e8063d92fc8305bdc7a80ae5c07dbe6ea5c50d14a5/nvidia_nvtx_cu12-12.4.127-py3-none-manylinux2014_aarch64.whl", hash = "sha256:7959ad635db13edf4fc65c06a6e9f9e55fc2f92596db928d169c0bb031e88ef3", size = 100417, upload-time = "2024-06-18T20:16:22.484Z" },
+    { url = "https://files.pythonhosted.org/packages/87/20/199b8713428322a2f22b722c62b8cc278cc53dffa9705d744484b5035ee9/nvidia_nvtx_cu12-12.4.127-py3-none-manylinux2014_x86_64.whl", hash = "sha256:781e950d9b9f60d8241ccea575b32f5105a5baf4c2351cab5256a24869f12a1a", size = 99144, upload-time = "2024-04-03T20:56:12.406Z" },
+    { url = "https://files.pythonhosted.org/packages/54/1b/f77674fbb73af98843be25803bbd3b9a4f0a96c75b8d33a2854a5c7d2d77/nvidia_nvtx_cu12-12.4.127-py3-none-win_amd64.whl", hash = "sha256:641dccaaa1139f3ffb0d3164b4b84f9d253397e38246a4f2f36728b48566d485", size = 66307, upload-time = "2024-04-03T21:02:01.959Z" },
 ]
 
 [[package]]
@@ -3180,16 +3428,19 @@ name = "onnxruntime"
 version = "1.23.2"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version < '3.11' and sys_platform == 'win32'",
-    "python_full_version < '3.11' and sys_platform != 'win32'",
+    "python_full_version < '3.11' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
 ]
 dependencies = [
-    { name = "coloredlogs", marker = "python_full_version < '3.11'" },
-    { name = "flatbuffers", marker = "python_full_version < '3.11'" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "packaging", marker = "python_full_version < '3.11'" },
-    { name = "protobuf", marker = "python_full_version < '3.11'" },
-    { name = "sympy", marker = "python_full_version < '3.11'" },
+    { name = "coloredlogs", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "flatbuffers", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "packaging", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "protobuf", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "sympy", version = "1.13.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-7-cafl4ds-cu124') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "sympy", version = "1.14.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-7-cafl4ds-cpu') or (python_full_version < '3.11' and extra != 'extra-7-cafl4ds-cu124') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/35/d6/311b1afea060015b56c742f3531168c1644650767f27ef40062569960587/onnxruntime-1.23.2-cp310-cp310-macosx_13_0_arm64.whl", hash = "sha256:a7730122afe186a784660f6ec5807138bf9d792fa1df76556b27307ea9ebcbe3", size = 17195934, upload-time = "2025-10-27T23:06:14.143Z" },
@@ -3221,22 +3472,42 @@ name = "onnxruntime"
 version = "1.27.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.15'",
-    "python_full_version == '3.14.*' and sys_platform == 'win32'",
-    "python_full_version == '3.14.*' and sys_platform != 'win32'",
-    "python_full_version == '3.13.*' and sys_platform == 'win32'",
-    "python_full_version == '3.12.*' and sys_platform == 'win32'",
-    "python_full_version == '3.11.*' and sys_platform == 'win32'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32'",
-    "python_full_version == '3.11.*' and sys_platform != 'win32'",
+    "python_full_version >= '3.15' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
 ]
 dependencies = [
-    { name = "flatbuffers", marker = "python_full_version >= '3.11'" },
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
-    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
-    { name = "packaging", marker = "python_full_version >= '3.11'" },
-    { name = "protobuf", marker = "python_full_version >= '3.11'" },
+    { name = "flatbuffers", marker = "python_full_version >= '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "packaging", marker = "python_full_version >= '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "protobuf", marker = "python_full_version >= '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d4/e4/5353d7e09ced4a8f473f843223fc75d726b2b5519dcefc12f22a6c92852d/onnxruntime-1.27.0-cp311-cp311-macosx_14_0_arm64.whl", hash = "sha256:8ba14a38c570087f3cdb8cfba33f7a38a1e826c1e5b29e17c28ceda0cc910016", size = 18416484, upload-time = "2026-06-15T22:43:43.894Z" },
@@ -3383,11 +3654,14 @@ version = "2.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "huggingface-hub" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
-    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
     { name = "packaging" },
-    { name = "torch" },
+    { name = "torch", version = "2.6.0+cu124", source = { registry = "https://download.pytorch.org/whl/cu124" }, marker = "extra == 'extra-7-cafl4ds-cu124'" },
+    { name = "torch", version = "2.13.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "torch", version = "2.13.0", source = { registry = "https://pypi.org/simple" }, marker = "(extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124')" },
+    { name = "torch", version = "2.13.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
     { name = "transformers" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/d5/2e/45e61beac8b53514f3b658ee54e0c31c46bd8110bfed20cc15a670c198c6/optimum-2.0.0.tar.gz", hash = "sha256:4e59e51128ed6311b615dcee84c1559702d82cbd4bae18fd3031f4fe927c484c", size = 126935, upload-time = "2025-10-09T10:56:14.928Z" }
@@ -3406,7 +3680,10 @@ dependencies = [
     { name = "optimum" },
     { name = "sentence-transformers" },
     { name = "sentencepiece" },
-    { name = "torch" },
+    { name = "torch", version = "2.6.0+cu124", source = { registry = "https://download.pytorch.org/whl/cu124" }, marker = "extra == 'extra-7-cafl4ds-cu124'" },
+    { name = "torch", version = "2.13.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "torch", version = "2.13.0", source = { registry = "https://pypi.org/simple" }, marker = "(extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124')" },
+    { name = "torch", version = "2.13.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
     { name = "transformers" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/ea/ba/355ddb19df16362bc11920f5c1753bc24e74d23a1ea92eead471a6b5d913/optimum_habana-1.20.0.tar.gz", hash = "sha256:d487520a7071b8d52cc7c21cfc51954170d43dfb6d437de3133df4bfa1283151", size = 915111, upload-time = "2026-01-14T09:52:57.09Z" }
@@ -3569,7 +3846,7 @@ source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pastel" },
     { name = "pyyaml" },
-    { name = "tomli", marker = "python_full_version < '3.11'" },
+    { name = "tomli", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/5c/92/93a4af9511b8c7c647874521d9e6c904266be98067c2ee1eb2e74520d208/poethepoet-0.48.0.tar.gz", hash = "sha256:a06f49d244fadfc2e2e7faa78b54e64a9694727e4ce1d50e08f23cea3ded74f1", size = 148679, upload-time = "2026-07-05T21:48:30.106Z" }
 wheels = [
@@ -4005,7 +4282,7 @@ name = "pyjwt"
 version = "2.13.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/3b/81/58d0ac84e1ef3a3843791d6954d94c0b33d526c75eeb1efbce9d0a4c4077/pyjwt-2.13.0.tar.gz", hash = "sha256:41571c89ca91598c79e8ef18a2d07367d4810fbbd6f637794879baf1b7703423", size = 107515, upload-time = "2026-05-21T19:54:36.618Z" }
 wheels = [
@@ -4044,13 +4321,13 @@ name = "pytest"
 version = "9.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32'" },
-    { name = "exceptiongroup", marker = "python_full_version < '3.11'" },
+    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "exceptiongroup", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
     { name = "iniconfig" },
     { name = "packaging" },
     { name = "pluggy" },
     { name = "pygments" },
-    { name = "tomli", marker = "python_full_version < '3.11'" },
+    { name = "tomli", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/e4/47/b9efed96c114afcfa3c9d3fe98a76a1d14c74a9e266d397cf6eb64be5e01/pytest-9.1.1.tar.gz", hash = "sha256:1088fbde8f2b49d95a549a195707afa7a76a3ce9bcadc26b6d71f0ffda5fe313", size = 1636369, upload-time = "2026-06-19T10:58:32.857Z" }
 wheels = [
@@ -4281,9 +4558,9 @@ version = "0.37.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "attrs" },
-    { name = "rpds-py", version = "0.30.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "rpds-py", version = "2026.6.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
+    { name = "rpds-py", version = "0.30.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "rpds-py", version = "2026.6.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/22/f5/df4e9027acead3ecc63e50fe1e36aca1523e1719559c499951bb4b53188f/referencing-0.37.0.tar.gz", hash = "sha256:44aefc3142c5b842538163acb373e24cce6632bd54bdb01b21ad5863489f50d8", size = 78036, upload-time = "2025-10-13T15:30:48.871Z" }
 wheels = [
@@ -4456,8 +4733,10 @@ name = "rpds-py"
 version = "0.30.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version < '3.11' and sys_platform == 'win32'",
-    "python_full_version < '3.11' and sys_platform != 'win32'",
+    "python_full_version < '3.11' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/20/af/3f2f423103f1113b36230496629986e0ef7e199d2aa8392452b484b38ced/rpds_py-0.30.0.tar.gz", hash = "sha256:dd8ff7cf90014af0c0f787eea34794ebf6415242ee1d6fa91eaba725cc441e84", size = 69469, upload-time = "2025-11-30T20:24:38.837Z" }
 wheels = [
@@ -4582,15 +4861,35 @@ name = "rpds-py"
 version = "2026.6.3"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.15'",
-    "python_full_version == '3.14.*' and sys_platform == 'win32'",
-    "python_full_version == '3.14.*' and sys_platform != 'win32'",
-    "python_full_version == '3.13.*' and sys_platform == 'win32'",
-    "python_full_version == '3.12.*' and sys_platform == 'win32'",
-    "python_full_version == '3.11.*' and sys_platform == 'win32'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32'",
-    "python_full_version == '3.11.*' and sys_platform != 'win32'",
+    "python_full_version >= '3.15' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/aa/2a/9618a122aeb2a169a28b03889a2995fe297588964333d4a7d67bdf46e147/rpds_py-2026.6.3.tar.gz", hash = "sha256:1cebd1337c242e4ec2293e541f712b2da849b29f48f0c293684b71c0632625d4", size = 64051, upload-time = "2026-06-30T07:17:53.009Z" }
 wheels = [
@@ -4765,14 +5064,16 @@ name = "scikit-learn"
 version = "1.7.2"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version < '3.11' and sys_platform == 'win32'",
-    "python_full_version < '3.11' and sys_platform != 'win32'",
+    "python_full_version < '3.11' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
 ]
 dependencies = [
-    { name = "joblib", marker = "python_full_version < '3.11'" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "threadpoolctl", marker = "python_full_version < '3.11'" },
+    { name = "joblib", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "threadpoolctl", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/98/c2/a7855e41c9d285dfe86dc50b250978105dce513d6e459ea66a6aeb0e1e0c/scikit_learn-1.7.2.tar.gz", hash = "sha256:20e9e49ecd130598f1ca38a1d85090e1a600147b9c02fa6f15d69cb53d968fda", size = 7193136, upload-time = "2025-09-09T08:21:29.075Z" }
 wheels = [
@@ -4813,24 +5114,44 @@ name = "scikit-learn"
 version = "1.9.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.15'",
-    "python_full_version == '3.14.*' and sys_platform == 'win32'",
-    "python_full_version == '3.14.*' and sys_platform != 'win32'",
-    "python_full_version == '3.13.*' and sys_platform == 'win32'",
-    "python_full_version == '3.12.*' and sys_platform == 'win32'",
-    "python_full_version == '3.11.*' and sys_platform == 'win32'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32'",
-    "python_full_version == '3.11.*' and sys_platform != 'win32'",
+    "python_full_version >= '3.15' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
 ]
 dependencies = [
-    { name = "joblib", marker = "python_full_version >= '3.11'" },
-    { name = "narwhals", marker = "python_full_version >= '3.11'" },
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
-    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
-    { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
-    { name = "scipy", version = "1.18.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
-    { name = "threadpoolctl", marker = "python_full_version >= '3.11'" },
+    { name = "joblib", marker = "python_full_version >= '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "narwhals", marker = "python_full_version >= '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "scipy", version = "1.18.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "threadpoolctl", marker = "python_full_version >= '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/fa/6f/37092bdb25f712817231799fc5674d8e704066a8a70c1d2d40517e18b4ab/scikit_learn-1.9.0.tar.gz", hash = "sha256:8833266989d3a5110178a9fae30783675460724d0e1efb13b14901d2c660c557", size = 7750767, upload-time = "2026-06-02T11:54:32.706Z" }
 wheels = [
@@ -4871,11 +5192,13 @@ name = "scipy"
 version = "1.15.3"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version < '3.11' and sys_platform == 'win32'",
-    "python_full_version < '3.11' and sys_platform != 'win32'",
+    "python_full_version < '3.11' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
 ]
 dependencies = [
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/0f/37/6964b830433e654ec7485e45a00fc9a27cf868d622838f6b6d9c5ec0d532/scipy-1.15.3.tar.gz", hash = "sha256:eae3cf522bc7df64b42cad3925c876e1b0b6c35c1337c93e12c0f366f55b0eaf", size = 59419214, upload-time = "2025-05-08T16:13:05.955Z" }
 wheels = [
@@ -4931,11 +5254,13 @@ name = "scipy"
 version = "1.17.1"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version == '3.11.*' and sys_platform == 'win32'",
-    "python_full_version == '3.11.*' and sys_platform != 'win32'",
+    "python_full_version == '3.11.*' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
 ]
 dependencies = [
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/7a/97/5a3609c4f8d58b039179648e62dd220f89864f56f7357f5d4f45c29eb2cc/scipy-1.17.1.tar.gz", hash = "sha256:95d8e012d8cb8816c226aef832200b1d45109ed4464303e997c5b13122b297c0", size = 30573822, upload-time = "2026-02-23T00:26:24.851Z" }
 wheels = [
@@ -5006,16 +5331,34 @@ name = "scipy"
 version = "1.18.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
-    "python_full_version >= '3.15'",
-    "python_full_version == '3.14.*' and sys_platform == 'win32'",
-    "python_full_version == '3.14.*' and sys_platform != 'win32'",
-    "python_full_version == '3.13.*' and sys_platform == 'win32'",
-    "python_full_version == '3.12.*' and sys_platform == 'win32'",
-    "python_full_version == '3.13.*' and sys_platform != 'win32'",
-    "python_full_version == '3.12.*' and sys_platform != 'win32'",
+    "python_full_version >= '3.15' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
 ]
 dependencies = [
-    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/a7/25/c2700dfaf6442b4effaa91af24ebce5dc9d31bb4a69706313aae70d72cd0/scipy-1.18.0.tar.gz", hash = "sha256:67b2ad2ad54c72ca6d04975a9b2df8c3638c34ddd5b28738e94fc2b57929d378", size = 30774447, upload-time = "2026-06-19T15:01:43.456Z" }
 wheels = [
@@ -5068,12 +5411,15 @@ source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "huggingface-hub" },
     { name = "pillow" },
-    { name = "scikit-learn", version = "1.7.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "scikit-learn", version = "1.9.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
-    { name = "scipy", version = "1.18.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
-    { name = "torch" },
+    { name = "scikit-learn", version = "1.7.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "scikit-learn", version = "1.9.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "scipy", version = "1.15.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "scipy", version = "1.18.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "torch", version = "2.6.0+cu124", source = { registry = "https://download.pytorch.org/whl/cu124" }, marker = "extra == 'extra-7-cafl4ds-cu124'" },
+    { name = "torch", version = "2.13.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "torch", version = "2.13.0", source = { registry = "https://pypi.org/simple" }, marker = "(extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124')" },
+    { name = "torch", version = "2.13.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
     { name = "tqdm" },
     { name = "transformers" },
 ]
@@ -5204,7 +5550,7 @@ version = "1.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
-    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/eb/e3/7c1dc7381d9f8ab7d854328ebfa884e62cb3f3d8549ddfd37c7814f42afa/starlette-1.3.1.tar.gz", hash = "sha256:05d0213193f2fbaae60e2ecb593b4add4262ad4e46536b54abe36f11a71724e0", size = 2703240, upload-time = "2026-06-12T09:23:11.602Z" }
 wheels = [
@@ -5213,10 +5559,59 @@ wheels = [
 
 [[package]]
 name = "sympy"
+version = "1.13.1"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.15'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32'",
+    "python_full_version == '3.14.*' and sys_platform != 'win32'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32'",
+    "python_full_version == '3.13.*' and sys_platform != 'win32'",
+    "python_full_version == '3.12.*' and sys_platform != 'win32'",
+    "python_full_version == '3.11.*'",
+    "python_full_version < '3.11'",
+]
+dependencies = [
+    { name = "mpmath", marker = "extra == 'extra-7-cafl4ds-cu124'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ca/99/5a5b6f19ff9f083671ddf7b9632028436167cd3d33e11015754e41b249a4/sympy-1.13.1.tar.gz", hash = "sha256:9cebf7e04ff162015ce31c9c6c9144daa34a93bd082f54fd8f12deca4f47515f", size = 7533040, upload-time = "2024-07-19T09:26:51.238Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b2/fe/81695a1aa331a842b582453b605175f419fe8540355886031328089d840a/sympy-1.13.1-py3-none-any.whl", hash = "sha256:db36cdc64bf61b9b24578b6f7bab1ecdd2452cf008f34faa33776680c26d66f8", size = 6189177, upload-time = "2024-07-19T09:26:48.863Z" },
+]
+
+[[package]]
+name = "sympy"
 version = "1.14.0"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.15' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version >= '3.15' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.14.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.13.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.12.*' and sys_platform != 'win32' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version == '3.11.*' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+    "python_full_version < '3.11' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124'",
+]
 dependencies = [
-    { name = "mpmath" },
+    { name = "mpmath", marker = "extra == 'extra-7-cafl4ds-cpu' or extra != 'extra-7-cafl4ds-cu124'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/83/d3/803453b36afefb7c2bb238361cd4ae6125a569b4db67cd9e79846ba2d68c/sympy-1.14.0.tar.gz", hash = "sha256:d3d3fe8df1e5a0b42f0e7bdf50541697dbe7d23746e894990c030e2b05e72517", size = 7793921, upload-time = "2025-04-27T18:05:01.611Z" }
 wheels = [
@@ -5401,24 +5796,117 @@ wheels = [
 
 [[package]]
 name = "torch"
+version = "2.6.0+cu124"
+source = { registry = "https://download.pytorch.org/whl/cu124" }
+resolution-markers = [
+    "python_full_version >= '3.15'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32'",
+    "python_full_version == '3.14.*' and sys_platform != 'win32'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32'",
+    "python_full_version == '3.13.*' and sys_platform != 'win32'",
+    "python_full_version == '3.12.*' and sys_platform != 'win32'",
+    "python_full_version == '3.11.*'",
+    "python_full_version < '3.11'",
+]
+dependencies = [
+    { name = "filelock", marker = "extra == 'extra-7-cafl4ds-cu124'" },
+    { name = "fsspec", marker = "extra == 'extra-7-cafl4ds-cu124'" },
+    { name = "jinja2", marker = "extra == 'extra-7-cafl4ds-cu124'" },
+    { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra == 'extra-7-cafl4ds-cu124') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "networkx", version = "3.6.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and extra == 'extra-7-cafl4ds-cu124') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-cublas-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cu124') or (platform_machine != 'x86_64' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-cuda-cupti-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cu124') or (platform_machine != 'x86_64' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-cuda-nvrtc-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cu124') or (platform_machine != 'x86_64' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-cuda-runtime-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cu124') or (platform_machine != 'x86_64' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-cudnn-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cu124') or (platform_machine != 'x86_64' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-cufft-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cu124') or (platform_machine != 'x86_64' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-curand-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cu124') or (platform_machine != 'x86_64' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-cusolver-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cu124') or (platform_machine != 'x86_64' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-cusparse-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cu124') or (platform_machine != 'x86_64' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-cusparselt-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cu124') or (platform_machine != 'x86_64' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-nccl-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cu124') or (platform_machine != 'x86_64' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-nvjitlink-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cu124') or (platform_machine != 'x86_64' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-nvtx-cu12", marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cu124') or (platform_machine != 'x86_64' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "setuptools", marker = "(python_full_version >= '3.12' and extra == 'extra-7-cafl4ds-cu124') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "sympy", version = "1.13.1", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'extra-7-cafl4ds-cu124'" },
+    { name = "triton", version = "3.2.0", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'extra-7-cafl4ds-cu124') or (platform_machine != 'x86_64' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform != 'linux' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "typing-extensions", marker = "extra == 'extra-7-cafl4ds-cu124'" },
+]
+wheels = [
+    { url = "https://download-r2.pytorch.org/whl/cu124/torch-2.6.0%2Bcu124-cp310-cp310-linux_x86_64.whl", hash = "sha256:7f2ba7f7c0459320a521696f6b5bccc187f59890b23c9dfb6c49b0b87c6bfc97", upload-time = "2025-01-30T00:53:02Z" },
+    { url = "https://download-r2.pytorch.org/whl/cu124/torch-2.6.0%2Bcu124-cp310-cp310-win_amd64.whl", hash = "sha256:7cc45c5b39d74875cfafe908b7f55c544147cc16b01e795feb2fe766583efe78", upload-time = "2025-01-30T00:53:32Z" },
+    { url = "https://download-r2.pytorch.org/whl/cu124/torch-2.6.0%2Bcu124-cp311-cp311-linux_x86_64.whl", hash = "sha256:d4c3e9a8d31a7c0fcbb9da17c31a1917e1fac26c566a4cfbd8c9568ad7cade79", upload-time = "2025-01-30T00:55:01Z" },
+    { url = "https://download-r2.pytorch.org/whl/cu124/torch-2.6.0%2Bcu124-cp311-cp311-win_amd64.whl", hash = "sha256:6a1fb2714e9323f11edb6e8abf7aad5f79e45ad25c081cde87681a18d99c29eb", upload-time = "2025-01-30T00:55:31Z" },
+    { url = "https://download-r2.pytorch.org/whl/cu124/torch-2.6.0%2Bcu124-cp312-cp312-linux_x86_64.whl", hash = "sha256:a393b506844035c0dac2f30ea8478c343b8e95a429f06f3b3cadfc7f53adb597", upload-time = "2025-01-30T00:57:08Z" },
+    { url = "https://download-r2.pytorch.org/whl/cu124/torch-2.6.0%2Bcu124-cp312-cp312-win_amd64.whl", hash = "sha256:3313061c1fec4c7310cf47944e84513dcd27b6173b72a349bb7ca68d0ee6e9c0", upload-time = "2025-01-30T00:57:40Z" },
+    { url = "https://download-r2.pytorch.org/whl/cu124/torch-2.6.0%2Bcu124-cp313-cp313-linux_x86_64.whl", hash = "sha256:0f3bc53c988ce9568cd876a2a5316761e84a8704135ec8068f5f81b4417979cb", upload-time = "2025-01-30T00:59:14Z" },
+    { url = "https://download-r2.pytorch.org/whl/cu124/torch-2.6.0%2Bcu124-cp313-cp313-win_amd64.whl", hash = "sha256:519330eef09534acad8110b6f423d2fe58c1d8e9ada999ed077a637a0021f908", upload-time = "2025-01-30T00:59:45Z" },
+    { url = "https://download-r2.pytorch.org/whl/cu124/torch-2.6.0%2Bcu124-cp313-cp313t-linux_x86_64.whl", hash = "sha256:35cba404c0d742406cdcba1609085874bc60facdfbc50e910c47a92405fef44c", upload-time = "2025-01-30T01:01:25Z" },
+]
+
+[[package]]
+name = "torch"
+version = "2.13.0"
+source = { registry = "https://download.pytorch.org/whl/cpu" }
+resolution-markers = [
+    "python_full_version >= '3.15' and sys_platform == 'darwin'",
+    "python_full_version == '3.14.*' and sys_platform == 'darwin'",
+    "python_full_version == '3.13.*' and sys_platform == 'darwin'",
+    "python_full_version == '3.12.*' and sys_platform == 'darwin'",
+    "python_full_version == '3.11.*' and sys_platform == 'darwin'",
+    "python_full_version < '3.11' and sys_platform == 'darwin'",
+]
+dependencies = [
+    { name = "filelock", marker = "(sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "fsspec", marker = "(sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "jinja2", marker = "(sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (python_full_version >= '3.11' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "networkx", version = "3.6.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (python_full_version < '3.11' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "setuptools", marker = "(sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "sympy", version = "1.14.0", source = { registry = "https://pypi.org/simple" }, marker = "(sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "typing-extensions", marker = "(sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+]
+wheels = [
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0-cp310-cp310-macosx_14_0_arm64.whl", hash = "sha256:94f0de129916f77b8dc2c7a8eff644cfeddfe59e39c9f55e9f6e17543410281d", upload-time = "2026-07-08T12:26:07Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0-cp311-cp311-macosx_14_0_arm64.whl", hash = "sha256:e76f9bcecc52b8ff711239a2f7547d5353df95878ab232f0773c1d95928b92f8", upload-time = "2026-07-08T12:26:13Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0-cp312-cp312-macosx_14_0_arm64.whl", hash = "sha256:2fe228aba290d14b9f31b049be550dbd469c3fd3013d7a19705b30454da97027", upload-time = "2026-07-08T12:26:18Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0-cp313-cp313-macosx_14_0_arm64.whl", hash = "sha256:33449899ce5496c1b84b4853179d94fd102028ae1407314d9fb956bb79e70d09", upload-time = "2026-07-08T12:26:23Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0-cp314-cp314-macosx_14_0_arm64.whl", hash = "sha256:d849b390e07d8d333ce8ecaf91b273c656c598379a19c9acf1318a883f6b391c", upload-time = "2026-07-08T12:26:28Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0-cp314-cp314t-macosx_14_0_arm64.whl", hash = "sha256:c28def70706c2f9ecc752574766e8ae4da9b810ab6676b611166761a78a9f1e1", upload-time = "2026-07-08T12:26:33Z" },
+]
+
+[[package]]
+name = "torch"
 version = "2.13.0"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.15'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32'",
+    "python_full_version == '3.14.*' and sys_platform != 'win32'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32'",
+    "python_full_version == '3.13.*' and sys_platform != 'win32'",
+    "python_full_version == '3.12.*' and sys_platform != 'win32'",
+    "python_full_version == '3.11.*'",
+    "python_full_version < '3.11'",
+]
 dependencies = [
-    { name = "cuda-bindings", marker = "python_full_version < '3.15' and sys_platform == 'linux'" },
-    { name = "cuda-toolkit", extra = ["cublas", "cudart", "cufft", "cufile", "cupti", "curand", "cusolver", "cusparse", "nvjitlink", "nvrtc", "nvtx"], marker = "sys_platform == 'linux'" },
-    { name = "filelock" },
-    { name = "fsspec" },
-    { name = "jinja2" },
-    { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "networkx", version = "3.6.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
-    { name = "nvidia-cudnn-cu13", marker = "sys_platform == 'linux'" },
-    { name = "nvidia-cusparselt-cu13", marker = "sys_platform == 'linux'" },
-    { name = "nvidia-nccl-cu13", marker = "sys_platform == 'linux'" },
-    { name = "nvidia-nvshmem-cu13", marker = "sys_platform == 'linux'" },
-    { name = "setuptools" },
-    { name = "sympy" },
-    { name = "triton", marker = "python_full_version < '3.15' and sys_platform == 'linux'" },
-    { name = "typing-extensions" },
+    { name = "cuda-bindings", marker = "(python_full_version < '3.15' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "cuda-toolkit", extra = ["cublas", "cudart", "cufft", "cufile", "cupti", "curand", "cusolver", "cusparse", "nvjitlink", "nvrtc", "nvtx"], marker = "(sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "filelock", marker = "(extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124')" },
+    { name = "fsspec", marker = "(extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124')" },
+    { name = "jinja2", marker = "(extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124')" },
+    { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "networkx", version = "3.6.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-cudnn-cu13", marker = "(sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-cusparselt-cu13", marker = "(sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-nccl-cu13", marker = "(sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "nvidia-nvshmem-cu13", marker = "(sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "setuptools", marker = "(extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124')" },
+    { name = "sympy", version = "1.14.0", source = { registry = "https://pypi.org/simple" }, marker = "(extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124')" },
+    { name = "triton", version = "3.7.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.15' and sys_platform == 'linux' and extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "typing-extensions", marker = "(extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (extra != 'extra-7-cafl4ds-cpu' and extra != 'extra-7-cafl4ds-cu124')" },
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/7f/e7/19894fdb51c7dbaf94f5a79bb0871da0992e8e4241e579cb006da46d2e58/torch-2.13.0-cp310-cp310-macosx_14_0_arm64.whl", hash = "sha256:94f0de129916f77b8dc2c7a8eff644cfeddfe59e39c9f55e9f6e17543410281d", size = 111178962, upload-time = "2026-07-08T16:05:49.855Z" },
@@ -5448,11 +5936,70 @@ wheels = [
 ]
 
 [[package]]
+name = "torch"
+version = "2.13.0+cpu"
+source = { registry = "https://download.pytorch.org/whl/cpu" }
+resolution-markers = [
+    "python_full_version >= '3.15' and sys_platform != 'darwin'",
+    "python_full_version == '3.14.*' and sys_platform == 'win32'",
+    "python_full_version == '3.14.*' and sys_platform != 'darwin' and sys_platform != 'win32'",
+    "python_full_version == '3.13.*' and sys_platform == 'win32'",
+    "python_full_version == '3.12.*' and sys_platform == 'win32'",
+    "python_full_version == '3.13.*' and sys_platform != 'darwin' and sys_platform != 'win32'",
+    "python_full_version == '3.12.*' and sys_platform != 'darwin' and sys_platform != 'win32'",
+    "python_full_version == '3.11.*' and sys_platform != 'darwin'",
+    "python_full_version < '3.11' and sys_platform != 'darwin'",
+]
+dependencies = [
+    { name = "filelock", marker = "(sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "fsspec", marker = "(sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "jinja2", marker = "(sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version < '3.11' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (python_full_version >= '3.11' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "networkx", version = "3.6.1", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (python_full_version < '3.11' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124') or (sys_platform == 'darwin' and extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "setuptools", marker = "(sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "sympy", version = "1.14.0", source = { registry = "https://pypi.org/simple" }, marker = "(sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "typing-extensions", marker = "(sys_platform != 'darwin' and extra == 'extra-7-cafl4ds-cpu') or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+]
+wheels = [
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp310-cp310-linux_s390x.whl", hash = "sha256:0555fde6108ca90247ae33d4e1237cbae475c86a223bb2f0f91d9addf1f611bd", upload-time = "2026-07-08T19:27:11Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp310-cp310-manylinux_2_28_aarch64.whl", hash = "sha256:f028e428bddee95cdb86e2470254e95c9af629362488550c200ed4793125a817", upload-time = "2026-07-08T19:27:21Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp310-cp310-manylinux_2_28_x86_64.whl", hash = "sha256:f5cbb61180a9793d9e12fe115a2310d2600bd449dfb9a01ec5640e21359fa5ea", upload-time = "2026-07-08T19:27:32Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp310-cp310-win_amd64.whl", hash = "sha256:3bbb357161e8db43ba7cdcc7e03561eba0c449392f2f27d3566887198fcb4ead", upload-time = "2026-07-08T19:27:43Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp311-cp311-linux_s390x.whl", hash = "sha256:6e9817dbdf5ea76789babd46e457eac5bf14ff566cf85f8addbfdff2d56601ce", upload-time = "2026-07-08T19:27:52Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp311-cp311-manylinux_2_28_aarch64.whl", hash = "sha256:84453b69508ec79902f899c5ed9495acb9e2bbe9fda5f1d5d6f19e3c3842e1a7", upload-time = "2026-07-08T19:28:03Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp311-cp311-manylinux_2_28_x86_64.whl", hash = "sha256:6746dbcbeb526eb61330b76b41ff1b4eb848951103a892eeb080dfa2b264667b", upload-time = "2026-07-08T19:28:16Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp311-cp311-win_amd64.whl", hash = "sha256:10717d8b3b67c45a4788bf7ffc0bab1ea1e5ebbedd24466be6100102d141fac1", upload-time = "2026-07-08T19:28:27Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp311-cp311-win_arm64.whl", hash = "sha256:2b3d093abd919ad934c43d47e73ba63ceba7cbd7269fc2e9c1e4fc29e8fe45fa", upload-time = "2026-07-08T19:28:33Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp312-cp312-linux_s390x.whl", hash = "sha256:ffadde149901c8afa138daa38d898264003cfcf1a3336ca5cd964b5af227d867", upload-time = "2026-07-08T19:28:41Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp312-cp312-manylinux_2_28_aarch64.whl", hash = "sha256:6f307c2c32d764ffc6ff6893b801fad6d4752f3e67966cb8abf1843427c02604", upload-time = "2026-07-08T19:28:51Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp312-cp312-manylinux_2_28_x86_64.whl", hash = "sha256:4ca4a9394b0c771238a4f73590fdbbc4debad85ed0fa63d026ae1b085da7d6e2", upload-time = "2026-07-08T19:29:03Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp312-cp312-win_amd64.whl", hash = "sha256:a8b450c1e58e5800e5b4691dac412f8d2d65a1dc3298166f91596603a3531e6f", upload-time = "2026-07-08T19:29:15Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp312-cp312-win_arm64.whl", hash = "sha256:fa0762705b933624d59f6823db9ce7ec2e35b3e1e9c319c9db51fbeecfc3e319", upload-time = "2026-07-08T19:29:21Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp313-cp313-linux_s390x.whl", hash = "sha256:966d020354f465672dc7dd10d3a5c6cd17d7eb48620aa1d265b48a1f78f06898", upload-time = "2026-07-08T19:29:30Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp313-cp313-manylinux_2_28_aarch64.whl", hash = "sha256:0b8f7d0423027ae8b90c7977c627f3379f325363a08224dffad9b4b2d684a83d", upload-time = "2026-07-08T19:29:40Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp313-cp313-manylinux_2_28_x86_64.whl", hash = "sha256:3fbf9c9d1f3c10c2d59d04aca426dee9ccc6ceb32d255c61e93acc3b4f75fae6", upload-time = "2026-07-08T19:29:54Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp313-cp313-win_amd64.whl", hash = "sha256:a17ff48608634db245e17e8bb00a9558554a49aeb1e4f5fe6cd039af2a10515b", upload-time = "2026-07-08T19:30:05Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp313-cp313-win_arm64.whl", hash = "sha256:ac7aaf322be4777765a53bed7264a214dd81b3a1d276b93150515a3c5f75e4b0", upload-time = "2026-07-08T19:30:12Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp314-cp314-linux_s390x.whl", hash = "sha256:dec241fef3984c0d1edadd1f58708e218d4eae881ceef7bc10cf9964d41b68b9", upload-time = "2026-07-08T19:30:20Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp314-cp314-manylinux_2_28_aarch64.whl", hash = "sha256:ca021f9eb2f8345c83fa03e3a04587308afb8df71bd472670b3ece00df58621c", upload-time = "2026-07-08T19:30:32Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp314-cp314-manylinux_2_28_x86_64.whl", hash = "sha256:d20fa53ee744502fa4c69818a720b05ca0d37abd055d4f6e66cae155114bc691", upload-time = "2026-07-08T19:30:45Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp314-cp314-win_amd64.whl", hash = "sha256:e2e5134decf00e218da62318f3dc5df156231d367871918e91eba95ab0ad43ab", upload-time = "2026-07-08T19:30:58Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp314-cp314t-linux_s390x.whl", hash = "sha256:991cc14b39e751122c01f017be6448533989868731cb5eecd1006893d26787c2", upload-time = "2026-07-08T19:31:09Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp314-cp314t-manylinux_2_28_aarch64.whl", hash = "sha256:7b8d26e29bceafbdaa8d63bfe7612f23875b5af2cc07e13f809c3ed890bbe1d8", upload-time = "2026-07-08T19:31:21Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp314-cp314t-manylinux_2_28_x86_64.whl", hash = "sha256:b222c15a0fc2ce207d1c1a59700b46c8fa6748df1f447ad11e5c870dde0933d9", upload-time = "2026-07-08T19:31:35Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp314-cp314t-win_amd64.whl", hash = "sha256:a43376bd094124ef626bfdd3d4c2c62eacb0b5ddc99776f4a32d4fd16f1f3420", upload-time = "2026-07-08T19:31:48Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp315-cp315-manylinux_2_28_aarch64.whl", hash = "sha256:8eb5002ca81af00ae69b57540f615b58b8ae922b6d4848176b366a52bd2196e6", upload-time = "2026-07-08T19:32:00Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp315-cp315-manylinux_2_28_x86_64.whl", hash = "sha256:1a3a35229fdc13446b4eab50e7fcf9399ff941e89a3b761497786297a5d8dde5", upload-time = "2026-07-08T19:32:16Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp315-cp315t-manylinux_2_28_aarch64.whl", hash = "sha256:8e109528e6bab044815daebaf71770fbaace3a66ef1c816cb55c875350f78a60", upload-time = "2026-07-08T19:32:30Z" },
+    { url = "https://download-r2.pytorch.org/whl/cpu/torch-2.13.0%2Bcpu-cp315-cp315t-manylinux_2_28_x86_64.whl", hash = "sha256:222a6681467cc7f6f05cd3068dfbc603def3a1e46d1d4620c1c8cdf6178bd563", upload-time = "2026-07-08T19:32:44Z" },
+]
+
+[[package]]
 name = "tqdm"
 version = "4.68.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "sys_platform == 'win32'" },
+    { name = "colorama", marker = "sys_platform == 'win32' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/ae/5f/57ff8b434839e70dab45601284ea413e947a63799891b7553e5960a793a8/tqdm-4.68.4.tar.gz", hash = "sha256:19829c9673638f2a0b8617da4cdcb927e831cd88bcfcb6e78d42a4d1af131520", size = 792418, upload-time = "2026-07-07T09:58:18.369Z" }
 wheels = [
@@ -5484,9 +6031,9 @@ source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "filelock" },
     { name = "huggingface-hub" },
-    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*'" },
-    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.11.*' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
+    { name = "numpy", version = "2.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
     { name = "packaging" },
     { name = "pyyaml" },
     { name = "regex" },
@@ -5612,8 +6159,34 @@ wheels = [
 
 [[package]]
 name = "triton"
+version = "3.2.0"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.15'",
+    "python_full_version == '3.14.*' and sys_platform != 'win32'",
+    "python_full_version == '3.13.*' and sys_platform != 'win32'",
+    "python_full_version == '3.12.*' and sys_platform != 'win32'",
+    "python_full_version == '3.11.*'",
+    "python_full_version < '3.11'",
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/01/65/3ffa90e158a2c82f0716eee8d26a725d241549b7d7aaf7e4f44ac03ebd89/triton-3.2.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b3e54983cd51875855da7c68ec05c05cf8bb08df361b1d5b69e05e40b0c9bd62", size = 253090354, upload-time = "2025-01-22T19:12:21.872Z" },
+    { url = "https://files.pythonhosted.org/packages/a7/2e/757d2280d4fefe7d33af7615124e7e298ae7b8e3bc4446cdb8e88b0f9bab/triton-3.2.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8009a1fb093ee8546495e96731336a33fb8856a38e45bb4ab6affd6dbc3ba220", size = 253157636, upload-time = "2025-01-22T19:12:51.322Z" },
+    { url = "https://files.pythonhosted.org/packages/06/00/59500052cb1cf8cf5316be93598946bc451f14072c6ff256904428eaf03c/triton-3.2.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:8d9b215efc1c26fa7eefb9a157915c92d52e000d2bf83e5f69704047e63f125c", size = 253159365, upload-time = "2025-01-22T19:13:24.648Z" },
+    { url = "https://files.pythonhosted.org/packages/c7/30/37a3384d1e2e9320331baca41e835e90a3767303642c7a80d4510152cbcf/triton-3.2.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e5dfa23ba84541d7c0a531dfce76d8bcd19159d50a4a8b14ad01e91734a5c1b0", size = 253154278, upload-time = "2025-01-22T19:13:54.221Z" },
+]
+
+[[package]]
+name = "triton"
 version = "3.7.1"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version == '3.14.*' and sys_platform != 'win32'",
+    "python_full_version == '3.13.*' and sys_platform != 'win32'",
+    "python_full_version == '3.12.*' and sys_platform != 'win32'",
+    "python_full_version == '3.11.*'",
+    "python_full_version < '3.11'",
+]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ec/ea/629cc37436ca5df93ce98956d09cd2ca1498bfee8ef4972d2fe48b9f958c/triton-3.7.1-cp310-cp310-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:3daf64305d6cea88d3334c65ebc9bcd0c64c9564a977084366aa768d57cbcf64", size = 184551013, upload-time = "2026-06-17T20:03:37.551Z" },
     { url = "https://files.pythonhosted.org/packages/15/76/c79c34311625227a288df3e483fc5cdf3d596624cbd4b4758c4cbdc14af3/triton-3.7.1-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:ee89fbf782ec2ad50391dd1cf26cbea4f4467154c37f4773026da8fc31c0f58e", size = 197596267, upload-time = "2026-06-17T19:53:06.898Z" },
@@ -5664,7 +6237,7 @@ name = "tzlocal"
 version = "5.4.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "tzdata", marker = "sys_platform == 'win32'" },
+    { name = "tzdata", marker = "sys_platform == 'win32' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/81/5b/879b2f932adfa7a053c360d50bc896c977fa6426109185f7c12ebdd0cb9d/tzlocal-5.4.4.tar.gz", hash = "sha256:8dbb8660838688a7b6ba4fed31d18dedf842afb4d47ca050d6d891c2c15f3be4", size = 31170, upload-time = "2026-06-29T08:03:40.026Z" }
 wheels = [
@@ -5687,7 +6260,7 @@ source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
     { name = "h11" },
-    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/a2/65/b7c6c443ccc58678c91e1e973bbe2a878591538655d6e1d47f24ba1c51f3/uvicorn-0.51.0.tar.gz", hash = "sha256:f6f4b69b657c312f516dd2d268ab9ae6f254b11e4bac504f37b2ab58b24dd0b0", size = 94412, upload-time = "2026-07-08T10:59:05.962Z" }
 wheels = [
@@ -5703,7 +6276,7 @@ dependencies = [
     { name = "filelock" },
     { name = "platformdirs" },
     { name = "python-discovery" },
-    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11' or (extra == 'extra-7-cafl4ds-cpu' and extra == 'extra-7-cafl4ds-cu124')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/74/65/ec1d92091671e6407d3e7c1f5801413bb7b2b57630a50cae7750456ba0ed/virtualenv-21.6.0.tar.gz", hash = "sha256:e18a4d750f2b64dea73e72ffde3922f3c52365fabdc8157ebd3da20d031c4734", size = 5526111, upload-time = "2026-07-06T22:49:56.972Z" }
 wheels = [
@@ -5928,9 +6501,9 @@ name = "yarl"
 version = "1.24.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "idna", marker = "python_full_version < '3.14'" },
-    { name = "multidict", marker = "python_full_version < '3.14'" },
-    { name = "propcache", marker = "python_full_version < '3.14'" },
+    { name = "idna" },
+    { name = "multidict" },
+    { name = "propcache" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/79/12/1e8f37460ea0f7eb59c221fdaf0ed75e7ac43e97f8093b9c6f411df50a78/yarl-1.24.2.tar.gz", hash = "sha256:9ac374123c6fd7abf64d1fec93962b0bd4ee2c19751755a762a72dd96c0378f8", size = 210798, upload-time = "2026-05-19T21:31:05.599Z" }
 wheels = [

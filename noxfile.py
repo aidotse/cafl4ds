@@ -20,12 +20,15 @@ PYTHON_VERSIONS = ["3.10", "3.11", "3.12", "3.13"]
 @nox.session(python=PYTHON_VERSIONS)  # type: ignore[misc]
 def tests(session: nox.Session) -> None:
     """Run the unit test suite on a single Python version."""
-    # Install the project + dev group into nox's uv-managed venv.
+    # Install the project + dev group into nox's uv-managed venv. `--extra cpu` selects the
+    # CPU torch build (the matrix runs on CPU CI runners; see pyproject's torch extras).
     session.run_install(
         "uv",
         "sync",
         "--group",
         "dev",
+        "--extra",
+        "cpu",
         env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
     )
     # Matrix = pass/fail only: drop the coverage/artifact addopts defined in pyproject.

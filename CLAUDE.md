@@ -8,8 +8,12 @@ Guidance for Claude Code (claude.ai/code) in this repo.
 label-free streaming active-learning filter over a self-supervised (SSL) backbone trained via federated learning on
 transient data streams, with a representation-health monitor that re-aims selection.
 
-**Currently an early scaffold** (PyMaxQ-generated): `cafl4ds/__init__.py` is empty, the only runtime code is the Hydra
-example `scripts/example.py`, tests are placeholders. The real architecture is the *research design*:
+**Phase 0 (Instrument) underway.** The verified measurement apparatus is `cafl4ds/measurements.py` — standalone health
+instruments (RankMe/`effective_rank`, VICReg variance + off-diag covariance, alignment/uniformity, linear-CKA
+`cka_drift` + rotation-sensitive `cosine_drift`, kNN/linear probes, frozen baseline **B5**), depending only on embedding
+tensors or a passed-in `encoder` callable — no stream/model/training. **Labels enter the probes ONLY.** Known-answer
+tests: `tests/unit/test_measurements.py`. Everything else is still PyMaxQ scaffold (`cafl4ds/pipeline.py` +
+`scripts/example.py` are throwaway Hydra examples). The architecture is the *research design*:
 
 - **`docs/project-plan.md` is the spec** — streaming loop, filter families (novelty F-a, coverage F-b, steerable F-c),
     SSL backbones, health metrics (RankMe, drift, forgetting), FL track, baselines, phased plan. Read it before
@@ -20,7 +24,9 @@ example `scripts/example.py`, tests are placeholders. The real architecture is t
 **`uv`**-managed, Python `>=3.10` (`.venv` is 3.12). `uv sync --group dev` to set up; prefix everything with `uv run`.
 Private GitLab registry (optional): `source .env` first, where `.env` (git-ignored) holds
 `UV_INDEX_<PACKAGE>_USERNAME`/`_PASSWORD` (GitLab PAT, `read`). Versioning is git-tag-based via `hatch-vcs` (fallback
-`0.0.0`).
+`0.0.0`). **`torch` build is hardware-selected via a mutually-exclusive extra** — sync with `--extra cpu` (laptops/CI)
+or `--extra cu124` (NVIDIA GPU); a bare `uv sync` installs no torch. Gaudi uses neither (Habana base image provides
+torch; `docker/gaudi.env.Dockerfile` strips it from the export).
 
 ## Commands
 
