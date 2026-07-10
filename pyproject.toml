@@ -164,7 +164,8 @@ extend_exclude = ["noxfile.py"] # dev-only orchestration, not shipped code — d
 
 [tool.deptry.per_rule_ignores]
 # headroom-ai is optional agent/dev tooling, intentionally not imported by the package.
-DEP002 = ["headroom-ai"]
+# optimum-habana acts as a backend for Hugging Face/PyTorch on Gaudi; we don't explicitly import it
+DEP002 = ["headroom-ai", "optimum-habana"]
 # pytest is imported by the test suite (the test/ dir) but is correctly a dev dependency.
 DEP004 = ["pytest"]
 

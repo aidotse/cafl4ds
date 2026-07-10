@@ -1,6 +1,6 @@
-"""A simple test to check if Gaudi is available and working."""
+"""Simple test for Gaudi compatibility."""
 
-import torch
+import torch  # deptry: ignore[DEP003, DEP001]
 from loguru import logger
 
 device = torch.device("hpu")
