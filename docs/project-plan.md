@@ -143,10 +143,12 @@ ______________________________________________________________________
 
 **SSL backbone `[STD]`:** default **MAE** for the pipeline (stable; reconstruction error is a free per-frame
 informativeness signal). **MAE is collapse-resistant** (a constant code can't reconstruct diverse pixels), so the
-*collapse* demonstration uses a **joint-embedding method** (BYOL/DINO/SimCLR) — MAE's own degradation mode is
-forgetting/overspecialization. Adapt an ImageNet-pretrained backbone (data too small for from-scratch);
-ViTDet-compatible if detection is a target. *Methods used as-is: MAE (He 2022), BYOL/DINO/SimCLR (Grill 2020 / Caron
-2021 / Chen 2020).*
+*collapse* demonstration uses a **joint-embedding method** (SimSiam/BYOL/DINO/SimCLR) — MAE's own degradation mode is
+forgetting/overspecialization. We start with **SimSiam** as the minimal joint-embedding variant (predictor +
+stop-gradient, no EMA target, no negatives — fewest moving parts, and its stop-gradient is *precisely* the
+collapse-avoidance mechanism under study), expanding to BYOL then SimCLR once the dynamics are established. Adapt an
+ImageNet-pretrained backbone (data too small for from-scratch); ViTDet-compatible if detection is a target. *Methods
+used as-is: MAE (He 2022), SimSiam/BYOL/DINO/SimCLR (Chen & He 2021 / Grill 2020 / Caron 2021 / Chen 2020).*
 
 **Filter families (the knobs):**
 
@@ -419,7 +421,7 @@ ______________________________________________________________________
 | **L** | Loop                              | open · closed                                                                                            | Closed requires F-c + the monitor→filter controller.                                                                                                             |
 | **B** | Storage budget                    | 0 · tiny · small · medium · ∞                                                                            | The Pareto axis; where the flip lives.                                                                                                                           |
 | **I** | Initialization                    | from-scratch · lightly-pretrained · fully-pretrained                                                     | Degradation-sensitivity ↔ realism knob. From-scratch elicits the dynamics; pretrained confirms they matter. Sets B5's form (frozen-random vs frozen-pretrained). |
-| **C** | SSL method                        | MAE · joint-embedding (BYOL/DINO/SimCLR)                                                                 | MAE → forgetting mode; joint-embedding → collapse mode (the collapse demo).                                                                                      |
+| **C** | SSL method                        | MAE · joint-embedding (SimSiam/BYOL/DINO/SimCLR)                                                         | MAE → forgetting mode; joint-embedding → collapse mode (the collapse demo). SimSiam = minimal JE variant, implemented first.                                     |
 | **D** | FL setting                        | centralized · FedAvg · FedProx                                                                           | Centralized first (clean dynamics); FL science gated on the centralized reference.                                                                               |
 | **E** | Data                              | STL-10 · BDD100K · ZOD                                                                                   | Harness → real make-or-break → in-house confirmation.                                                                                                            |
 | **F** | Stream structure                  | IID (control) · correlated · drift+corruption                                                            | Correlated = headline; drift+corruption for signal-quality + health.                                                                                             |
@@ -489,8 +491,8 @@ ______________________________________________________________________
 
 ### Toolbox we build on (work we use, does not threaten novelty of our work)
 
-- **SSL backbones `[STD]`:** MAE (He 2022) · DINO (Caron 2021) · SwAV (Caron 2020) · BYOL/SimCLR/MoCo (2020) · CaSSLe
-    (Fini 2022).
+- **SSL backbones `[STD]`:** MAE (He 2022) · DINO (Caron 2021) · SwAV (Caron 2020) · SimSiam (Chen & He 2021) ·
+    BYOL/SimCLR/MoCo (2020) · CaSSLe (Fini 2022).
 - **Selection `[EXT]`:** Core-Set (Sener & Savarese 2018) · Herding/iCaRL (Welling 2009 / Rebuffi 2017) · SemDeDup
     (Abbas 2023) · GSS/MIR (Aljundi 2019) · reservoir (Vitter 1985).
 - **OOD scoring (F-a) `[EXT]`:** kNN-OOD (Sun 2022) · Mahalanobis (Lee 2018) · Deep SVDD (Ruff 2018).
