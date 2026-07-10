@@ -18,17 +18,24 @@ dependencies = [
     "loguru>=0.7.3",
 ]
 
-[project.optional-dependencies]
-# Optional AI/agent tooling for developing this project (e.g. with Claude Code). Install with: `uv sync --extra agent`.
-agent = [
-    "headroom-ai[code,html,mcp,otel,proxy,relevance,reports,spreadsheet]>=0.27.0",
-]
-
 [project.urls]
 Homepage = "https://github.com/aidotse/cafl4ds"
 Documentation = "https://aidotse.github.io/cafl4ds"
 
+[project.optional-dependencies]
+# Optional runtime feature: Hardware support for Gaudi HPUs
+# Install with: `uv sync --extra gaudi` (or `pip install .[gaudi]`)
+gaudi = [
+    "optimum-habana==1.20.0", # Works on driver v1.23, and 1.24 (despite warnings)
+]
+
 [dependency-groups]
+# Local dev tooling (not shipped with the package)
+# Install with: `uv sync --group agent`
+agent = [
+    "headroom-ai[code,html,mcp,otel,proxy,relevance,reports,spreadsheet]>=0.27.0",
+]
+
 dev = [
     "pytest>=8.3.3",
     "pytest-xdist>=3.8.0",
@@ -157,7 +164,8 @@ extend_exclude = ["noxfile.py"] # dev-only orchestration, not shipped code — d
 
 [tool.deptry.per_rule_ignores]
 # headroom-ai is optional agent/dev tooling, intentionally not imported by the package.
-DEP002 = ["headroom-ai"]
+# optimum-habana acts as a backend for Hugging Face/PyTorch on Gaudi; we don't explicitly import it
+DEP002 = ["headroom-ai", "optimum-habana"]
 # pytest is imported by the test suite (the test/ dir) but is correctly a dev dependency.
 DEP004 = ["pytest"]
 
