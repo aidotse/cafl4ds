@@ -95,7 +95,11 @@ def save_encoder_checkpoint(encoder: TinyViTEncoder, checkpoint: str | Path) -> 
     """
     path = Path(checkpoint)
     path.parent.mkdir(parents=True, exist_ok=True)
-    torch.save(encoder.state_dict(), path)
+    # Move tensors to CPU before serializing: the checkpoint is device-agnostic on disk
+    # (loading uses ``map_location="cpu"``), and saving an ``hpu`` state_dict directly trips a
+    # Habana storage-copy bug. ``.contiguous()`` normalizes strides so the CPU copy is clean.
+    state = {k: v.detach().contiguous().cpu() for k, v in encoder.state_dict().items()}
+    torch.save(state, path)
     logger.info(f"saved pretrained encoder weights to {path}")
 
 

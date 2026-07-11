@@ -1,10 +1,12 @@
-# Instrument — the streaming SSL loop (CPU)
+# Instrument — the streaming SSL loop
 
-The first Phase-0 sub-study (see the [Phase 0 overview](index.md)). Status: **CPU implementation complete.** The
-streaming SSL adaptation loop, the class-blocked STL-10 stream, both SSL backbones, and separate loss/health logging all
-run end-to-end on CPU, exercising the full `C × I` matrix under the B-floor knob. The positive control (PC) and the
-Phase-0 exit *gate* ("PC collapses on RankMe") are **not** part of this slice — they are separate Phase-0 studies (see
-the [overview](index.md) and [What is deliberately out of scope](#what-is-deliberately-out-of-scope)).
+The first Phase-0 sub-study (see the [Phase 0 overview](index.md)). Status: **implementation complete; the loop runs
+end-to-end on both CPU and the Gaudi HPU.** The streaming SSL adaptation loop, the class-blocked STL-10 stream, both SSL
+backbones, and separate loss/health logging exercise the full `C × I` matrix under the B-floor knob — the reference
+numbers below were computed on **CPU**, and the same matrix has since been reproduced on a **Gaudi 2 HPU** as an
+infrastructure milestone (see [Porting to the HPU](#porting-to-the-hpu-gaudi-2-demonstrator)). The positive control (PC)
+and the Phase-0 exit *gate* ("PC collapses on RankMe") are **not** part of this slice — they are separate Phase-0
+studies (see the [overview](index.md) and [What is deliberately out of scope](#what-is-deliberately-out-of-scope)).
 
 This page is the handoff record for the instrument/loop slice. It is enough to resume in a fresh session.
 
@@ -103,6 +105,24 @@ print(tabulate([r for r in recs if r["series"] == "health"]))
 Config groups live in `cafl4ds/configs/` (`data/`, `stream/`, `encoder/`, `ssl/`, `filter/`, `monitor/`, `optim/`,
 `init/`) composed by `loop.yaml` (and `pretrain.yaml`).
 
+### On the Gaudi HPU
+
+The same entry points run on the HPU by adding `device=hpu` and launching inside the Gaudi container
+(`scripts/run_gaudi_dev.sh`, see [`docs/developing.md`](../../developing.md)). torch/torchvision come from the Habana
+base image, so use the container's system Python (`python …`), **not** `uv run`. The launcher hardcodes no dataset path;
+point it at STL-10 (which lives outside the mounted repo) with the generic `DATA_MOUNT` env var — a bare host path is
+bind-mounted read-only at the same path in the container, so the `data_root=/mnt/stl10` default resolves unchanged:
+
+```bash
+# Warm-start checkpoints (I=pretrained), on card 0:
+DATA_MOUNT=/mnt/stl10 ./scripts/run_gaudi_dev.sh gaudi-env-cafl4ds:latest 0 \
+    python scripts/pretrain.py -m ssl=mae,simsiam device=hpu
+
+# The Phase-0 exit matrix (C x I) on the HPU, same settings as the CPU tables:
+DATA_MOUNT=/mnt/stl10 ./scripts/run_gaudi_dev.sh gaudi-env-cafl4ds:latest 0 \
+    python scripts/run_loop.py -m ssl=mae,simsiam init=from_scratch,pretrained eval_every=4 device=hpu
+```
+
 ______________________________________________________________________
 
 ## Exit-criterion result (CPU)
@@ -111,6 +131,9 @@ A short CPU run of all four `C × I` configs completes and the run log shows the
 drift, probe) **side by side over steps**. Settings: tiny ViT (`embed_dim=96, depth=4, patch=8`), `img_size=32`, STL-10
 capped to 120 imgs/class, `eval_every=4`. These are *harness-validation* numbers, not a results run — the model is tiny
 and the horizon is a handful of batches, so probe accuracy sits near chance by design.
+
+> **The four tables in this section were computed on CPU** (`device=cpu`). The HPU reproduction of the same matrix —
+> same settings, same seed — is in [Porting to the HPU](#porting-to-the-hpu-gaudi-2-demonstrator) below.
 
 What to look for (and what we see): loss decreases; **RankMe responds** (falls under the correlated stream); **drift
 accumulates** (cka/cosine of the fixed probe set rise as the model adapts across class blocks); probes are logged and
@@ -188,6 +211,124 @@ flattest. None of this is interpreted as degradation yet — that is Phase 1's j
 
 ______________________________________________________________________
 
+## Porting to the HPU (Gaudi 2 demonstrator)
+
+**Goal (an infrastructure milestone, not a scientific one):** re-run the *identical* exit matrix — same tiny ViT, same
+`img_size=32`, same STL-10 cap, same `eval_every=4`, same `seed=0` — on a Gaudi 2 HPU, and confirm the loop is
+device-portable: it completes, the instruments produce **finite (non-NaN)** values, and the numbers move *reasonably*
+relative to CPU. This is a minimal demonstrator on the small Phase-0 settings; genuine *scaling* (bigger model /
+dataset) is still future work.
+
+### What the port took
+
+Only what has to be on the accelerator was put there — the SSL **train step** (encoder forward/backward + optimizer) and
+the cheap, infrequent eval-time encoder forward. The health *math* stays on CPU **by design**: `cafl4ds/measurements.py`
+already pulls every tensor to CPU (`_as_tensor(...).cpu()`), so RankMe's SVD, linear-CKA, and the scikit-learn
+kNN/linear probes never touch the HPU (they run every `eval_every` steps, so this is a non-issue for throughput). Three
+small, device-agnostic code changes were needed, none of which alter CPU behaviour (all 58 unit tests still pass):
+
+- **`TinyViTEncoder.embed`** now coerces its input to the backbone's device. The monitor/probes hold their fixed eval
+    tensors on CPU while the model lives on `hpu`; this keeps the instrument entry point device-consistent without
+    pushing device bookkeeping into the monitor.
+- **`save_encoder_checkpoint`** moves the `state_dict` to CPU (`.contiguous().cpu()`) before `torch.save`. Serializing
+    an `hpu` state_dict directly trips a Habana storage-copy bug; the on-disk checkpoint is device-agnostic anyway
+    (loading already uses `map_location="cpu"`).
+- **`scripts/run_gaudi_dev.sh`** gained a generic `DATA_MOUNT` input (no hardcoded dataset path) that bind-mounts a host
+    data/model dir read-only into the container, so the STL-10 `data_root` resolves unchanged inside the sandbox.
+
+The warm-start checkpoints for `I=pretrained` were **regenerated on the HPU** (`scripts/pretrain.py … device=hpu`), so
+the port is end-to-end on-device — pretrain *and* loop. One consequence matters for reading the tables (below).
+
+### Exit-criterion result (HPU) — same settings, on Gaudi 2
+
+Environment: `gaudi-env-cafl4ds:latest` (Habana 1.24.0 / PyTorch 2.10, eager mode), single card. All four configs
+complete with the *same run structure* as CPU (30 loss steps, 9 health checkpoints, identical era sequence), and **every
+logged value is finite** — no NaNs/Infs in loss, RankMe, drift, or the probes.
+
+#### mae_from_scratch (30 loss steps, 9 health checkpoints)
+
+```
+        step           era          loss        rankme     cka_drift  cosine_drift       knn_acc    linear_acc
+------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
+      0.0000        0.0000        1.3306        7.4457        0.0000        0.0000        0.2000        0.2450
+      4.0000        1.0000        1.0826        3.9990        0.0307        0.2791        0.1750        0.2100
+      8.0000        2.0000        1.0071        3.2504        0.0490        0.4070        0.1400        0.2150
+     12.0000        4.0000        0.9341        2.9039        0.0554        0.4532        0.1500        0.2200
+     16.0000        5.0000        0.9792        2.7134        0.0580        0.4705        0.1500        0.2200
+     20.0000        6.0000        0.8758        2.5925        0.0569        0.4726        0.1550        0.2200
+     24.0000        8.0000        1.1962        2.5146        0.0569        0.4750        0.1450        0.2200
+     28.0000        9.0000        1.0604        2.4645        0.0551        0.4692        0.1450        0.2150
+     29.0000        9.0000        1.0668        2.4538        0.0544        0.4676        0.1500        0.2150
+```
+
+#### mae_pretrained (30 loss steps, 9 health checkpoints)
+
+```
+        step           era          loss        rankme     cka_drift  cosine_drift       knn_acc    linear_acc
+------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
+      0.0000        0.0000        1.2772        3.1536        0.0000        0.0000        0.1600        0.2250
+      4.0000        1.0000        1.0712        2.4371        0.0794        0.0432        0.1500        0.2100
+      8.0000        2.0000        1.0063        2.1699        0.1643        0.0802        0.1500        0.2100
+     12.0000        4.0000        0.9363        2.0586        0.1774        0.1014        0.1500        0.1950
+     16.0000        5.0000        0.9802        1.9952        0.1775        0.1182        0.1500        0.2000
+     20.0000        6.0000        0.8753        1.9641        0.1601        0.1151        0.1500        0.1950
+     24.0000        8.0000        1.1927        1.9448        0.1472        0.1145        0.1450        0.1850
+     28.0000        9.0000        1.0588        1.9512        0.1242        0.1217        0.1350        0.1900
+     29.0000        9.0000        1.0645        1.9541        0.1181        0.1246        0.1350        0.1850
+```
+
+#### simsiam_from_scratch (30 loss steps, 9 health checkpoints)
+
+```
+        step           era          loss        rankme     cka_drift  cosine_drift       knn_acc    linear_acc
+------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
+      0.0000        0.0000       -0.0039        8.5986        0.0000        0.0000        0.1850        0.2250
+      4.0000        1.0000       -0.1103        6.4799        0.0458        0.1838        0.1500        0.2350
+      8.0000        2.0000       -0.2195        5.8332        0.0647        0.2505        0.1500        0.2150
+     12.0000        4.0000       -0.4033        5.4270        0.0617        0.2805        0.1500        0.2100
+     16.0000        5.0000       -0.4130        5.0179        0.0674        0.3323        0.1500        0.2150
+     20.0000        6.0000       -0.5244        4.3700        0.0766        0.3428        0.1600        0.2150
+     24.0000        8.0000       -0.5927        3.9573        0.0921        0.3395        0.1600        0.2300
+     28.0000        9.0000       -0.5694        3.4603        0.0894        0.3207        0.1500        0.2300
+     29.0000        9.0000       -0.6765        3.3371        0.0902        0.3181        0.1400        0.2300
+```
+
+#### simsiam_pretrained (30 loss steps, 9 health checkpoints)
+
+```
+        step           era          loss        rankme     cka_drift  cosine_drift       knn_acc    linear_acc
+------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------
+      0.0000        0.0000       -0.0362        2.6301        0.0000        0.0000        0.1200        0.2050
+      4.0000        1.0000       -0.2003        2.6974        0.0014        0.0253        0.1250        0.2150
+      8.0000        2.0000       -0.3406        2.8945        0.0037        0.0314        0.1200        0.2150
+     12.0000        4.0000       -0.4813        3.1065        0.0141        0.0555        0.1350        0.2500
+     16.0000        5.0000       -0.5262        3.1271        0.0425        0.1176        0.1550        0.2550
+     20.0000        6.0000       -0.6250        2.8542        0.0297        0.1048        0.1400        0.2200
+     24.0000        8.0000       -0.6948        2.5691        0.0599        0.1918        0.1350        0.2300
+     28.0000        9.0000       -0.5929        2.1845        0.0166        0.2072        0.1200        0.2200
+     29.0000        9.0000       -0.7372        2.1027        0.0072        0.1992        0.1150        0.2050
+```
+
+### Do the numbers change reasonably? Yes.
+
+- **`from_scratch` (the clean device comparison).** The encoder's random init is built on CPU under `seed=0` *before*
+    the move to `hpu`, so both devices start from bit-identical weights; only HPU floating-point arithmetic during
+    training diverges the trajectories. They track CPU closely — `mae_from_scratch` RankMe **7.45 → 2.45** (CPU 7.28 →
+    2.36), `simsiam_from_scratch` RankMe **8.60 → 3.34** (CPU 8.58 → 3.04), with matching loss curves and
+    drift-accumulation shapes. This is the tightest apples-to-apples check and it passes.
+- **`pretrained` shifts more, and that is expected.** These runs load a warm-start checkpoint that was itself
+    *regenerated on the HPU*, so their starting basin differs from the CPU run (e.g. `mae_pretrained` starts at RankMe
+    3.15 vs. CPU 5.76). The divergence is dominated by the different warm start, not the loop — and the trajectories
+    stay finite and qualitatively identical.
+- **Every qualitative claim from the CPU section holds on the HPU:** loss decreases; RankMe falls under the correlated
+    stream in all four configs; representation drift accumulates; the probes are logged, functional, and sit near chance
+    (by design, at this tiny scale). No NaNs, no divergence, no CPU-fallback failures.
+
+**Milestone verdict: passed.** The Phase-0 loop is device-portable to Gaudi; the instruments produce finite values on
+the HPU and move reasonably. This unblocks scaling the model/dataset on the HPU as a *separate* step.
+
+______________________________________________________________________
+
 ## What is deliberately out of scope
 
 - **Positive control + the Phase-0 gate.** The plan's formal Phase-0 exit is "instruments validated **and PC collapses
@@ -195,12 +336,13 @@ ______________________________________________________________________
     a stream, but the PC (a config known to collapse) is not built here. It is the natural next increment.
 - **Any knob other than B-floor** (F-a novelty, F-b coverage, F-c steerable), replay, the monitor→filter controller, and
     FL — all later phases.
-- **HPU scaling.** This slice is CPU-first by design; the next step is a scaled model/dataset run on the Gaudi HPUs
+- **HPU *scaling*.** The loop is now demonstrated on the Gaudi HPU at the *small* Phase-0 settings (above), but a
+    scaled-up model/dataset run — and multi-card (DDP) execution — remain out of scope for this slice
     (`docs/developing.md`).
 
 ## Suggested next steps
 
 1. Build the **positive control** and confirm it collapses on RankMe (closes the Phase-0 gate).
-1. Scale the model/dataset and run on the HPU(s) (`scripts/run_gaudi_dev.sh`); torchvision on Gaudi comes from the
-    Habana base image (mirror the torch handling in `docker/gaudi.env.Dockerfile`).
+1. The minimal HPU port is done (see [Porting to the HPU](#porting-to-the-hpu-gaudi-2-demonstrator)); the next HPU step
+    is to **scale** the model/dataset (and try multi-card DDP) on the Gaudi HPUs (`scripts/run_gaudi_dev.sh`).
 1. Begin **Phase 1a**: sweep `A{B-floor,…} × I × C × P`, instrument both degradation modes.
