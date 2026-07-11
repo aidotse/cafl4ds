@@ -10,12 +10,12 @@ links to its own page as it lands.
 
 ## Sub-studies & status
 
-| Sub-study                                              | What it establishes                                                                                                                                                   | Status              |
-| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
-| [Instrument — the streaming loop (CPU)](instrument.md) | The loop + class-blocked STL-10 stream + both SSL backbones (`C`) + both inits (`I`) run end-to-end under the B-floor knob, logging SSL loss and health side by side. | ✅ **CPU complete** |
-| Instrument — HPU scale                                 | Same loop at a realistic model/dataset size on the Gaudi HPUs.                                                                                                        | ⬜ Not started      |
-| Positive control (PC)                                  | A configuration known to collapse, to prove the instruments *catch* collapse.                                                                                         | ⬜ Not started      |
-| Phase-0 gate                                           | The formal exit: **PC collapses on RankMe**.                                                                                                                          | ⬜ Not started      |
+| Sub-study                                        | What it establishes                                                                                                                                                                                       | Status                  |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| [Instrument — the streaming loop](instrument.md) | The loop + class-blocked STL-10 stream + both SSL backbones (`C`) + both inits (`I`) run end-to-end under the B-floor knob, logging SSL loss and health side by side — **on both CPU and the Gaudi HPU**. | ✅ **CPU + HPU (demo)** |
+| Instrument — HPU scale                           | Same loop at a realistic model/dataset size (and multi-card DDP) — the minimal single-card HPU port is done (see the instrument page); *scaling* is not.                                                  | ⬜ Not started          |
+| Positive control (PC)                            | A configuration known to collapse, to prove the instruments *catch* collapse.                                                                                                                             | ⬜ Not started          |
+| Phase-0 gate                                     | The formal exit: **PC collapses on RankMe**.                                                                                                                                                              | ⬜ Not started          |
 
 ## Latest results
 
@@ -25,6 +25,12 @@ from-scratch / pretrained) on class-blocked STL-10 completes, and each run log s
 rises in every configuration** — the instruments demonstrably respond to a correlated single-pass diet. These are
 harness-validation numbers (tiny model, ~30 steps), **not** a degradation claim: that is Phase 1's job, gated by the PC.
 See the sub-study page for the per-config tables.
+
+The same matrix has since been **reproduced on a Gaudi 2 HPU** (single card, same settings and seed) as an
+infrastructure milestone: the loop is device-portable, the instruments produce **finite (non-NaN)** values, and the
+numbers move reasonably — `from-scratch` (bit-identical init) tracks CPU closely, `pretrained` shifts with its
+HPU-regenerated warm start. Details in the sub-study's
+[Porting to the HPU](instrument.md#porting-to-the-hpu-gaudi-2-demonstrator).
 
 !!! note "The Phase-0 gate is not yet closed"
 

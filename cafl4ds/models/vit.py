@@ -288,5 +288,10 @@ class TinyViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is Any witho
         Returns:
             The mean-pooled patch-token embedding ``[B, embed_dim]``.
         """
+        # The measurement/probe callers hold their fixed eval tensors on CPU, so coerce to
+        # the backbone's device here (a no-op when both are CPU). This keeps ``embed`` — the
+        # instrument entry point — usable when the model has been moved to an accelerator
+        # (e.g. ``hpu``) without pushing device bookkeeping into the monitor/measurements.
+        imgs = imgs.to(self.pos_embed.device)
         tokens = self.forward(imgs)
         return tokens[:, 1:, :].mean(dim=1)

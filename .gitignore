@@ -61,6 +61,8 @@ docs/exported/
 # ── Hydra run outputs ──────────────────────────────────────────────────
 outputs/
 multirun/
+.graph_dumps/
+/cache/
 
 # ── Large / binary / data artifacts / ML Models ────────────────────────
 *.dylib

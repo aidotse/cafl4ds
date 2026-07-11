@@ -62,8 +62,11 @@ docstrings, `docs/` excluded). Canonical runner is **pre-commit** (`uv run pre-c
     CA certs via build secrets; see the file's header comment.
 - `docker/gaudi.env.Dockerfile` — Gaudi HPU dev environment (default image is `gaudi-env-cafl4ds:latest`). Run things on
     the HPUs with `scripts/run_gaudi_dev.sh <image> <device_id|all> [cmd...]` (smoke test:
-    `./scripts/run_gaudi_dev.sh gaudi-env-cafl4ds:latest 0 python scripts/gaudi_simple_test.py`). Host check:
-    `HABANA_LOGS=/tmp/hllog hl-smi` (no sudo). Full setup, isolation modes, and RDMA prereqs → `docs/developing.md`.
+    `./scripts/run_gaudi_dev.sh gaudi-env-cafl4ds:latest 0 python scripts/gaudi_simple_test.py`). Only the repo is
+    mounted; bind data/models living outside it read-only with the `DATA_MOUNT=<host_path>` env var (e.g.
+    `DATA_MOUNT=/mnt/stl10 ./scripts/run_gaudi_dev.sh … python scripts/run_loop.py device=hpu`). Use the container's
+    system `python` (torch is from the Habana base image), **not** `uv run`. Host check: `HABANA_LOGS=/tmp/hllog hl-smi`
+    (no sudo). Full setup, isolation modes, and RDMA prereqs → `docs/developing.md`.
 
 ## Claude Code in this repo
 

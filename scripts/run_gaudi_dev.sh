@@ -28,6 +28,34 @@ else
     ISOLATION_FLAGS="--device /dev/accel/accel$DEVICE_ID:/dev/accel/accel$DEVICE_ID"
 fi
 
+# Optional read-only bind mount for data/models that live OUTSIDE the repo (the repo itself is
+# always mounted at /workspace). This launcher hardcodes no dataset path — opt in with DATA_MOUNT:
+#   DATA_MOUNT=/mnt/stl10                     -> mounts /mnt/stl10 at the same path, read-only
+#   DATA_MOUNT=/host/models:/workspace/models -> explicit `host:container[:opts]` spec, used as-is
+# Unset (default) -> no extra mount. Example:
+#   DATA_MOUNT=/mnt/stl10 ./scripts/run_gaudi_dev.sh <image> 0 \
+#       python scripts/run_loop.py device=hpu data_root=/mnt/stl10
+if [ -n "${DATA_MOUNT:-}" ]; then
+    case "$DATA_MOUNT" in
+        *:*) DATA_FLAGS="-v $DATA_MOUNT" ;;                 # explicit host:container[:opts], verbatim
+        *)   DATA_FLAGS="-v $DATA_MOUNT:$DATA_MOUNT:ro" ;;  # bare host path -> same path, read-only
+    esac
+else
+    DATA_FLAGS=""
+fi
+
+# Run as the host user (not root) so files the container writes into the mounted repo are owned
+# by you, not root. The image has no passwd entry for your uid and Habana's backend autoload calls
+# getpwuid(), so bind /etc/passwd + /etc/group read-only to resolve the name, and point HOME at a
+# writable path. Device nodes are world-accessible (/dev/accel/*, /dev/infiniband/uverbs* are 0666),
+# so single-card HPU access works fine unprivileged. Escape hatch: set RUN_AS_ROOT=1 to keep the old
+# root behaviour (e.g. should a privileged multi-card run ever need it).
+if [ -n "${RUN_AS_ROOT:-}" ]; then
+    USER_FLAGS=""
+else
+    USER_FLAGS="--user $(id -u):$(id -g) -e HOME=/tmp -v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro"
+fi
+
 # Remove the image name from the arguments list so we can pass the rest
 shift 2
 
@@ -77,6 +105,7 @@ fi
 # -v /sys/class/infiniband:/sys/class/infiniband:ro \
 docker run $TTY_FLAGS --rm \
   --runtime=habana \
+  $USER_FLAGS \
   $ISOLATION_FLAGS \
   --cap-add=sys_nice \
   --cap-add=IPC_LOCK \
@@ -88,6 +117,7 @@ docker run $TTY_FLAGS --rm \
   -e HABANA_VISIBLE_DEVICES=$DEVICE_ID \
   -e PT_HPU_ENABLE_CPU_FALLBACK_LOGGING=1 \
   -e DDP_SHARED_ID=$RANDOM \
+  $DATA_FLAGS \
   -v "$PROJECT_ROOT":/workspace \
   -v ~/.cache/huggingface:/workspace/cache \
   "$IMAGE_NAME" \
