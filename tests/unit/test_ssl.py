@@ -14,6 +14,7 @@ import torch
 from cafl4ds.models.vit import TinyViTEncoder
 from cafl4ds.ssl.base import apply_encoder_init, load_encoder_checkpoint, save_encoder_checkpoint
 from cafl4ds.ssl.factory import build_mae, build_simsiam
+from cafl4ds.ssl.simsiam import _neg_cosine
 
 
 def _encoder() -> TinyViTEncoder:
@@ -62,6 +63,40 @@ def test_encode_returns_pooled_embedding_without_grad(build: object) -> None:
     z = method.encode(_batch(n=5))
     assert z.shape == (5, method.encoder.embed_dim)
     assert not z.requires_grad
+
+
+def test_anti_collapse_off_bypasses_predictor_and_renames() -> None:
+    """The PC ablation removes the predictor from the graph (no grad) and renames the method."""
+    healthy = build_simsiam(_encoder(), anti_collapse=True)
+    pc = build_simsiam(_encoder(), anti_collapse=False)
+    assert healthy.name == "simsiam" and pc.name == "simsiam_collapse"
+
+    for method, predictor_used in ((healthy, True), (pc, False)):
+        method.train()
+        method.training_step(_batch()).backward()
+        pred_has_grad = any(p.grad is not None for p in method.predictor.parameters())
+        assert pred_has_grad is predictor_used, f"predictor grad={pred_has_grad}, expected {predictor_used}"
+        # The encoder is always in the graph (it is what we measure).
+        assert any(p.grad is not None for p in method.encoder.parameters())
+
+
+def test_stop_gradient_toggle_controls_target_branch_gradient() -> None:
+    """The other half of the ablation: ``stop_grad`` gates whether gradient flows to the target.
+
+    With ``stop_grad=True`` (SimSiam as published) the target branch is detached — no gradient
+    reaches it; with ``stop_grad=False`` (the PC ablation) the gradient flows through both
+    branches. The behavioural collapse *contrast* is a streaming-scale phenomenon exercised by
+    ``scripts/positive_control.py`` (a single tiny fixed batch collapses either way), so it is
+    validated there, not here.
+    """
+    p = torch.randn(4, 8, requires_grad=True)
+    z = torch.randn(4, 8, requires_grad=True)
+    _neg_cosine(p, z, stop_grad=True).backward()
+    assert z.grad is None, "stop-gradient should detach the target branch"
+
+    p2, z2 = torch.randn(4, 8, requires_grad=True), torch.randn(4, 8, requires_grad=True)
+    _neg_cosine(p2, z2, stop_grad=False).backward()
+    assert z2.grad is not None, "without stop-gradient the target branch must receive gradient"
 
 
 def test_checkpoint_roundtrip_and_pretrained_init(tmp_path: Path) -> None:

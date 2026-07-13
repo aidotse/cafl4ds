@@ -36,7 +36,7 @@ Tasks are **`poe`** tasks — `uv run poe <task>`; the full list + definitions l
 - `uv run poe test [cpus] [paths...]` runs pytest + coverage; run it **before `poe docs`** (docs embed coverage/test
     badges). pytest config (always-on coverage, `docs/exported/pytest.{html,xml}`, DEBUG logging) is in
     `[tool.pytest.ini_options]`.
-- Single test: `uv run pytest test/unit/test_dummy.py::test_dummy`.
+- Single test: `uv run pytest tests/unit/test_dummy.py::test_dummy`.
 
 ## Quality gates
 
@@ -54,7 +54,7 @@ docstrings, `docs/` excluded). Canonical runner is **pre-commit** (`uv run pre-c
     (`_target_: ...`), not hardcoded. Override on the CLI: `uv run python scripts/example.py key=value`. Run dirs →
     `outputs/` (ignored).
 - Logging via **`loguru`**.
-- Layout: package → `cafl4ds/`, entry points → `scripts/`, tests → `test/unit/`. Only `cafl4ds` ships in the wheel.
+- Layout: package → `cafl4ds/`, entry points → `scripts/`, tests → `tests/unit/`. Only `cafl4ds` ships in the wheel.
 
 ## Docker
 

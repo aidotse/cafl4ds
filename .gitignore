@@ -101,6 +101,7 @@ multirun/
 .env.*
 local_settings.py
 combined_certificates.pem
+.prompts
 
 # ── Editor / OS / Local Tooling cruft ──────────────────────────────────
 .DS_Store

@@ -1,0 +1,56 @@
+# Phase-0 positive control (P0.2) — the collapse-instrument CALIBRATION gate.
+#
+# One session, two arms, identical everything except SimSiam's anti-collapse toggle:
+#   * PC       = SimSiam with anti-collapse DISABLED (predictor removed + stop-gradient off)
+#                -> collapse is mathematically forced (loss -> -1, RankMe -> floor).
+#   * healthy  = SimSiam intact (predictor + stop-gradient ON) -> stays in its higher band.
+# Both from-scratch (NOT the pretrained checkpoint, which in P0.1 looked possibly
+# pre-collapsed at RankMe ~2.46). The gate is the CONTRAST between the two RankMe curves.
+#
+#   uv run python scripts/positive_control.py
+#   (fast network-free smoke: append `data=synthetic img_size=16`)
+defaults:
+  - encoder: tiny
+  - ssl: simsiam # C factor: SimSiam is the collapse-capable backbone (one-toggle ablation)
+  - data: stl10 # data source: stl10 | synthetic
+  - stream: class_blocked # F factor: the same correlated stream P0.1 ran on
+  - filter: accept_all # A factor: B-floor (no selection) — isolate the SSL config
+  - monitor: default
+  - optim: adamw
+  - _self_
+
+# Shared scalars (must be IDENTICAL across the two arms — the toggle is the only variable).
+img_size: 32
+batch_size: 32
+seed: 0
+device: cpu
+eval_every: 4
+
+# Data sizing = the P0.1 exit-matrix regime (bounded horizon, ~30 steps). This horizon is
+# deliberate: at this toy from-scratch scale SimSiam's anti-collapse only DELAYS collapse, so
+# a much longer single pass eventually collapses the intact control too (see the doc). The
+# P0.1 horizon is the window where the PC has cratered + its loss rides to -1 WHILE the intact
+# control is still in its higher band — the clean calibration contrast.
+data_root: /mnt/stl10 # shared STL-10 (torchvision layout); override for a local copy
+max_per_class: 120
+max_train_per_class: 80
+
+# Numeric pass criterion (a gate, not an eyeball read) — see docs/experiments/phase0/positive_control.md.
+# Scale-free + DEVICE-ROBUST. Two lessons drove this design (both documented):
+#   1. This tiny ViT's projector BatchNorm keeps deep collapse off literal rank-1 (floor ~1.8),
+#      so an absolute RankMe floor (e.g. <1.5) is unreachable — gate on the PC's RELATIVE drop
+#      from its OWN random-init rank instead.
+#   2. At this short horizon the PC-vs-intact RankMe *endpoint gap* is within device/FP noise
+#      (CPU sep ~0.67, HPU ~0.03): RankMe alone does not separate forced-collapse from healthy
+#      adaptation. The DISCRIMINATOR is the loss riding to its -1 constant-solution floor WHILE
+#      rank craters (loss-vs-rank divergence) — device-stable (PC -0.96, intact ~-0.62 on both).
+# So: PC must crater its own rank AND ride its loss to -1; the intact control must stay in its
+# band with a loss floor that never reaches -1; separation is gated on the LOSS floor, not rank.
+gate:
+  pc_rankme_drop_frac: 0.45 # PC final RankMe <= this fraction of its own init (CPU 32%, HPU 40%)
+  pc_loss_floor: -0.9 # "right reason": PC loss (min over steps) rides to its -1 constant-solution floor
+  healthy_rankme_min: 2.5 # intact control must still sit in its higher band at this bounded horizon
+  min_loss_separation: 0.2 # required gap: (intact loss floor) - (PC loss floor); CPU 0.31, HPU 0.34
+
+# Run logs: one JSONL per arm, plus a combined comparison, in the Hydra run dir.
+run_log: run_log.jsonl

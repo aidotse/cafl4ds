@@ -22,9 +22,11 @@ nav:
   - Getting Started: user-guide.md
   - Developing: developing.md
   - Project Plan: project-plan.md
+  - Latest Results: experiments/latest_results.md
   - Phase 0:
       - experiments/phase0/index.md
-      - Instrument (streaming loop): experiments/phase0/instrument.md
+      - P0.1 Instrument (streaming loop): experiments/phase0/instrument.md
+      - P0.2 Positive control (collapse gate): experiments/phase0/positive_control.md
   - API Reference: reference.md
   - Tests: exported/pytest.html
   - Coverage: exported/coverage/index.html
