@@ -10,8 +10,6 @@ studies (see the [overview](index.md) and [What is deliberately out of scope](#w
 
 This page is the handoff record for the instrument/loop slice. It is enough to resume in a fresh session.
 
-______________________________________________________________________
-
 ## Scope of this slice
 
 Per the plan's *Strategic ordering* (build the loop + measurement apparatus first), this slice adds — on top of the
@@ -34,8 +32,6 @@ correlated stream:
 (`scripts/pretrain.py`, `stream=iid`). This is deliberate: the warm start must be a *well-behaved reference*. If we
 pretrained on the class-blocked ordering we would have half-run the experiment and baked stream-induced effects into the
 "clean" starting point — correlation must enter **only** in the streaming phase.
-
-______________________________________________________________________
 
 ## Architecture (what maps to what)
 
@@ -60,8 +56,6 @@ Key invariants (all covered by tests in `tests/unit/`):
 - Held-out probe-support / probe-query / per-era eval sets are pairwise disjoint from training.
 - The health probe reads the **encoder** embedding (`encode`), never a projector/predictor head.
 - Drift is measured against the **first** checkpoint's embeddings of a fixed probe set.
-
-______________________________________________________________________
 
 ## How to run
 
@@ -122,8 +116,6 @@ DATA_MOUNT=/mnt/stl10 ./scripts/run_gaudi_dev.sh gaudi-env-cafl4ds:latest 0 \
 DATA_MOUNT=/mnt/stl10 ./scripts/run_gaudi_dev.sh gaudi-env-cafl4ds:latest 0 \
     python scripts/run_loop.py -m ssl=mae,simsiam init=from_scratch,pretrained eval_every=4 device=hpu
 ```
-
-______________________________________________________________________
 
 ## Exit-criterion result (CPU)
 
@@ -208,8 +200,6 @@ representation drift climbs in every configuration — i.e. the instruments *mov
 diet, which is exactly the responsiveness Phase 1 will need. `mae_pretrained` shows the largest drift (a good pretrained
 basin being pulled around by the correlated stream), while `simsiam_pretrained` starts at a lower RankMe and stays
 flattest. None of this is interpreted as degradation yet — that is Phase 1's job, with the PC as the gate.
-
-______________________________________________________________________
 
 ## Porting to the HPU (Gaudi 2 demonstrator)
 
@@ -327,8 +317,6 @@ logged value is finite** — no NaNs/Infs in loss, RankMe, drift, or the probes.
 **Milestone verdict: passed.** The Phase-0 loop is device-portable to Gaudi; the instruments produce finite values on
 the HPU and move reasonably. This unblocks scaling the model/dataset on the HPU as a *separate* step.
 
-______________________________________________________________________
-
 ## What is deliberately out of scope
 
 - **Positive control + the Phase-0 gate.** The plan's formal Phase-0 exit is "instruments validated **and PC collapses
@@ -339,10 +327,3 @@ ______________________________________________________________________
 - **HPU *scaling*.** The loop is now demonstrated on the Gaudi HPU at the *small* Phase-0 settings (above), but a
     scaled-up model/dataset run — and multi-card (DDP) execution — remain out of scope for this slice
     (`docs/developing.md`).
-
-## Suggested next steps
-
-1. Build the **positive control** and confirm it collapses on RankMe (closes the Phase-0 gate).
-1. The minimal HPU port is done (see [Porting to the HPU](#porting-to-the-hpu-gaudi-2-demonstrator)); the next HPU step
-    is to **scale** the model/dataset (and try multi-card DDP) on the Gaudi HPUs (`scripts/run_gaudi_dev.sh`).
-1. Begin **Phase 1a**: sweep `A{B-floor,…} × I × C × P`, instrument both degradation modes.

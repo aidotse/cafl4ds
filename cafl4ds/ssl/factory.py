@@ -56,6 +56,7 @@ def build_simsiam(
     proj_hidden: int = 256,
     proj_dim: int = 128,
     pred_hidden: int = 64,
+    anti_collapse: bool = True,
 ) -> SimSiam:
     """Build a :class:`~cafl4ds.ssl.simsiam.SimSiam` with heads sized to the encoder.
 
@@ -64,10 +65,12 @@ def build_simsiam(
         proj_hidden: Hidden width of the 3-layer projector.
         proj_dim: Output width of the projector (and the predictor's input/output).
         pred_hidden: Hidden width of the 2-layer predictor bottleneck.
+        anti_collapse: Keep SimSiam's predictor + stop-gradient (``True``, the healthy
+            control) or disable both for the forced-collapse positive control (``False``).
 
     Returns:
         The assembled SimSiam method.
     """
     projector = MLPHead(encoder.embed_dim, proj_hidden, proj_dim, num_layers=3, last_bn=True)
     predictor = MLPHead(proj_dim, pred_hidden, proj_dim, num_layers=2, last_bn=False)
-    return SimSiam(encoder, projector, predictor)
+    return SimSiam(encoder, projector, predictor, anti_collapse=anti_collapse)
