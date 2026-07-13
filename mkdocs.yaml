@@ -22,7 +22,7 @@ nav:
   - Getting Started: user-guide.md
   - Developing: developing.md
   - Project Plan: project-plan.md
-  - Latest Results: experiments/latest_results.md
+  - Latest Results: experiments/latest-results.md
   - Phase 0:
       - experiments/phase0/index.md
       - P0.1 Instrument (streaming loop): experiments/phase0/instrument.md

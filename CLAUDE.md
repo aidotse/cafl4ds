@@ -72,3 +72,12 @@ docstrings, `docs/` excluded). Canonical runner is **pre-commit** (`uv run pre-c
 
 Runs behind a token-compression pipeline (RTK shell-hook + Headroom API proxy): bash output may be RTK-filtered, and
 `.claudeignore` excludes `.venv`, `uv.lock`, caches, and generated artifacts from indexing.
+
+## How to document experiments
+
+Docs for experiments are held in `docs/experiments`, organized by project phase (see `docs/project-plan.md`). Each phase
+has a high level `index.md` that acts as a summary (what is this phase about, what is the scope?) and lists the
+experiments we have run in this phase. Each of these gets its own `.md` file, with more exhaustive details. Lastly, we
+keep a separate `docs/experiments/latest-results.md` that provides an ultra-brief summary of what each experiment
+achieved. This order is meant to optimze agent reads: agents only read the exhaustive experiment-specific `.md` files
+when absolutely necessary, otherwise should be guided by the summaries.
