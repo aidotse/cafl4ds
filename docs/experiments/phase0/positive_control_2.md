@@ -362,10 +362,15 @@ which needs the long horizon to make collapse legible.
 
 ## Insights
 
-1. **The instrument was never broken — the baseline was.** P0.2's ambiguous RankMe decay on the intact arm was a
-    training-budget artifact, not a property of SimSiam or of RankMe. Given a fair regime, RankMe cleanly separates a
-    healthy representation from a collapsed one at this toy scale — which is exactly what licenses reading Phase-1
-    RankMe drops as degradation.
+Main finding:
+
+> **The instrument was never broken — the baseline was.** P0.2's ambiguous RankMe decay on the intact arm was a
+> training-budget artifact, not a property of SimSiam or of RankMe. Given a fair regime, **RankMe cleanly separates a
+> healthy representation from a collapsed one at this toy scale** — which is exactly what licenses reading Phase-1
+> RankMe drops as degradation.
+
+Also:
+
 1. **The discriminator is regime-dependent.** Loss separates the arms at a short toy horizon; RankMe separates them once
     trained properly. A calibration gate must be tied to the regime it will be read in — which is why P0.2.1 both
     *finds the baseline* and *re-derives the gate* in that regime, rather than porting P0.2's loss-based thresholds.

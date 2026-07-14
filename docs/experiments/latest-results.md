@@ -3,8 +3,10 @@
 ## P0.2.1
 
 From the [healthy-baseline sub-study](phase0/positive_control_2.md) — a genuine healthy SimSiam baseline and a gate
-recalibrated around it (all numbers, sweeps, and trajectories are in the sub-study). Three findings:
+recalibrated around it (all numbers, sweeps, and trajectories are in the sub-study). Findings:
 
+1. **The instrument (RankMe) can separate a genuinely-collapsed representation** from a genuinely-healthy one, ~2.8×,
+    seed-stable device-portable.
 1. **A genuine healthy baseline exists, in the clean long-horizon corner.** The fix P0.2 needed was a *fair training
     regime, not a bigger model* (same tiny ViT; full STL-10 split, IID, 40 epochs, warmup+cosine LR, predictor width
     64→128). Intact SimSiam's RankMe dips then re-expands and holds (~5.5, the healthy U-shape) while the collapse arm

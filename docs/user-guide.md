@@ -96,11 +96,11 @@ Docker image. Those two are **opt-in**, configured per repository so that a proj
 sees a red pipeline. You turn them on by adding repository/CI variables (no code changes); leave a variable unset and
 its job is simply skipped (a clean, green pipeline).
 
-| What             | Enable it with               | Destination                               | Credentials                     |
-| ---------------- | ---------------------------- | ----------------------------------------- | ------------------------------- |
-| **Docs site**    | *(on by default)*            | GitHub Pages / GitLab Pages               | GitLab: none. GitHub: see below |
-| **Package**      | variable `PUBLISH_TARGET`    | PyPI, a private index, or GitLab registry | see below                       |
-| **Docker image** | variable `BUILD_DOCKER=true` | ghcr.io / GitLab container registry       | none (uses the CI token)        |
+| What | Enable it with | Destination | Credentials |
+| -- | -- | -- | -- |
+| **Docs site** | *(on by default)* | GitHub Pages / GitLab Pages | GitLab: none. GitHub: see below |
+| **Package** | variable `PUBLISH_TARGET` | PyPI, a private index, or GitLab registry | see below |
+| **Docker image** | variable `BUILD_DOCKER=true` | ghcr.io / GitLab container registry | none (uses the CI token) |
 
 `PUBLISH_TARGET` values:
 
