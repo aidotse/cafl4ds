@@ -40,3 +40,13 @@ loop:
   eval_every: ${eval_every}
   grad_clip: 1.0
   device: ${device}
+
+# Downstream (validating-axis) evaluation, off by default so the plain loop is unchanged.
+# Turn on for the three Phase-0 establishing questions on a correlated stream, e.g.:
+#   uv run python scripts/run_loop.py ssl=simsiam stream=class_blocked \
+#     eval.probe_on_past=true eval.compare_b5=true
+eval:
+  probe_on_past: false # record the per-era accuracy matrix -> Backward Transfer / Forgetting
+  compare_b5: false # compare the adapted encoder vs the init-matched frozen backbone (B5)
+  probe: knn # knn | linear (labels used HERE ONLY)
+  knn_k: 20

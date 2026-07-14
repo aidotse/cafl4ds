@@ -7,7 +7,7 @@ no SSL model, and no training in this module, by design: per the plan's *Strateg
 ordering*, the instruments are built and verified in isolation first, because everything
 downstream depends on them being correct.
 
-Signal catalogue implemented here (see ``docs/project-plan.md`` → *Signal catalogue*):
+Signal catalogue implemented here (see ``docs/project-plan/metrics.md`` → *Signal catalogue*):
 
 Geometry / collapse (label-free):
     * :func:`rankme` / :func:`effective_rank` — exponential entropy of the normalized

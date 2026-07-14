@@ -2,6 +2,12 @@
 
 The second Phase-0 sub-study (P0.2; see the [Phase 0 overview](index.md)).
 
+> **This page is the historical P0.2 record.** Its central limitation — no trustworthy healthy baseline, so RankMe could
+> not separate the arms — was resolved in [P0.2.1](positive_control_2.md), which also **recalibrated the gate**
+> (RankMe-separation, not loss) and changed the run regime (IID + multi-epoch + warmup/cosine). The live
+> `scripts/positive_control.py` and `positive_control.yaml` now implement the **P0.2.1** regime, so the commands below
+> no longer reproduce the P0.2 numbers on this page — see P0.2.1 to run it.
+
 ## What this is, and why it exists (calibration, not science)
 
 The positive control (PC) is **not a formal scientific measurement** — it is an **instrument calibration**. It is the
@@ -35,10 +41,10 @@ a **single toggle** rather than a separate model.
 The toggle lives on the SSL method itself (`cafl4ds/ssl/simsiam.py`), exposed through the factory and config as
 `anti_collapse`:
 
-| `anti_collapse`  | Predictor             | Stop-gradient | Role                                       | `method.name`      |
-| ---------------- | --------------------- | ------------- | ------------------------------------------ | ------------------ |
-| `true` (default) | on                    | on            | **healthy control** (SimSiam as published) | `simsiam`          |
-| `false`          | **removed** (`p = z`) | **off**       | **positive control** (forced collapse)     | `simsiam_collapse` |
+| `anti_collapse` | Predictor | Stop-gradient | Role | `method.name` |
+| -- | -- | -- | -- | -- |
+| `true` (default) | on | on | **healthy control** (SimSiam as published) | `simsiam` |
+| `false` | **removed** (`p = z`) | **off** | **positive control** (forced collapse) | `simsiam_collapse` |
 
 This is the documented SimSiam collapse ablation: the paper shows removing *either* mechanism collapses the model; we
 remove both, the strongest collapse config. The mechanism is unit-tested in `tests/unit/test_ssl.py`

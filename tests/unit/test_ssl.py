@@ -12,7 +12,7 @@ import pytest
 import torch
 
 from cafl4ds.models.vit import TinyViTEncoder
-from cafl4ds.ssl.base import apply_encoder_init, load_encoder_checkpoint, save_encoder_checkpoint
+from cafl4ds.ssl.base import SSLMethod, apply_encoder_init, load_encoder_checkpoint, save_encoder_checkpoint
 from cafl4ds.ssl.factory import build_mae, build_simsiam
 from cafl4ds.ssl.simsiam import _neg_cosine
 
@@ -54,6 +54,31 @@ def test_loss_decreases_when_overfitting_a_fixed_batch(build: object) -> None:
         loss.backward()
         opt.step()
     assert method.training_step(x).item() < first
+
+
+@pytest.mark.parametrize("build", [build_mae, build_simsiam])
+def test_per_sample_loss_is_a_detached_per_frame_vector(build: object) -> None:
+    """Each method exposes a ``[B]`` per-frame loss (no grad) — the loss-gate's score."""
+    method = build(_encoder())  # type: ignore[operator]
+    per_sample = method.per_sample_loss(_batch(n=6))
+    assert per_sample.shape == (6,)
+    assert not per_sample.requires_grad
+    assert torch.isfinite(per_sample).all()
+
+
+def test_per_sample_loss_default_raises() -> None:
+    """A method that does not define a per-sample loss raises a clear error."""
+
+    class _NoPerSample(SSLMethod):
+        def training_step(self, imgs: torch.Tensor) -> torch.Tensor:
+            return imgs.mean()
+
+        @property
+        def name(self) -> str:
+            return "no_per_sample"
+
+    with pytest.raises(NotImplementedError, match="per-sample loss"):
+        _NoPerSample(_encoder()).per_sample_loss(_batch())
 
 
 @pytest.mark.parametrize("build", [build_mae, build_simsiam])

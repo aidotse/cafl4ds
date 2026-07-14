@@ -55,6 +55,28 @@ class SSLMethod(nn.Module, ABC):  # type: ignore[misc]  # nn.Module is Any witho
             A scalar loss tensor with gradient, ready for ``.backward()``.
         """
 
+    def per_sample_loss(self, imgs: torch.Tensor) -> torch.Tensor:
+        """Return the *per-sample* self-supervised loss ``[B]`` (no gradient).
+
+        Where :meth:`training_step` reduces to a single scalar, this keeps the loss for each
+        image separately — the free per-frame informativeness signal the plan calls out (MAE's
+        per-patch reconstruction error; SimSiam's per-view negative cosine). The loss-gate knob
+        (:class:`~cafl4ds.filters.loss_gate.LossGate`) reads it to keep the high-loss frames;
+        later phases reuse it for novelty scoring. It is a *selection heuristic*, computed under
+        ``no_grad`` and never backpropagated, so it is free to draw its own augmentation/mask.
+
+        Args:
+            imgs: A batch of raw images ``[B, C, H, W]``. Labels never enter this path.
+
+        Returns:
+            A detached ``[B]`` tensor of per-sample losses (same orientation as the scalar
+            :meth:`training_step`: lower is better).
+
+        Raises:
+            NotImplementedError: If the concrete method does not define a per-sample loss.
+        """
+        raise NotImplementedError(f"{type(self).__name__} does not define a per-sample loss.")
+
     def encode(self, imgs: torch.Tensor) -> torch.Tensor:
         """Return the pooled backbone embedding used by the instruments/probes.
 

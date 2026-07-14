@@ -33,9 +33,23 @@ def _neg_cosine(p: torch.Tensor, z: torch.Tensor, stop_grad: bool = True) -> tor
     Returns:
         The mean negative cosine similarity (scalar); minimized when ``p`` aligns with ``z``.
     """
+    return _neg_cosine_per_sample(p, z, stop_grad=stop_grad).mean()
+
+
+def _neg_cosine_per_sample(p: torch.Tensor, z: torch.Tensor, stop_grad: bool = True) -> torch.Tensor:
+    """Per-sample negative cosine similarity ``[B]`` (the un-reduced :func:`_neg_cosine`).
+
+    Args:
+        p: Predictor output of one branch ``[B, d]``.
+        z: Projector output of the other branch ``[B, d]``.
+        stop_grad: Whether to detach the target ``z`` (see :func:`_neg_cosine`).
+
+    Returns:
+        The per-sample negative cosine similarity ``[B]`` (lower is better).
+    """
     p = torch.nn.functional.normalize(p, dim=1)
     z = torch.nn.functional.normalize(z.detach() if stop_grad else z, dim=1)
-    return -(p * z).sum(dim=1).mean()
+    return -(p * z).sum(dim=1)
 
 
 class SimSiam(SSLMethod):
@@ -117,3 +131,26 @@ class SimSiam(SSLMethod):
         p2, z2 = self._branch(view_2)
         sg = self.anti_collapse
         return 0.5 * (_neg_cosine(p1, z2, stop_grad=sg) + _neg_cosine(p2, z1, stop_grad=sg))
+
+    def per_sample_loss(self, imgs: torch.Tensor) -> torch.Tensor:
+        """Per-image symmetric negative-cosine loss ``[B]`` (no gradient).
+
+        The per-frame version of :meth:`training_step`, used as an informativeness signal by
+        the loss-gate knob. Two fresh views are drawn (as in a training step) and the symmetric
+        negative cosine is kept per image instead of averaged over the batch.
+
+        Args:
+            imgs: A batch of raw images ``[B, C, H, W]``.
+
+        Returns:
+            A detached ``[B]`` tensor of per-image losses in ``[-1, 1]`` (lower is better).
+        """
+        with torch.no_grad():
+            view_1, view_2 = self.two_view(imgs)
+            p1, z1 = self._branch(view_1)
+            p2, z2 = self._branch(view_2)
+            sg = self.anti_collapse
+            per_sample = 0.5 * (
+                _neg_cosine_per_sample(p1, z2, stop_grad=sg) + _neg_cosine_per_sample(p2, z1, stop_grad=sg)
+            )
+        return per_sample

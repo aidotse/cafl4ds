@@ -186,11 +186,32 @@ class EraStream:
         return 1 if self.order == "iid" else len(self._class_order)
 
     def __len__(self) -> int:
-        """Number of batches the stream will deliver."""
-        n = len(self._order_stream)
-        if self.drop_last:
-            return n // self.batch_size
-        return (n + self.batch_size - 1) // self.batch_size
+        """Number of batches the stream will deliver.
+
+        Mirrors :meth:`__iter__` exactly, including the rule that **a batch is never split
+        across eras**: at every era boundary the current (possibly partial) batch is flushed.
+        For ``class_blocked`` that means each class block contributes ``ceil(block / batch)``
+        batches — strictly more than ``ceil(total / batch)`` whenever a block does not divide
+        evenly. Only the very last partial batch of the whole stream honours ``drop_last``.
+        (For ``iid`` there is a single era, so this reduces to ``ceil(total / batch_size)``.)
+        A correct count is load-bearing for the multi-epoch loop: it is the per-epoch stride
+        used to number global steps and to size the LR schedule's horizon.
+        """
+        count = 0
+        buffer = 0
+        buffer_era: int | None = None
+        for era, _ in self._order_stream:
+            if buffer_era is not None and era != buffer_era and buffer:
+                count += 1  # era-boundary flush (partial batch), always emitted
+                buffer = 0
+            buffer_era = era
+            buffer += 1
+            if buffer == self.batch_size:
+                count += 1
+                buffer = 0
+        if buffer and not self.drop_last and buffer_era is not None:
+            count += 1  # final partial batch — the only one drop_last affects
+        return count
 
     def __iter__(self) -> Iterator[StreamBatch]:
         """Yield label-free :class:`StreamBatch` batches in stream order.

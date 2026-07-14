@@ -15,9 +15,13 @@ tensors or a passed-in `encoder` callable — no stream/model/training. **Labels
 tests: `tests/unit/test_measurements.py`. Everything else is still PyMaxQ scaffold (`cafl4ds/pipeline.py` +
 `scripts/example.py` are throwaway Hydra examples). The architecture is the *research design*:
 
-- **`docs/project-plan.md` is the spec** — streaming loop, filter families (novelty F-a, coverage F-b, steerable F-c),
-    SSL backbones, health metrics (RankMe, drift, forgetting), FL track, baselines, phased plan. Read it before
-    designing anything non-trivial. Novelty claims are tagged `N-A`…`N-G`; new work maps to one or it is scope drift.
+- **`docs/project-plan/` is the spec** — split hierarchically for targeted agent reads. Start at
+    [`index.md`](docs/project-plan/index.md): the always-read core (scope, the loop, experimental framing, strategic
+    ordering, novelty at-a-glance, phase spine) plus a routing table to the detail files — `novelty.md` (N-A…N-G +
+    positioning), `building-blocks.md` (SSL backbones, filter families F-a/F-b/F-c, datasets), `experiments.md`
+    (baselines, phased plan, factor matrix), `metrics.md` (health signals, control, evaluation), `reading-list.md`,
+    `risks.md`. Read the index before designing anything non-trivial, then open only the detail file the task needs.
+    Novelty claims are tagged `N-A`…`N-G`; new work maps to one or it is scope drift.
 
 ## Environment (uv)
 
@@ -75,9 +79,10 @@ Runs behind a token-compression pipeline (RTK shell-hook + Headroom API proxy): 
 
 ## How to document experiments
 
-Docs for experiments are held in `docs/experiments`, organized by project phase (see `docs/project-plan.md`). Each phase
+Docs for experiments are held in `docs/experiments`, organized by project phase (see `docs/project-plan/`). Each phase
 has a high level `index.md` that acts as a summary (what is this phase about, what is the scope?) and lists the
-experiments we have run in this phase. Each of these gets its own `.md` file, with more exhaustive details. Lastly, we
-keep a separate `docs/experiments/latest-results.md` that provides an ultra-brief summary of what each experiment
-achieved. This order is meant to optimze agent reads: agents only read the exhaustive experiment-specific `.md` files
-when absolutely necessary, otherwise should be guided by the summaries.
+experiments we have run in this phase, as well as the core motivation for running each experiment (*why*, not *how*).
+Each of these gets its own `.md` file, with more exhaustive details. Lastly, we keep a separate
+`docs/experiments/latest-results.md` that provides a *brief* summary of what each experiment achieved. This order is
+meant to optimize agent reads: agents only read the exhaustive experiment-specific `.md` files when absolutely
+necessary, otherwise should be guided by the summaries.

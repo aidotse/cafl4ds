@@ -19,7 +19,7 @@ This repo provides a Docker development environment for Gaudi HPUs: `docker/gaud
 ### 1. Build the image
 
 Follow the header comment in `docker/gaudi.env.Dockerfile`. The base image tag **must match the host driver version**
-(check with `hl-smi`). By default the the built image name is `gaudi-env-cafl4ds:latest`.
+(check with `hl-smi`). By default the image name is `gaudi-env-cafl4ds:latest`.
 
 ### 2. Check the hardware
 
