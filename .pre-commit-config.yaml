@@ -85,7 +85,10 @@ repos:
           # newer mdformat-mkdocs than a cached local env, so markdown that is clean locally
           # gets reformatted in CI. Renovate bumps this deliberately.
           - mdformat-mkdocs==5.2.0
-        args: [--wrap, "120"]
+        # --compact-tables: don't pad table cells to the widest cell in the column. Our tables
+        # have some very wide cells (status / "what it establishes"), and padding every other
+        # cell to match blows the table out and makes diffs churn on unrelated edits.
+        args: [--wrap, "120", --compact-tables]
 
   # Static security analysis for GitHub Actions workflows (injection, permissions, pinning).
   - repo: https://github.com/zizmorcore/zizmor-pre-commit

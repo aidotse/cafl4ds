@@ -71,6 +71,28 @@ class MAE(SSLMethod):
             target = (target - mean) / (var + 1.0e-6).sqrt()
         return target
 
+    def _masked_recon_loss(self, imgs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        """Augment, mask, reconstruct, and return the per-patch loss and the mask.
+
+        Shared by :meth:`training_step` (mean over masked patches) and
+        :meth:`per_sample_loss` (per-image mean over its masked patches). Masking is random,
+        so each call draws a fresh mask — fine for both a training step and a selection probe.
+
+        Args:
+            imgs: A batch of raw images ``[B, C, H, W]``.
+
+        Returns:
+            A ``(loss_per_patch, mask)`` pair, each ``[B, N]``; ``mask`` is 1 on masked
+            (reconstructed) patches and 0 on visible ones.
+        """
+        views = self.augment(imgs)
+        latent, mask, ids_restore = self.encoder.forward_encoder(views, mask_ratio=self.mask_ratio)
+        assert mask is not None and ids_restore is not None  # noqa: S101 - guaranteed by mask_ratio > 0
+        pred = self.decoder(latent, ids_restore)
+        target = self._reconstruction_target(views)
+        loss_per_patch = (pred - target).pow(2).mean(dim=-1)  # [B, N]
+        return loss_per_patch, mask
+
     def training_step(self, imgs: torch.Tensor) -> torch.Tensor:
         """Compute the masked reconstruction loss on the masked patches only.
 
@@ -80,10 +102,22 @@ class MAE(SSLMethod):
         Returns:
             The mean squared reconstruction error over masked patches (scalar).
         """
-        views = self.augment(imgs)
-        latent, mask, ids_restore = self.encoder.forward_encoder(views, mask_ratio=self.mask_ratio)
-        assert mask is not None and ids_restore is not None  # noqa: S101 - guaranteed by mask_ratio > 0
-        pred = self.decoder(latent, ids_restore)
-        target = self._reconstruction_target(views)
-        loss_per_patch = (pred - target).pow(2).mean(dim=-1)  # [B, N]
+        loss_per_patch, mask = self._masked_recon_loss(imgs)
         return cast(torch.Tensor, (loss_per_patch * mask).sum() / mask.sum().clamp_min(1.0))
+
+    def per_sample_loss(self, imgs: torch.Tensor) -> torch.Tensor:
+        """Per-image masked reconstruction MSE ``[B]`` (no gradient).
+
+        The free per-frame informativeness signal MAE exposes: high loss = the current model
+        reconstructs this frame poorly. Averaged over each image's own masked patches.
+
+        Args:
+            imgs: A batch of raw images ``[B, C, H, W]``.
+
+        Returns:
+            A detached ``[B]`` tensor of per-image reconstruction errors.
+        """
+        with torch.no_grad():
+            loss_per_patch, mask = self._masked_recon_loss(imgs)
+            per_image = (loss_per_patch * mask).sum(dim=-1) / mask.sum(dim=-1).clamp_min(1.0)
+        return per_image

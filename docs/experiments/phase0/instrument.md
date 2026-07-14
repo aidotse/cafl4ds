@@ -38,17 +38,17 @@ pretrained on the class-blocked ordering we would have half-run the experiment a
 Everything is Hydra `instantiate`-wired and left with seams for Phases 1–3. The factor letters (`A`, `C`, `F`, `I`) are
 from the plan's experiment matrix.
 
-| Component          | Module                                      | Role / factor                                                                        | Future-phase seam                |
-| ------------------ | ------------------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------- |
-| Data source        | `cafl4ds/data/sources.py`                   | `STL10Source`, `SyntheticSource` (network-free)                                      | BDD100K/ZOD = new source         |
-| Stream             | `cafl4ds/data/streams.py`                   | `EraStream` — `order=class_blocked` (**F**=correlated) or `iid`; eras, held-out eval | drift/segment streams            |
-| Encoder            | `cafl4ds/models/vit.py`                     | shared `TinyViTEncoder` (MAE masking + pooled `embed`)                               | timm/pretrained encoder at scale |
-| Heads              | `cafl4ds/models/heads.py`                   | `MLPHead` (proj/pred), `MAEDecoder`                                                  | BYOL predictor etc.              |
-| SSL method (**C**) | `cafl4ds/ssl/{base,mae,simsiam,factory}.py` | `SSLMethod`: `training_step`, `encode`; `apply_encoder_init` (**I**)                 | BYOL/SimCLR, PC                  |
-| Filter (**A**)     | `cafl4ds/filters/{base,accept_all}.py`      | `Filter.select`; **B-floor** `AcceptAll`                                             | F-a/F-b/F-c                      |
-| Monitor            | `cafl4ds/monitor.py`                        | `HealthMonitor` runs instruments on the fixed probe set                              | slow-edge controller             |
-| Run log            | `cafl4ds/run_log.py`                        | one JSONL, **loss** + **health** as separate series; `tabulate`                      | —                                |
-| Loop               | `cafl4ds/loop.py`                           | `StreamingLoop` — B-floor, raw order, no replay                                      | knobs plug in here               |
+| Component | Module | Role / factor | Future-phase seam |
+| -- | -- | -- | -- |
+| Data source | `cafl4ds/data/sources.py` | `STL10Source`, `SyntheticSource` (network-free) | BDD100K/ZOD = new source |
+| Stream | `cafl4ds/data/streams.py` | `EraStream` — `order=class_blocked` (**F**=correlated) or `iid`; eras, held-out eval | drift/segment streams |
+| Encoder | `cafl4ds/models/vit.py` | shared `TinyViTEncoder` (MAE masking + pooled `embed`) | timm/pretrained encoder at scale |
+| Heads | `cafl4ds/models/heads.py` | `MLPHead` (proj/pred), `MAEDecoder` | BYOL predictor etc. |
+| SSL method (**C**) | `cafl4ds/ssl/{base,mae,simsiam,factory}.py` | `SSLMethod`: `training_step`, `encode`; `apply_encoder_init` (**I**) | BYOL/SimCLR, PC |
+| Filter (**A**) | `cafl4ds/filters/{base,accept_all}.py` | `Filter.select`; **B-floor** `AcceptAll` | F-a/F-b/F-c |
+| Monitor | `cafl4ds/monitor.py` | `HealthMonitor` runs instruments on the fixed probe set | slow-edge controller |
+| Run log | `cafl4ds/run_log.py` | one JSONL, **loss** + **health** as separate series; `tabulate` | — |
+| Loop | `cafl4ds/loop.py` | `StreamingLoop` — B-floor, raw order, no replay | knobs plug in here |
 
 Key invariants (all covered by tests in `tests/unit/`):
 

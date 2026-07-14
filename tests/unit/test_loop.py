@@ -5,6 +5,8 @@ and the health metrics (rankme, drift, probe) side by side over multiple steps, 
 backbones. Uses the network-free synthetic source so the test is self-contained.
 """
 
+from pathlib import Path
+
 import torch
 
 from cafl4ds.data.sources import SyntheticSource
@@ -14,6 +16,7 @@ from cafl4ds.loop import StreamingLoop
 from cafl4ds.models.vit import TinyViTEncoder
 from cafl4ds.monitor import HealthMonitor
 from cafl4ds.run_log import RunLogger, read_run, tabulate
+from cafl4ds.schedule import warmup_cosine_schedule
 from cafl4ds.ssl.factory import build_mae, build_simsiam
 
 _HEALTH_KEYS = {"loss", "rankme", "cka_drift", "cosine_drift", "knn_acc", "linear_acc"}
@@ -81,3 +84,45 @@ def test_tabulate_renders_health_rows(tmp_path: object) -> None:
 def test_tabulate_handles_empty() -> None:
     """Tabulating no records yields a placeholder rather than erroring."""
     assert tabulate([]) == "(no health records)"
+
+
+def test_multi_epoch_with_scheduler_numbers_steps_globally(tmp_path: Path) -> None:
+    """``epochs>1`` re-iterates the stream with globally-increasing steps, stepping the LR sched.
+
+    The P0.2.1 regime: several passes over an IID stream with a warmup+cosine schedule. The run
+    log's steps must span more than a single epoch (so the extra passes actually happened) and
+    the scheduler must have moved the LR off its warmup floor by the end.
+    """
+    torch.manual_seed(0)
+    encoder = TinyViTEncoder(img_size=16, patch_size=8, embed_dim=32, depth=2, num_heads=2)
+    method = build_simsiam(encoder)
+    stream = EraStream(
+        SyntheticSource(num_classes=3, per_class=48, img_size=16),
+        batch_size=12,
+        order="iid",
+        support_per_class=8,
+        query_per_class=8,
+        era_eval_per_class=5,
+    )
+    batches_per_epoch = len(stream)
+    epochs = 3
+    optimizer = torch.optim.AdamW(method.parameters(), lr=1e-3)
+    scheduler = warmup_cosine_schedule(optimizer, total_steps=epochs * batches_per_epoch, warmup_frac=0.1)
+    run_logger = RunLogger(str(tmp_path / "multi.jsonl"), run_name="multi")
+    StreamingLoop(
+        stream=stream,
+        method=method,
+        optimizer=optimizer,
+        selection_filter=AcceptAll(),
+        monitor=HealthMonitor(stream.eval_sets, knn_k=5),
+        run_logger=run_logger,
+        eval_every=batches_per_epoch,
+        epochs=epochs,
+        scheduler=scheduler,
+    ).run()
+
+    records = read_run(str(tmp_path / "multi.jsonl"))
+    loss_steps = [r["step"] for r in records if r["series"] == "loss"]
+    assert max(loss_steps) >= 2 * batches_per_epoch  # steps span past the first epoch (global numbering)
+    assert len(loss_steps) == len(set(loss_steps))  # no duplicate step ids across epochs
+    assert optimizer.param_groups[0]["lr"] < 1e-3  # cosine decayed the LR below the base by the end

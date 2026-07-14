@@ -62,6 +62,40 @@ def test_class_blocked_ordering_is_blocked_by_era() -> None:
     assert set(eras) == {0, 1, 2, 3}
 
 
+def test_len_matches_actual_batch_count_class_blocked() -> None:
+    """``len`` counts era-boundary flushes, so it equals the batches actually iterated.
+
+    Class-blocked never splits a batch across eras, so a block that does not divide the batch
+    size contributes a partial batch. Here 4 classes x 25 train each (40 - 5 - 5 - 5 reserved),
+    batch 8 -> ceil(25/8)=4 per class -> 16 batches, NOT ceil(100/8)=13. A correct count is
+    load-bearing for multi-epoch global step numbering and the LR-schedule horizon.
+    """
+    stream = EraStream(
+        IdSource(num_classes=4, per_class=40),
+        batch_size=8,
+        order="class_blocked",
+        support_per_class=5,
+        query_per_class=5,
+        era_eval_per_class=5,
+    )
+    assert len(stream) == 16
+    assert len(stream) == sum(1 for _ in stream)  # matches the real iteration exactly
+
+
+def test_len_matches_actual_batch_count_iid() -> None:
+    """For IID (one era) ``len`` is the plain ``ceil(total / batch_size)`` and still exact."""
+    stream = EraStream(
+        IdSource(num_classes=4, per_class=40),
+        batch_size=8,
+        order="iid",
+        support_per_class=5,
+        query_per_class=5,
+        era_eval_per_class=5,
+    )
+    assert len(stream) == 13  # ceil(100 / 8), single era -> no boundary flushes
+    assert len(stream) == sum(1 for _ in stream)
+
+
 def test_batches_carry_no_labels() -> None:
     """A StreamBatch exposes only images (+ era/step) — labels cannot enter the update."""
     stream = EraStream(

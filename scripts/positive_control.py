@@ -1,30 +1,38 @@
-"""Phase-0 positive control (P0.2) — the collapse-instrument CALIBRATION gate.
+"""Phase-0 positive control (P0.2, recalibrated by P0.2.1) — the collapse-instrument gate.
 
-Runs, in **one session**, two arms of the SAME SimSiam over the SAME class-blocked STL-10
-stream, differing only by SimSiam's ``anti_collapse`` toggle:
+Runs, in **one session**, two arms of the SAME SimSiam over the SAME **IID** STL-10 stream,
+differing only by SimSiam's ``anti_collapse`` toggle:
 
-* **PC** — anti-collapse DISABLED (predictor removed + stop-gradient off). Its trivial global
+* **PC** — anti-collapse DISABLED (predictor bypassed to ``p = z`` + stop-gradient off). Its trivial global
   optimum maps every input to one constant vector, so collapse is *mathematically forced*
-  (loss → −1, RankMe → floor ~1.0), independent of scale — which is why the toy regime is
-  sufficient (and required) to calibrate the instruments in the regime we measure in.
-* **healthy** — SimSiam intact (predictor + stop-gradient ON). Stays in its higher RankMe
-  band (the ~2.5–3+ range the P0.1 SimSiam runs showed).
+  (loss → −1, RankMe → the ~1.9 projector-BatchNorm floor).
+* **healthy** — SimSiam intact (predictor + stop-gradient ON). In the P0.2.1 fair-training
+  regime its RankMe dips early then **re-expands and holds** (~5.8) — a genuine healthy
+  baseline, cleanly separated from the collapse floor.
 
-Both arms are **from-scratch** (NOT the pretrained checkpoint, which in P0.1 looked possibly
-pre-collapsed). The toggle is the *only* difference: the seed is reset before building each
-arm so the two encoders start bit-identical and the augmentation RNG stays in lockstep, so
-any divergence is attributable to anti-collapse alone. The gate is the **contrast** between
-the two RankMe curves (ice-water vs boiling-water for a thermometer), checked numerically —
-see ``docs/experiments/phase0/positive_control.md``.
+The P0.2.1 regime (why this is not P0.2's single ~25-step class-blocked pass): P0.2 found the
+intact arm's RankMe decayed *indistinguishably* from the forced collapse at that toy horizon
+(only the loss separated them). The fix is a fair training regime — the SAME tiny ViT and
+img_size, but the full STL-10 train split, **IID** ordering, **multiple epochs**, and a
+**warmup+cosine LR** — not a bigger model. IID isolates the ablation as the only collapse
+cause (correlated-stream degradation is Phase 1). In this regime the discriminator flips:
+both arms reach a low loss, so the gate separates on **RankMe**, not loss.
+
+Both arms are **from-scratch**. The toggle is the *only* difference: the seed is reset before
+building each arm so the two encoders start bit-identical and the augmentation RNG stays in
+lockstep, so any divergence is attributable to anti-collapse alone. The gate is the
+**contrast** between the two RankMe curves, checked numerically — see
+``docs/experiments/phase0/positive_control_2.md``.
 
 Examples:
     Default (STL-10, CPU)::
 
         uv run python scripts/positive_control.py
 
-    Fast network-free smoke::
+    Fast network-free smoke (synthetic has 100 imgs/class, so shrink the probe reservations)::
 
-        uv run python scripts/positive_control.py data=synthetic img_size=16 eval_every=3
+        uv run python scripts/positive_control.py data=synthetic img_size=16 epochs=8 \
+            stream.support_per_class=8 stream.query_per_class=8 stream.era_eval_per_class=5
 
     On the Gaudi HPU (inside the container; see docs/developing.md)::
 
@@ -61,6 +69,8 @@ def _run_arm(
 
     The global seed is reset here so both arms start from a bit-identical encoder init and
     draw the same augmentation sequence — the ``anti_collapse`` toggle is the only variable.
+    Runs the P0.2.1 regime: ``config.epochs`` passes over the IID stream with a warmup+cosine
+    LR schedule (the fair training horizon a healthy SimSiam baseline needs).
 
     Args:
         config: The composed ``positive_control`` config.
@@ -82,9 +92,19 @@ def _run_arm(
     optimizer = instantiate(config.optim, params=method.parameters())
     monitor = instantiate(config.monitor, eval_sets=stream.eval_sets)
 
+    # One eval per `eval_every_epochs` epochs — probes (kNN/linear) are expensive, so a
+    # per-step cadence over a multi-epoch run would dominate the wall-clock for no benefit.
+    batches_per_epoch = len(stream)
+    eval_every = max(1, config.eval_every_epochs * batches_per_epoch)
+    total_steps = config.epochs * batches_per_epoch
+    scheduler = instantiate(config.schedule, optimizer=optimizer, total_steps=total_steps)
+
     run_log_path = out_dir / f"{run_name}.jsonl"
     run_logger = RunLogger(run_log_path, run_name=run_name)
-    logger.info(f"arm '{run_name}' (anti_collapse={anti_collapse}): {stream.num_eras} eras, {len(stream)} batches")
+    logger.info(
+        f"arm '{run_name}' (anti_collapse={anti_collapse}): {stream.num_eras} eras, "
+        f"{batches_per_epoch} batches x {config.epochs} epochs = {total_steps} steps"
+    )
 
     loop = StreamingLoop(
         stream=stream,
@@ -93,7 +113,9 @@ def _run_arm(
         selection_filter=instantiate(config.filter),
         monitor=monitor,
         run_logger=run_logger,
-        eval_every=config.eval_every,
+        eval_every=eval_every,
+        epochs=config.epochs,
+        scheduler=scheduler,
         device=config.device,
     )
     loop.run()
@@ -143,15 +165,18 @@ def _evaluate_gate(
     pc_loss_floor: float,
     hc_loss_floor: float,
 ) -> dict[str, Any]:
-    """Apply the numeric pass criterion (the gate) — a scale-free relative-separation contrast.
+    """Apply the numeric pass criterion (the gate) — a RankMe-separation contrast (P0.2.1).
 
-    Passes iff, at the bounded (P0.1) horizon: the PC's final RankMe drops to at most
+    Passes iff, in the P0.2.1 baseline regime: the PC's final RankMe drops to at most
     ``gate.pc_rankme_drop_frac`` of its OWN random-init RankMe (a large relative collapse); the
     PC's loss floor reaches ``<= gate.pc_loss_floor`` (rides to its −1 constant-solution floor —
-    the "right reason" fingerprint); the intact control stays ``>= gate.healthy_rankme_min`` with
-    a loss floor that never reaches the collapse floor; and the loss-floor gap (the DEVICE-ROBUST
-    discriminator — the RankMe endpoint gap is within FP noise at this horizon) exceeds
-    ``gate.min_loss_separation``.
+    the "right reason" fingerprint); the intact control's final RankMe clears the absolute floor
+    ``gate.healthy_rankme_min`` (a genuine healthy baseline — it re-expanded, not collapsed); and
+    the two arms are separated on RankMe by ``healthy_final / pc_final >= gate.min_rankme_ratio``.
+
+    Note the discriminator flip from P0.2: in this fair-training regime BOTH arms reach a low
+    SSL loss (~−0.9), so the loss no longer separates them — RankMe does. Loss is used only for
+    the PC's "right reason" fingerprint, never to gate the healthy arm.
 
     Args:
         config: The composed config (its ``gate`` block holds the thresholds).
@@ -167,13 +192,13 @@ def _evaluate_gate(
     pc_init, pc_final = pc[0]["rankme"], pc[-1]["rankme"]
     hc_final = hc[-1]["rankme"]
     pc_drop_frac = pc_final / pc_init if pc_init else 1.0
-    loss_separation = hc_loss_floor - pc_loss_floor
+    rankme_ratio = hc_final / pc_final if pc_final else float("inf")
 
     checks = {
         "pc_collapses_relative": pc_drop_frac <= g.pc_rankme_drop_frac,
         "pc_right_reason": pc_loss_floor <= g.pc_loss_floor,
-        "healthy_holds": hc_final >= g.healthy_rankme_min and hc_loss_floor > g.pc_loss_floor,
-        "loss_separated": loss_separation >= g.min_loss_separation,
+        "healthy_holds": hc_final >= g.healthy_rankme_min,
+        "rankme_separated": rankme_ratio >= g.min_rankme_ratio,
     }
     return {
         "pc_rankme_init": pc_init,
@@ -182,13 +207,13 @@ def _evaluate_gate(
         "pc_loss_floor": pc_loss_floor,
         "healthy_rankme_final": hc_final,
         "healthy_loss_floor": hc_loss_floor,
-        "loss_separation": loss_separation,
-        "rankme_separation": hc_final - pc_final,  # reported only — device-fragile at this horizon
+        "rankme_ratio": rankme_ratio,
+        "loss_separation": hc_loss_floor - pc_loss_floor,  # reported only — no longer a discriminator
         "thresholds": {
             "pc_rankme_drop_frac": g.pc_rankme_drop_frac,
             "pc_loss_floor": g.pc_loss_floor,
             "healthy_rankme_min": g.healthy_rankme_min,
-            "min_loss_separation": g.min_loss_separation,
+            "min_rankme_ratio": g.min_rankme_ratio,
         },
         "checks": checks,
         "passed": all(checks.values()),
@@ -225,13 +250,12 @@ def main(config: DictConfig) -> None:
         f"(<= {t['pc_rankme_drop_frac'] * 100:.0f}%?  {gate['checks']['pc_collapses_relative']})\n"
         f"  PC loss floor  = {gate['pc_loss_floor']:.4f} "
         f"(<= {t['pc_loss_floor']} -> rides to -1 constant-solution floor?  {gate['checks']['pc_right_reason']})\n"
-        f"  healthy RankMe final = {gate['healthy_rankme_final']:.3f} (>= {t['healthy_rankme_min']}?), "
-        f"loss floor = {gate['healthy_loss_floor']:.4f} (never reaches -1?)  -> holds?  "
-        f"{gate['checks']['healthy_holds']}\n"
-        f"  loss-floor separation (intact - PC) = {gate['loss_separation']:.3f} "
-        f"(>= {t['min_loss_separation']}?  {gate['checks']['loss_separated']})\n"
-        f"  [reported] RankMe endpoint gap = {gate['rankme_separation']:.3f} "
-        f"(device-fragile at this horizon; not gated)"
+        f"  healthy RankMe final = {gate['healthy_rankme_final']:.3f} "
+        f"(>= {t['healthy_rankme_min']} absolute floor?  {gate['checks']['healthy_holds']})\n"
+        f"  RankMe separation (healthy / PC) = {gate['rankme_ratio']:.2f}x "
+        f"(>= {t['min_rankme_ratio']}x?  {gate['checks']['rankme_separated']})\n"
+        f"  [reported] loss-floor gap (healthy - PC) = {gate['loss_separation']:.3f} "
+        f"(NOT gated — both arms reach a low loss in this regime)"
     )
 
     logger.info("positive control — side-by-side (aligned checkpoints)\n" + table)
