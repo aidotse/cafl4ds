@@ -64,7 +64,7 @@ stream:
   query_per_class: 50
   era_eval_per_class: 10
 
-# Numeric pass criterion (a gate, not an eyeball read) — see docs/experiments/phase0/positive_control_2.md.
+# Numeric pass criterion (a gate, not an eyeball read) — see docs/experiments/phase0/P0.2.1.md.
 # P0.2.1 REDESIGNED the gate. Two changes from P0.2, both driven by what the runs do:
 #   1. Gate on RANKME SEPARATION, not loss. In this regime BOTH arms reach loss ~-0.9 (a low
 #      cosine loss is compatible with a healthy SimSiam), so the loss no longer discriminates —

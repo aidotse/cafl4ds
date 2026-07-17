@@ -1,6 +1,6 @@
 ‹ [Project Plan index](index.md)
 
-# Risks & gates
+# Risks
 
 *The `N-x` novelty claims are stated in full in [novelty.md](novelty.md); baselines (PC, B5, B-open, …) in
 [experiments.md](experiments.md#baselines).*
@@ -24,12 +24,3 @@ nulls** (disappointing but still results), then **execution**.
 | FL infra slips / aggregation confounded | FedN not ready; can't separate skew from non-IID | FL science is parallel and deferrable (doesn't block the spine); the centralized reference isolates selection-induced skew from ordinary non-IID |
 | Compute / Gaudi bottleneck; Phase-1 grid too large | Habana port slow; init × pressure × method blows up | CPU + small models for the demonstration; isolate Gaudi as a contained task; **trim rule:** full init×pressure sweep on the STL-10 pilot, carry 1–2 init levels to BDD |
 | Drift back to the criterion bake-off | Work optimizing filters, not studying the coupling | The Novelty-at-a-glance (N-A…N-G) is the honesty check — if work doesn't map there, it's drift |
-
-**Gates (do not proceed until these pass):**
-
-- **Phase 0:** the positive control collapses on RankMe — instruments validated before any conclusion.
-- **Phase 3:** α demonstrably moves health in the *open-loop* study — confirm F-c is a real actuator before building the
-    closed-loop controller.
-
-**Single most important step:** Phase 0–1 (instrument + demonstrate the degradation envelope, with the positive
-control), run first.

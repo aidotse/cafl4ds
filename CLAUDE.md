@@ -4,85 +4,70 @@ Guidance for Claude Code (claude.ai/code) in this repo.
 
 ## What this project is
 
-`cafl4ds` — **Continuous, Active Federated Learning for Data Streams**. Research on a *coupled active-learning loop*: a
-label-free streaming active-learning filter over a self-supervised (SSL) backbone trained via federated learning on
-transient data streams, with a representation-health monitor that re-aims selection.
-
-**Phase 0 (Instrument) underway.** The verified measurement apparatus is `cafl4ds/measurements.py` — standalone health
-instruments (RankMe/`effective_rank`, VICReg variance + off-diag covariance, alignment/uniformity, linear-CKA
-`cka_drift` + rotation-sensitive `cosine_drift`, kNN/linear probes, frozen baseline **B5**), depending only on embedding
-tensors or a passed-in `encoder` callable — no stream/model/training. **Labels enter the probes ONLY.** Known-answer
-tests: `tests/unit/test_measurements.py`. Everything else is still PyMaxQ scaffold (`cafl4ds/pipeline.py` +
-`scripts/example.py` are throwaway Hydra examples). The architecture is the *research design*:
+- **`cafl4ds`** — **Continuous, Active Federated Learning for Data Streams**. Research on a *coupled active-learning
+    loop*: a label-free streaming active-learning filter over a self-supervised (SSL) backbone trained via federated
+    learning on transient data streams, with a representation-health monitor that re-aims selection. Full overview:
+    `docs/project-plan/index.md`.
 
 - **`docs/project-plan/` is the spec** — split hierarchically for targeted agent reads. Start at
-    [`index.md`](docs/project-plan/index.md): the always-read core (scope, the loop, experimental framing, strategic
-    ordering, novelty at-a-glance, phase spine) plus a routing table to the detail files — `novelty.md` (N-A…N-G +
-    positioning), `building-blocks.md` (SSL backbones, filter families F-a/F-b/F-c, datasets), `experiments.md`
-    (baselines, phased plan, factor matrix), `metrics.md` (health signals, control, evaluation), `reading-list.md`,
-    `risks.md`. Read the index before designing anything non-trivial, then open only the detail file the task needs.
-    Novelty claims are tagged `N-A`…`N-G`; new work maps to one or it is scope drift.
+    `docs/project-plan/index.md`: the always-read core plus a routing table to the detail files. Read the index before
+    designing anything non-trivial, then open only the detail file the task needs.
+
+- **`docs/experiments/` is the implementation state** - also split hierarchically for targeted agent reads. Start at
+    `docs/experiments/latest-results/` The files in this directory correspond to individual sub-studies with the
+    following convention "`P<Phase ID>.<Substudy ID>`, where `<Substudy ID>` is also hierarchical (e.g. `3.1` is a
+    sub-sub study of sub-study `3`). Read only the sub-studies required for the task. The `docs/experiments/` directory
+    also has more specific docs for each project phase. When working in a specific phase, always read the `index.md` of
+    that phase (e.g. `docs/experiments/phase0/index.md`), which includes a routing table to the substudies of that
+    phase, also in the same directory. Only read the relevant sub-study doc for the required task.
 
 ## Environment (uv)
 
 **`uv`**-managed, Python `>=3.10` (`.venv` is 3.12). `uv sync --group dev` to set up; prefix everything with `uv run`.
-Private GitLab registry (optional): `source .env` first, where `.env` (git-ignored) holds
-`UV_INDEX_<PACKAGE>_USERNAME`/`_PASSWORD` (GitLab PAT, `read`). Versioning is git-tag-based via `hatch-vcs` (fallback
-`0.0.0`). **`torch` build is hardware-selected via a mutually-exclusive extra** — sync with `--extra cpu` (laptops/CI)
-or `--extra cu124` (NVIDIA GPU); a bare `uv sync` installs no torch. Gaudi uses neither (Habana base image provides
-torch; `docker/gaudi.env.Dockerfile` strips it from the export).
+Versioning is git-tag-based via `hatch-vcs`. For experiments sync `uv` with `--extra cpu` (laptops/CI) or
+`--extra cu124` (NVIDIA GPU). For more complex environment setup (e.g. on Gaudi) read: `docs/developing.md`.
 
-## Commands
+### Commands
 
 Tasks are **`poe`** tasks — `uv run poe <task>`; the full list + definitions live in `[tool.poe.tasks]` in
-`pyproject.toml`. Notes:
+`pyproject.toml`.
 
-- `uv run poe test [cpus] [paths...]` runs pytest + coverage; run it **before `poe docs`** (docs embed coverage/test
-    badges). pytest config (always-on coverage, `docs/exported/pytest.{html,xml}`, DEBUG logging) is in
-    `[tool.pytest.ini_options]`.
-- Single test: `uv run pytest tests/unit/test_dummy.py::test_dummy`.
+## Writing code
 
-## Quality gates
+### Quality gates
 
-Config for ruff / mypy / pytest is all in `pyproject.toml` (line length **120**, strict ruff incl. bandit `S`, Google
-docstrings, `docs/` excluded). Canonical runner is **pre-commit** (`uv run pre-commit install` once, then
-`run --all-files`); hook list is in `.pre-commit-config.yaml`.
+Config for ruff / mypy / pytest is all in `pyproject.toml`. Canonical runner is **pre-commit**
+(`uv run pre-commit install` once, then `run --all-files`); hook list is in `.pre-commit-config.yaml`.
 
-- **`no-commit-to-branch` blocks commits to the default branch — always work on a feature branch.**
-- `check-added-large-files` caps additions at 1 MB.
+### Experiments
 
-## How code is written here
-
-- **Hydra-driven, instantiation-based.** Entry points are `@hydra.main` scripts (`scripts/example.py`) reading
-    `cafl4ds/configs/` (root `main.yaml`). Build objects with `hydra.utils.instantiate` — plain classes wired via config
-    (`_target_: ...`), not hardcoded. Override on the CLI: `uv run python scripts/example.py key=value`. Run dirs →
-    `outputs/` (ignored).
+- **Layout**: package → `cafl4ds/`, entry points → `scripts/`, tests → `tests/unit/`. Only `cafl4ds` ships in the wheel.
+- **Hydra-driven, instantiation-based.** Entry points are `@hydra.main` scripts in `scripts/` reading `cafl4ds/configs/`
+    (root `main.yaml`). Build objects with `hydra.utils.instantiate` — plain classes wired via config (`_target_: ...`),
+    not hardcoded. Override on the CLI as per Hydra docs.
 - Logging via **`loguru`**.
-- Layout: package → `cafl4ds/`, entry points → `scripts/`, tests → `tests/unit/`. Only `cafl4ds` ships in the wheel.
-
-## Docker
-
-- `docker/Dockerfile` — production image; **requires `--build-arg VERSION=...`** (no `.git` in context). Private deps +
-    CA certs via build secrets; see the file's header comment.
-- `docker/gaudi.env.Dockerfile` — Gaudi HPU dev environment (default image is `gaudi-env-cafl4ds:latest`). Run things on
-    the HPUs with `scripts/run_gaudi_dev.sh <image> <device_id|all> [cmd...]` (smoke test:
-    `./scripts/run_gaudi_dev.sh gaudi-env-cafl4ds:latest 0 python scripts/gaudi_simple_test.py`). Only the repo is
-    mounted; bind data/models living outside it read-only with the `DATA_MOUNT=<host_path>` env var (e.g.
-    `DATA_MOUNT=/mnt/stl10 ./scripts/run_gaudi_dev.sh … python scripts/run_loop.py device=hpu`). Use the container's
-    system `python` (torch is from the Habana base image), **not** `uv run`. Host check: `HABANA_LOGS=/tmp/hllog hl-smi`
-    (no sudo). Full setup, isolation modes, and RDMA prereqs → `docs/developing.md`.
 
 ## Claude Code in this repo
 
-Runs behind a token-compression pipeline (RTK shell-hook + Headroom API proxy): bash output may be RTK-filtered, and
-`.claudeignore` excludes `.venv`, `uv.lock`, caches, and generated artifacts from indexing.
+Runs behind a token-compression pipeline (RTK shell-hook + Headroom API proxy): bash output may be RTK-filtered.
 
-## How to document experiments
+## Documenting experiments
 
-Docs for experiments are held in `docs/experiments`, organized by project phase (see `docs/project-plan/`). Each phase
-has a high level `index.md` that acts as a summary (what is this phase about, what is the scope?) and lists the
-experiments we have run in this phase, as well as the core motivation for running each experiment (*why*, not *how*).
-Each of these gets its own `.md` file, with more exhaustive details. Lastly, we keep a separate
-`docs/experiments/latest-results.md` that provides a *brief* summary of what each experiment achieved. This order is
-meant to optimize agent reads: agents only read the exhaustive experiment-specific `.md` files when absolutely
-necessary, otherwise should be guided by the summaries.
+You can interpret this as a guide for how to add documentation on new studies or sub-studies. See notes above on
+`docs/experiments`. There are different levels of granularity at play:
+
+- `docs/experiments/latest-results/<substudy ID>.md` - a *concise* summary of the results / what was achieved in the
+    substudy. Avoid too many details; this is a a brief take-away from the study.
+
+- `docs/experiments/phase<ID>/index.md` - summary details of what the *project phase* is about, plus a routing table to
+    the substudies. In this table: only the *motivation*, not the *results* of the substudy, kept brief.
+
+- `docs/experiments/phase<ID>/<substudy ID>.md` - a detailed, *but not overly verbose or repetetive* description of the
+    sub study, including outputs, quantitative results. Includes (roughly) a brief section for the motivation, the
+    methodology and findings, any interesting insights, and how to run the experiments in the substudy. Do not mention
+    progress or status here, that goes in `docs/experiments/latest-results/latest-results/`.
+
+## Mandates
+
+- The documentation *must* be internally consistent, contradiction-free, and kept up to date and synchronized with the
+    experiments. Immediately flag any inconsistencies you find.

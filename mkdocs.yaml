@@ -29,12 +29,16 @@ nav:
       - Metrics (signals, control, eval): project-plan/metrics.md
       - Reading list: project-plan/reading-list.md
       - Risks & gates: project-plan/risks.md
-  - Latest Results: experiments/latest-results.md
+  - Latest Results:
+      - experiments/latest-results/index.md
+      - P0.1: experiments/latest-results/P0.1.md
+      - P0.2: experiments/latest-results/P0.2.md
+      - P0.2.1: experiments/latest-results/P0.2.1.md
   - Phase 0:
       - experiments/phase0/index.md
-      - P0.1 Instrument (streaming loop): experiments/phase0/instrument.md
-      - P0.2 Positive control (collapse gate - first investigation): experiments/phase0/positive_control_1.md
-      - P0.2.1 Positive control (collapse gate - baseline): experiments/phase0/positive_control_2.md
+      - P0.1 Instrument (streaming loop): experiments/phase0/P0.1.md
+      - P0.2 Positive control (collapse gate - first investigation): experiments/phase0/P0.2.md
+      - P0.2.1 Positive control (collapse gate - baseline): experiments/phase0/P0.2.1.md
   - API Reference: reference.md
   - Tests: exported/pytest.html
   - Coverage: exported/coverage/index.html

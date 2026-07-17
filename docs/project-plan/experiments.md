@@ -1,9 +1,12 @@
 ‹ [Project Plan index](index.md)
 
-# Experiments — baselines, phased plan, factor matrix
+# Experiments — baselines, phased plan, ablations (factor matrix)
 
 *Tags: `[STD]` re-implement · `[EXT]` extend to our setting · `[NEW]` genuine contribution (see
 [index](index.md#novelty-at-a-glance)). The `N-x` novelty claims are stated in full in [novelty.md](novelty.md).*
+
+The building blocks (experimental basis like models, datasets, methods, etc.) to consider are listed in
+[building-blocks.md](building-blocks.md)
 
 ## Baselines
 
@@ -13,7 +16,7 @@ bound the loop from above and below. Two are **diagnostics**, not training condi
 
 | ID | Baseline | Backdrop (loop config) | Role / when | Tag |
 | -- | -- | -- | -- | -- |
-| **PC** | Positive control: a config known to collapse | diagnostic (deliberately-collapsing) | Validates the instruments — **Phase 0 gate, runs first**; without it a null is uninterpretable | `[STD]` |
+| **PC** | Positive control: a config that deliberately induces a failure mode — **one per mode** (collapse, forgetting, instability) | diagnostic (deliberately-degrading) | **Calibrates** the instruments for that mode (must fire under the PC, stay quiet on a healthy baseline) — **Phase 0 gate, runs first**; without it a null is uninterpretable | `[STD]` |
 | **B0** | Use-everything offline SSL | streaming **off** (full data, shuffled, multi-epoch, no selection) | Ceiling the Pareto approaches as buffer→∞; compute early | `[STD]` |
 | **B5** | Frozen backbone, no adaptation — frozen-**pretrained** (pretrained regime) or frozen-**random** (from-scratch regime) | adaptation **off** | Existential floor — does adapting beat doing nothing? (RanDumb); compute early | `[STD]` |
 | **B-floor** | No filter: accept all, no replay, raw order | full loop, buffer = 0, no selection | Max-degradation reference; Phase 1 | `[STD]` |
@@ -31,32 +34,22 @@ bound the loop from above and below. Two are **diagnostics**, not training condi
 ablations* = B0 (no streaming, ceiling), B5 (no adaptation, floor) · *stored-selection reference* = B2 · *diagnostics* =
 PC, B1.6.
 
-> **Initialization is a pressure knob, not a fixed choice (→ factor P).** A fully-pretrained backbone sits in a good
-> basin and adapts gently — it can **mask** collapse and produce a false negative. So sweep init
-> `{from-scratch, lightly-pretrained, fully-pretrained}`:
->
-> - *From-scratch* (small model, toy/proxy data) is the **degradation-sensitive** setting and the natural home for the
->     Phase-1 demonstration — feasible here because we're eliciting dynamics, not chasing quality features (so "ZOD too
->     small for from-scratch" doesn't apply).
-> - *Pretrained-adapt* is the **realistic/deployment** setting where the selection results must ultimately hold, and
->     what compute forces at BDD/ZOD scale.
-> - Two senses of "degradation" follow the init: *eroding* good pretrained features (forgetting) vs. *failing to form*
->     them (collapse). Both worth eliciting. Do **not** lock the demonstration to pretrained-only.
+## Phased plan - scientific spine (sequential)
 
-## Phased plan
+The scientific spine is sequential — each phase needs the prior. The FL infrastructure and the health monitor run as
+parallel tracks that start early. Confirmation on in-house data trails the spine. Model initialization threads through:
+from-scratch (small/toy) to elicit the dynamics in Phases 1–3, pretrained-adapt to confirm they matter at realistic
+scale (ZOD).
 
-The **scientific spine** is sequential — each phase needs the prior. The **FL infrastructure** and the **health
-monitor** run as **parallel tracks** that start early. **Confirmation** on in-house data trails the spine. Model
-initialization threads through: from-scratch (small/toy) to *elicit* the dynamics in Phases 1–3, pretrained-adapt to
-*confirm they matter at realistic scale* (ZOD).
+### Phase 0 — Instrument calibration `[STD]`. (M1)
 
-### Scientific spine (sequential)
+Streaming loop + health metrics + B5 + a positive control **per failure mode**, on STL-10. Calibration is a two-sided
+per-mode test: each metric must **fire** under a PC that induces its mode *and* **stay quiet** under a healthy baseline
+— otherwise a Phase-1 signal is uninterpretable. Modes: **collapse** (joint-embedding; PC = predictorless SimSiam) ·
+**forgetting** (MAE; PC = train era A then only era B) · **instability** (divergence; gradient-norm). **Exit:** every
+mode calibrated.
 
-**Phase 0 — Instrument `[STD]`.** *(M1)* Streaming loop + health metrics + B5 + positive control, on STL-10. **Exit:**
-instruments validated **and PC collapses on RankMe**. → **Progress & latest results:
-[Phase 0 docs](../experiments/phase0/index.md).**
-
-**Phase 1 — Degradation envelope `[NEW]`.** *(M2)*
+### Phase 1 — Degradation envelope `[NEW]`. (M2)
 
 - **1a — STL-10 pilot.** Class-blocked (synthetic) correlation; cheap and fast. Job: confirm the phenomenon *can* appear
     **and** the instruments catch it. Validates the apparatus, **not** the claim.
@@ -67,32 +60,87 @@ instruments validated **and PC collapses on RankMe**. → **Progress & latest re
     **PC must fire.**
 - **Go:** a coupling exists. **No-Go:** reframe to selection-for-efficiency.
 
-**Phase 2 — Open-loop criterion study `[NEW]` (N-B, N-C).** **Centralized** (aggregation would confound the dynamics).
+### Phase 2 — Open-loop criterion study `[NEW]` (N-A, N-B, N-C).
+
 F-a / F-b / static-F-c as fixed knobs, in the regime where Phase 1 showed the dynamics clearest. Does the flip survive
 co-adaptation? Does the loop self-reinforce, and do damping interventions help?
 
-**Phase 3 — Closed loop `[NEW]` (N-E, N-G).** **Centralized.** Build the monitor→filter controller; close the loop with
-the steerable F-c. Compare **B-open (static filter) vs. closed-loop (health-modulated)** on health + downstream — does
-closing the loop help, and is it stable?
+(N-A): selection → batch diversity → collapse/forgetting, run live (streaming/dynamic extension of DiSF's offline
+finding).
 
-### Parallel tracks (start early, alongside the spine)
+**Leading indicator test**: Test whether / how far in advance the diagnostic metrics predict the failure mode, under the
+loop dynamics. Example: does a Tier-free signal (rank drop, drift) *predict* the probe-based forgetting before the
+labels would reveal it, with usable lead time?
 
-**FL track.** *Infrastructure* (e.g. FedAvg + client simulation) built **in parallel from Phase 1**. *Science* (N-D
-selection × aggregation skew + global-aware correction; N-F federation-level health analytics) is gated only on a
-**centralized reference (Phase 2)**, so it slots in **right after Phase 2, parallel with Phase 3**. *Why
-centralized-first for the science:* aggregation confounds the coupling, so an effect can't be attributed to averaging
-vs. streaming selection until the centralized baseline exists. Infra parallelizes; interpretation needs the baseline.
+[Evaluation](#evaluation) criteria apply.
 
-**Monitoring track.** Signal analytics + health monitor built once Phase 1 confirms degradation exists (its required
-input), ready by Phase 3 (which consumes it). Proceeds in parallel with Phase 2.
+### Phase 3 — Closed loop `[NEW]` (N-E, N-G).
 
-### Confirmation & extensions (trail the spine)
+Build the monitor→filter controller; close the loop with the steerable F-c (map the detected health regime to F-c's `α`
+\+ acceptance rate and to replay/rollback. The closed loop is a control system — watch for oscillation; open-loop
+(B-open) is the honest baseline.) Compare **B-open (static filter) vs. closed-loop (health-modulated)** on health +
+downstream — does closing the loop help, and is it stable?
+
+**Leading indicator test**: As in open-loop: Test whether / how far in advance the diagnostic metrics predict the
+failure mode.
+
+**Replay codebook `[EXT]`**: e.g. in FL case (but also applies to centralized setup): server inverts the global model
+into a small static latent codebook, shipped with weights, mixed in by temporal-distance, scheduled by the monitor
+(embedding-level, not pixel-MAE; refresh each round).
+
+[Evaluation](#evaluation) criteria apply.
+
+### Phase 4: Confirmation & extensions (trail the spine)
 
 **ZOD confirmation `[EXT]`.** Top configs on a ZOD 2D proxy, **pretrained-adapt** (realistic scale). Confirms transfer
 after the relevant centralized result.
 
 **Optional.** Detection use case (mAP); deeper CF study; **federated closed-loop** (the Phase-3 loop studied under
 aggregation).
+
+### Parallel tracks (start early, alongside the spine)
+
+**FL track.** *Infrastructure* (e.g. FedAvg + client simulation) built **in parallel from Phase 1**. *Science* (N-D
+selection × aggregation skew + global-aware correction; N-F federation-level health analytics) is gated only on a
+**centralized reference (Phase 2)**, so it slots in right after Phase 2, parallel with Phase 3. *Why centralized-first
+for the science:* aggregation confounds the coupling, so an effect can't be attributed to averaging vs. streaming
+selection until the centralized baseline exists.
+
+**Monitoring track.** Signal analytics + health monitor built once Phase 1 confirms degradation exists (its required
+input), ready by Phase 3 (which consumes it). Proceeds in parallel with Phase 2.
+
+## Evaluation
+
+Evaluation criteria apply for centralized and decentralized training; the former benchmarks the latter.
+
+### Core SSL model
+
+Three protocols for evaluating the performance of the SSL model, all vs. **B5** (frozen-**pretrained** in the pretrained
+regime, frozen-**random** in the from-scratch regime) by ascending label budget (not a data flow):
+
+- **kNN** — zero training: classify eval queries by nearest neighbors in the *frozen* features. The rawest test of the
+    geometry.
+- **Linear probe** — train *only* a linear head on the *frozen* features. Linear separability of the representation
+    (standard SSL eval).
+- **Few-shot finetune** — *unfreeze* and finetune on a *small* labeled budget. A different question: label-efficiency /
+    how good a starting point the representation is, not frozen quality. (Few-shot, so abundant labels don't wash out
+    representation differences.)
+
+**Example figures:** for each model init regime (against B5): quality vs. buffer size (the flip), vs. stream samples,
+vs. label budget.
+
+### Loop dynamics
+
+**Signal-quality eval `[EXT]`:** segment-ordered streams with known shift points + injected sensor corruption →
+true-shift recall vs. noise rejection vs. confirmation lag. Validates the temporal-robustness layer.
+
+**Monitor / closed-loop `[NEW]` — two separable results:**
+
+1. **Control benefit:** does closing the loop beat **B-open**, driving the controller with the best / oracle signal
+    (probes allowed)?
+1. **Detection-in-time:** does a *label-free* signal flag degradation with enough lead time (the link above)?
+
+Keeping (1) and (2) apart makes a null interpretable — control failed, vs. the detector missed.
 
 ## Experiment matrix
 
@@ -116,10 +164,22 @@ aggregation).
 *B5 is always init-matched (frozen-random for from-scratch, frozen-pretrained for pretrained). Probes are used freely
 throughout (the study, not an edge pipeline).*
 
+> **Note on initialization:** its just another factor, not a fixed choice (→ factor I). A fully-pretrained backbone sits
+> in a good basin and adapts gently — it can **mask** collapse and produce a false negative. So sweep init
+> `{from-scratch, lightly-pretrained, fully-pretrained}`:
+>
+> - *From-scratch* (small model, toy/proxy data) is the **degradation-sensitive** setting and the natural home for the
+>     Phase-1 demonstration — feasible here because we're eliciting dynamics, not chasing quality features (so "ZOD too
+>     small for from-scratch" doesn't apply).
+> - *Pretrained-adapt* is the **realistic/deployment** setting where the selection results must ultimately hold, and
+>     what compute forces at BDD/ZOD scale.
+> - Two senses of "degradation" follow the init: *eroding* good pretrained features (forgetting) vs. *failing to form*
+>     them (collapse). Both worth eliciting. Do **not** lock the demonstration to pretrained-only.
+
 ### Grids (anchor a config, vary 1–2 factors per phase — never the full Cartesian)
 
-- **Phase 0 — Instrument (gate).** Validate the apparatus; **PC must collapse on RankMe**; B5 (init-matched) reproduces.
-    Not a sweep.
+- **Phase 0 — Instrument calibration.** Not a factors sweep, but run ablations to figure out the proper baseline for
+    each metric (*Asks:* under which operating regime does each metric behave correctly, or unexpectedly?)
 - **Phase 1 — Degradation envelope.** Vary **A**{B-floor,reservoir,dedup,loss} × **I** × **C**{MAE,joint-embedding} ×
     **P**; fixed L=open, D=centralized, F=correlated, E STL-10→BDD; PC + B5 every batch. *Asks:* does degradation appear
     and where does it onset; does adaptation beat B5; does the knob move health? (Both modes instrumented.)
@@ -127,17 +187,16 @@ throughout (the study, not an edge pipeline).*
     D=centralized, F2 (+F1 control), I = the regime where Ph1 showed the dynamics. *Asks:* does the flip survive
     co-adaptation (N-B); does the loop self-reinforce, do damping interventions help (N-C)?
     - *Ph2b ablations:* top F-a × **G** × **H**.
-- **Selection → health + leading indicator (N-A + the link).** Vary **A**{dedup,F-a,F-b} × **B** ×
-    **F**{correlated,drift+corruption}; measure the *diagnostic* (rank, drift) and the *validating* (per-era probe /
-    forgetting), and test whether the diagnostic **predicts** the validating with lead time.
+    - **Selection → health + leading indicator (N-A + the link).** Vary **A**{dedup,F-a,F-b} × **B** ×
+        **F**{correlated,drift+corruption}; measure the *diagnostic* (rank, drift) and the *validating* (per-era probe /
+        forgetting), and test whether the diagnostic **predicts** the validating with lead time.
 - **Phase 3 — Closed loop (N-E, N-G).** Vary **L**{open=B-open, closed} × **K**{oracle, label-free} × controller
     variants × **F**{correlated, drift+corruption}; fixed A=F-c, B anchored, D=centralized. *Asks:* (1) control benefit
     — closed vs B-open on health+downstream (oracle K); (2) detection-in-time — does label-free K suffice; (3) stability
-    — oscillation?
+    — oscillation? — Replay: {none, latent codebook}
 - **Phase 4 — ZOD confirmation.** Top configs × **B**; E=ZOD, **I**=pretrained-adapt, F2. *Asks:* transfer to in-house
     data at realistic scale?
-- **Phase 5 — FL (N-D, N-F).** Top configs × **D**{centralized-ref, FedAvg(+FedProx)} × **B** × non-IID splits ±
-    global-aware selection. *Asks:* selection × aggregation skew (N-D); federation-level health analytics (N-F).
+- **FL (N-D, N-F).** Top configs × **D**{centralized-ref, FedAvg(+FedProx)} × **B** × non-IID splits ± global-aware
+    selection. *Asks:* selection × aggregation skew (N-D); federation-level health analytics (N-F).
 - **Monitoring & extension sub-studies (parallel).** Health detector: multivariate vs **B1.6** (median+hysteresis) vs
-    per-channel EMA · Replay: {none, codebook} × **B** × scheduler · Telemetry: vision-only vs +telemetry (verdict
-    prediction).
+    per-channel EMA × **B** × scheduler · Telemetry: vision-only vs +telemetry (verdict prediction).
