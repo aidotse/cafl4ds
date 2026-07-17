@@ -1,20 +1,68 @@
 #!/bin/bash
 
-# Usage: ./scripts/run_gaudi_dev.sh <image_name> <device_id> [command]
+# --- Usage Function ---
+print_usage() {
+    echo "Usage: $0 [OPTIONS] <image_name> <device_id> [command...]"
+    echo ""
+    echo "Options:"
+    echo "  -m, --mount <path>   Optional read-only bind mount for data/models (e.g., /mnt/stl10 or /host:/container)"
+    echo "  -r, --root           Run as root (disables default user mapping)"
+    echo "  -h, --help           Show this help message and exit"
+    echo ""
+    echo "Example: $0 -m /mnt/stl10 --root my_image all bash"
+}
 
+
+# --- Mandatory Positional Arguments ---
 IMAGE_NAME="$1"
 DEVICE_ID="$2"
 
-if [ -z "$IMAGE_NAME" ]; then
-    echo "Error: You must provide an image name."
+# Remove the image name and device ID from the arguments list so we can pass the rest as the command ("$@")
+shift 2
+
+# --- Default Variables ---
+DATA_MOUNT=""
+RUN_AS_ROOT=""
+
+
+# --- Parse Script Options ---
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -m|--mount)
+            DATA_MOUNT="$2"
+            shift 2
+            ;;
+        -r|--root)
+            RUN_AS_ROOT=1
+            shift 1
+            ;;
+        -h|--help)
+            print_usage
+            exit 0
+            ;;
+        -*)
+            echo "Error: Unknown option $1"
+            print_usage
+            exit 1
+            ;;
+        *)
+            # Break out of the loop when we hit the first non-flag argument (the image name)
+            break
+            ;;
+    esac
+done
+
+
+if [ -z "$IMAGE_NAME" ] || [ -z "$DEVICE_ID" ]; then
+    echo "Error: You must provide both an image name and a device ID."
+    print_usage
     exit 1
 fi
 
 # Safeguard: Check if DEVICE_ID is a number or the exact string "all"
 if ! [[ "$DEVICE_ID" =~ ^[0-9]+$ ]] && [[ "$DEVICE_ID" != "all" ]]; then
     echo "Error: Invalid device ID ('$DEVICE_ID')."
-    echo "Usage: ./scripts/run_gaudi_dev.sh <image_name> <device_id> [command]"
-    echo "Example: ./scripts/run_gaudi_dev.sh my_image all bash"
+    print_usage
     exit 1
 fi
 

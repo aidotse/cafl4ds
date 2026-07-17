@@ -22,7 +22,7 @@ Both arms are **from-scratch**. The toggle is the *only* difference: the seed is
 building each arm so the two encoders start bit-identical and the augmentation RNG stays in
 lockstep, so any divergence is attributable to anti-collapse alone. The gate is the
 **contrast** between the two RankMe curves, checked numerically — see
-``docs/experiments/phase0/positive_control_2.md``.
+``docs/experiments/phase0/P0.2.1.md``.
 
 Examples:
     Default (STL-10, CPU)::
@@ -36,7 +36,7 @@ Examples:
 
     On the Gaudi HPU (inside the container; see docs/developing.md)::
 
-        DATA_MOUNT=/mnt/stl10 ./scripts/run_gaudi_dev.sh gaudi-env-cafl4ds:latest 0 \
+        ./scripts/run_gaudi_dev.sh -m /mnt/stl10 gaudi-env-cafl4ds:latest 0 \
             python scripts/positive_control.py device=hpu
 """
 

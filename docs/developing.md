@@ -49,23 +49,19 @@ script). It auto-detects whether stdin is a TTY, so it works both interactively 
 
 The project root is mounted at `/workspace` (the container's workdir), so pass paths relative to the repo root.
 
-#### Mounting data / models (`DATA_MOUNT`)
+#### Mounting data / models
 
 The launcher hardcodes no dataset path. Datasets and model caches usually live *outside* the repo (e.g. STL-10 on the
-shared drive at `/mnt/stl10`), so bind them in with the optional `DATA_MOUNT` env var — read-only, so a run can never
-corrupt the source data:
+shared drive at `/mnt/stl10`), so bind them in with the optional `-m` flag:
 
 ```bash
 # Bare host path -> mounted read-only at the SAME path in the container (config defaults resolve unchanged):
-DATA_MOUNT=/mnt/stl10 ./scripts/run_gaudi_dev.sh gaudi-env-cafl4ds:latest 0 \
+./scripts/run_gaudi_dev.sh -m /mnt/stl10 gaudi-env-cafl4ds:latest 0 \
     python scripts/run_loop.py device=hpu data_root=/mnt/stl10
 
 # Explicit `host:container[:opts]` spec -> used verbatim (mount a model dir somewhere specific):
-DATA_MOUNT=/host/models:/workspace/models ./scripts/run_gaudi_dev.sh gaudi-env-cafl4ds:latest 0 bash
+./scripts/run_gaudi_dev.sh -m /host/models:/workspace/models gaudi-env-cafl4ds:latest 0 bash
 ```
-
-Leave `DATA_MOUNT` unset for no extra mount. It is generic (data *or* models) and keeps the launcher's inputs explicit —
-nothing about a particular dataset is baked into the script.
 
 #### Runs as *you*, not root
 
@@ -76,11 +72,10 @@ and `/etc/group` are bind-mounted read-only so your uid resolves to a name (Haba
 `getpwuid()`), and `HOME` is pointed at `/tmp`. Single-card HPU access needs no privilege — the device nodes
 (`/dev/accel/*`, `/dev/infiniband/uverbs*`) are world-accessible.
 
-If a run genuinely needs root (e.g. some privileged multi-card scenario), set `RUN_AS_ROOT=1` to fall back to the old
-behaviour:
+If a run genuinely needs root (e.g. some privileged multi-card scenario), use `-r` to fall back to the old behaviour:
 
 ```bash
-RUN_AS_ROOT=1 ./scripts/run_gaudi_dev.sh gaudi-env-cafl4ds:latest all python -m your.multi_hpu.entrypoint
+./scripts/run_gaudi_dev.sh -r gaudi-env-cafl4ds:latest all python -m your.multi_hpu.entrypoint
 ```
 
 ### Isolation: single-card vs. `all`
