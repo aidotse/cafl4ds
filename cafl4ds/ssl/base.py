@@ -89,6 +89,42 @@ class SSLMethod(nn.Module, ABC):  # type: ignore[misc]  # nn.Module is Any witho
         with torch.no_grad():
             return self.encoder.embed(imgs)
 
+    def embedding_surfaces(self, imgs: torch.Tensor) -> dict[str, torch.Tensor]:
+        """Named frozen embedding surfaces for the health instruments (no gradient).
+
+        The health monitor reads the collapse geometry at each surface. The **default** is a
+        single ``"backbone"`` surface — the pooled encoder embedding (:meth:`encode`) that the
+        probes and RankMe calibration (P0.2.1) read. Joint-embedding methods override this to
+        add a ``"proj"`` surface (the projector/expander output), where the VICReg
+        variance/covariance and Wang & Isola alignment/uniformity terms are canonically defined
+        and where SimSiam's collapse fingerprint (the terminal projector BatchNorm) lives. This
+        lets P0.2.2 calibrate each instrument at *both* surfaces (see
+        ``docs/experiments/phase0/P0.2.2.md``).
+
+        Args:
+            imgs: A batch of images ``[B, C, H, W]``.
+
+        Returns:
+            A ``surface_name -> embedding [B, d]`` dict; the ``"backbone"`` key is always present.
+        """
+        return {"backbone": self.encode(imgs)}
+
+    def make_views(self, imgs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor] | None:
+        """Return a positive pair (two augmented views) for pair-based instruments, or ``None``.
+
+        Alignment (Wang & Isola 2020) needs a positive pair. Joint-embedding methods override
+        this to return two independently augmented views; single-view methods (MAE) return
+        ``None``, signalling that pair-based instruments are not applicable and should be
+        skipped.
+
+        Args:
+            imgs: A batch of raw images ``[B, C, H, W]``.
+
+        Returns:
+            A ``(view_a, view_b)`` pair, or ``None`` if the method has no positive-pair notion.
+        """
+        return None
+
 
 def load_encoder_checkpoint(encoder: TinyViTEncoder, checkpoint: str | Path) -> None:
     """Load encoder weights from a checkpoint saved by :func:`save_encoder_checkpoint`.

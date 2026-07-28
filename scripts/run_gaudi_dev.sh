@@ -13,13 +13,6 @@ print_usage() {
 }
 
 
-# --- Mandatory Positional Arguments ---
-IMAGE_NAME="$1"
-DEVICE_ID="$2"
-
-# Remove the image name and device ID from the arguments list so we can pass the rest as the command ("$@")
-shift 2
-
 # --- Default Variables ---
 DATA_MOUNT=""
 RUN_AS_ROOT=""
@@ -29,11 +22,11 @@ RUN_AS_ROOT=""
 while [[ $# -gt 0 ]]; do
     case $1 in
         -m|--mount)
-            DATA_MOUNT="$2"
+            DATA_MOUNT="$2" # Discard the flag and its value
             shift 2
             ;;
         -r|--root)
-            RUN_AS_ROOT=1
+            RUN_AS_ROOT=1 # Discard just the flag
             shift 1
             ;;
         -h|--help)
@@ -52,6 +45,12 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# --- Mandatory Positional Arguments ---
+IMAGE_NAME="$1"
+DEVICE_ID="$2"
+
+# Remove the image name and device ID from the arguments list so we can pass the rest as the command ("$@")
+shift 2
 
 if [ -z "$IMAGE_NAME" ] || [ -z "$DEVICE_ID" ]; then
     echo "Error: You must provide both an image name and a device ID."
@@ -103,9 +102,6 @@ if [ -n "${RUN_AS_ROOT:-}" ]; then
 else
     USER_FLAGS="--user $(id -u):$(id -g) -e HOME=/tmp -v /etc/passwd:/etc/passwd:ro -v /etc/group:/etc/group:ro"
 fi
-
-# Remove the image name from the arguments list so we can pass the rest
-shift 2
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"

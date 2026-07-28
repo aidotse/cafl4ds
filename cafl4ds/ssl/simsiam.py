@@ -99,6 +99,30 @@ class SimSiam(SSLMethod):
         """Return the method identifier (``"simsiam_collapse"`` for the PC ablation)."""
         return "simsiam" if self.anti_collapse else "simsiam_collapse"
 
+    def embedding_surfaces(self, imgs: torch.Tensor) -> dict[str, torch.Tensor]:
+        """Backbone (pooled encoder) **and** projector-output surfaces (no gradient).
+
+        Adds the ``"proj"`` surface to the base ``"backbone"`` one: the projector output
+        ``projector(encoder.embed(x))``, where SimSiam's collapse fingerprint (the terminal
+        ``BatchNorm(affine=False)``) lives and where the VICReg/alignment collapse terms are
+        canonically defined. The monitor reads its geometry instruments at both (P0.2.2).
+
+        Args:
+            imgs: A batch of images ``[B, C, H, W]``.
+
+        Returns:
+            ``{"backbone": [B, embed_dim], "proj": [B, proj_dim]}``.
+        """
+        backbone = self.encode(imgs)  # pooled encoder embedding (no grad, device-coerced)
+        with torch.no_grad():
+            proj = self.projector(backbone)
+        return {"backbone": backbone, "proj": proj}
+
+    def make_views(self, imgs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        """Return a SimSiam positive pair (two independently augmented views) for alignment."""
+        view_1, view_2 = self.two_view(imgs)  # unpack: `two_view.__call__` is Any without torch stubs
+        return view_1, view_2
+
     def _branch(self, view: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """Encode → project (→ predict, unless collapsing) one augmented view.
 
