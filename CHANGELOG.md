@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 This file is managed by [Commitizen](https://commitizen-tools.github.io/commitizen/) and is updated automatically on
 each `poe bump` (driven by [Conventional Commits](https://www.conventionalcommits.org/)). Do not edit it by hand.
 
+## v0.9.0 (2026-07-29)
+
+### Feat
+
+- P0.2.3 redundancy-collapse vehicle + gate — close offdiag_cov fire side
+
 ## v0.8.0 (2026-07-29)
 
 ### Feat
