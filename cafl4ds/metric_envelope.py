@@ -128,6 +128,35 @@ def metric_envelope(
     return rows
 
 
+def quiet_verdict(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """False-positive (P0.2.4) verdict: the quiet side holds iff **no** instrument fires.
+
+    P0.2.4 stresses the *quiet* side — it feeds an **atypical-healthy** arm into the ``pc`` slot of
+    :func:`metric_envelope` (paired against a canonical-healthy reference) and asks the *inverse* of
+    the collapse gate: a healthy-but-atypical representation must **not** trip any detector. Each
+    standalone instrument that separates past its bar is a **false fire** — a documented
+    false-positive boundary of that (instrument × surface), not a failure to engineer away.
+
+    Args:
+        rows: The envelope rows from :func:`metric_envelope` (``atypical`` in the ``pc`` slot).
+
+    Returns:
+        A dict with the fired rows (metric/surface/separation/threshold) and ``passed`` — ``True``
+        iff the quiet side held (nothing fired).
+    """
+    fired = [
+        {
+            "metric": r["metric"],
+            "surface": r["surface"],
+            "separation": r["separation"],
+            "threshold": r["threshold"],
+        }
+        for r in rows
+        if r["fires"]
+    ]
+    return {"mode": "quiet", "num_fired": len(fired), "fired": fired, "passed": not fired}
+
+
 def render_envelope_table(rows: list[dict[str, Any]]) -> str:
     """Render the envelope rows as a fixed-width table (one line per instrument × surface)."""
     cols = ("metric", "surface", "direction", "healthy_final", "pc_final", "separation", "fires")

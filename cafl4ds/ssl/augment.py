@@ -19,22 +19,29 @@ from torch import nn
 from torchvision.transforms import v2
 
 
-def make_ssl_augment(img_size: int, min_scale: float = 0.4) -> v2.Transform:
+def make_ssl_augment(img_size: int, min_scale: float = 0.4, jitter_strength: float = 1.0) -> v2.Transform:
     """Build a standard joint-embedding augmentation pipeline.
 
     Args:
         img_size: Output image side length (square).
-        min_scale: Lower bound of the random-resized-crop area fraction.
+        min_scale: Lower bound of the random-resized-crop area fraction. A *smaller* value crops
+            more aggressively (stronger views).
+        jitter_strength: Multiplier on the ColorJitter magnitudes (brightness/contrast/saturation
+            base 0.4, hue base 0.1). ``1.0`` reproduces the published SimSiam-style jitter; larger
+            values are stronger colour distortion. The P0.2.4 heavy-augmentation stressor turns
+            both this and a low ``min_scale`` up to make *over-strong* (but still healthy) views.
 
     Returns:
         A composed transform mapping a float image batch ``[B, C, H, W]`` in ``[0, 1]`` to an
         augmented batch of the same shape.
     """
+    bcs = 0.4 * jitter_strength  # brightness / contrast / saturation
+    hue = min(0.5, 0.1 * jitter_strength)  # ColorJitter caps hue at 0.5
     return v2.Compose(
         [
             v2.RandomResizedCrop(size=img_size, scale=(min_scale, 1.0), antialias=True),
             v2.RandomHorizontalFlip(p=0.5),
-            v2.RandomApply([v2.ColorJitter(0.4, 0.4, 0.4, 0.1)], p=0.8),
+            v2.RandomApply([v2.ColorJitter(bcs, bcs, bcs, hue)], p=0.8),
             v2.RandomGrayscale(p=0.2),
         ]
     )

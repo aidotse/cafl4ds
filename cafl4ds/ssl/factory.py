@@ -11,9 +11,15 @@ from __future__ import annotations
 
 from cafl4ds.models.heads import MAEDecoder, MLPHead
 from cafl4ds.models.vit import TinyViTEncoder
+from cafl4ds.ssl.augment import make_ssl_augment
 from cafl4ds.ssl.barlow import BarlowTwins
 from cafl4ds.ssl.mae import MAE
 from cafl4ds.ssl.simsiam import SimSiam
+
+
+def _encoder_img_size(encoder: TinyViTEncoder) -> int:
+    """Reconstruct the square input side length the encoder was built for."""
+    return int(round(encoder.num_patches**0.5)) * encoder.patch_size
 
 
 def build_mae(
@@ -58,6 +64,8 @@ def build_simsiam(
     proj_dim: int = 128,
     pred_hidden: int = 64,
     anti_collapse: bool = True,
+    aug_min_scale: float = 0.4,
+    aug_jitter_strength: float = 1.0,
 ) -> SimSiam:
     """Build a :class:`~cafl4ds.ssl.simsiam.SimSiam` with heads sized to the encoder.
 
@@ -68,13 +76,18 @@ def build_simsiam(
         pred_hidden: Hidden width of the 2-layer predictor bottleneck.
         anti_collapse: Keep SimSiam's predictor + stop-gradient (``True``, the healthy
             control) or disable both for the forced-collapse positive control (``False``).
+        aug_min_scale: Random-resized-crop lower area bound; the defaults reproduce the certified
+            P0.2.x augmentation, and the P0.2.4 heavy-augmentation stressor lowers this.
+        aug_jitter_strength: ColorJitter magnitude multiplier (``1.0`` = published strength); the
+            P0.2.4 heavy-augmentation stressor raises this.
 
     Returns:
         The assembled SimSiam method.
     """
     projector = MLPHead(encoder.embed_dim, proj_hidden, proj_dim, num_layers=3, last_bn=True)
     predictor = MLPHead(proj_dim, pred_hidden, proj_dim, num_layers=2, last_bn=False)
-    return SimSiam(encoder, projector, predictor, anti_collapse=anti_collapse)
+    augment = make_ssl_augment(_encoder_img_size(encoder), min_scale=aug_min_scale, jitter_strength=aug_jitter_strength)
+    return SimSiam(encoder, projector, predictor, augment=augment, anti_collapse=anti_collapse)
 
 
 def build_barlow(
@@ -83,6 +96,8 @@ def build_barlow(
     proj_dim: int = 128,
     lambd: float = 5e-3,
     anti_collapse: bool = True,
+    aug_min_scale: float = 0.4,
+    aug_jitter_strength: float = 1.0,
 ) -> BarlowTwins:
     """Build a :class:`~cafl4ds.ssl.barlow.BarlowTwins` with a projector sized to the encoder.
 
@@ -96,9 +111,13 @@ def build_barlow(
             ``anti_collapse=False``.
         anti_collapse: Keep Barlow's redundancy-reduction term (``True``, the healthy control)
             or drop it for the forced redundancy-collapse positive control (``False``, P0.2.3).
+        aug_min_scale: Random-resized-crop lower area bound (defaults reproduce the certified
+            P0.2.x augmentation).
+        aug_jitter_strength: ColorJitter magnitude multiplier (``1.0`` = published strength).
 
     Returns:
         The assembled Barlow Twins method.
     """
     projector = MLPHead(encoder.embed_dim, proj_hidden, proj_dim, num_layers=3, last_bn=True)
-    return BarlowTwins(encoder, projector, lambd=lambd, anti_collapse=anti_collapse)
+    augment = make_ssl_augment(_encoder_img_size(encoder), min_scale=aug_min_scale, jitter_strength=aug_jitter_strength)
+    return BarlowTwins(encoder, projector, augment=augment, lambd=lambd, anti_collapse=anti_collapse)
