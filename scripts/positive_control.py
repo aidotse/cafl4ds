@@ -159,7 +159,7 @@ def _combined_table(pc: list[dict[str, Any]], hc: list[dict[str, Any]]) -> str:
     return "\n".join(lines)
 
 
-def _evaluate_gate(
+def _evaluate_point_collapse_gate(
     config: DictConfig,
     pc: list[dict[str, Any]],
     hc: list[dict[str, Any]],
@@ -210,6 +210,7 @@ def _evaluate_gate(
         "healthy_loss_floor": hc_loss_floor,
         "rankme_ratio": rankme_ratio,
         "loss_separation": hc_loss_floor - pc_loss_floor,  # reported only — no longer a discriminator
+        "mode": "point_collapse",
         "thresholds": {
             "pc_rankme_drop_frac": g.pc_rankme_drop_frac,
             "pc_loss_floor": g.pc_loss_floor,
@@ -219,6 +220,142 @@ def _evaluate_gate(
         "checks": checks,
         "passed": all(checks.values()),
     }
+
+
+def _envelope_row(envelope: list[dict[str, Any]], metric: str, surface: str) -> dict[str, Any] | None:
+    """Return the collapse-suite envelope row for ``(metric, surface)`` if present, else ``None``."""
+    for row in envelope:
+        if row["metric"] == metric and row["surface"] == surface:
+            return row
+    return None
+
+
+def _evaluate_redundancy_gate(config: DictConfig, envelope: list[dict[str, Any]]) -> dict[str, Any]:
+    """Apply the redundancy-/dimensional-collapse gate (P0.2.3) off the collapse-suite envelope.
+
+    The point-collapse gate above is the wrong instrument for a decorrelation-method vehicle
+    (Barlow Twins with its redundancy-reduction term ablated): the projector BatchNorm holds
+    per-feature variance at unit and the loss floor is not the SimSiam −1 constant-solution
+    value, so a RankMe-drop + loss-floor read misfires. Redundancy collapse leaves a *different*
+    fingerprint, read here from the method-agnostic envelope at one surface (``gate.surface``):
+
+    * ``offdiag_fires`` — off-diagonal covariance **fires**: PC/healthy separation
+      ``>= gate.min_offdiag_ratio``. The headline test — the *fire* side of ``offdiag_cov`` that
+      P0.2.2's point-collapse vehicle could never reach.
+    * ``variance_quiet`` — per-dimension variance **stays quiet**: the healthy/PC separation is
+      *below* ``gate.max_variance_ratio`` (it does NOT clear the fire bar). This is the direct
+      discriminator between redundancy and *point* collapse — under point collapse variance would
+      crater; here BatchNorm preserves it.
+    * ``rankme_corroborates`` — RankMe **fires** too (``>= gate.min_rankme_ratio``): rank-based
+      detectors see dimensional collapse, so the low-rank subspace should register here as well.
+
+    Args:
+        config: The composed config (its ``gate`` block holds the thresholds + ``surface``).
+        envelope: The per-``(instrument × surface)`` collapse-suite envelope (``metric_envelope``).
+
+    Returns:
+        A dict of the measured separations, per-condition booleans, and the overall ``passed``
+        (all three checks — the two-sided ``offdiag_cov`` verdict plus the variance discriminator
+        and the rank corroboration).
+    """
+    g = config.gate
+    surface = g.surface
+    offdiag = _envelope_row(envelope, "offdiag_cov", surface)
+    variance = _envelope_row(envelope, "mean_feature_var", surface)
+    rankme = _envelope_row(envelope, "rankme", surface)
+
+    # Absent row => the instrument could not be read at this surface: score it as non-firing
+    # (offdiag/rankme) or as "not proven quiet" (variance) so a missing signal never passes.
+    offdiag_sep = offdiag["separation"] if offdiag else 0.0
+    variance_sep = variance["separation"] if variance else float("inf")
+    rankme_sep = rankme["separation"] if rankme else 0.0
+
+    checks = {
+        "offdiag_fires": offdiag_sep >= g.min_offdiag_ratio,
+        "variance_quiet": variance_sep < g.max_variance_ratio,
+        "rankme_corroborates": rankme_sep >= g.min_rankme_ratio,
+    }
+    return {
+        "mode": "redundancy_collapse",
+        "surface": surface,
+        "offdiag_separation": offdiag_sep,
+        "offdiag_healthy_final": offdiag["healthy_final"] if offdiag else None,
+        "offdiag_pc_final": offdiag["pc_final"] if offdiag else None,
+        "variance_separation": variance_sep,
+        "variance_healthy_final": variance["healthy_final"] if variance else None,
+        "variance_pc_final": variance["pc_final"] if variance else None,
+        "rankme_separation": rankme_sep,
+        "thresholds": {
+            "min_offdiag_ratio": g.min_offdiag_ratio,
+            "max_variance_ratio": g.max_variance_ratio,
+            "min_rankme_ratio": g.min_rankme_ratio,
+        },
+        "checks": checks,
+        "passed": all(checks.values()),
+    }
+
+
+def _evaluate_gate(
+    config: DictConfig,
+    pc: list[dict[str, Any]],
+    hc: list[dict[str, Any]],
+    pc_loss_floor: float,
+    hc_loss_floor: float,
+    envelope: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Dispatch to the failure-mode-appropriate gate (``config.gate.mode``, default point).
+
+    ``point_collapse`` (P0.2.1) reads the RankMe-separation + loss-floor-to-−1 fingerprint of
+    SimSiam point collapse; ``redundancy_collapse`` (P0.2.3) reads the collapse-suite envelope
+    for the off-diagonal-covariance fire + feature-variance-quiet fingerprint a decorrelation
+    vehicle leaves. Both return a dict tagged with its ``mode`` for the summary renderer.
+    """
+    if config.gate.get("mode", "point_collapse") == "redundancy_collapse":
+        return _evaluate_redundancy_gate(config, envelope)
+    return _evaluate_point_collapse_gate(config, pc, hc, pc_loss_floor, hc_loss_floor)
+
+
+def _render_point_collapse_summary(gate: dict[str, Any]) -> str:
+    """Render the P0.2.1 point-collapse gate result (RankMe separation + loss-floor fingerprint)."""
+    t = gate["thresholds"]
+    verdict = "PASS ✅" if gate["passed"] else "FAIL ❌"
+    return (
+        f"POSITIVE-CONTROL GATE [point collapse]: {verdict}\n"
+        f"  PC RankMe    {gate['pc_rankme_init']:.3f} (init) -> {gate['pc_rankme_final']:.3f} "
+        f"= {gate['pc_rankme_drop_frac'] * 100:.1f}% of init "
+        f"(<= {t['pc_rankme_drop_frac'] * 100:.0f}%?  {gate['checks']['pc_collapses_relative']})\n"
+        f"  PC loss floor  = {gate['pc_loss_floor']:.4f} "
+        f"(<= {t['pc_loss_floor']} -> rides to -1 constant-solution floor?  {gate['checks']['pc_right_reason']})\n"
+        f"  healthy RankMe final = {gate['healthy_rankme_final']:.3f} "
+        f"(>= {t['healthy_rankme_min']} absolute floor?  {gate['checks']['healthy_holds']})\n"
+        f"  RankMe separation (healthy / PC) = {gate['rankme_ratio']:.2f}x "
+        f"(>= {t['min_rankme_ratio']}x?  {gate['checks']['rankme_separated']})\n"
+        f"  [reported] loss-floor gap (healthy - PC) = {gate['loss_separation']:.3f} "
+        f"(NOT gated — both arms reach a low loss in this regime)"
+    )
+
+
+def _render_redundancy_summary(gate: dict[str, Any]) -> str:
+    """Render the P0.2.3 redundancy-collapse gate result (offdiag fires, variance stays quiet)."""
+    t, c = gate["thresholds"], gate["checks"]
+    verdict = "PASS ✅" if gate["passed"] else "FAIL ❌"
+    return (
+        f"POSITIVE-CONTROL GATE [redundancy collapse, surface={gate['surface']}]: {verdict}\n"
+        f"  offdiag_cov separation (PC / healthy) = {gate['offdiag_separation']:.2f}x "
+        f"(>= {t['min_offdiag_ratio']}x -> FIRES?  {c['offdiag_fires']})  "
+        f"[PC {gate['offdiag_pc_final']:.4f} vs healthy {gate['offdiag_healthy_final']:.4f}]\n"
+        f"  mean_feature_var separation (healthy / PC) = {gate['variance_separation']:.2f}x "
+        f"(< {t['max_variance_ratio']}x -> STAYS QUIET (discriminator vs point collapse)?  {c['variance_quiet']})\n"
+        f"  RankMe separation (healthy / PC) = {gate['rankme_separation']:.2f}x "
+        f"(>= {t['min_rankme_ratio']}x -> corroborates (rank sees dimensional collapse)?  {c['rankme_corroborates']})"
+    )
+
+
+def _render_gate_summary(gate: dict[str, Any]) -> str:
+    """Render whichever gate ran (``gate['mode']``) into its human-readable verdict block."""
+    if gate["mode"] == "redundancy_collapse":
+        return _render_redundancy_summary(gate)
+    return _render_point_collapse_summary(gate)
 
 
 @hydra.main(version_base=None, config_path="../cafl4ds/configs", config_name="positive_control")  # type: ignore[misc]
@@ -241,28 +378,14 @@ def main(config: DictConfig) -> None:
         f"  PC (collapse) : {_spark([r['loss'] for r in pc], -1.0, 0.0)}"
     )
 
-    gate = _evaluate_gate(config, pc, hc, pc_loss_floor, hc_loss_floor)
-    t = gate["thresholds"]
-    verdict = "PASS ✅" if gate["passed"] else "FAIL ❌"
-    summary = (
-        f"POSITIVE-CONTROL GATE: {verdict}\n"
-        f"  PC RankMe    {gate['pc_rankme_init']:.3f} (init) -> {gate['pc_rankme_final']:.3f} "
-        f"= {gate['pc_rankme_drop_frac'] * 100:.1f}% of init "
-        f"(<= {t['pc_rankme_drop_frac'] * 100:.0f}%?  {gate['checks']['pc_collapses_relative']})\n"
-        f"  PC loss floor  = {gate['pc_loss_floor']:.4f} "
-        f"(<= {t['pc_loss_floor']} -> rides to -1 constant-solution floor?  {gate['checks']['pc_right_reason']})\n"
-        f"  healthy RankMe final = {gate['healthy_rankme_final']:.3f} "
-        f"(>= {t['healthy_rankme_min']} absolute floor?  {gate['checks']['healthy_holds']})\n"
-        f"  RankMe separation (healthy / PC) = {gate['rankme_ratio']:.2f}x "
-        f"(>= {t['min_rankme_ratio']}x?  {gate['checks']['rankme_separated']})\n"
-        f"  [reported] loss-floor gap (healthy - PC) = {gate['loss_separation']:.3f} "
-        f"(NOT gated — both arms reach a low loss in this regime)"
-    )
-
     # P0.2.2 reporting layer: the per-(instrument × surface) separation + fire/quiet map for the
-    # WHOLE collapse suite (RankMe stays the certified gate above; this is the calibration map,
-    # not a pass/fail). Reads whatever surface metrics the monitor logged into the health series.
+    # WHOLE collapse suite. Under `gate.mode=redundancy_collapse` (P0.2.3) it also FEEDS the gate,
+    # so it is computed before the gate; otherwise it is the calibration map alongside the RankMe
+    # gate. Reads whatever surface metrics the monitor logged into the health series.
     envelope = metric_envelope(pc, hc)
+
+    gate = _evaluate_gate(config, pc, hc, pc_loss_floor, hc_loss_floor, envelope)
+    summary = _render_gate_summary(gate)
 
     logger.info("positive control — side-by-side (aligned checkpoints)\n" + table)
     logger.info(curves)
@@ -280,8 +403,9 @@ def main(config: DictConfig) -> None:
 
     if not gate["passed"]:
         logger.error(
-            "Gate did NOT pass. Per P0.2: if the PC does not collapse the instruments (or not for the "
-            "right reason), the instrument/wiring is suspect — investigate before trusting downstream numbers."
+            "Gate did NOT pass. Per P0.2: if the PC does not leave its expected collapse fingerprint (or "
+            "not for the right reason), the instrument/wiring is suspect — investigate before trusting "
+            "downstream numbers."
         )
         sys.exit(1)
 

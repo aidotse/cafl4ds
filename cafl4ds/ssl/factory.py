@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from cafl4ds.models.heads import MAEDecoder, MLPHead
 from cafl4ds.models.vit import TinyViTEncoder
+from cafl4ds.ssl.barlow import BarlowTwins
 from cafl4ds.ssl.mae import MAE
 from cafl4ds.ssl.simsiam import SimSiam
 
@@ -74,3 +75,30 @@ def build_simsiam(
     projector = MLPHead(encoder.embed_dim, proj_hidden, proj_dim, num_layers=3, last_bn=True)
     predictor = MLPHead(proj_dim, pred_hidden, proj_dim, num_layers=2, last_bn=False)
     return SimSiam(encoder, projector, predictor, anti_collapse=anti_collapse)
+
+
+def build_barlow(
+    encoder: TinyViTEncoder,
+    proj_hidden: int = 256,
+    proj_dim: int = 128,
+    lambd: float = 5e-3,
+    anti_collapse: bool = True,
+) -> BarlowTwins:
+    """Build a :class:`~cafl4ds.ssl.barlow.BarlowTwins` with a projector sized to the encoder.
+
+    Args:
+        encoder: The shared backbone encoder.
+        proj_hidden: Hidden width of the 3-layer projector.
+        proj_dim: Output width of the projector — the dimension the cross-correlation matrix is
+            computed over. Its terminal ``BatchNorm(affine=False)`` is Barlow's per-feature
+            standardization.
+        lambd: Weight of the redundancy-reduction (off-diagonal) term; ignored when
+            ``anti_collapse=False``.
+        anti_collapse: Keep Barlow's redundancy-reduction term (``True``, the healthy control)
+            or drop it for the forced redundancy-collapse positive control (``False``, P0.2.3).
+
+    Returns:
+        The assembled Barlow Twins method.
+    """
+    projector = MLPHead(encoder.embed_dim, proj_hidden, proj_dim, num_layers=3, last_bn=True)
+    return BarlowTwins(encoder, projector, lambd=lambd, anti_collapse=anti_collapse)
