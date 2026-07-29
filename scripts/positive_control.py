@@ -53,6 +53,7 @@ from loguru import logger
 from omegaconf import DictConfig
 
 from cafl4ds.loop import StreamingLoop
+from cafl4ds.metric_envelope import metric_envelope, render_envelope_table
 from cafl4ds.run_log import RunLogger, read_run
 from cafl4ds.ssl.base import apply_encoder_init
 
@@ -258,14 +259,24 @@ def main(config: DictConfig) -> None:
         f"(NOT gated — both arms reach a low loss in this regime)"
     )
 
+    # P0.2.2 reporting layer: the per-(instrument × surface) separation + fire/quiet map for the
+    # WHOLE collapse suite (RankMe stays the certified gate above; this is the calibration map,
+    # not a pass/fail). Reads whatever surface metrics the monitor logged into the health series.
+    envelope = metric_envelope(pc, hc)
+
     logger.info("positive control — side-by-side (aligned checkpoints)\n" + table)
     logger.info(curves)
     logger.info(summary)
+    logger.info(
+        "collapse-suite envelope (P0.2.2 — separation + fire/quiet per instrument × surface):\n"
+        + render_envelope_table(envelope)
+    )
 
     (out_dir / "comparison.json").write_text(
-        json.dumps({"gate": gate, "pc": pc, "healthy": hc}, indent=2), encoding="utf-8"
+        json.dumps({"gate": gate, "envelope": envelope, "pc": pc, "healthy": hc}, indent=2),
+        encoding="utf-8",
     )
-    logger.info(f"wrote comparison + gate to {out_dir / 'comparison.json'}")
+    logger.info(f"wrote comparison + gate + envelope to {out_dir / 'comparison.json'}")
 
     if not gate["passed"]:
         logger.error(

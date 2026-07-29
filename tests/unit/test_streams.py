@@ -169,3 +169,52 @@ def test_unknown_order_raises() -> None:
     """An unknown ordering is rejected."""
     with pytest.raises(ValueError, match="unknown order"):
         EraStream(SyntheticSource(num_classes=2, per_class=40, img_size=8), order="bogus")
+
+
+def test_block_size_round_robins_classes() -> None:
+    """block_size interleaves the classes in chunks (the correlation-strength knob).
+
+    4 classes x 25 train each; block_size == batch_size == 5 makes each batch one chunk, so the
+    era sequence cycles 0,1,2,3 five times (25 / 5 chunks per class) instead of a single block
+    per class. This is a weaker-correlation stream than full class blocks.
+    """
+    stream = EraStream(
+        IdSource(num_classes=4, per_class=40),
+        batch_size=5,
+        order="class_blocked",
+        block_size=5,
+        support_per_class=5,
+        query_per_class=5,
+        era_eval_per_class=5,
+    )
+    eras = [b.era for b in stream]
+    assert eras == [0, 1, 2, 3] * 5
+    assert stream.num_eras == 4  # eras recur but the distinct-era count is unchanged
+    assert len(stream) == sum(1 for _ in stream)  # len stays exact under round-robin
+
+
+def test_block_size_at_least_class_size_equals_full_blocks() -> None:
+    """A block_size >= the largest class reproduces the contiguous class-blocked delivery."""
+    kwargs = {"support_per_class": 5, "query_per_class": 5, "era_eval_per_class": 5, "batch_size": 8}
+    full = EraStream(IdSource(num_classes=4, per_class=40), order="class_blocked", **kwargs)  # type: ignore[arg-type]
+    chunked = EraStream(
+        IdSource(num_classes=4, per_class=40),
+        order="class_blocked",
+        block_size=1000,
+        **kwargs,  # type: ignore[arg-type]
+    )
+    full_ids = [i for b in full for i in IdSource.ids(b.images)]
+    chunked_ids = [i for b in chunked for i in IdSource.ids(b.images)]
+    assert full_ids == chunked_ids
+
+
+def test_block_size_rejected_with_iid() -> None:
+    """block_size only makes sense for class-blocked ordering."""
+    with pytest.raises(ValueError, match="only valid with order='class_blocked'"):
+        EraStream(SyntheticSource(num_classes=2, per_class=40, img_size=8), order="iid", block_size=4)
+
+
+def test_non_positive_block_size_raises() -> None:
+    """A non-positive block_size is rejected."""
+    with pytest.raises(ValueError, match="block_size must be a positive integer"):
+        EraStream(SyntheticSource(num_classes=2, per_class=40, img_size=8), block_size=0)
