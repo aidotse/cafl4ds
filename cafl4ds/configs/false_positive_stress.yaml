@@ -49,5 +49,15 @@ stream:
 fire_ratio: 2.0
 fire_gap: 0.5
 
+# Ablation — Option B: matched collapse-pole per regime (P0.2.4). When true, a THIRD arm runs — a
+# forced-collapse arm (anti_collapse=false) in the SAME stressed regime as the atypical arm. It
+# disambiguates Option A's apparent false fires: because the collapse pole and the atypical arm
+# share the identical stressed eval set, the low-diversity eval-set-cap confound cancels. Two
+# readouts are added — in-regime discrimination `metric_envelope(collapse_in_regime, atypical)`
+# (does true collapse still separate from atypical-healthy within the regime?) and the atypical
+# arm's position on the [collapse-pole, canonical-healthy] axis (pos>0.5 => nearer the healthy
+# pole). Default false keeps the Option A run byte-identical.
+collapse_pole: false
+
 # Run logs: one JSONL per arm + the combined comparison, in the Hydra run dir.
 run_log: run_log.jsonl

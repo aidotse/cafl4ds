@@ -34,6 +34,10 @@ Examples:
         uv run python scripts/false_positive_stress.py data=synthetic img_size=16 epochs=4 \\
             stream.support_per_class=8 stream.query_per_class=8 stream.era_eval_per_class=5 \\
             monitor.run_knn=false monitor.run_linear=false
+
+    Option B (ablation) — add a matched forced-collapse arm in the SAME stressed regime::
+
+        uv run python scripts/false_positive_stress.py stressor=low_diversity collapse_pole=true
 """
 
 import copy
@@ -58,24 +62,27 @@ logger.remove()
 logger.add(sys.stdout, level="INFO")
 
 
-def _run_healthy_arm(config: DictConfig, *, run_name: str, out_dir: Path) -> list[dict[str, Any]]:
-    """Build and run one **healthy** arm (``anti_collapse=True``), returning its health series.
+def _run_arm(config: DictConfig, *, run_name: str, out_dir: Path, anti_collapse: bool = True) -> list[dict[str, Any]]:
+    """Build and run one arm, returning its health series.
 
-    Mirrors ``scripts/positive_control.py``'s ``_run_arm`` but hard-wires the healthy toggle — the
-    variable here is the *config* (reference vs. stressor-perturbed), not the anti-collapse switch.
-    The global seed is reset so the run is reproducible.
+    Mirrors ``scripts/positive_control.py``'s ``_run_arm``. The default (``anti_collapse=True``) is
+    a **healthy** arm — the P0.2.4 variable is the *config* (reference vs. stressor-perturbed), not
+    the anti-collapse switch. Option B (``collapse_pole=true``) flips ``anti_collapse=False`` to run
+    a matched **forced-collapse** arm inside a stressed regime. The global seed is reset so the run
+    is reproducible.
 
     Args:
         config: The (base or stressor-merged) composed config for this arm.
         run_name: Name recorded on the run log and used for its filename.
         out_dir: Directory the run log is written to.
+        anti_collapse: SimSiam anti-collapse toggle (``True`` = healthy, ``False`` = collapse pole).
 
     Returns:
         The per-checkpoint health records.
     """
     torch.manual_seed(config.seed)
     encoder = instantiate(config.encoder)
-    method = instantiate(config.ssl, encoder=encoder, anti_collapse=True)
+    method = instantiate(config.ssl, encoder=encoder, anti_collapse=anti_collapse)
     apply_encoder_init(method.encoder, "from_scratch")
 
     stream = instantiate(config.stream)
@@ -153,14 +160,109 @@ def _render_quiet_summary(gate: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _instrument_positions(
+    reference: list[dict[str, Any]],
+    atypical: list[dict[str, Any]],
+    collapse: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Locate the atypical-healthy arm on the [collapse-pole, canonical-healthy] axis (Option B).
+
+    For each ``(instrument × surface)`` present in the envelope, take the three arms' final
+    readings — ``h`` (canonical-healthy reference), ``a`` (atypical-healthy), ``c`` (matched
+    collapse-in-regime) — and compute the linear position ``pos = (a - c) / (h - c)``. This is
+    direction-agnostic: ``pos = 1`` sits at the healthy pole, ``pos = 0`` at the collapse floor, so
+    ``pos > 0.5`` means the atypical arm reads *nearer healthy than collapse*. The ``h`` pole is the
+    canonical (out-of-regime) baseline, so for the low-diversity regime it carries the eval-set-cap
+    caveat — the confound-free readout is the in-regime discrimination envelope, not this position.
+
+    Args:
+        reference: The canonical-healthy arm's health series (the ``h`` pole).
+        atypical: The atypical-healthy arm's health series (the point being located, ``a``).
+        collapse: The matched collapse-in-regime arm's health series (the ``c`` pole).
+
+    Returns:
+        One row per ``(metric, surface)`` with the three finals, ``pos``, and ``nearer_healthy``.
+    """
+    # Reuse the envelope's (metric, surface) enumeration; the separation column is irrelevant here.
+    rows: list[dict[str, Any]] = []
+    for spec_row in metric_envelope(atypical, reference):
+        key = spec_row["metric"] + ("" if spec_row["surface"] == "backbone" else "_proj")
+        h = [r[key] for r in reference if isinstance(r.get(key), int | float)]
+        a = [r[key] for r in atypical if isinstance(r.get(key), int | float)]
+        c = [r[key] for r in collapse if isinstance(r.get(key), int | float)]
+        if not (h and a and c):
+            continue
+        h_f, a_f, c_f = h[-1], a[-1], c[-1]
+        span = h_f - c_f
+        pos = (a_f - c_f) / span if span else float("nan")
+        rows.append(
+            {
+                "metric": spec_row["metric"],
+                "surface": spec_row["surface"],
+                "healthy_pole": h_f,
+                "atypical": a_f,
+                "collapse_pole": c_f,
+                "pos": pos,
+                "nearer_healthy": bool(pos > 0.5),
+            }
+        )
+    return rows
+
+
+def _render_pole_crosstab(
+    envelope: list[dict[str, Any]],
+    pole_envelope: list[dict[str, Any]],
+    positions: list[dict[str, Any]],
+) -> str:
+    """Cross-tab Option A (apparent FP) against Option B (in-regime discrimination + position).
+
+    Per ``(instrument × surface)``: A = does the atypical arm separate from the canonical reference
+    (the Option A false-fire reading)? B = does a matched collapse arm still separate from the
+    atypical arm *within the regime* (confound-free)? Plus the position of the atypical arm on the
+    [collapse, healthy] axis. The verdict disambiguates each Option-A fire: ``A fires & B fires`` =>
+    the instrument keeps its discriminative power in-regime, so the Option-A fire is a reference /
+    eval-set artifact; ``A fires & B quiet`` => a genuine in-regime blind spot.
+    """
+    pole_fires = {(r["metric"], r["surface"]): r["fires"] for r in pole_envelope}
+    pole_sep = {(r["metric"], r["surface"]): r["separation"] for r in pole_envelope}
+    pos_by = {(r["metric"], r["surface"]): r for r in positions}
+    cols = ("metric", "surface", "A:atyp/ref", "A?", "B:coll/atyp", "B?", "pos", "verdict")
+    widths = {"metric": 16, "surface": 8, "A?": 5, "B?": 5, "pos": 6, "verdict": 34}
+    lines = ["  ".join(f"{c:>{widths.get(c, 12)}}" for c in cols), "  ".join("-" * widths.get(c, 12) for c in cols)]
+    for row in envelope:
+        if not row["standalone"]:
+            continue
+        k = (row["metric"], row["surface"])
+        a_fires, b_fires = row["fires"], pole_fires.get(k, False)
+        pos = pos_by.get(k, {}).get("pos", float("nan"))
+        if not a_fires:
+            verdict = "A quiet (no false fire)"
+        elif b_fires:
+            verdict = "A=eval-set/ref artifact (B discriminates)"
+        else:
+            verdict = "genuine in-regime blind spot"
+        cells = [
+            f"{row['metric']:>16}",
+            f"{row['surface']:>8}",
+            f"{row['separation']:>12.2f}",
+            f"{('yes' if a_fires else 'no'):>5}",
+            f"{pole_sep.get(k, float('nan')):>12.2f}",
+            f"{('yes' if b_fires else 'no'):>5}",
+            f"{pos:>6.2f}",
+            f"{verdict:>34}",
+        ]
+        lines.append("  ".join(cells))
+    return "\n".join(lines)
+
+
 @hydra.main(version_base=None, config_path="../cafl4ds/configs", config_name="false_positive_stress")  # type: ignore[misc]
 def main(config: DictConfig) -> None:
     """Run the reference + atypical healthy arms, then apply the inverted (quiet) verdict."""
     out_dir = Path(HydraConfig.get().runtime.output_dir)
 
-    reference = _run_healthy_arm(config, run_name="reference_healthy", out_dir=out_dir)
+    reference = _run_arm(config, run_name="reference_healthy", out_dir=out_dir)
     test_config = _apply_stressor(config)
-    atypical = _run_healthy_arm(test_config, run_name=f"atypical_{config.stressor.name}", out_dir=out_dir)
+    atypical = _run_arm(test_config, run_name=f"atypical_{config.stressor.name}", out_dir=out_dir)
 
     # Feed the atypical arm into the `pc` slot: a false fire = it separates from the canonical
     # healthy reference in the collapse direction past its bar (same envelope machinery as P0.2.2).
@@ -173,10 +275,25 @@ def main(config: DictConfig) -> None:
         "instrument × surface):\n" + render_envelope_table(envelope)
     )
 
-    (out_dir / "comparison.json").write_text(
-        json.dumps({"gate": gate, "envelope": envelope, "atypical": atypical, "reference": reference}, indent=2),
-        encoding="utf-8",
-    )
+    payload: dict[str, Any] = {"gate": gate, "envelope": envelope, "atypical": atypical, "reference": reference}
+
+    # Option B (ablation): a matched forced-collapse arm in the SAME stressed regime. Feeding it
+    # into the `pc` slot vs. the atypical-healthy arm gives the confound-free in-regime separation;
+    # `_instrument_positions` places the atypical arm on the [collapse, canonical-healthy] axis.
+    if config.get("collapse_pole", False):
+        collapse = _run_arm(
+            test_config, run_name=f"collapse_{config.stressor.name}", out_dir=out_dir, anti_collapse=False
+        )
+        pole_envelope = metric_envelope(collapse, atypical, min_ratio=config.fire_ratio, min_gap=config.fire_gap)
+        positions = _instrument_positions(reference, atypical, collapse)
+        payload.update({"pole_envelope": pole_envelope, "positions": positions, "collapse": collapse})
+        logger.info(
+            "OPTION B — matched collapse-pole per regime (A: atypical-vs-reference false fire; "
+            "B: collapse-vs-atypical in-regime discrimination; pos on [collapse, healthy] axis):\n"
+            + _render_pole_crosstab(envelope, pole_envelope, positions)
+        )
+
+    (out_dir / "comparison.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
     logger.info(f"wrote comparison + quiet gate + envelope to {out_dir / 'comparison.json'}")
 
     # NB: a false fire is a documented calibration outcome (a false-positive boundary), NOT a wiring
