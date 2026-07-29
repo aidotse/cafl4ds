@@ -32,3 +32,15 @@ needs its **own** positive control. This is what drives the sub-studies below:
 | P0.2.3 | [Positive control (collapse gate) - redundancy-collapse vehicle](P0.2.3.md) | Motivation: P0.2.2 calibrated `offdiag_cov` on the *quiet* side only — it is a principled null under SimSiam *point* collapse, but has never been shown to *fire when it should*. Add a second collapse vehicle (a decorrelation method — Barlow Twins / VICReg — with its whitening term ablated) whose trivial optimum is *redundancy/dimensional* collapse, to close the fire side of `offdiag_cov` and contrast the suite's response against a second collapse sub-mode. A new `[STD]` SSL method add. | ✅ **Complete** (Barlow Twins vehicle; `offdiag_cov` fires ~13–20× robustly, variance-discriminator quiet) |
 | P0.3 | [Positive control (forgetting gate)](positive_control_forgetting.md) | Motivation: calibration for the *forgetting* failure mode — the collapse PC in P0.2.1 and P0.2.2 says nothing about whether the forgetting detectors work. Work out a baseline calibrate metrics (per-era probe accuracy, Backward Transfer, Forgetting Measure, and — critically — representation drift (CKA), the label-free leading indicator forgetting is supposed to announce itself through). | ⬜ Not started |
 | P0.4 | [Positive control (instability gate)](positive_control_instabilitiy.md) | Motivation: calibration for the *instability / divergence* failure mode (minor). Drive LR / batch pathology until training diverges; the **gradient-norm** instrument must fire, and stay quiet on the healthy baseline. | ⬜ Not started |
+
+## Artifacts
+
+Each `scripts/positive_control.py` run writes a `comparison.json` — `{gate, envelope, pc, healthy}`: the gate verdict,
+the collapse-suite envelope, and both arms' full per-checkpoint health series — the quantitative evidence behind a
+substudy's tables. It lands in the **Hydra run dir** (`outputs/<date>/<time>/`, **gitignored and ephemeral**), so fresh
+runs are never tracked.
+
+The **definitive run backing each certified substudy is promoted** to `artifacts/<substudy-id>/` here (e.g.
+[`artifacts/P0.2.3/`](artifacts/P0.2.3/), one `seed_N.json` per seed), and those *are* tracked. When you cite a number
+in a substudy doc, promote the run that produced it. Promoted artifacts are period-accurate — a file's gate schema
+reflects the harness at the time of the run and is not retrofitted.
