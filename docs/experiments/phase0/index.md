@@ -15,7 +15,7 @@ needs its **own** positive control. This is what drives the sub-studies below:
 
 | Failure mode | Positive control (induces it) + healthy reference | Instruments calibrated | Status |
 | -- | -- | -- | -- |
-| **Collapse** (joint-embedding) | Predictorless / stop-grad-off SimSiam vs. a genuine healthy SimSiam baseline | RankMe/effective rank, VICReg variance + off-diag covariance, alignment/uniformity, prototype entropy | ✅ Suite calibrated vs. **point** collapse: certified backbone-RankMe gate separates ~2.8× (IID×40ep only, not LR-rescuable at single pass), the projector-surface pair (RankMe, uniformity) fires across all regimes, and off-diag covariance is a principled null (a redundancy-collapse vehicle would close its fire side — spec'd as [P0.2.3](P0.2.3.md)) — [P0.2](P0.2.md) + [P0.2.1](P0.2.1.md) + [P0.2.2](P0.2.2.md) |
+| **Collapse** (joint-embedding) | Predictorless / stop-grad-off SimSiam vs. a genuine healthy SimSiam baseline (point collapse); Barlow Twins with its redundancy-reduction term ablated vs. intact Barlow (redundancy collapse) | RankMe/effective rank, VICReg variance + off-diag covariance, alignment/uniformity, prototype entropy | ✅ Suite calibrated vs. **both** sub-modes: certified backbone-RankMe gate separates ~2.8× on **point** collapse (IID×40ep only, not LR-rescuable at single pass), the projector-surface pair (RankMe, uniformity) fires across all regimes, and off-diag covariance — a principled null under point collapse — now **fires ~13–20×** on a **redundancy**-collapse vehicle while per-dim variance stays flat at the projector — [P0.2](P0.2.md) + [P0.2.1](P0.2.1.md) + [P0.2.2](P0.2.2.md) + [P0.2.3](P0.2.3.md) |
 | **Forgetting** (MAE) | Deliberately-forgetting run: train hard on era A, then only era B; the past-era probe on A must crater | Per-era probe accuracy, Backward Transfer, Forgetting Measure, and — the label-free leading indicator — representation **drift (CKA)** | ⬜ Not started (P0.3) |
 | **Instability** (divergence) | Drive LR / batch pathology until training diverges | Gradient norm (minor mode) | ⬜ Not started (P0.4) |
 
@@ -29,6 +29,31 @@ needs its **own** positive control. This is what drives the sub-studies below:
 | P0.2 | [Positive control (collapse gate)](P0.2.md) | Motivation: calibration for the *collapse* failure mode only. A configuration known to collapse, to prove the instruments *catch* collapse. Derive a baseline: predictorless / stop-gradient-off SimSiam (one toggle) forces collapse; side-by-side vs. intact SimSiam, from-scratch. | ✅ **Complete** |
 | P0.2.1 | [Positive control (collapse gate) - RankMe calibration](P0.2.1.md) | Motivation: P0.2 could not tell a healthy representation from a collapsed one (RankMe did not separate the arms), so the collapse gate had no trustworthy upper reference. P0.2.1 sets out to prove whether RankMe can separate a genuinely-collapsed representation from a genuinely-healthy one by (a) finding a regime where intact SimSiam demonstrably does *not* collapse — a genuine healthy baseline. Then: (b) testing how far that baseline reaches toward the project's target regime (correlated, single-pass), stress-tested with an LR sweep (annealed and flat) to rule out learning rate and schedule as the missing lever. We also want to find the the cheapest *robust* reference in terms of training horizon. | ✅ **Complete** |
 | P0.2.2 | [Positive control (collapse gate) - other collapse metric calibration](P0.2.2.md) | Motivation: P0.2.1 gives us a healthy baseline and calibration for RankMe, but not for the remaining collapse metrics. Target: find their operating envelope (still on dummy / STL10 data), i.e. where they activate and where they remain quiet. Essentially repeat of P0.2.1 with the full collapse metric set. | ✅ **Complete** |
-| P0.2.3 | [Positive control (collapse gate) - redundancy-collapse vehicle](P0.2.3.md) | Motivation: P0.2.2 calibrated `offdiag_cov` on the *quiet* side only — it is a principled null under SimSiam *point* collapse, but has never been shown to *fire when it should*. Add a second collapse vehicle (a decorrelation method — Barlow Twins / VICReg — with its whitening term ablated) whose trivial optimum is *redundancy/dimensional* collapse, to close the fire side of `offdiag_cov` and contrast the suite's response against a second collapse sub-mode. A new `[STD]` SSL method add. | ⬜ Not started |
+| P0.2.3 | [Positive control (collapse gate) - redundancy-collapse vehicle](P0.2.3.md) | Motivation: P0.2.2 calibrated `offdiag_cov` on the *quiet* side only — it is a principled null under SimSiam *point* collapse, but has never been shown to *fire when it should*. Add a second collapse vehicle (a decorrelation method — Barlow Twins / VICReg — with its whitening term ablated) whose trivial optimum is *redundancy/dimensional* collapse, to close the fire side of `offdiag_cov` and contrast the suite's response against a second collapse sub-mode. A new `[STD]` SSL method add. | ✅ **Complete** (Barlow Twins vehicle; `offdiag_cov` fires ~13–20× robustly, variance-discriminator quiet) |
 | P0.3 | [Positive control (forgetting gate)](positive_control_forgetting.md) | Motivation: calibration for the *forgetting* failure mode — the collapse PC in P0.2.1 and P0.2.2 says nothing about whether the forgetting detectors work. Work out a baseline calibrate metrics (per-era probe accuracy, Backward Transfer, Forgetting Measure, and — critically — representation drift (CKA), the label-free leading indicator forgetting is supposed to announce itself through). | ⬜ Not started |
 | P0.4 | [Positive control (instability gate)](positive_control_instabilitiy.md) | Motivation: calibration for the *instability / divergence* failure mode (minor). Drive LR / batch pathology until training diverges; the **gradient-norm** instrument must fire, and stay quiet on the healthy baseline. | ⬜ Not started |
+
+## Artifacts
+
+Each `scripts/positive_control.py` run writes a full `comparison.json` — `{gate, envelope, pc, healthy}`: the gate
+verdict, the collapse-suite envelope, and both arms' full per-checkpoint health series — into the **Hydra run dir**
+(`outputs/<date>/<time>/`, **gitignored and ephemeral**), so fresh runs are never tracked.
+
+The runs that **back a substudy's cited numbers** are promoted, tracked, under `artifacts/<substudy-id>/`. The tracked
+artifact is the **`{run, gate, envelope}` summary** — the gate verdict and the per-`(instrument × surface)` separations
+that every table and post-hoc analysis actually reads, plus a `run` label identifying the config. The bulky
+per-checkpoint `pc`/`healthy` series is dropped (it feeds only the console sparklines, which no table cites) to keep the
+tree lean as substudies accumulate; re-run to regenerate it. Promoted artifacts are period-accurate — a file's gate
+schema reflects the harness at the time of the run and is not retrofitted.
+
+Present:
+
+- [`artifacts/P0.2.2/`](artifacts/P0.2.2/) — all 88 E1–E4 runs (`E{1..4}/<run-name>.json`); the full set the E1–E4
+    tables (min-across-4-seeds) and the E7/E8 pooled analyses rest on.
+- [`artifacts/P0.2.3/`](artifacts/P0.2.3/) — the four redundancy-collapse sweep runs (`seed_N.json`).
+- **P0.2.1** has no directory of its own: its headline calibration corner (IID × 40 epochs) is the *same* corner as
+    P0.2.2's [`E1/iid_40ep_seed*`](artifacts/P0.2.2/E1/) (same config, RankMe re-read — P0.2.2 cross-checks the
+    reference did not move), so it is re-backed there. Its LR / horizon *ablation* runs were exploratory and not
+    preserved as clean per-run artifacts; those tables are reproducible via the P0.2.1 "How to run" commands.
+- **P0.2** predates the `comparison.json` writer, so no artifact exists; its one live conclusion (RankMe did not
+    separate at the toy single-pass horizon) is subsumed by P0.2.1's regime finding.

@@ -1,0 +1,158 @@
+{
+  "run": "E4/lr4x_seed0",
+  "gate": {
+    "pc_rankme_init": 8.587888717651367,
+    "pc_rankme_final": 1.983252763748169,
+    "pc_rankme_drop_frac": 0.2309360110444646,
+    "pc_loss_floor": -0.953640878200531,
+    "healthy_rankme_final": 2.205887794494629,
+    "healthy_loss_floor": -0.886313259601593,
+    "rankme_ratio": 1.112257516951949,
+    "loss_separation": 0.06732761859893799,
+    "thresholds": {
+      "pc_rankme_drop_frac": 0.35,
+      "pc_loss_floor": -0.9,
+      "healthy_rankme_min": 4.0,
+      "min_rankme_ratio": 2.0
+    },
+    "checks": {
+      "pc_collapses_relative": true,
+      "pc_right_reason": true,
+      "healthy_holds": false,
+      "rankme_separated": false
+    },
+    "passed": false
+  },
+  "envelope": [
+    {
+      "metric": "rankme",
+      "surface": "backbone",
+      "direction": "down",
+      "scale": "ratio",
+      "healthy_final": 2.205887794494629,
+      "pc_final": 1.983252763748169,
+      "separation": 1.112257516951949,
+      "threshold": 2.0,
+      "standalone": true,
+      "note": "reference (calibrated in P0.2.1)",
+      "fires": false
+    },
+    {
+      "metric": "rankme",
+      "surface": "proj",
+      "direction": "down",
+      "scale": "ratio",
+      "healthy_final": 9.218693733215332,
+      "pc_final": 3.28588604927063,
+      "separation": 2.805542734892347,
+      "threshold": 2.0,
+      "standalone": true,
+      "note": "reference (calibrated in P0.2.1)",
+      "fires": true
+    },
+    {
+      "metric": "mean_feature_var",
+      "surface": "backbone",
+      "direction": "down",
+      "scale": "ratio",
+      "healthy_final": 0.00016012541891541332,
+      "pc_final": 0.0001698791020317003,
+      "separation": 0.9425845616109573,
+      "threshold": 2.0,
+      "standalone": true,
+      "note": "VICReg variance; L2-normalized",
+      "fires": false
+    },
+    {
+      "metric": "mean_feature_var",
+      "surface": "proj",
+      "direction": "down",
+      "scale": "ratio",
+      "healthy_final": 0.007142669055610895,
+      "pc_final": 0.0061881048604846,
+      "separation": 1.1542579217139417,
+      "threshold": 2.0,
+      "standalone": true,
+      "note": "VICReg variance; L2-normalized",
+      "fires": false
+    },
+    {
+      "metric": "offdiag_cov",
+      "surface": "backbone",
+      "direction": "up",
+      "scale": "ratio",
+      "healthy_final": 2.1586331513390178e-06,
+      "pc_final": 2.5499450657662237e-06,
+      "separation": 1.1812776358893924,
+      "threshold": 2.0,
+      "standalone": true,
+      "note": "VICReg redundancy; expected null under point-collapse",
+      "fires": false
+    },
+    {
+      "metric": "offdiag_cov",
+      "surface": "proj",
+      "direction": "up",
+      "scale": "ratio",
+      "healthy_final": 0.0025774147361516953,
+      "pc_final": 0.0025450713001191616,
+      "separation": 0.9874512100909203,
+      "threshold": 2.0,
+      "standalone": true,
+      "note": "VICReg redundancy; expected null under point-collapse",
+      "fires": false
+    },
+    {
+      "metric": "uniformity",
+      "surface": "backbone",
+      "direction": "up",
+      "scale": "gap",
+      "healthy_final": -0.05778716132044792,
+      "pc_final": -0.060038164258003235,
+      "separation": -0.002251002937555313,
+      "threshold": 0.5,
+      "standalone": true,
+      "note": "W&I uniformity (negative-valued)",
+      "fires": false
+    },
+    {
+      "metric": "uniformity",
+      "surface": "proj",
+      "direction": "up",
+      "scale": "gap",
+      "healthy_final": -1.6803983449935913,
+      "pc_final": -1.2599091529846191,
+      "separation": 0.42048919200897217,
+      "threshold": 0.5,
+      "standalone": true,
+      "note": "W&I uniformity (negative-valued)",
+      "fires": false
+    },
+    {
+      "metric": "alignment",
+      "surface": "backbone",
+      "direction": "down",
+      "scale": "gap",
+      "healthy_final": 0.01627720147371292,
+      "pc_final": 0.015215080231428146,
+      "separation": 0.0010621212422847748,
+      "threshold": 0.5,
+      "standalone": false,
+      "note": "read jointly with uniformity; not a standalone detector",
+      "fires": false
+    },
+    {
+      "metric": "alignment",
+      "surface": "proj",
+      "direction": "down",
+      "scale": "gap",
+      "healthy_final": 1.2986528873443604,
+      "pc_final": 1.1434475183486938,
+      "separation": 0.1552053689956665,
+      "threshold": 0.5,
+      "standalone": false,
+      "note": "read jointly with uniformity; not a standalone detector",
+      "fires": false
+    }
+  ]
+}
