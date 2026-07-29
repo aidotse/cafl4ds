@@ -35,12 +35,25 @@ needs its **own** positive control. This is what drives the sub-studies below:
 
 ## Artifacts
 
-Each `scripts/positive_control.py` run writes a `comparison.json` — `{gate, envelope, pc, healthy}`: the gate verdict,
-the collapse-suite envelope, and both arms' full per-checkpoint health series — the quantitative evidence behind a
-substudy's tables. It lands in the **Hydra run dir** (`outputs/<date>/<time>/`, **gitignored and ephemeral**), so fresh
-runs are never tracked.
+Each `scripts/positive_control.py` run writes a full `comparison.json` — `{gate, envelope, pc, healthy}`: the gate
+verdict, the collapse-suite envelope, and both arms' full per-checkpoint health series — into the **Hydra run dir**
+(`outputs/<date>/<time>/`, **gitignored and ephemeral**), so fresh runs are never tracked.
 
-The **definitive run backing each certified substudy is promoted** to `artifacts/<substudy-id>/` here (e.g.
-[`artifacts/P0.2.3/`](artifacts/P0.2.3/), one `seed_N.json` per seed), and those *are* tracked. When you cite a number
-in a substudy doc, promote the run that produced it. Promoted artifacts are period-accurate — a file's gate schema
-reflects the harness at the time of the run and is not retrofitted.
+The runs that **back a substudy's cited numbers** are promoted, tracked, under `artifacts/<substudy-id>/`. The tracked
+artifact is the **`{run, gate, envelope}` summary** — the gate verdict and the per-`(instrument × surface)` separations
+that every table and post-hoc analysis actually reads, plus a `run` label identifying the config. The bulky
+per-checkpoint `pc`/`healthy` series is dropped (it feeds only the console sparklines, which no table cites) to keep the
+tree lean as substudies accumulate; re-run to regenerate it. Promoted artifacts are period-accurate — a file's gate
+schema reflects the harness at the time of the run and is not retrofitted.
+
+Present:
+
+- [`artifacts/P0.2.2/`](artifacts/P0.2.2/) — all 88 E1–E4 runs (`E{1..4}/<run-name>.json`); the full set the E1–E4
+    tables (min-across-4-seeds) and the E7/E8 pooled analyses rest on.
+- [`artifacts/P0.2.3/`](artifacts/P0.2.3/) — the four redundancy-collapse sweep runs (`seed_N.json`).
+- **P0.2.1** has no directory of its own: its headline calibration corner (IID × 40 epochs) is the *same* corner as
+    P0.2.2's [`E1/iid_40ep_seed*`](artifacts/P0.2.2/E1/) (same config, RankMe re-read — P0.2.2 cross-checks the
+    reference did not move), so it is re-backed there. Its LR / horizon *ablation* runs were exploratory and not
+    preserved as clean per-run artifacts; those tables are reproducible via the P0.2.1 "How to run" commands.
+- **P0.2** predates the `comparison.json` writer, so no artifact exists; its one live conclusion (RankMe did not
+    separate at the toy single-pass horizon) is subsumed by P0.2.1's regime finding.
