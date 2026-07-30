@@ -5,6 +5,13 @@ All notable changes to this project are documented in this file.
 This file is managed by [Commitizen](https://commitizen-tools.github.io/commitizen/) and is updated automatically on
 each `poe bump` (driven by [Conventional Commits](https://www.conventionalcommits.org/)). Do not edit it by hand.
 
+## v0.10.0 (2026-07-30)
+
+### Feat
+
+- P0.2.4 complete
+- P0.2.4 false-positive stress on the quiet side
+
 ## v0.9.0 (2026-07-29)
 
 ### Feat
