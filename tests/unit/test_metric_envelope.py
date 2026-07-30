@@ -8,7 +8,7 @@ alignment metric — and that the table renderer handles all of that without cra
 
 from typing import Any
 
-from cafl4ds.metric_envelope import metric_envelope, render_envelope_table
+from cafl4ds.metric_envelope import metric_envelope, quiet_verdict, render_envelope_table
 
 # Two checkpoints per arm; only the FINAL value drives the reading, so the first row is filler.
 # Finals chosen so every standalone instrument separates in its collapse direction on `backbone`
@@ -96,6 +96,27 @@ def test_absent_metric_yields_no_row() -> None:
     pc = [{"step": 0.0, "rankme": 2.0}]
     rows = metric_envelope(pc, healthy)
     assert {r["metric"] for r in rows} == {"rankme"}
+
+
+def test_quiet_verdict_fails_when_any_instrument_fires() -> None:
+    """P0.2.4 quiet verdict: an atypical arm that separates past a bar is a false fire (not passed)."""
+    # _PC in the pc slot separates every standalone instrument on backbone -> false fires.
+    rows = metric_envelope(_PC, _HEALTHY, min_ratio=2.0, min_gap=0.5)
+    verdict = quiet_verdict(rows)
+    assert verdict["mode"] == "quiet"
+    assert verdict["passed"] is False
+    assert verdict["num_fired"] == len(verdict["fired"]) > 0
+    fired = {(f["metric"], f["surface"]) for f in verdict["fired"]}
+    assert ("rankme", "backbone") in fired  # a firing standalone detector is reported
+    assert ("alignment", "backbone") not in fired  # non-standalone never fires
+
+
+def test_quiet_verdict_passes_when_nothing_fires() -> None:
+    """When the atypical arm matches the reference, no instrument fires -> the quiet side holds."""
+    verdict = quiet_verdict(metric_envelope(_HEALTHY, _HEALTHY))
+    assert verdict["passed"] is True
+    assert verdict["num_fired"] == 0
+    assert verdict["fired"] == []
 
 
 def test_render_table_runs_and_marks_paired() -> None:
