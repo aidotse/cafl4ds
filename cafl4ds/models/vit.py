@@ -207,6 +207,21 @@ class TinyViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is Any witho
                 nn.init.ones_(m.weight)
                 nn.init.zeros_(m.bias)
 
+    def reset_parameters_from_scratch(self) -> None:
+        """Re-randomize *all* learned weights, discarding any loaded checkpoint.
+
+        Builds a genuine random-init reference from a subclass that warm-starts in ``__init__``
+        (e.g. the P0.3.7 savings ``scratch`` baseline from :class:`MAEPretrainedViTEncoder`): it
+        reruns :meth:`_init_weights` (positional/token params, Linear, LayerNorm) *and* resets the
+        patch-embed conv (which ``_init_weights`` leaves at its construction default), while leaving
+        registered buffers — e.g. a subclass's normalization constants — untouched, so the encoder's
+        input contract is preserved and only the pretrained knowledge is wiped.
+        """
+        self._init_weights()
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                m.reset_parameters()
+
     def _embed_patches(self, imgs: torch.Tensor) -> torch.Tensor:
         """Convolutional patch embedding, adding the patch positional encodings.
 

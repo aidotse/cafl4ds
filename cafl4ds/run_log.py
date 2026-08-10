@@ -47,16 +47,27 @@ class RunLogger:
         self._file.write(json.dumps(record) + "\n")
         self._file.flush()
 
-    def log_loss(self, step: int, era: int, loss: float) -> None:
+    def log_loss(
+        self, step: int, era: int, loss: float, grad_norm: float | None = None, finite: bool | None = None
+    ) -> None:
         """Record one point of the SSL-loss series.
 
         Args:
             step: Global step index.
             era: Current era (class block).
             loss: The SSL loss value at this step.
+            grad_norm: Optional global pre-clip gradient L2 norm for the step (the P0.4.0
+                divergence instrument); omitted from the record when ``None``.
+            finite: Optional flag — whether the step's loss and grad norm are both finite;
+                omitted when ``None``.
         """
         self._last_loss = loss
-        self._write({"series": "loss", "step": step, "era": era, "loss": loss})
+        record: dict[str, Any] = {"series": "loss", "step": step, "era": era, "loss": loss}
+        if grad_norm is not None:
+            record["grad_norm"] = grad_norm
+        if finite is not None:
+            record["finite"] = finite
+        self._write(record)
 
     def log_health(self, step: int, era: int, metrics: dict[str, float]) -> None:
         """Record one point of the health series (with the most recent loss attached).

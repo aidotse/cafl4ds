@@ -1,0 +1,88 @@
+{
+  "gate": {
+    "mode": "forgetting",
+    "pc_task_a_learned": 0.85,
+    "pc_backward_transfer": -0.05999999999999994,
+    "pc_forgetting_measure": 0.05999999999999994,
+    "healthy_backward_transfer": -0.0050000000000000044,
+    "healthy_forgetting_measure": 0.0050000000000000044,
+    "forget_ratio": 11.999999999999979,
+    "thresholds": {
+      "learn_min": 0.05,
+      "bwt_fire": 0.05,
+      "fm_fire": 0.05,
+      "bwt_quiet": 0.03,
+      "min_forget_ratio": 2.0,
+      "recon_gap_min": 0.03
+    },
+    "checks": {
+      "pc_learned_A": true,
+      "pc_bwt_fires": true,
+      "pc_fm_fires": true,
+      "healthy_holds": true,
+      "contrast": true
+    },
+    "reported": {
+      "pc_cka_drift": 0.3847843408584595,
+      "healthy_cka_drift": 0.3006380796432495,
+      "pc_cosine_drift": 0.666803240776062,
+      "healthy_cosine_drift": 0.758825957775116,
+      "drift_separates": true,
+      "pc_recon_a_rise": NaN,
+      "healthy_recon_a_rise": NaN,
+      "recon_forget_gap": NaN,
+      "recon_corroborates": false
+    },
+    "passed": true
+  },
+  "pc": {
+    "run": "sup_pc_forget",
+    "replay": false,
+    "task_a_init": 0.1,
+    "matrix": {
+      "0": {
+        "0": 0.95
+      },
+      "1": {
+        "0": 0.89,
+        "1": 0.9316666666666666
+      }
+    },
+    "task_a_learned": 0.85,
+    "backward_transfer": -0.05999999999999994,
+    "forgetting_measure": 0.05999999999999994,
+    "cka_drift": 0.3847843408584595,
+    "cosine_drift": 0.666803240776062,
+    "loss_a": NaN,
+    "loss_b": 0.00537766981869936,
+    "recon_a_after_a": NaN,
+    "recon_a_after_b": NaN,
+    "recon_b_after_b": NaN,
+    "recon_a_rise": NaN
+  },
+  "healthy": {
+    "run": "sup_healthy_replay",
+    "replay": true,
+    "task_a_init": 0.1,
+    "matrix": {
+      "0": {
+        "0": 0.95
+      },
+      "1": {
+        "0": 0.945,
+        "1": 0.945
+      }
+    },
+    "task_a_learned": 0.85,
+    "backward_transfer": -0.0050000000000000044,
+    "forgetting_measure": 0.0050000000000000044,
+    "cka_drift": 0.3006380796432495,
+    "cosine_drift": 0.758825957775116,
+    "loss_a": NaN,
+    "loss_b": 0.003698706394061446,
+    "recon_a_after_a": NaN,
+    "recon_a_after_b": NaN,
+    "recon_b_after_b": NaN,
+    "recon_a_rise": NaN
+  }
+}

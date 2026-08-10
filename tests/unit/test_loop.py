@@ -86,6 +86,55 @@ def test_tabulate_handles_empty() -> None:
     assert tabulate([]) == "(no health records)"
 
 
+def test_loss_series_carries_grad_norm_and_finite(tmp_path: object) -> None:
+    """Each loss record carries a finite pre-clip grad norm + a ``finite`` flag (P0.4.0 trace)."""
+    records = _run_loop(build_mae, str(tmp_path / "gn.jsonl"))  # type: ignore[operator]
+    loss = [r for r in records if r["series"] == "loss"]
+    assert loss  # some steps ran
+    for r in loss:
+        assert "grad_norm" in r and "finite" in r
+        assert r["finite"] is True
+        assert isinstance(r["grad_norm"], float) and r["grad_norm"] >= 0.0
+
+
+def test_divergence_stops_the_loop_on_non_finite(tmp_path: Path) -> None:
+    """A pathological LR drives the loss/grad non-finite; the loop records it then stops.
+
+    The grad norm is captured **pre-clip** and clipping is off, so the blow-up is visible; the
+    run must end on the first non-finite step (no further steps logged) and skip the closing
+    health read (undefined on diverged params) — the P0.4.0 divergence-stop behaviour.
+    """
+    torch.manual_seed(0)
+    encoder = TinyViTEncoder(img_size=16, patch_size=8, embed_dim=32, depth=2, num_heads=2)
+    method = build_mae(encoder)
+    stream = EraStream(
+        SyntheticSource(num_classes=3, per_class=48, img_size=16),
+        batch_size=12,
+        order="iid",
+        support_per_class=8,
+        query_per_class=8,
+        era_eval_per_class=5,
+    )
+    run_logger = RunLogger(str(tmp_path / "diverge.jsonl"), run_name="diverge")
+    StreamingLoop(
+        stream=stream,
+        method=method,
+        optimizer=torch.optim.SGD(method.parameters(), lr=1e6),  # pathological -> divergence
+        selection_filter=AcceptAll(),
+        monitor=HealthMonitor(stream.eval_sets, knn_k=5),
+        run_logger=run_logger,
+        eval_every=1,
+        epochs=3,
+        grad_clip=None,  # clipping off so the blow-up is not masked
+    ).run()
+
+    records = read_run(str(tmp_path / "diverge.jsonl"))
+    loss = [r for r in records if r["series"] == "loss"]
+    assert loss[-1]["finite"] is False  # ended on a non-finite step
+    assert all(r["finite"] is True for r in loss[:-1])  # only the last step is non-finite (stopped there)
+    assert not [r for r in records if r["series"] == "health" and r["step"] == loss[-1]["step"]]  # no closing health
+
+
 def test_multi_epoch_with_scheduler_numbers_steps_globally(tmp_path: Path) -> None:
     """``epochs>1`` re-iterates the stream with globally-increasing steps, stepping the LR sched.
 

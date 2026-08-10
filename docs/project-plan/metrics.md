@@ -35,7 +35,10 @@ Keep the two axes separate, and **establish the link between them** — that lin
 
 > **The link `[NEW]` (leading-indicator test).** Does the diagnostic axis predict the validating axis with usable lead
 > time — a rank drop or rising drift *before* forgetting shows in the probe? This is what licenses a label-free signal
-> as a control input at all. Cheap to run early, since both axes are already logged.
+> as a control input at all. Cheap to run early, since both axes are already logged — *except* the **offline audits**
+> below (kNN cross-probe, recoverability, relearning-savings), the most expensive rung of the validating axis: they need
+> extra data + retraining, so a cheap online signal (recon retention gap, drift) earns its keep precisely by
+> *predicting* one of those offline verdicts without paying for it.
 
 ### Signal catalogue
 
@@ -57,6 +60,12 @@ Keep the two axes separate, and **establish the link between them** — that lin
 
 - **Representation drift** — CKA / cosine churn of a *fixed* probe set's embeddings across checkpoints; how fast the
     coordinate frame moves (ties to forgetting + the moving-reference problem). `[general]` (CKA, Kornblith et al. 2019)
+- **MAE reconstruction retention gap** — held-out *past-era* reconstruction loss, read as a positive-control-vs-replay
+    *retention* gap; the MAE-native, label-free forgetting corroborator (recon on the era being overwritten degrades
+    relative to a replay control). **Caveat (P0.3.8):** over-fires on a low-level *output*-distribution shift the
+    representation shrugs off (e.g. colour→grayscale — the decoder's output moves but the encoder does not), so it is
+    trustworthy only when the new era is not itself an output shift versus the scored era. `[MAE]` (reconstruction
+    objective, He et al. 2022)
 - **SSL loss trajectory** — necessary but weak alone; for joint-embedding a *low* loss can be a collapsed trivial
     solution, so read it *against* the collapse signals. `[general]` (collapse caveat: Jing et al. 2022)
 - **Gradient norm / gradient diversity** — instability/divergence (norm) and training-diet diversity (diversity); not a
@@ -70,12 +79,29 @@ Keep the two axes separate, and **establish the link between them** — that lin
     Transfer** (Lopez-Paz & Ranzato 2017), and the **Forgetting Measure** (Chaudhry et al. 2018). The ground truth for
     MAE's degradation mode. `[general]`
 
-**Architecture coverage:** MAE exposes loss, the geometry suite, and drift (collapse signals sparse → lean on the
-forgetting metrics); joint-embedding adds alignment/uniformity; prototype methods add assignment entropy. This is why
-the plan demonstrates collapse on joint-embedding and forgetting on MAE — and why each mode gets its **own** positive
-control in Phase 0 to calibrate its metrics (collapse-PC → the geometry suite; a deliberately-forgetting run → drift +
-the forgetting metrics), a metric being trustworthy only once it fires on its mode and stays quiet when healthy. See
-[Phase 0](../experiments/phase0/index.md).
+**Offline audits — genuineness / permanence (offline, need held-out data + a retraining budget; run *once* after a fire,
+not live readouts):**
+
+Unlike every signal above — cheap, continuous, mostly label-free readouts sampled each era — these are one-shot audits
+that *qualify a fired forgetting event*, trading extra data and a retraining budget for a direct read of the ground
+truth. They are the most expensive rung of the validating axis, and (per the leading-indicator link above) the verdicts
+the cheap online signals aim to *predict*:
+
+- **kNN cross-probe** — genuine representational degradation vs. a linear-probe *accessibility* artifact (a rotation
+    into a linearly-inaccessible basis): if kNN craters too, the loss is real, not a probe artifact. `[general]`, needs
+    labels. (P0.3.5)
+- **Recoverability re-learn** — permanence vs. transient interference: re-learn the forgotten era and measure how far
+    accuracy returns toward its pre-crater level (R00). `[general]`, needs labels + a relearn budget. (P0.3.5)
+- **Relearning savings (savings fraction)** — genuine loss vs. apparent/recoverable interference: relearn the era from
+    the *forgotten* init and from a *from-scratch* init; genuine forgetting ⇒ relearns as slowly as scratch, apparent ⇒
+    as fast as a retained model. `[MAE / general]`, needs data + retraining. (P0.3.7/P0.3.8)
+
+**Architecture coverage:** MAE exposes loss, the geometry suite, drift, and its own reconstruction retention gap
+(collapse signals sparse → lean on the forgetting metrics + the recon gap); joint-embedding adds alignment/uniformity;
+prototype methods add assignment entropy. This is why the plan demonstrates collapse on joint-embedding and forgetting
+on MAE — and why each mode gets its **own** positive control in Phase 0 to calibrate its metrics (collapse-PC → the
+geometry suite; a deliberately-forgetting run → drift + the forgetting metrics), a metric being trustworthy only once it
+fires on its mode and stays quiet when healthy. See [Phase 0](../experiments/phase0/index.md).
 
 ### Two questions the labels-allowed freedom lets us separate
 
