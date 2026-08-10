@@ -34,11 +34,35 @@ nav:
       - P0.1: experiments/latest-results/P0.1.md
       - P0.2: experiments/latest-results/P0.2.md
       - P0.2.1: experiments/latest-results/P0.2.1.md
+      - P0.2.2: experiments/latest-results/P0.2.2.md
+      - P0.2.3: experiments/latest-results/P0.2.3.md
+      - P0.2.4: experiments/latest-results/P0.2.4.md
+      - P0.3.0: experiments/latest-results/P0.3.0.md
+      - P0.3.1: experiments/latest-results/P0.3.1.md
+      - P0.3.2: experiments/latest-results/P0.3.2.md
+      - P0.3.3: experiments/latest-results/P0.3.3.md
+      - P0.3.4: experiments/latest-results/P0.3.4.md
+      - P0.3.5: experiments/latest-results/P0.3.5.md
+      - P0.3.6: experiments/latest-results/P0.3.6.md
+      - P0.3.7: experiments/latest-results/P0.3.7.md
+      - P0.3.8: experiments/latest-results/P0.3.8.md
   - Phase 0:
       - experiments/phase0/index.md
       - P0.1 Instrument (streaming loop): experiments/phase0/P0.1.md
       - P0.2 Positive control (collapse gate - first investigation): experiments/phase0/P0.2.md
       - P0.2.1 Positive control (collapse gate - baseline): experiments/phase0/P0.2.1.md
+      - P0.2.2 Positive control (collapse gate - full metric suite): experiments/phase0/P0.2.2.md
+      - P0.2.3 Positive control (collapse gate - redundancy vehicle): experiments/phase0/P0.2.3.md
+      - P0.2.4 Positive control (collapse gate - false-positive stress): experiments/phase0/P0.2.4.md
+      - P0.3.0 Positive control (forgetting gate - making forgetting real): experiments/phase0/P0.3.0.md
+      - P0.3.1 Positive control (forgetting gate - operating point + drift verdict): experiments/phase0/P0.3.1.md
+      - P0.3.2 Positive control (forgetting gate - multi-seed robustness): experiments/phase0/P0.3.2.md
+      - P0.3.3 Positive control (forgetting gate - batch-size probe): experiments/phase0/P0.3.3.md
+      - P0.3.4 Positive control (forgetting gate - supervised upper-limit): experiments/phase0/P0.3.4.md
+      - P0.3.5 Positive control (forgetting gate - fire audit, genuine/permanent): experiments/phase0/P0.3.5.md
+      - P0.3.6 Positive control (forgetting gate - SSL-MAE fire, label-free): experiments/phase0/P0.3.6.md
+      - P0.3.7 Positive control (forgetting gate - savings audit): experiments/phase0/P0.3.7.md
+      - P0.3.8 Positive control (forgetting gate - hard-disjoint vehicle): experiments/phase0/P0.3.8.md
   - API Reference: reference.md
   - Tests: exported/pytest.html
   - Coverage: exported/coverage/index.html
