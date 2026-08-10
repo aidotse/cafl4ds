@@ -1,0 +1,88 @@
+{
+  "gate": {
+    "mode": "forgetting",
+    "pc_task_a_learned": 0.8533333333333334,
+    "pc_backward_transfer": -0.05166666666666675,
+    "pc_forgetting_measure": 0.05166666666666675,
+    "healthy_backward_transfer": -0.0016666666666667052,
+    "healthy_forgetting_measure": 0.0016666666666667052,
+    "forget_ratio": 30.999999999999336,
+    "thresholds": {
+      "learn_min": 0.05,
+      "bwt_fire": 0.05,
+      "fm_fire": 0.05,
+      "bwt_quiet": 0.03,
+      "min_forget_ratio": 2.0,
+      "recon_gap_min": 0.03
+    },
+    "checks": {
+      "pc_learned_A": true,
+      "pc_bwt_fires": true,
+      "pc_fm_fires": true,
+      "healthy_holds": true,
+      "contrast": true
+    },
+    "reported": {
+      "pc_cka_drift": 0.44511884450912476,
+      "healthy_cka_drift": 0.31109046936035156,
+      "pc_cosine_drift": 0.7075259685516357,
+      "healthy_cosine_drift": 0.7467633485794067,
+      "drift_separates": true,
+      "pc_recon_a_rise": NaN,
+      "healthy_recon_a_rise": NaN,
+      "recon_forget_gap": NaN,
+      "recon_corroborates": false
+    },
+    "passed": true
+  },
+  "pc": {
+    "run": "sup_pc_forget",
+    "replay": false,
+    "task_a_init": 0.1,
+    "matrix": {
+      "0": {
+        "0": 0.9533333333333334
+      },
+      "1": {
+        "0": 0.9016666666666666,
+        "1": 0.9416666666666667
+      }
+    },
+    "task_a_learned": 0.8533333333333334,
+    "backward_transfer": -0.05166666666666675,
+    "forgetting_measure": 0.05166666666666675,
+    "cka_drift": 0.44511884450912476,
+    "cosine_drift": 0.7075259685516357,
+    "loss_a": NaN,
+    "loss_b": 0.08028814941644669,
+    "recon_a_after_a": NaN,
+    "recon_a_after_b": NaN,
+    "recon_b_after_b": NaN,
+    "recon_a_rise": NaN
+  },
+  "healthy": {
+    "run": "sup_healthy_replay",
+    "replay": true,
+    "task_a_init": 0.1,
+    "matrix": {
+      "0": {
+        "0": 0.9533333333333334
+      },
+      "1": {
+        "0": 0.9516666666666667,
+        "1": 0.9466666666666667
+      }
+    },
+    "task_a_learned": 0.8533333333333334,
+    "backward_transfer": -0.0016666666666667052,
+    "forgetting_measure": 0.0016666666666667052,
+    "cka_drift": 0.31109046936035156,
+    "cosine_drift": 0.7467633485794067,
+    "loss_a": NaN,
+    "loss_b": 0.0009072422399185598,
+    "recon_a_after_a": NaN,
+    "recon_a_after_b": NaN,
+    "recon_b_after_b": NaN,
+    "recon_a_rise": NaN
+  }
+}

@@ -16,7 +16,9 @@ calibration needs (the correlated single pass is still the default, and the Phas
 
 from __future__ import annotations
 
+import math
 from collections.abc import Iterable, Sized
+from typing import NamedTuple
 
 import torch
 from loguru import logger
@@ -32,6 +34,21 @@ from cafl4ds.ssl.base import SSLMethod
 
 # BatchNorm heads (SimSiam) and per-patch stats need at least two samples in a batch.
 _MIN_BATCH = 2
+
+
+class UpdateStats(NamedTuple):
+    """One optimizer step's outcome — the per-step trace record (P0.4.0 divergence readout).
+
+    Attributes:
+        loss: The scalar SSL loss for the step.
+        grad_norm: The global L2 gradient norm measured **pre-clip** (the divergence instrument).
+        finite: Whether both the loss and the grad norm are finite (a non-finite step is the
+            divergence fingerprint — the loop stops there).
+    """
+
+    loss: float
+    grad_norm: float
+    finite: bool
 
 
 class StreamingLoop:
@@ -102,30 +119,72 @@ class StreamingLoop:
         batches_per_epoch = len(self.stream) if isinstance(self.stream, Sized) else 0
         last_step, last_era = -1, 0
         prev_era: int | None = None
+        diverged = False
         for epoch in range(self.epochs):
             for batch in self.stream:
                 step = epoch * batches_per_epoch + batch.step
                 if prev_era is not None and batch.era != prev_era:
                     self._probe_past(prev_era)  # the era just ended — record its probe-on-past row
-                prev_era = batch.era
-                last_era = batch.era
-                moved = StreamBatch(images=batch.images.to(self.device), era=batch.era, step=step)
-                accepted = self.selection_filter.select(moved, FilterContext(method=self.method, step=step))
-                if accepted.shape[0] < _MIN_BATCH:
-                    logger.debug(f"step {step}: skipping batch of {accepted.shape[0]} (< {_MIN_BATCH}).")
+                prev_era, last_era = batch.era, batch.era
+                stats = self._step_on_batch(batch, step)
+                if stats is None:  # sub-minimum batch after selection — skipped
                     continue
-                loss = self._update(accepted)
-                self.run_logger.log_loss(step, batch.era, loss)
+                last_step = step
+                if not stats.finite:  # divergence (P0.4.0): stop on the first non-finite step
+                    diverged = True
+                    break
                 if step % self.eval_every == 0:
                     self.run_logger.log_health(step, batch.era, self.monitor.measure(self.method, step))
-                last_step = step
-        if last_step >= 0 and last_step % self.eval_every != 0:  # always end on a health reading
-            self.run_logger.log_health(last_step, last_era, self.monitor.measure(self.method, last_step))
-        if last_step >= 0:
-            self._probe_past(last_era)  # final row: current encoder over every era seen
+            if diverged:
+                break
+        self._finalize(diverged=diverged, last_step=last_step, last_era=last_era)
         logger.info("streaming loop complete\n" + self.run_logger.tabulate())
         self.run_logger.close()
         return self.run_logger
+
+    def _step_on_batch(self, batch: StreamBatch, step: int) -> UpdateStats | None:
+        """Select on one batch and run its update, logging the per-step loss + grad-norm trace.
+
+        Args:
+            batch: The incoming stream batch.
+            step: The global step index for this batch.
+
+        Returns:
+            The step's :class:`UpdateStats`, or ``None`` if the selected batch was sub-minimum
+            (too few samples to run an update — the step is skipped).
+        """
+        moved = StreamBatch(images=batch.images.to(self.device), era=batch.era, step=step)
+        accepted = self.selection_filter.select(moved, FilterContext(method=self.method, step=step))
+        if accepted.shape[0] < _MIN_BATCH:
+            logger.debug(f"step {step}: skipping batch of {accepted.shape[0]} (< {_MIN_BATCH}).")
+            return None
+        stats = self._update(accepted)
+        self.run_logger.log_loss(step, batch.era, stats.loss, grad_norm=stats.grad_norm, finite=stats.finite)
+        if not stats.finite:
+            # The loss or the gradient went non-finite. The per-step trace up to here is the
+            # divergence fingerprint — the caller stops rather than keep stepping on NaN params.
+            logger.warning(
+                f"step {step}: non-finite update (loss={stats.loss}, grad_norm={stats.grad_norm}) "
+                "— stopping (divergence)."
+            )
+        return stats
+
+    def _finalize(self, *, diverged: bool, last_step: int, last_era: int) -> None:
+        """Close the run with a final health reading + probe-on-past (unless it diverged).
+
+        On a diverged run the model parameters are non-finite, so the closing health read and
+        probe are undefined and skipped; the per-step trace already carries the divergence event.
+
+        Args:
+            diverged: Whether the run stopped on a non-finite step.
+            last_step: The last global step that ran (``-1`` if none did).
+            last_era: The era of the last step (for the closing probe-on-past row).
+        """
+        if diverged or last_step < 0:
+            return
+        if last_step % self.eval_every != 0:  # always end on a health reading
+            self.run_logger.log_health(last_step, last_era, self.monitor.measure(self.method, last_step))
+        self._probe_past(last_era)  # final row: current encoder over every era seen
 
     def _probe_past(self, era: int) -> None:
         """Record one probe-on-past row for the just-finished ``era`` (if an evaluator is set).
@@ -145,22 +204,46 @@ class StreamingLoop:
         finally:
             self.method.train(was_training)
 
-    def _update(self, images: torch.Tensor) -> float:
+    def _update(self, images: torch.Tensor) -> UpdateStats:
         """Run one SSL optimization step on the accepted images.
+
+        Captures the global L2 gradient norm **before** any clipping (the P0.4.0 divergence
+        instrument — a blow-up must be visible even when a clip would otherwise mask it) and
+        flags the step non-finite if the loss or that norm is inf/NaN.
 
         Args:
             images: The accepted image batch ``[K, C, H, W]``.
 
         Returns:
-            The scalar loss value for this step.
+            The step's :class:`UpdateStats` (loss, pre-clip grad norm, finiteness).
         """
         self.method.train()
         self.optimizer.zero_grad()
         loss = self.method.training_step(images)
         loss.backward()
+        grad_norm = self._grad_norm()
         if self.grad_clip is not None:
             torch.nn.utils.clip_grad_norm_(self.method.parameters(), self.grad_clip)
         self.optimizer.step()
         if self.scheduler is not None:
             self.scheduler.step()
-        return float(loss.item())
+        loss_value = float(loss.item())
+        finite = math.isfinite(loss_value) and math.isfinite(grad_norm)
+        return UpdateStats(loss=loss_value, grad_norm=grad_norm, finite=finite)
+
+    def _grad_norm(self) -> float:
+        """Return the global L2 norm of the current (pre-clip) parameter gradients.
+
+        Sums the squared gradients across all parameters and takes the root — the same quantity
+        :func:`torch.nn.utils.clip_grad_norm_` computes, read here regardless of whether clipping
+        is enabled. A non-finite gradient (inf/NaN) propagates through as inf/NaN, which the
+        caller reads as the divergence fingerprint.
+
+        Returns:
+            The global gradient L2 norm, or ``0.0`` if no parameter has a gradient.
+        """
+        squared = torch.zeros((), device=self.device)
+        for param in self.method.parameters():
+            if param.grad is not None:
+                squared = squared + param.grad.detach().pow(2).sum()
+        return float(squared.sqrt().item())
