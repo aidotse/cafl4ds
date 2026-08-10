@@ -60,23 +60,24 @@ Runs behind a token-compression pipeline (RTK shell-hook + Headroom API proxy): 
 
 ## Documenting experiments
 
-You can interpret this as a guide for how to add documentation on new studies or sub-studies. See notes above on
-`docs/experiments`. When writing experiment summaries, rely strictly on the active conversation history and terminal
-outputs. Do not run `git diff` or read raw source files to figure out what was achieved. If starting a new session with
-no history, ask the user to provide the summary points. There are different levels of granularity at play:
-
-- `docs/experiments/latest-results/<substudy ID>.md` - a *concise* summary of the results / what was achieved in the
-    substudy. Avoid too many details; this is a a brief take-away from the study.
+You is a guide for how to add documentation on new studies or sub-studies. See notes above on `docs/experiments`. Use
+informative, but not terse language. There are different levels of granularity at play (here: most concise to least
+concise):
 
 - `docs/experiments/phase<ID>/index.md` - summary details of what the *project phase* is about, plus a routing table to
-    the substudies. In this table: only the *motivation*, not the *results* of the substudy, kept brief.
+    the substudies. In this table: only the *motivation*, and an *executive, 1-2 line summary* of the substudy status:
+    keep brief.
+
+- `docs/experiments/latest-results/<substudy ID>.md` - a *concise* summary of the results / what was achieved in the
+    substudy. Avoid too many details (in particular: NO results numbers); this is a a brief take-away from the study.
 
 - `docs/experiments/phase<ID>/<substudy ID>.md` - a detailed, *but not overly verbose or repetetive* description of the
-    sub study, including outputs, quantitative results. Includes (roughly) a brief section for the motivation, the
-    methodology and findings, any interesting insights, and how to run the experiments in the substudy. Do not mention
-    progress or status here, that goes in `docs/experiments/latest-results/<substudy ID>.md`.
+    sub study, including outputs, and key quantitative results. Includes (roughly) a brief section for the motivation,
+    the methodology and findings, any interesting insights, and how to run the experiments in the substudy. Do not
+    mention progress or status here, that goes in `docs/experiments/latest-results/<substudy ID>.md`.
 
 ## Mandates
 
+- Use informative, but not dense or terse language; avoid over-repetition.
 - Ensure your updates do not contradict the specific index or substudy files you have been instructed to read. Do not
     read additional documentation files solely to check for global project consistency unless explicitly requested.
