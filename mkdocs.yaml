@@ -32,13 +32,15 @@ nav:
   - Latest Results:
       - experiments/latest-results/index.md
       - P0.1: experiments/latest-results/P0.1.md
-      - P0.2: experiments/latest-results/P0.2.md
+      - P0.2.0: experiments/latest-results/P0.2.0.md
       - P0.2.1: experiments/latest-results/P0.2.1.md
   - Phase 0:
       - experiments/phase0/index.md
       - P0.1 Instrument (streaming loop): experiments/phase0/P0.1.md
-      - P0.2 Positive control (collapse gate - first investigation): experiments/phase0/P0.2.md
+      - P0.2.0 Positive control (collapse gate - first investigation): experiments/phase0/P0.2.0.md
       - P0.2.1 Positive control (collapse gate - baseline): experiments/phase0/P0.2.1.md
+  - Audits:
+      - P0.2 (collapse mode): experiments/audits/P0.2.md
   - API Reference: reference.md
   - Tests: exported/pytest.html
   - Coverage: exported/coverage/index.html
