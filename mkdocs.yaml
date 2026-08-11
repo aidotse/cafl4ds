@@ -65,6 +65,7 @@ nav:
       - P0.3.8 Positive control (forgetting gate - hard-disjoint vehicle): experiments/phase0/P0.3.8.md
   - Audits:
       - P0.2 (collapse mode): experiments/audits/P0.2.md
+      - P0.3 (forgetting mode): experiments/audits/P0.3.md
   - API Reference: reference.md
   - Tests: exported/pytest.html
   - Coverage: exported/coverage/index.html
