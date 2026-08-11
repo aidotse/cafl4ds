@@ -1,0 +1,62 @@
+{
+  "what": "burst_scale (noise-shock amplitude) severity dose-response at fixed lr_op=1.0, seed 0",
+  "burst_onset_step": 300,
+  "burst_window": [
+    300,
+    308
+  ],
+  "columns": [
+    "burst_scale",
+    "fire_ratio (shock burst peak / control same-step peak)",
+    "recovers",
+    "first_nonfinite_step",
+    "lead"
+  ],
+  "rows": [
+    {
+      "burst_scale": 1,
+      "fire_ratio": 1.51,
+      "recovers": true,
+      "first_nonfinite_step": null,
+      "lead": null,
+      "note": "in-range: no fire (below grad-norm variance floor)"
+    },
+    {
+      "burst_scale": 2,
+      "fire_ratio": 18.2,
+      "recovers": true,
+      "first_nonfinite_step": null,
+      "lead": null,
+      "note": "fire, transient"
+    },
+    {
+      "burst_scale": 4,
+      "fire_ratio": 78.1,
+      "recovers": true,
+      "first_nonfinite_step": null,
+      "lead": null,
+      "note": "fire, transient (the gate default)"
+    },
+    {
+      "burst_scale": 8,
+      "fire_ratio": 484.0,
+      "recovers": false,
+      "first_nonfinite_step": 314,
+      "lead": 14,
+      "note": "runaway triggered by the shock; NaN completes in the base tail (burst ends at 308)"
+    },
+    {
+      "burst_scale": 16,
+      "fire_ratio": 4960000000.0,
+      "recovers": false,
+      "first_nonfinite_step": 305,
+      "lead": 5,
+      "note": "runaway within the burst; lead shrinks with severity"
+    }
+  ],
+  "reads": [
+    "transient->runaway threshold on the DATA-shock amplitude between scale 4 and 8, at a FIXED base-stable lr",
+    "lead time shrinks with severity (scale 8 -> 14, scale 16 -> 5): the inverse lead/severity coupling from P0.4.0, on the data axis",
+    "NaN at step 314 (burst window [300,308)) => the shock TRIGGERED the runaway (completes in the base tail), not warm-phase LR divergence"
+  ]
+}
