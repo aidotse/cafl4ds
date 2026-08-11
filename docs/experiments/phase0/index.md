@@ -68,6 +68,12 @@ schema reflects the harness at the time of the run and is not retrofitted.
 
 Present:
 
+- **P0.2.0** predates the `comparison.json` writer, so no artifact exists; its one live conclusion (RankMe did not
+    separate at the toy single-pass horizon) is subsumed by P0.2.1's regime finding.
+- **P0.2.1** has no directory of its own: its headline calibration corner (IID × 40 epochs) is the *same* corner as
+    P0.2.2's [`E1/iid_40ep_seed*`](artifacts/P0.2.2/E1/) (same config, RankMe re-read — P0.2.2 cross-checks the
+    reference did not move), so it is re-backed there. Its LR / horizon *ablation* runs were exploratory and not
+    preserved as clean per-run artifacts; those tables are reproducible via the P0.2.1 "How to run" commands.
 - [`artifacts/P0.2.2/`](artifacts/P0.2.2/) — all 88 E1–E4 runs (`E{1..4}/<run-name>.json`); the full set the E1–E4
     tables (min-across-4-seeds) and the E7/E8 pooled analyses rest on.
 - [`artifacts/P0.2.3/`](artifacts/P0.2.3/) — the four redundancy-collapse sweep runs (`seed_N.json`).
@@ -117,9 +123,3 @@ Present:
     phase-scrambled CIFAR at surprise `0.54×` / fire `1.2×`, the refutation), and `scale_dose/dose.json` (the
     `burst_scale` amplitude **severity dose-response** — transient→runaway threshold between scale 4 and 8, lead time
     `14 → 5`).
-- **P0.2.1** has no directory of its own: its headline calibration corner (IID × 40 epochs) is the *same* corner as
-    P0.2.2's [`E1/iid_40ep_seed*`](artifacts/P0.2.2/E1/) (same config, RankMe re-read — P0.2.2 cross-checks the
-    reference did not move), so it is re-backed there. Its LR / horizon *ablation* runs were exploratory and not
-    preserved as clean per-run artifacts; those tables are reproducible via the P0.2.1 "How to run" commands.
-- **P0.2** predates the `comparison.json` writer, so no artifact exists; its one live conclusion (RankMe did not
-    separate at the toy single-pass horizon) is subsumed by P0.2.1's regime finding.
