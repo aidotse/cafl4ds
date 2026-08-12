@@ -1,0 +1,140 @@
+{
+  "gate": {
+    "mode": "data_surprise",
+    "lr_op": 1.0,
+    "base_init_loss": 0.21517829596996307,
+    "base_final_loss": 0.057783547788858414,
+    "shock_burst_mean_loss": 0.02952124853618443,
+    "control_burst_mean_loss": 0.054374055936932564,
+    "surprise_ratio": 0.542928939684499,
+    "shock_burst_peak_grad_norm": 0.03254055231809616,
+    "control_burst_peak_grad_norm": 0.027950352057814598,
+    "fire_ratio": 1.16422692103437,
+    "control_within_arm_ratio": 0.05894170120535779,
+    "thresholds": {
+      "base_descends_frac": 0.9,
+      "surprise_ratio": 1.2,
+      "change_ratio": 2.0,
+      "control_quiet_ratio": 2.0,
+      "recover_ratio": 2.0
+    },
+    "checks": {
+      "base_competent": true,
+      "surprise_real": false,
+      "shock_fires": false,
+      "control_flat": true
+    },
+    "reported": {
+      "shock_recovers": true,
+      "shock_recover_ratio": 0.005959123224945486,
+      "shock_first_nonfinite_step": null
+    },
+    "passed": false
+  },
+  "ladder": [
+    {
+      "lr": 1.0,
+      "shock": {
+        "n_steps": 408,
+        "base_peak_grad_norm": 0.47420334815979004,
+        "base_median_grad_norm": 0.0360126867890358,
+        "burst_peak_grad_norm": 0.03254055231809616,
+        "tail_min_grad_norm": 0.0028258361853659153,
+        "change_ratio": 0.06862151531484152,
+        "recover_ratio": 0.005959123224945486,
+        "base_mean_loss": 0.05981687944294627,
+        "burst_mean_loss": 0.02952124853618443,
+        "base_init_loss": 0.21517829596996307,
+        "base_final_loss": 0.057783547788858414,
+        "first_nonfinite_step": null
+      },
+      "control": {
+        "n_steps": 408,
+        "base_peak_grad_norm": 0.47420334815979004,
+        "base_median_grad_norm": 0.0360126867890358,
+        "burst_peak_grad_norm": 0.027950352057814598,
+        "tail_min_grad_norm": 0.0035075123887509108,
+        "change_ratio": 0.05894170120535779,
+        "recover_ratio": 0.007396641973031791,
+        "base_mean_loss": 0.05981687944294627,
+        "burst_mean_loss": 0.054374055936932564,
+        "base_init_loss": 0.21517829596996307,
+        "base_final_loss": 0.057783547788858414,
+        "first_nonfinite_step": null
+      },
+      "lead": null
+    },
+    {
+      "lr": 3.0,
+      "shock": {
+        "n_steps": 9,
+        "base_peak_grad_norm": 4821004.5,
+        "base_median_grad_norm": 78.29218673706055,
+        "burst_peak_grad_norm": 0.0,
+        "tail_min_grad_norm": Infinity,
+        "change_ratio": 0.0,
+        "recover_ratio": Infinity,
+        "base_mean_loss": 2721392.403311014,
+        "burst_mean_loss": NaN,
+        "base_init_loss": 2.450791120529175,
+        "base_final_loss": 13606640.0,
+        "first_nonfinite_step": 8
+      },
+      "control": {
+        "n_steps": 9,
+        "base_peak_grad_norm": 4821004.5,
+        "base_median_grad_norm": 78.29218673706055,
+        "burst_peak_grad_norm": 0.0,
+        "tail_min_grad_norm": Infinity,
+        "change_ratio": 0.0,
+        "recover_ratio": Infinity,
+        "base_mean_loss": 2721392.403311014,
+        "burst_mean_loss": NaN,
+        "base_init_loss": 2.450791120529175,
+        "base_final_loss": 13606640.0,
+        "first_nonfinite_step": 8
+      },
+      "lead": {
+        "spike_step": null,
+        "nonfinite_step": null,
+        "lead": null
+      }
+    },
+    {
+      "lr": 10.0,
+      "shock": {
+        "n_steps": 6,
+        "base_peak_grad_norm": 30733950976.0,
+        "base_median_grad_norm": 30733950976.0,
+        "burst_peak_grad_norm": 0.0,
+        "tail_min_grad_norm": Infinity,
+        "change_ratio": 0.0,
+        "recover_ratio": Infinity,
+        "base_mean_loss": 142586432109.65894,
+        "burst_mean_loss": NaN,
+        "base_init_loss": 5339.31787109375,
+        "base_final_loss": 285172858880.0,
+        "first_nonfinite_step": 5
+      },
+      "control": {
+        "n_steps": 6,
+        "base_peak_grad_norm": 30733950976.0,
+        "base_median_grad_norm": 30733950976.0,
+        "burst_peak_grad_norm": 0.0,
+        "tail_min_grad_norm": Infinity,
+        "change_ratio": 0.0,
+        "recover_ratio": Infinity,
+        "base_mean_loss": 142586432109.65894,
+        "burst_mean_loss": NaN,
+        "base_init_loss": 5339.31787109375,
+        "base_final_loss": 285172858880.0,
+        "first_nonfinite_step": 5
+      },
+      "lead": {
+        "spike_step": null,
+        "nonfinite_step": null,
+        "lead": null
+      }
+    }
+  ]
+}
