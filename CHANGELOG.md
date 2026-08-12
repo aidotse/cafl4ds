@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file.
 This file is managed by [Commitizen](https://commitizen-tools.github.io/commitizen/) and is updated automatically on
 each `poe bump` (driven by [Conventional Commits](https://www.conventionalcommits.org/)). Do not edit it by hand.
 
+## v0.13.0 (2026-08-12)
+
+### Feat
+
+- P0.4 audit done
+- P0.4.0 review
+- P0.4, still needs review
+
+### Fix
+
+- P0.4 docs review
+
 ## v0.12.0 (2026-08-11)
 
 ### Feat
