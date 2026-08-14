@@ -1,0 +1,281 @@
+{
+  "sweep": {
+    "knob": "blend",
+    "severities": [
+      0.0,
+      0.02,
+      0.05,
+      0.1,
+      0.15,
+      0.25
+    ],
+    "seed": 0
+  },
+  "ladder": [
+    {
+      "severity": 0.0,
+      "knob_kwargs": {
+        "collapse_alpha": 0.0,
+        "stopgrad_beta": 1.0
+      },
+      "final": {
+        "run": "blend_s00",
+        "series": "health",
+        "step": 1279.0,
+        "era": 0,
+        "loss": -0.9461342096328735,
+        "rankme": 5.061425685882568,
+        "mean_feature_var": 0.00017430160369258374,
+        "offdiag_cov": 6.579454634447757e-07,
+        "uniformity": -0.06572814285755157,
+        "rankme_proj": 29.622085571289062,
+        "mean_feature_var_proj": 0.007734150625765324,
+        "offdiag_cov_proj": 0.001528039574623108,
+        "uniformity_proj": -2.4789540767669678,
+        "cka_drift": 0.3778034448623657,
+        "cosine_drift": 0.47320449352264404,
+        "alignment": 0.01108003780245781,
+        "alignment_proj": 0.8825176954269409,
+        "knn_acc": 0.296,
+        "linear_acc": 0.294
+      },
+      "loss_floor": -0.9675787091255188
+    },
+    {
+      "severity": 0.02,
+      "knob_kwargs": {
+        "collapse_alpha": 0.02,
+        "stopgrad_beta": 1.0
+      },
+      "final": {
+        "run": "blend_s002",
+        "series": "health",
+        "step": 1279.0,
+        "era": 0,
+        "loss": -0.941791832447052,
+        "rankme": 5.30800724029541,
+        "mean_feature_var": 0.0001898631890071556,
+        "offdiag_cov": 7.957673346936645e-07,
+        "uniformity": -0.07134377211332321,
+        "rankme_proj": 28.42326545715332,
+        "mean_feature_var_proj": 0.007685408461838961,
+        "offdiag_cov_proj": 0.0016294179949909449,
+        "uniformity_proj": -2.4347503185272217,
+        "cka_drift": 0.32049649953842163,
+        "cosine_drift": 0.4942886233329773,
+        "alignment": 0.013856844045221806,
+        "alignment_proj": 0.8746815919876099,
+        "knn_acc": 0.28,
+        "linear_acc": 0.324
+      },
+      "loss_floor": -0.9799540638923645
+    },
+    {
+      "severity": 0.05,
+      "knob_kwargs": {
+        "collapse_alpha": 0.05,
+        "stopgrad_beta": 1.0
+      },
+      "final": {
+        "run": "blend_s005",
+        "series": "health",
+        "step": 1279.0,
+        "era": 0,
+        "loss": -0.9675228595733643,
+        "rankme": 4.932989120483398,
+        "mean_feature_var": 0.00018716331396717578,
+        "offdiag_cov": 9.19326566872769e-07,
+        "uniformity": -0.06987941265106201,
+        "rankme_proj": 20.910430908203125,
+        "mean_feature_var_proj": 0.007468675263226032,
+        "offdiag_cov_proj": 0.0018912532832473516,
+        "uniformity_proj": -2.2119357585906982,
+        "cka_drift": 0.2700921893119812,
+        "cosine_drift": 0.4595978856086731,
+        "alignment": 0.013530353084206581,
+        "alignment_proj": 0.8747658133506775,
+        "knn_acc": 0.25,
+        "linear_acc": 0.306
+      },
+      "loss_floor": -0.984320342540741
+    },
+    {
+      "severity": 0.1,
+      "knob_kwargs": {
+        "collapse_alpha": 0.1,
+        "stopgrad_beta": 1.0
+      },
+      "final": {
+        "run": "blend_s01",
+        "series": "health",
+        "step": 1279.0,
+        "era": 0,
+        "loss": -0.978778600692749,
+        "rankme": 4.375606060028076,
+        "mean_feature_var": 0.00016775522090028971,
+        "offdiag_cov": 9.641587439546129e-07,
+        "uniformity": -0.0618634857237339,
+        "rankme_proj": 13.366279602050781,
+        "mean_feature_var_proj": 0.006761869415640831,
+        "offdiag_cov_proj": 0.001948178163729608,
+        "uniformity_proj": -1.8269407749176025,
+        "cka_drift": 0.23883110284805298,
+        "cosine_drift": 0.45750701427459717,
+        "alignment": 0.012679839506745338,
+        "alignment_proj": 0.8416096568107605,
+        "knn_acc": 0.246,
+        "linear_acc": 0.284
+      },
+      "loss_floor": -0.9852287173271179
+    },
+    {
+      "severity": 0.15,
+      "knob_kwargs": {
+        "collapse_alpha": 0.15,
+        "stopgrad_beta": 1.0
+      },
+      "final": {
+        "run": "blend_s015",
+        "series": "health",
+        "step": 1279.0,
+        "era": 0,
+        "loss": -0.9806607961654663,
+        "rankme": 3.8216335773468018,
+        "mean_feature_var": 0.00016580380906816572,
+        "offdiag_cov": 1.2467390888559748e-06,
+        "uniformity": -0.06052760034799576,
+        "rankme_proj": 7.640181064605713,
+        "mean_feature_var_proj": 0.005708309821784496,
+        "offdiag_cov_proj": 0.0017053353367373347,
+        "uniformity_proj": -1.3954896926879883,
+        "cka_drift": 0.23195523023605347,
+        "cosine_drift": 0.4635017514228821,
+        "alignment": 0.01364933606237173,
+        "alignment_proj": 0.795195996761322,
+        "knn_acc": 0.208,
+        "linear_acc": 0.27
+      },
+      "loss_floor": -0.9886806607246399
+    },
+    {
+      "severity": 0.25,
+      "knob_kwargs": {
+        "collapse_alpha": 0.25,
+        "stopgrad_beta": 1.0
+      },
+      "final": {
+        "run": "blend_s025",
+        "series": "health",
+        "step": 1279.0,
+        "era": 0,
+        "loss": -0.9787290096282959,
+        "rankme": 3.7275211811065674,
+        "mean_feature_var": 0.00023719242017250508,
+        "offdiag_cov": 3.198409331162111e-06,
+        "uniformity": -0.07530495524406433,
+        "rankme_proj": 4.106870651245117,
+        "mean_feature_var_proj": 0.004356044810265303,
+        "offdiag_cov_proj": 0.0012352969497442245,
+        "uniformity_proj": -0.933121919631958,
+        "cka_drift": 0.25629210472106934,
+        "cosine_drift": 0.3954712748527527,
+        "alignment": 0.015194669365882874,
+        "alignment_proj": 0.5656486749649048,
+        "knn_acc": 0.226,
+        "linear_acc": 0.262
+      },
+      "loss_floor": -0.9908955693244934
+    }
+  ],
+  "monotonicity": {
+    "per_instrument": {
+      "rankme_proj": {
+        "spearman_vs_severity": -1.0,
+        "expected_sign": -1,
+        "healthy": 29.622085571289062,
+        "collapsed": 4.106870651245117,
+        "monotone": true,
+        "range": 25.515214920043945
+      },
+      "mean_feature_var_proj": {
+        "spearman_vs_severity": -1.0,
+        "expected_sign": -1,
+        "healthy": 0.007734150625765324,
+        "collapsed": 0.004356044810265303,
+        "monotone": true,
+        "range": 0.003378105815500021
+      },
+      "uniformity_proj": {
+        "spearman_vs_severity": 1.0,
+        "expected_sign": 1,
+        "healthy": -2.4789540767669678,
+        "collapsed": -0.933121919631958,
+        "monotone": true,
+        "range": 1.5458321571350098
+      },
+      "offdiag_cov_proj": {
+        "spearman_vs_severity": -0.02857142857142857,
+        "expected_sign": 1,
+        "healthy": 0.001528039574623108,
+        "collapsed": 0.0012352969497442245,
+        "monotone": false,
+        "range": 0.0007128812139853835
+      },
+      "rankme": {
+        "spearman_vs_severity": -0.9428571428571428,
+        "expected_sign": -1,
+        "healthy": 5.061425685882568,
+        "collapsed": 3.7275211811065674,
+        "monotone": true,
+        "range": 1.5804860591888428
+      },
+      "mean_feature_var": {
+        "spearman_vs_severity": 0.02857142857142857,
+        "expected_sign": -1,
+        "healthy": 0.00017430160369258374,
+        "collapsed": 0.00023719242017250508,
+        "monotone": false,
+        "range": 7.138861110433936e-05
+      },
+      "uniformity": {
+        "spearman_vs_severity": -0.02857142857142857,
+        "expected_sign": 1,
+        "healthy": -0.06572814285755157,
+        "collapsed": -0.07530495524406433,
+        "monotone": false,
+        "range": 0.014777354896068573
+      },
+      "knn_acc": {
+        "spearman_vs_severity": -0.9428571428571428,
+        "expected_sign": -1,
+        "healthy": 0.296,
+        "collapsed": 0.226,
+        "monotone": true,
+        "range": 0.088
+      },
+      "linear_acc": {
+        "spearman_vs_severity": -0.8285714285714286,
+        "expected_sign": -1,
+        "healthy": 0.294,
+        "collapsed": 0.262,
+        "monotone": false,
+        "range": 0.062
+      }
+    },
+    "coupling": {
+      "rankme_proj_vs_linear_acc": 0.8285714285714286,
+      "rankme_proj_vs_knn_acc": 0.9428571428571428,
+      "rankme_proj_vs_rankme_backbone": 0.9428571428571428
+    },
+    "probe_contrast": {
+      "knn_acc": {
+        "healthy": 0.296,
+        "collapsed": 0.226
+      },
+      "linear_acc": {
+        "healthy": 0.294,
+        "collapsed": 0.262
+      }
+    }
+  }
+}

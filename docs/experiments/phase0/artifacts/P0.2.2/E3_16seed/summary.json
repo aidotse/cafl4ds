@@ -1,0 +1,159 @@
+{
+  "description": "D1 audit rider \u2014 E3 correlation-strength sweep at 16 seeds (seeds 0-15), STL-10 IID/bs128/bs256/class_blocked, 40ep, probes off, HPU. Supersedes the 4-seed valley reading: correlation weakens the projector detectors ~2x but there is no reliable intermediate valley/recovery; RankMe@proj never fails the 2.0 bar (P<bar=0), var@proj dips below seed-dependently.",
+  "seeds": 16,
+  "bar": 2.0,
+  "cells": {
+    "iid": {
+      "rankme@proj": {
+        "n": 16,
+        "min": 9.227,
+        "mean": 17.414,
+        "median": 15.261,
+        "pstdev": 5.82,
+        "p_below_bar": 0.0,
+        "max": 28.265
+      },
+      "mean_feature_var@proj": {
+        "n": 16,
+        "min": 11.389,
+        "mean": 55.126,
+        "median": 41.041,
+        "pstdev": 40.229,
+        "p_below_bar": 0.0,
+        "max": 153.018
+      },
+      "uniformity@proj": {
+        "n": 16,
+        "min": 2.321,
+        "mean": 2.476,
+        "median": 2.494,
+        "pstdev": 0.104,
+        "p_below_bar": 0.0,
+        "max": 2.677
+      },
+      "rankme@backbone": {
+        "n": 16,
+        "min": 2.592,
+        "mean": 2.9,
+        "median": 2.851,
+        "pstdev": 0.205,
+        "p_below_bar": 0.0,
+        "max": 3.252
+      }
+    },
+    "bs128": {
+      "rankme@proj": {
+        "n": 16,
+        "min": 6.229,
+        "mean": 8.768,
+        "median": 7.208,
+        "pstdev": 3.009,
+        "p_below_bar": 0.0,
+        "max": 16.261
+      },
+      "mean_feature_var@proj": {
+        "n": 16,
+        "min": 1.865,
+        "mean": 12.943,
+        "median": 8.996,
+        "pstdev": 11.553,
+        "p_below_bar": 0.125,
+        "max": 40.717
+      },
+      "uniformity@proj": {
+        "n": 16,
+        "min": 1.454,
+        "mean": 1.953,
+        "median": 2.085,
+        "pstdev": 0.311,
+        "p_below_bar": 0.438,
+        "max": 2.452
+      },
+      "rankme@backbone": {
+        "n": 16,
+        "min": 1.341,
+        "mean": 1.652,
+        "median": 1.621,
+        "pstdev": 0.181,
+        "p_below_bar": 0.938,
+        "max": 2.097
+      }
+    },
+    "bs256": {
+      "rankme@proj": {
+        "n": 16,
+        "min": 5.794,
+        "mean": 9.046,
+        "median": 9.19,
+        "pstdev": 2.397,
+        "p_below_bar": 0.0,
+        "max": 13.836
+      },
+      "mean_feature_var@proj": {
+        "n": 16,
+        "min": 2.471,
+        "mean": 17.755,
+        "median": 12.686,
+        "pstdev": 18.231,
+        "p_below_bar": 0.0,
+        "max": 67.441
+      },
+      "uniformity@proj": {
+        "n": 16,
+        "min": 1.475,
+        "mean": 2.045,
+        "median": 2.039,
+        "pstdev": 0.194,
+        "p_below_bar": 0.375,
+        "max": 2.427
+      },
+      "rankme@backbone": {
+        "n": 16,
+        "min": 1.427,
+        "mean": 1.714,
+        "median": 1.699,
+        "pstdev": 0.159,
+        "p_below_bar": 0.938,
+        "max": 2.021
+      }
+    },
+    "class_blocked": {
+      "rankme@proj": {
+        "n": 16,
+        "min": 3.731,
+        "mean": 7.325,
+        "median": 7.28,
+        "pstdev": 2.087,
+        "p_below_bar": 0.0,
+        "max": 11.377
+      },
+      "mean_feature_var@proj": {
+        "n": 16,
+        "min": 1.729,
+        "mean": 19.644,
+        "median": 9.409,
+        "pstdev": 27.771,
+        "p_below_bar": 0.062,
+        "max": 118.289
+      },
+      "uniformity@proj": {
+        "n": 16,
+        "min": 1.292,
+        "mean": 1.888,
+        "median": 1.949,
+        "pstdev": 0.242,
+        "p_below_bar": 0.562,
+        "max": 2.178
+      },
+      "rankme@backbone": {
+        "n": 16,
+        "min": 1.143,
+        "mean": 1.522,
+        "median": 1.535,
+        "pstdev": 0.21,
+        "p_below_bar": 1.0,
+        "max": 1.857
+      }
+    }
+  }
+}

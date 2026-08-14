@@ -1,0 +1,281 @@
+{
+  "sweep": {
+    "knob": "softsg",
+    "severities": [
+      0.0,
+      0.02,
+      0.05,
+      0.1,
+      0.15,
+      0.25
+    ],
+    "seed": 0
+  },
+  "ladder": [
+    {
+      "severity": 0.0,
+      "knob_kwargs": {
+        "collapse_alpha": 0.0,
+        "stopgrad_beta": 1.0
+      },
+      "final": {
+        "run": "softsg_s00",
+        "series": "health",
+        "step": 1279.0,
+        "era": 0,
+        "loss": -0.9492957592010498,
+        "rankme": 5.713759899139404,
+        "mean_feature_var": 0.0002601653977762908,
+        "offdiag_cov": 1.7927100088854786e-06,
+        "uniformity": -0.09699777513742447,
+        "rankme_proj": 29.574445724487305,
+        "mean_feature_var_proj": 0.007686946075409651,
+        "offdiag_cov_proj": 0.001454432844184339,
+        "uniformity_proj": -2.518871307373047,
+        "cka_drift": 0.4968501925468445,
+        "cosine_drift": 0.48616933822631836,
+        "alignment": 0.01722356118261814,
+        "alignment_proj": 0.8653688430786133,
+        "knn_acc": 0.302,
+        "linear_acc": 0.318
+      },
+      "loss_floor": -0.9638378024101257
+    },
+    {
+      "severity": 0.02,
+      "knob_kwargs": {
+        "collapse_alpha": 0.0,
+        "stopgrad_beta": 0.98
+      },
+      "final": {
+        "run": "softsg_s002",
+        "series": "health",
+        "step": 1279.0,
+        "era": 0,
+        "loss": -0.9550873041152954,
+        "rankme": 5.6083879470825195,
+        "mean_feature_var": 0.0002360950456932187,
+        "offdiag_cov": 1.2639878832487739e-06,
+        "uniformity": -0.08817178010940552,
+        "rankme_proj": 26.23114013671875,
+        "mean_feature_var_proj": 0.007695289794355631,
+        "offdiag_cov_proj": 0.0017852106830105186,
+        "uniformity_proj": -2.3614284992218018,
+        "cka_drift": 0.4044104218482971,
+        "cosine_drift": 0.4537903070449829,
+        "alignment": 0.015404808335006237,
+        "alignment_proj": 0.7930355668067932,
+        "knn_acc": 0.288,
+        "linear_acc": 0.28
+      },
+      "loss_floor": -0.9820705056190491
+    },
+    {
+      "severity": 0.05,
+      "knob_kwargs": {
+        "collapse_alpha": 0.0,
+        "stopgrad_beta": 0.95
+      },
+      "final": {
+        "run": "softsg_s005",
+        "series": "health",
+        "step": 1279.0,
+        "era": 0,
+        "loss": -0.9709914326667786,
+        "rankme": 4.5699591636657715,
+        "mean_feature_var": 0.0001805513893486932,
+        "offdiag_cov": 8.964732387539698e-07,
+        "uniformity": -0.06715933978557587,
+        "rankme_proj": 20.51974868774414,
+        "mean_feature_var_proj": 0.007271523121744394,
+        "offdiag_cov_proj": 0.0019421697361394763,
+        "uniformity_proj": -2.0999083518981934,
+        "cka_drift": 0.27866804599761963,
+        "cosine_drift": 0.41284698247909546,
+        "alignment": 0.013213856145739555,
+        "alignment_proj": 0.9196223616600037,
+        "knn_acc": 0.23,
+        "linear_acc": 0.276
+      },
+      "loss_floor": -0.9838991761207581
+    },
+    {
+      "severity": 0.1,
+      "knob_kwargs": {
+        "collapse_alpha": 0.0,
+        "stopgrad_beta": 0.9
+      },
+      "final": {
+        "run": "softsg_s01",
+        "series": "health",
+        "step": 1279.0,
+        "era": 0,
+        "loss": -0.9809807538986206,
+        "rankme": 4.0477776527404785,
+        "mean_feature_var": 0.00016730032803025097,
+        "offdiag_cov": 1.1210961474716896e-06,
+        "uniformity": -0.061571087688207626,
+        "rankme_proj": 11.572885513305664,
+        "mean_feature_var_proj": 0.006237888243049383,
+        "offdiag_cov_proj": 0.0019514805171638727,
+        "uniformity_proj": -1.5508452653884888,
+        "cka_drift": 0.23951560258865356,
+        "cosine_drift": 0.37823450565338135,
+        "alignment": 0.013573064468801022,
+        "alignment_proj": 0.8961668014526367,
+        "knn_acc": 0.206,
+        "linear_acc": 0.292
+      },
+      "loss_floor": -0.9882383346557617
+    },
+    {
+      "severity": 0.15,
+      "knob_kwargs": {
+        "collapse_alpha": 0.0,
+        "stopgrad_beta": 0.85
+      },
+      "final": {
+        "run": "softsg_s015",
+        "series": "health",
+        "step": 1279.0,
+        "era": 0,
+        "loss": -0.9793173670768738,
+        "rankme": 3.5818681716918945,
+        "mean_feature_var": 0.00018261127115692943,
+        "offdiag_cov": 1.8193458117821137e-06,
+        "uniformity": -0.06501610577106476,
+        "rankme_proj": 5.998166561126709,
+        "mean_feature_var_proj": 0.005256163887679577,
+        "offdiag_cov_proj": 0.0017553024226799607,
+        "uniformity_proj": -1.1292327642440796,
+        "cka_drift": 0.2540110945701599,
+        "cosine_drift": 0.4096683859825134,
+        "alignment": 0.014302816241979599,
+        "alignment_proj": 0.7707909941673279,
+        "knn_acc": 0.214,
+        "linear_acc": 0.248
+      },
+      "loss_floor": -0.9878532290458679
+    },
+    {
+      "severity": 0.25,
+      "knob_kwargs": {
+        "collapse_alpha": 0.0,
+        "stopgrad_beta": 0.75
+      },
+      "final": {
+        "run": "softsg_s025",
+        "series": "health",
+        "step": 1279.0,
+        "era": 0,
+        "loss": -0.9799495935440063,
+        "rankme": 3.0343871116638184,
+        "mean_feature_var": 0.00022609320876654238,
+        "offdiag_cov": 3.464097744654282e-06,
+        "uniformity": -0.0680493637919426,
+        "rankme_proj": 3.3521039485931396,
+        "mean_feature_var_proj": 0.004004400223493576,
+        "offdiag_cov_proj": 0.0010560499504208565,
+        "uniformity_proj": -0.8300672769546509,
+        "cka_drift": 0.3099156618118286,
+        "cosine_drift": 0.3285566568374634,
+        "alignment": 0.012406558729708195,
+        "alignment_proj": 0.5405647158622742,
+        "knn_acc": 0.216,
+        "linear_acc": 0.244
+      },
+      "loss_floor": -0.9907292127609253
+    }
+  ],
+  "monotonicity": {
+    "per_instrument": {
+      "rankme_proj": {
+        "spearman_vs_severity": -1.0,
+        "expected_sign": -1,
+        "healthy": 29.574445724487305,
+        "collapsed": 3.3521039485931396,
+        "monotone": true,
+        "range": 26.222341775894165
+      },
+      "mean_feature_var_proj": {
+        "spearman_vs_severity": -0.9428571428571428,
+        "expected_sign": -1,
+        "healthy": 0.007686946075409651,
+        "collapsed": 0.004004400223493576,
+        "monotone": true,
+        "range": 0.003690889570862055
+      },
+      "uniformity_proj": {
+        "spearman_vs_severity": 1.0,
+        "expected_sign": 1,
+        "healthy": -2.518871307373047,
+        "collapsed": -0.8300672769546509,
+        "monotone": true,
+        "range": 1.688804030418396
+      },
+      "offdiag_cov_proj": {
+        "spearman_vs_severity": -0.2,
+        "expected_sign": 1,
+        "healthy": 0.001454432844184339,
+        "collapsed": 0.0010560499504208565,
+        "monotone": false,
+        "range": 0.0008954305667430162
+      },
+      "rankme": {
+        "spearman_vs_severity": -1.0,
+        "expected_sign": -1,
+        "healthy": 5.713759899139404,
+        "collapsed": 3.0343871116638184,
+        "monotone": true,
+        "range": 2.679372787475586
+      },
+      "mean_feature_var": {
+        "spearman_vs_severity": -0.4857142857142857,
+        "expected_sign": -1,
+        "healthy": 0.0002601653977762908,
+        "collapsed": 0.00022609320876654238,
+        "monotone": false,
+        "range": 9.286506974603981e-05
+      },
+      "uniformity": {
+        "spearman_vs_severity": 0.6,
+        "expected_sign": 1,
+        "healthy": -0.09699777513742447,
+        "collapsed": -0.0680493637919426,
+        "monotone": false,
+        "range": 0.03542668744921684
+      },
+      "knn_acc": {
+        "spearman_vs_severity": -0.7714285714285715,
+        "expected_sign": -1,
+        "healthy": 0.302,
+        "collapsed": 0.216,
+        "monotone": false,
+        "range": 0.096
+      },
+      "linear_acc": {
+        "spearman_vs_severity": -0.8285714285714286,
+        "expected_sign": -1,
+        "healthy": 0.318,
+        "collapsed": 0.244,
+        "monotone": false,
+        "range": 0.07400000000000001
+      }
+    },
+    "coupling": {
+      "rankme_proj_vs_linear_acc": 0.8285714285714286,
+      "rankme_proj_vs_knn_acc": 0.7714285714285715,
+      "rankme_proj_vs_rankme_backbone": 1.0
+    },
+    "probe_contrast": {
+      "knn_acc": {
+        "healthy": 0.302,
+        "collapsed": 0.216
+      },
+      "linear_acc": {
+        "healthy": 0.318,
+        "collapsed": 0.244
+      }
+    }
+  }
+}

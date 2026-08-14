@@ -76,8 +76,68 @@ concise):
     the methodology and findings, any interesting insights, and how to run the experiments in the substudy. Do not
     mention progress or status here, that goes in `docs/experiments/latest-results/<substudy ID>.md`.
 
+### Writing audits
+
+Audits (`docs/experiments/audits/<ID>.md`) are peer-review-style critiques of a completed study or sub-study group. They
+review *conclusions, not arithmetic* — spot-check the numbers against the artifacts, then judge whether each claim is
+earned. They double as a remediation record: findings get fixed, and the audit tracks where each one landed. Follow this
+formula:
+
+- **Language.** Compact but accessible — the same style as *Explaining your work* below (one idea per sentence, signpost
+    the logic, unpack a term before leaning on it). Keep every load-bearing number; cut the padding, not the content. No
+    wall-of-text paragraphs.
+
+- **Sections, in order.**
+
+    - **Title** — one line, carrying a *single* audit date (when the review was conducted). Do NOT scatter per-item "done
+        (date)" lines through the body; the completion signal lives in each point's Conclusion.
+    - **Verdict** — the headline judgment, as *found*. End with one sentence on where it lands *after* remediation (e.g.
+        "all points remediated; the ✅ ends up stronger").
+    - **Strengths** — a short bullet list, so the criticism is calibrated (what the work got right).
+    - **Grouped findings** — lettered sections (A, B, C, …) by *kind* — e.g. over-claims, internal tensions, structural
+        gaps, conclusions the data supports but the docs missed, and a code-validity check of the premise. Number the
+        points within (A1, A2, …).
+    - **Disposition** — the final lettered section: the decision of record after every remediation, plus the hand-off
+        recommendation. This *is* the bottom line — do not also keep a separate summary table or "bottom line" paragraph
+        (that is scaffolding; remove it once the audit is worked through).
+
+- **Each numbered point is a triple** — a three-bullet sub-list under a bold one-line title:
+
+    - **Issue** — what the audit found (the as-found observation; keep it to the claim, tight).
+    - **Remediation** — what to do, tagged with the work type: `[wording]` (doc edit) / `[analysis]` (post-hoc, no runs) /
+        `[engineering]` (build + confirm) / `[new substudy]` / `[decision]` (needs an architectural call) /
+        `[defer → Phase-1]`.
+    - **Conclusion** — the outcome after remediation, led by a bold *verdict label* so a reviewer reads the valence at a
+        glance. Use a small, consistent set: *resolved — strengthens the ✅* (addressed, and the result reinforces the
+        study), *new supporting finding* (the data supported a favourable conclusion the docs had missed), *corrected* (a
+        stated claim was wrong and revised — append "— net favourable" or "— claim downgraded" to state the direction),
+        *clarified — no verdict change* (wording sharpened or an overstatement trimmed), *valid concern — carried to
+        Phase-1* (a real limitation, honestly deferred — not fixable now).
+
+## Explaining your work (in your replies to me)
+
+When you explain reasoning, summarize a finding, or walk me through a concept in a reply — this is about your
+conversational prose, and documentation language, but not code (this keep its own rules) — write for a reader who wants
+to *follow the logic*, not decode it. The failure mode to avoid is dense, compressed prose: sentences that stack three
+clauses, piled-up noun-phrase jargon, and caveats crammed into parentheticals. Terse is not the same as efficient — if I
+have to re-read a sentence to parse it, it cost me more, not less. Avoid over-repetition.
+
+Concretely, in explanatory passages:
+
+- **One idea per sentence.** Prefer several plain sentences to one clause-stacked sentence. Let the prose breathe.
+- **Unpack a concept before you lean on it.** The first time a term or mechanism does real work, say what it means in
+    ordinary words, then use it.
+- **Signpost the logic.** Small connectives — "The catch is…", "Why this matters…", "The upshot is…" — let me track
+    where an argument is heading.
+- **Pair the *what* with the *why it matters*.** Don't just state a fact; say what turns on it.
+- **Reach for a concrete analogy** when it makes an abstract point land.
+- **Give a caveat its own sentence**, rather than folding it into a parenthetical aside.
+
+This is about clarity and flow, **not** length: do not pad, repeat, or add filler, and never drop information content to
+hit the style. For a direct factual answer, a status line, or a yes/no, stay short — the guidance above is for the
+explanatory paragraphs, where following along matters more than compression.
+
 ## Mandates
 
-- Use informative, but not dense or terse language; avoid over-repetition.
 - Ensure your updates do not contradict the specific index or substudy files you have been instructed to read. Do not
     read additional documentation files solely to check for global project consistency unless explicitly requested.

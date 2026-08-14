@@ -72,6 +72,8 @@ class SimSiam(SSLMethod):
         predictor: MLPHead,
         augment: v2.Transform | None = None,
         anti_collapse: bool = True,
+        collapse_alpha: float = 0.0,
+        stopgrad_beta: float = 1.0,
     ) -> None:
         """Build the SimSiam method.
 
@@ -85,11 +87,34 @@ class SimSiam(SSLMethod):
             anti_collapse: When ``True`` (default) run SimSiam as published — predictor + stop-
                 gradient. When ``False`` disable **both** anti-collapse mechanisms (predictor
                 bypassed, stop-gradient off): the forced-collapse positive control (P0.2).
+            collapse_alpha: **Partial-collapse loss-blend knob** (P0.2.5), active only while
+                ``anti_collapse=True``. The training loss becomes
+                ``(1 - alpha) * L_healthy + alpha * L_collapse``, where ``L_collapse`` is the
+                forced-collapse objective (predictor bypassed, stop-gradient off). ``0.0``
+                (default) is pure healthy SimSiam; ``1.0`` reproduces the P0.2 collapse objective.
+                Interpolates the *whole objective* between the two calibrated poles.
+            stopgrad_beta: **Partial-collapse soft-stop-gradient knob** (P0.2.5), active only while
+                ``anti_collapse=True``. Fraction of the target branch that is stop-gradient'd:
+                the target becomes ``beta * z.detach() + (1 - beta) * z``. ``1.0`` (default) is
+                the published full stop-gradient (byte-identical to the pre-knob path); ``0.0``
+                lets gradient flow fully through the target (predictor kept on). Weakens only the
+                single essential anti-collapse mechanism — a mechanistically distinct path to
+                collapse from ``collapse_alpha``. The two knobs are independent; P0.2.5 varies one
+                at a time.
+
+        Raises:
+            ValueError: If either knob is outside ``[0, 1]``.
         """
+        if not 0.0 <= collapse_alpha <= 1.0:
+            raise ValueError(f"collapse_alpha must be in [0, 1]; got {collapse_alpha}.")
+        if not 0.0 <= stopgrad_beta <= 1.0:
+            raise ValueError(f"stopgrad_beta must be in [0, 1]; got {stopgrad_beta}.")
         super().__init__(encoder)
         self.projector = projector
         self.predictor = predictor
         self.anti_collapse = anti_collapse
+        self.collapse_alpha = collapse_alpha
+        self.stopgrad_beta = stopgrad_beta
         img_size = int(round(encoder.num_patches**0.5)) * encoder.patch_size
         base_augment = augment if augment is not None else make_ssl_augment(img_size)
         self.two_view = TwoView(base_augment)
@@ -140,9 +165,11 @@ class SimSiam(SSLMethod):
     def training_step(self, imgs: torch.Tensor) -> torch.Tensor:
         """Compute the symmetric negative-cosine loss on two views.
 
-        With ``anti_collapse=True`` this is the published stop-gradient objective; with it
-        ``False`` the stop-gradient is dropped (and the predictor already bypassed in
-        :meth:`_branch`), yielding the forced-collapse positive control.
+        With ``anti_collapse=True`` and both knobs at their defaults this is the published
+        stop-gradient objective; with ``anti_collapse=False`` the stop-gradient is dropped and
+        the predictor bypassed (``p = z``), yielding the forced-collapse positive control. The
+        P0.2.5 knobs (``collapse_alpha`` / ``stopgrad_beta``) interpolate *between* those two
+        poles while ``anti_collapse=True`` — see :meth:`_healthy_loss`.
 
         Args:
             imgs: A batch of raw images ``[B, C, H, W]``. Labels never enter this path.
@@ -151,10 +178,39 @@ class SimSiam(SSLMethod):
             The symmetrized SimSiam loss (scalar), in ``[-1, 1]`` (lower is better).
         """
         view_1, view_2 = self.two_view(imgs)
-        p1, z1 = self._branch(view_1)
-        p2, z2 = self._branch(view_2)
-        sg = self.anti_collapse
-        return 0.5 * (_neg_cosine(p1, z2, stop_grad=sg) + _neg_cosine(p2, z1, stop_grad=sg))
+        z1 = self.projector(self.encoder.embed(view_1))
+        z2 = self.projector(self.encoder.embed(view_2))
+        if not self.anti_collapse:
+            # Forced-collapse PC (P0.2): predictor bypassed (p = z), stop-gradient off.
+            return 0.5 * (_neg_cosine(z1, z2, stop_grad=False) + _neg_cosine(z2, z1, stop_grad=False))
+        loss_healthy = self._healthy_loss(z1, z2)
+        if self.collapse_alpha <= 0.0:
+            return loss_healthy
+        # Loss-blend knob: mix in the forced-collapse objective (bypass + no stop-gradient).
+        loss_collapse = 0.5 * (_neg_cosine(z1, z2, stop_grad=False) + _neg_cosine(z2, z1, stop_grad=False))
+        return (1.0 - self.collapse_alpha) * loss_healthy + self.collapse_alpha * loss_collapse
+
+    def _healthy_loss(self, z1: torch.Tensor, z2: torch.Tensor) -> torch.Tensor:
+        """The healthy SimSiam loss on two projector outputs, with the soft-stop-gradient knob.
+
+        At ``stopgrad_beta = 1.0`` (default) this is the published objective — predictor on each
+        branch, target fully stop-gradient'd — byte-identical to the pre-knob path. Below ``1.0``
+        the target is blended ``beta * z.detach() + (1 - beta) * z`` so a controlled fraction of
+        the gradient flows through it, weakening the essential anti-collapse mechanism (P0.2.5).
+
+        Args:
+            z1: Projector output of view 1 ``[B, d]``.
+            z2: Projector output of view 2 ``[B, d]``.
+
+        Returns:
+            The symmetrized healthy loss (scalar).
+        """
+        p1, p2 = self.predictor(z1), self.predictor(z2)
+        if self.stopgrad_beta >= 1.0:
+            return 0.5 * (_neg_cosine(p1, z2, stop_grad=True) + _neg_cosine(p2, z1, stop_grad=True))
+        z1_t = self.stopgrad_beta * z1.detach() + (1.0 - self.stopgrad_beta) * z1
+        z2_t = self.stopgrad_beta * z2.detach() + (1.0 - self.stopgrad_beta) * z2
+        return 0.5 * (_neg_cosine(p1, z2_t, stop_grad=False) + _neg_cosine(p2, z1_t, stop_grad=False))
 
     def per_sample_loss(self, imgs: torch.Tensor) -> torch.Tensor:
         """Per-image symmetric negative-cosine loss ``[B]`` (no gradient).
