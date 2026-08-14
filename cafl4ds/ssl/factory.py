@@ -64,6 +64,8 @@ def build_simsiam(
     proj_dim: int = 128,
     pred_hidden: int = 64,
     anti_collapse: bool = True,
+    collapse_alpha: float = 0.0,
+    stopgrad_beta: float = 1.0,
     aug_min_scale: float = 0.4,
     aug_jitter_strength: float = 1.0,
 ) -> SimSiam:
@@ -76,6 +78,10 @@ def build_simsiam(
         pred_hidden: Hidden width of the 2-layer predictor bottleneck.
         anti_collapse: Keep SimSiam's predictor + stop-gradient (``True``, the healthy
             control) or disable both for the forced-collapse positive control (``False``).
+        collapse_alpha: Partial-collapse loss-blend knob (P0.2.5); ``0.0`` = healthy, ``1.0`` =
+            forced-collapse objective. See :class:`~cafl4ds.ssl.simsiam.SimSiam`.
+        stopgrad_beta: Partial-collapse soft-stop-gradient knob (P0.2.5); ``1.0`` = full published
+            stop-gradient (healthy), ``0.0`` = none. See :class:`~cafl4ds.ssl.simsiam.SimSiam`.
         aug_min_scale: Random-resized-crop lower area bound; the defaults reproduce the certified
             P0.2.x augmentation, and the P0.2.4 heavy-augmentation stressor lowers this.
         aug_jitter_strength: ColorJitter magnitude multiplier (``1.0`` = published strength); the
@@ -87,7 +93,15 @@ def build_simsiam(
     projector = MLPHead(encoder.embed_dim, proj_hidden, proj_dim, num_layers=3, last_bn=True)
     predictor = MLPHead(proj_dim, pred_hidden, proj_dim, num_layers=2, last_bn=False)
     augment = make_ssl_augment(_encoder_img_size(encoder), min_scale=aug_min_scale, jitter_strength=aug_jitter_strength)
-    return SimSiam(encoder, projector, predictor, augment=augment, anti_collapse=anti_collapse)
+    return SimSiam(
+        encoder,
+        projector,
+        predictor,
+        augment=augment,
+        anti_collapse=anti_collapse,
+        collapse_alpha=collapse_alpha,
+        stopgrad_beta=stopgrad_beta,
+    )
 
 
 def build_barlow(

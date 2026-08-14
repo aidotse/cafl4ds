@@ -1,0 +1,281 @@
+{
+  "sweep": {
+    "knob": "softsg",
+    "severities": [
+      0.0,
+      0.02,
+      0.05,
+      0.1,
+      0.15,
+      0.25
+    ],
+    "seed": 1
+  },
+  "ladder": [
+    {
+      "severity": 0.0,
+      "knob_kwargs": {
+        "collapse_alpha": 0.0,
+        "stopgrad_beta": 1.0
+      },
+      "final": {
+        "run": "softsg_s00",
+        "series": "health",
+        "step": 1279.0,
+        "era": 0,
+        "loss": -0.8317740559577942,
+        "rankme": 4.482376575469971,
+        "mean_feature_var": 0.0001297315175179392,
+        "offdiag_cov": 3.729105912952946e-07,
+        "uniformity": -0.04921157285571098,
+        "rankme_proj": 28.75364875793457,
+        "mean_feature_var_proj": 0.007712513208389282,
+        "offdiag_cov_proj": 0.0014220357406884432,
+        "uniformity_proj": -2.5411899089813232,
+        "cka_drift": 0.484377384185791,
+        "cosine_drift": 0.4447525143623352,
+        "alignment": 0.00818661693483591,
+        "alignment_proj": 0.7902292609214783,
+        "knn_acc": 0.274,
+        "linear_acc": 0.284
+      },
+      "loss_floor": -0.973503053188324
+    },
+    {
+      "severity": 0.02,
+      "knob_kwargs": {
+        "collapse_alpha": 0.0,
+        "stopgrad_beta": 0.98
+      },
+      "final": {
+        "run": "softsg_s002",
+        "series": "health",
+        "step": 1279.0,
+        "era": 0,
+        "loss": -0.8347411155700684,
+        "rankme": 5.56204891204834,
+        "mean_feature_var": 0.00021770632883999497,
+        "offdiag_cov": 1.15067666683899e-06,
+        "uniformity": -0.08163779973983765,
+        "rankme_proj": 28.114952087402344,
+        "mean_feature_var_proj": 0.007538154721260071,
+        "offdiag_cov_proj": 0.0016880335751920938,
+        "uniformity_proj": -2.3596224784851074,
+        "cka_drift": 0.48951369524002075,
+        "cosine_drift": 0.37930727005004883,
+        "alignment": 0.01511301938444376,
+        "alignment_proj": 0.7653598785400391,
+        "knn_acc": 0.246,
+        "linear_acc": 0.318
+      },
+      "loss_floor": -0.9808130860328674
+    },
+    {
+      "severity": 0.05,
+      "knob_kwargs": {
+        "collapse_alpha": 0.0,
+        "stopgrad_beta": 0.95
+      },
+      "final": {
+        "run": "softsg_s005",
+        "series": "health",
+        "step": 1279.0,
+        "era": 0,
+        "loss": -0.8293452262878418,
+        "rankme": 4.845740795135498,
+        "mean_feature_var": 0.00018146920774597675,
+        "offdiag_cov": 8.198164778150385e-07,
+        "uniformity": -0.06802231818437576,
+        "rankme_proj": 21.004783630371094,
+        "mean_feature_var_proj": 0.007339954376220703,
+        "offdiag_cov_proj": 0.002105971798300743,
+        "uniformity_proj": -2.065891981124878,
+        "cka_drift": 0.2997346520423889,
+        "cosine_drift": 0.37244170904159546,
+        "alignment": 0.014750889502465725,
+        "alignment_proj": 0.8825535774230957,
+        "knn_acc": 0.274,
+        "linear_acc": 0.288
+      },
+      "loss_floor": -0.9840942621231079
+    },
+    {
+      "severity": 0.1,
+      "knob_kwargs": {
+        "collapse_alpha": 0.0,
+        "stopgrad_beta": 0.9
+      },
+      "final": {
+        "run": "softsg_s01",
+        "series": "health",
+        "step": 1279.0,
+        "era": 0,
+        "loss": -0.8345673084259033,
+        "rankme": 3.7099192142486572,
+        "mean_feature_var": 0.0001649004261707887,
+        "offdiag_cov": 1.528935513306351e-06,
+        "uniformity": -0.05988538637757301,
+        "rankme_proj": 7.895686626434326,
+        "mean_feature_var_proj": 0.005629443097859621,
+        "offdiag_cov_proj": 0.001862019533291459,
+        "uniformity_proj": -1.3606605529785156,
+        "cka_drift": 0.29907119274139404,
+        "cosine_drift": 0.4260925054550171,
+        "alignment": 0.01795569434762001,
+        "alignment_proj": 0.9132933616638184,
+        "knn_acc": 0.26,
+        "linear_acc": 0.27
+      },
+      "loss_floor": -0.9874047636985779
+    },
+    {
+      "severity": 0.15,
+      "knob_kwargs": {
+        "collapse_alpha": 0.0,
+        "stopgrad_beta": 0.85
+      },
+      "final": {
+        "run": "softsg_s015",
+        "series": "health",
+        "step": 1279.0,
+        "era": 0,
+        "loss": -0.8134679794311523,
+        "rankme": 3.053226947784424,
+        "mean_feature_var": 0.00019486102974042296,
+        "offdiag_cov": 2.558665983087849e-06,
+        "uniformity": -0.06266002357006073,
+        "rankme_proj": 4.69418478012085,
+        "mean_feature_var_proj": 0.004699059762060642,
+        "offdiag_cov_proj": 0.0014976980164647102,
+        "uniformity_proj": -1.0411919355392456,
+        "cka_drift": 0.3132140636444092,
+        "cosine_drift": 0.36829817295074463,
+        "alignment": 0.015973413363099098,
+        "alignment_proj": 0.7731837630271912,
+        "knn_acc": 0.228,
+        "linear_acc": 0.284
+      },
+      "loss_floor": -0.988727867603302
+    },
+    {
+      "severity": 0.25,
+      "knob_kwargs": {
+        "collapse_alpha": 0.0,
+        "stopgrad_beta": 0.75
+      },
+      "final": {
+        "run": "softsg_s025",
+        "series": "health",
+        "step": 1279.0,
+        "era": 0,
+        "loss": -0.8442838788032532,
+        "rankme": 2.7755467891693115,
+        "mean_feature_var": 0.00021392491180449724,
+        "offdiag_cov": 3.0159683319652686e-06,
+        "uniformity": -0.059984367340803146,
+        "rankme_proj": 3.0859577655792236,
+        "mean_feature_var_proj": 0.003458933439105749,
+        "offdiag_cov_proj": 0.00084856734611094,
+        "uniformity_proj": -0.802112340927124,
+        "cka_drift": 0.36861956119537354,
+        "cosine_drift": 0.3492104411125183,
+        "alignment": 0.015808088704943657,
+        "alignment_proj": 0.6018919944763184,
+        "knn_acc": 0.208,
+        "linear_acc": 0.236
+      },
+      "loss_floor": -0.9917092323303223
+    }
+  ],
+  "monotonicity": {
+    "per_instrument": {
+      "rankme_proj": {
+        "spearman_vs_severity": -1.0,
+        "expected_sign": -1,
+        "healthy": 28.75364875793457,
+        "collapsed": 3.0859577655792236,
+        "monotone": true,
+        "range": 25.667690992355347
+      },
+      "mean_feature_var_proj": {
+        "spearman_vs_severity": -1.0,
+        "expected_sign": -1,
+        "healthy": 0.007712513208389282,
+        "collapsed": 0.003458933439105749,
+        "monotone": true,
+        "range": 0.004253579769283533
+      },
+      "uniformity_proj": {
+        "spearman_vs_severity": 1.0,
+        "expected_sign": 1,
+        "healthy": -2.5411899089813232,
+        "collapsed": -0.802112340927124,
+        "monotone": true,
+        "range": 1.7390775680541992
+      },
+      "offdiag_cov_proj": {
+        "spearman_vs_severity": -0.2571428571428571,
+        "expected_sign": 1,
+        "healthy": 0.0014220357406884432,
+        "collapsed": 0.00084856734611094,
+        "monotone": false,
+        "range": 0.0012574044521898031
+      },
+      "rankme": {
+        "spearman_vs_severity": -0.8285714285714286,
+        "expected_sign": -1,
+        "healthy": 4.482376575469971,
+        "collapsed": 2.7755467891693115,
+        "monotone": false,
+        "range": 2.7865021228790283
+      },
+      "mean_feature_var": {
+        "spearman_vs_severity": 0.37142857142857144,
+        "expected_sign": -1,
+        "healthy": 0.0001297315175179392,
+        "collapsed": 0.00021392491180449724,
+        "monotone": false,
+        "range": 8.797481132205576e-05
+      },
+      "uniformity": {
+        "spearman_vs_severity": -0.02857142857142857,
+        "expected_sign": 1,
+        "healthy": -0.04921157285571098,
+        "collapsed": -0.059984367340803146,
+        "monotone": false,
+        "range": 0.03242622688412666
+      },
+      "knn_acc": {
+        "spearman_vs_severity": -0.7826908981308054,
+        "expected_sign": -1,
+        "healthy": 0.274,
+        "collapsed": 0.208,
+        "monotone": false,
+        "range": 0.06600000000000003
+      },
+      "linear_acc": {
+        "spearman_vs_severity": -0.6667366910003157,
+        "expected_sign": -1,
+        "healthy": 0.284,
+        "collapsed": 0.236,
+        "monotone": false,
+        "range": 0.08200000000000002
+      }
+    },
+    "coupling": {
+      "rankme_proj_vs_linear_acc": 0.6667366910003157,
+      "rankme_proj_vs_knn_acc": 0.7826908981308054,
+      "rankme_proj_vs_rankme_backbone": 0.8285714285714286
+    },
+    "probe_contrast": {
+      "knn_acc": {
+        "healthy": 0.274,
+        "collapsed": 0.208
+      },
+      "linear_acc": {
+        "healthy": 0.284,
+        "collapsed": 0.236
+      }
+    }
+  }
+}

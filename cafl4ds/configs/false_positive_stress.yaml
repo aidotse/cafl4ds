@@ -59,5 +59,12 @@ fire_gap: 0.5
 # pole). Default false keeps the Option A run byte-identical.
 collapse_pole: false
 
+# A2 (matched-class era-evaluation) — the fix for the low-diversity RankMe false fire. When true,
+# the canonical reference arm is *evaluated* on the same few-class subset the atypical arm sees
+# (`stressor.overrides.stream.class_order`), so the effective-rank cap is matched across arms and
+# the eval-set-artifact false fire cancels. A no-op when the stressor does not subset classes
+# (heavy_aug / undertrained stay 10-class). Off by default: leaves the Option-A run byte-identical.
+match_eval_classes: false
+
 # Run logs: one JSONL per arm + the combined comparison, in the Hydra run dir.
 run_log: run_log.jsonl

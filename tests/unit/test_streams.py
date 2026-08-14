@@ -128,6 +128,29 @@ def test_eval_sets_disjoint_from_training_and_each_other() -> None:
     assert train.isdisjoint(support | query | era_eval)
 
 
+def test_restrict_to_classes_matches_probe_class_span() -> None:
+    """`restrict_to_classes` keeps only the requested classes in the probe support/query (A2).
+
+    The matched-class eval fix: the full-class reference arm is *evaluated* on the atypical arm's
+    few-class subset so RankMe's class-count cap is matched. Restricting must drop every other
+    class from both probe sets while leaving per-era untouched, and must be idempotent on a subset.
+    """
+    src = IdSource(num_classes=5, per_class=40)
+    stream = EraStream(src, batch_size=8, support_per_class=5, query_per_class=5, era_eval_per_class=5)
+    restricted = stream.eval_sets.restrict_to_classes([1, 3])
+
+    assert set(restricted.probe_support.labels.tolist()) == {1, 3}
+    assert set(restricted.probe_query.labels.tolist()) == {1, 3}
+    # Two classes x 5 reserved each.
+    assert restricted.probe_support.labels.numel() == 2 * 5
+    assert restricted.probe_query.labels.numel() == 2 * 5
+    # Images track their labels (IdSource encodes index; every kept id must be a class-1/3 index).
+    kept = IdSource.ids(restricted.probe_query.images)
+    assert all((i // src.per_class) in {1, 3} for i in kept)
+    # per_era is left intact (the collapse monitor does not read it).
+    assert restricted.per_era == stream.eval_sets.per_era
+
+
 def test_iid_order_is_single_era_and_shuffled() -> None:
     """IID ordering collapses to one era and does not preserve class-blocked order."""
     src = IdSource(num_classes=4, per_class=40)

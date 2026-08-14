@@ -62,7 +62,14 @@ logger.remove()
 logger.add(sys.stdout, level="INFO")
 
 
-def _run_arm(config: DictConfig, *, run_name: str, out_dir: Path, anti_collapse: bool = True) -> list[dict[str, Any]]:
+def _run_arm(
+    config: DictConfig,
+    *,
+    run_name: str,
+    out_dir: Path,
+    anti_collapse: bool = True,
+    eval_classes: list[int] | None = None,
+) -> list[dict[str, Any]]:
     """Build and run one arm, returning its health series.
 
     Mirrors ``scripts/positive_control.py``'s ``_run_arm``. The default (``anti_collapse=True``) is
@@ -76,6 +83,11 @@ def _run_arm(config: DictConfig, *, run_name: str, out_dir: Path, anti_collapse:
         run_name: Name recorded on the run log and used for its filename.
         out_dir: Directory the run log is written to.
         anti_collapse: SimSiam anti-collapse toggle (``True`` = healthy, ``False`` = collapse pole).
+        eval_classes: If set, restrict this arm's monitor to the given class subset (*matched-class
+            eval*, A2). The canonical reference arm trains on all classes but is *evaluated* on the
+            atypical arm's few-class subset, so the effective-rank cap is matched across arms and the
+            low-diversity RankMe false fire — an eval-set artifact — cancels. ``None`` leaves the
+            arm's full eval set in place (byte-identical to the pre-A2 behaviour).
 
     Returns:
         The per-checkpoint health records.
@@ -86,8 +98,9 @@ def _run_arm(config: DictConfig, *, run_name: str, out_dir: Path, anti_collapse:
     apply_encoder_init(method.encoder, "from_scratch")
 
     stream = instantiate(config.stream)
+    eval_sets = stream.eval_sets if eval_classes is None else stream.eval_sets.restrict_to_classes(eval_classes)
     optimizer = instantiate(config.optim, params=method.parameters())
-    monitor = instantiate(config.monitor, eval_sets=stream.eval_sets)
+    monitor = instantiate(config.monitor, eval_sets=eval_sets)
 
     batches_per_epoch = len(stream)
     eval_every = max(1, config.eval_every_epochs * batches_per_epoch)
@@ -138,6 +151,7 @@ def _evaluate_quiet_gate(config: DictConfig, envelope: list[dict[str, Any]]) -> 
     verdict["stressor"] = config.stressor.name
     verdict["fire_ratio"] = config.fire_ratio
     verdict["fire_gap"] = config.fire_gap
+    verdict["match_eval_classes"] = bool(config.get("match_eval_classes", False))
     return verdict
 
 
@@ -260,8 +274,19 @@ def main(config: DictConfig) -> None:
     """Run the reference + atypical healthy arms, then apply the inverted (quiet) verdict."""
     out_dir = Path(HydraConfig.get().runtime.output_dir)
 
-    reference = _run_arm(config, run_name="reference_healthy", out_dir=out_dir)
     test_config = _apply_stressor(config)
+
+    # A2 matched-class eval: when the stressor subsets classes (low-diversity) and
+    # `match_eval_classes` is on, evaluate the full-class reference arm on the *same* few-class
+    # subset the atypical arm sees, so the effective-rank cap cancels and the RankMe eval-set
+    # false fire disappears. A no-op for stressors that do not subset classes (heavy_aug /
+    # undertrained keep all 10), and off by default (byte-identical to the pre-A2 Option-A run).
+    eval_classes: list[int] | None = None
+    if config.get("match_eval_classes", False):
+        subset = test_config.stream.get("class_order")
+        eval_classes = list(OmegaConf.to_container(subset)) if subset is not None else None
+
+    reference = _run_arm(config, run_name="reference_healthy", out_dir=out_dir, eval_classes=eval_classes)
     atypical = _run_arm(test_config, run_name=f"atypical_{config.stressor.name}", out_dir=out_dir)
 
     # Feed the atypical arm into the `pc` slot: a false fire = it separates from the canonical

@@ -124,6 +124,93 @@ def test_stop_gradient_toggle_controls_target_branch_gradient() -> None:
     assert z2.grad is not None, "without stop-gradient the target branch must receive gradient"
 
 
+def test_default_simsiam_objective_unchanged_by_the_partial_collapse_refactor() -> None:
+    """With both P0.2.5 knobs at defaults, ``training_step`` is the published stop-grad objective.
+
+    The knob refactor restructured ``training_step``; this pins that the default path
+    (``collapse_alpha=0``, ``stopgrad_beta=1``) still equals the hand-computed symmetric
+    predictor + full-stop-gradient loss, byte-for-byte, so every pre-P0.2.5 run is unchanged.
+    """
+    torch.manual_seed(0)
+    method = build_simsiam(_encoder(), anti_collapse=True)  # defaults: alpha=0, beta=1
+    method.train()
+    x = _batch()
+
+    torch.manual_seed(1)
+    v1, v2 = method.two_view(x)
+    z1 = method.projector(method.encoder.embed(v1))
+    z2 = method.projector(method.encoder.embed(v2))
+    p1, p2 = method.predictor(z1), method.predictor(z2)
+    expected = 0.5 * (_neg_cosine(p1, z2, stop_grad=True) + _neg_cosine(p2, z1, stop_grad=True))
+
+    torch.manual_seed(1)
+    got = method.training_step(x)
+    assert torch.allclose(got, expected)
+
+
+def test_collapse_alpha_blends_healthy_and_forced_collapse() -> None:
+    """The loss-blend knob is the exact convex mix of the two calibrated objectives (P0.2.5).
+
+    ``alpha=1`` must equal the forced-collapse objective (``anti_collapse=False``), and an
+    interior ``alpha`` must be the literal convex combination ``(1-alpha)L_healthy + alpha
+    L_collapse`` — so the ladder genuinely interpolates between the two poles.
+    """
+    torch.manual_seed(0)
+    method = build_simsiam(_encoder(), anti_collapse=True)
+    method.train()
+    x = _batch()
+
+    method.collapse_alpha = 0.0
+    torch.manual_seed(1)
+    loss_healthy = method.training_step(x)
+    method.collapse_alpha = 1.0
+    torch.manual_seed(1)
+    loss_alpha1 = method.training_step(x)
+    method.collapse_alpha = 0.5
+    torch.manual_seed(1)
+    loss_mid = method.training_step(x)
+
+    # alpha=1 reproduces the forced-collapse objective exactly.
+    method.collapse_alpha = 0.0
+    method.anti_collapse = False
+    torch.manual_seed(1)
+    loss_forced = method.training_step(x)
+    assert torch.allclose(loss_alpha1, loss_forced)
+    # An interior blend is the convex combination of the two endpoints.
+    assert torch.allclose(loss_mid, 0.5 * (loss_healthy + loss_alpha1), atol=1e-6)
+
+
+def test_stopgrad_beta_is_wired_into_the_target_branch_gradient() -> None:
+    """The soft-stop-gradient knob genuinely changes the graph, not just the forward value.
+
+    Detaching only affects the backward pass, so ``beta`` leaves the loss *value* unchanged
+    (identical views) but must alter the encoder gradient: at ``beta=0`` the target branch is
+    fully attached and feeds an extra gradient path that ``beta=1`` (published stop-gradient)
+    removes.
+    """
+
+    def encoder_grad_norm(method: object, beta: float) -> float:
+        method.stopgrad_beta = beta  # type: ignore[attr-defined]
+        method.zero_grad()  # type: ignore[attr-defined]
+        torch.manual_seed(1)
+        method.training_step(_batch()).backward()  # type: ignore[attr-defined]
+        return float(sum(p.grad.pow(2).sum() for p in method.encoder.parameters() if p.grad is not None) ** 0.5)  # type: ignore[attr-defined]
+
+    torch.manual_seed(0)
+    method = build_simsiam(_encoder(), anti_collapse=True)
+    method.train()
+    assert not torch.isclose(
+        torch.tensor(encoder_grad_norm(method, 1.0)), torch.tensor(encoder_grad_norm(method, 0.0))
+    ), "stopgrad_beta must change the encoder gradient (the target branch path)"
+
+
+@pytest.mark.parametrize(("alpha", "beta"), [(-0.1, 1.0), (1.5, 1.0), (0.0, -0.2), (0.0, 2.0)])
+def test_partial_collapse_knobs_reject_out_of_range(alpha: float, beta: float) -> None:
+    """Both P0.2.5 knobs are validated to ``[0, 1]`` at construction."""
+    with pytest.raises(ValueError, match="must be in"):
+        build_simsiam(_encoder(), collapse_alpha=alpha, stopgrad_beta=beta)
+
+
 def test_checkpoint_roundtrip_and_pretrained_init(tmp_path: Path) -> None:
     """Saving then applying a pretrained init reproduces the encoder weights exactly."""
     src = _encoder()

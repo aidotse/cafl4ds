@@ -18,7 +18,7 @@ Each stream reserves, per class, a disjoint held-out **probe support**, **probe 
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
 
 import torch
@@ -48,6 +48,12 @@ class EvalSet:
     """Integer labels ``[M]`` — used only by the probes, never by training."""
 
 
+def _filter_eval(eval_set: EvalSet, keep: set[int]) -> EvalSet:
+    """Return ``eval_set`` restricted to the labels in ``keep`` (order-preserving)."""
+    mask = torch.isin(eval_set.labels, torch.tensor(sorted(keep), dtype=eval_set.labels.dtype))
+    return EvalSet(eval_set.images[mask], eval_set.labels[mask])
+
+
 @dataclass(frozen=True)
 class EvalSets:
     """The held-out eval sets a stream exposes to the health monitor."""
@@ -59,6 +65,31 @@ class EvalSets:
     the drift instruments track across checkpoints."""
     per_era: dict[int, EvalSet] = field(default_factory=dict)
     """Per-era (per-class) held-out sets, reserved for later per-era forgetting measures."""
+
+    def restrict_to_classes(self, classes: Iterable[int]) -> EvalSets:
+        """Return a copy with the probe support/query restricted to ``classes`` — *matched-class eval*.
+
+        RankMe / effective rank is structurally capped by the number of distinct classes present in
+        the probe-query set, so reading an instrument across two arms whose eval sets span *different*
+        class counts conflates the model with the eval set — the P0.2.4 low-diversity false fire
+        (a healthy 10-class arm reads a higher effective rank than a healthy 2-class arm purely
+        because its probe set is richer). Restricting the richer arm's probe set to the *same* class
+        subset removes that cap-mismatch, so a surviving separation reflects the model, not the
+        eval set. ``per_era`` is left untouched (each of its sets is already single-class, and the
+        collapse monitor does not read them).
+
+        Args:
+            classes: The class labels to keep in the probe support/query.
+
+        Returns:
+            A new :class:`EvalSets` with the probe support/query filtered to ``classes``.
+        """
+        keep = {int(c) for c in classes}
+        return EvalSets(
+            probe_support=_filter_eval(self.probe_support, keep),
+            probe_query=_filter_eval(self.probe_query, keep),
+            per_era=self.per_era,
+        )
 
 
 class EraStream:
