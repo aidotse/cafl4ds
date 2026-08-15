@@ -79,3 +79,30 @@ def test_mlp_head_shapes_for_projector_and_predictor() -> None:
     z = projector(x)
     assert z.shape == (6, 16)
     assert predictor(z).shape == (6, 16)
+
+
+def test_reset_parameters_from_scratch_wipes_loaded_weights() -> None:
+    """reset_parameters_from_scratch re-randomizes *every* learned param, incl. the patch-embed conv.
+
+    The P0.3.7/P0.3.8 savings "scratch" pole depends on this genuinely wiping a loaded checkpoint (it
+    is the fix for the ``apply_encoder_init`` no-op bug P0.3.7 caught — audit P0.3 §E, E2). Simulate a
+    warm-started checkpoint with a constant fill, then assert the wipe leaves nothing at that value —
+    including ``patch_embed`` (the conv ``_init_weights`` alone skips, so a naive reset would miss it).
+    """
+    enc = TinyViTEncoder(img_size=32, patch_size=8, embed_dim=32, depth=2, num_heads=2)
+    with torch.no_grad():
+        for p in enc.parameters():
+            p.fill_(0.123)
+    before = {name: p.clone() for name, p in enc.named_parameters()}
+    enc.reset_parameters_from_scratch()
+    for name, p in enc.named_parameters():
+        assert not torch.equal(before[name], p), f"{name} was not re-randomized"
+    assert "patch_embed.weight" in before  # the conv is present and (per the loop above) was wiped
+
+
+def test_reset_parameters_from_scratch_preserves_buffers() -> None:
+    """Registered buffers (e.g. a subclass's ImageNet-norm constants) survive the wipe untouched."""
+    enc = TinyViTEncoder(img_size=16, patch_size=8, embed_dim=32, depth=1, num_heads=2)
+    enc.register_buffer("_norm_const", torch.tensor([1.0, 2.0, 3.0]))
+    enc.reset_parameters_from_scratch()
+    assert torch.equal(enc._norm_const, torch.tensor([1.0, 2.0, 3.0]))

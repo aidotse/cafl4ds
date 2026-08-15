@@ -105,14 +105,21 @@ formula:
 
     - **Issue** — what the audit found (the as-found observation; keep it to the claim, tight).
     - **Remediation** — what to do, tagged with the work type: `[wording]` (doc edit) / `[analysis]` (post-hoc, no runs) /
-        `[engineering]` (build + confirm) / `[new substudy]` / `[decision]` (needs an architectural call) /
-        `[defer → Phase-1]`.
+        `[engineering]` (build + confirm) / `[new runs]` (re-run an *existing* config, e.g. seed replication — the results
+        land in the substudy docs, usually *in-place* in the existing substudy: confirming results append a line to its
+        conclusions, differing results revise its text; a substantial follow-up arc — a new lever plus its own finding —
+        is instead promoted to its own doc, as with `[new substudy]`) / `[new substudy]` (a genuinely new vehicle/study
+        warranting its own doc) / `[decision]` (needs an architectural call) / `[defer → Phase-1]`.
     - **Conclusion** — the outcome after remediation, led by a bold *verdict label* so a reviewer reads the valence at a
         glance. Use a small, consistent set: *resolved — strengthens the ✅* (addressed, and the result reinforces the
         study), *new supporting finding* (the data supported a favourable conclusion the docs had missed), *corrected* (a
         stated claim was wrong and revised — append "— net favourable" or "— claim downgraded" to state the direction),
         *clarified — no verdict change* (wording sharpened or an overstatement trimmed), *valid concern — carried to
-        Phase-1* (a real limitation, honestly deferred — not fixable now).
+        Phase-1* (a real limitation, honestly deferred — not fixable now). **The audit is not the home of the results:**
+        when a remediation produces experimental findings (`[new runs]`, `[new substudy]`, or an `[analysis]` that yields
+        new numbers), those findings live in the substudy docs (the `latest-results` distillate + the phase detail doc, or
+        a new substudy doc if the arc warrants one); the Conclusion carries only the verdict label, a one-line outcome,
+        and a **pointer** to where it landed — never the seed tables or derivations themselves.
 
 ## Explaining your work (in your replies to me)
 

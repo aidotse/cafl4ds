@@ -44,6 +44,12 @@ skip_phase_a: false
 # checkpoint is encoder-only, so a short phase A warms the fresh decoder + pins R00 on the pretrained
 # rep before phase B. `skip_phase_a` implies this; set it alone (skip_phase_a=false) to keep phase A.
 pretrained_encoder: false
+# freeze_encoder_phase_a: D1 (audit P0.3). Freeze the encoder during phase A so ONLY the fresh MAE
+# decoder warms — the pretrained encoder well is preserved (R00 ≈ the pretrained transfer probe, ~0.89)
+# instead of being drifted down to ~0.65-0.71 by the joint warm-up. Phase B then craters from a deeper
+# well, and R00 no longer varies with warm-up luck (de-confounds crater depth from R00). SSL/MAE vehicle
+# only; requires a pretrained well (pretrained_encoder=true). Default false (the P0.3.6 joint-warm path).
+freeze_encoder_phase_a: false
 # recovery_steps: P0.3.5 recoverability guard. After phase B, re-learn task A for this many mini-batch
 # updates and log how fast the task-A probe returns (geometric checkpoints). Fast recovery ⇒ apparent
 # (recoverable) forgetting; slow ⇒ genuine catastrophic loss. 0 disables (the default; P0.3.4 path).
