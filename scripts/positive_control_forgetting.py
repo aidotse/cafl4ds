@@ -315,6 +315,33 @@ def _recovery_curve(
     return curve
 
 
+def _guard_from_scratch_encoder(config: DictConfig, keep_weights: bool) -> None:
+    """Fail loudly if a checkpoint-loading encoder would be silently kept under a from-scratch arm.
+
+    ``apply_encoder_init(..., "from_scratch")`` is a documented **no-op** — it leaves the encoder's
+    *instantiated* weights in place, which is correct for a from-scratch encoder (freshly random) but
+    would SILENTLY RETAIN a loaded checkpoint if a checkpoint-loading encoder (one that declares a
+    ``state_dict_path``, e.g. ``vit_b16_mae`` / ``vit_b16_pretrained``) were reached with
+    ``keep_weights=False``. That is the same class of trap that once made the savings ``scratch`` pole
+    a no-op (P0.3.7). No P0.3 config hits it — every checkpoint path sets ``pretrained_encoder`` /
+    ``skip_phase_a`` — so this raises rather than train "from scratch" on a pretrained well by accident.
+
+    Args:
+        config: The composed config (``config.encoder`` is inspected for a ``state_dict_path`` key).
+        keep_weights: Whether the arm keeps the instantiated weights (skip the from-scratch path).
+
+    Raises:
+        ValueError: If the arm is from-scratch yet the encoder declares a ``state_dict_path``.
+    """
+    if not keep_weights and "state_dict_path" in config.encoder:
+        raise ValueError(
+            "encoder declares a `state_dict_path` (a checkpoint-loading encoder) but the arm is "
+            "from-scratch (neither `pretrained_encoder` nor `skip_phase_a` set): 'from_scratch' is a "
+            "no-op and would silently keep the loaded checkpoint. Set pretrained_encoder=true (MAE) or "
+            "skip_phase_a=true (supervised) to use the well, or select a from-scratch encoder."
+        )
+
+
 def _run_arm(config: DictConfig, split: dict[str, Any], *, replay: bool, run_name: str) -> tuple[dict[str, Any], MAE]:
     """Run one two-phase arm (shared phase A; phase B = B-only, or A∪B if ``replay``).
 
@@ -333,8 +360,6 @@ def _run_arm(config: DictConfig, split: dict[str, Any], *, replay: bool, run_nam
     """
     torch.manual_seed(config.seed)  # bit-identical init + identical phase A across arms
     device = torch.device(config.device)
-    encoder = instantiate(config.encoder)
-    method = instantiate(config.ssl, encoder=encoder)
     # `pretrained_encoder` keeps the instantiated (e.g. MAE-pretrained ViT-B, P0.3.6) weights as the
     # deep phase-A well instead of re-initialising from scratch; `skip_phase_a` additionally skips
     # phase-A training (the pretrained rep *is* phase A). For a pretrained MAE the encoder-only
@@ -342,6 +367,21 @@ def _run_arm(config: DictConfig, split: dict[str, Any], *, replay: bool, run_nam
     # (warms the decoder + pins R00) over `skip_phase_a` (fresh-decoder gradients would hit phase B raw).
     skip_a = bool(config.get("skip_phase_a", False))
     keep_weights = skip_a or bool(config.get("pretrained_encoder", False))
+    _guard_from_scratch_encoder(config, keep_weights)
+    # D1 (audit P0.3): freeze the encoder during phase A so only the FRESH decoder warms, preserving
+    # the pretrained encoder well (R00 ≈ the pretrained transfer probe, ~0.89) instead of letting the
+    # joint warm-up drift it down to ~0.65-0.71. Phase B then craters from a DEEPER well and R00 no
+    # longer varies with warm-up luck (de-confounds crater depth from R00, audit A3). Meaningful only
+    # with a pretrained well: on a from-scratch encoder it would leave the backbone at random init.
+    freeze_a = bool(config.get("freeze_encoder_phase_a", False))
+    if freeze_a and not keep_weights:
+        raise ValueError(
+            "freeze_encoder_phase_a=true warms only the decoder in phase A, which is meaningful ONLY "
+            "with a pretrained encoder well (pretrained_encoder=true); on a from-scratch encoder it "
+            "would leave the backbone at its random init with nothing learned to forget."
+        )
+    encoder = instantiate(config.encoder)
+    method = instantiate(config.ssl, encoder=encoder)
     if not keep_weights:
         apply_encoder_init(method.encoder, "from_scratch")
     method.to(device)
@@ -360,7 +400,13 @@ def _run_arm(config: DictConfig, split: dict[str, Any], *, replay: bool, run_nam
         loss_a = float("nan")
     else:
         a_init = _probe(config, method, split["A"])  # from-scratch random-init floor, or pretrained transfer probe
+        if freeze_a:  # D1: warm the decoder alone — the pretrained encoder stays pinned at its well
+            for p in method.encoder.parameters():
+                p.requires_grad_(False)
         loss_a = _train(method, split["A"]["batches"], config.epochs_a, optimizer, device)
+        if freeze_a:  # unfreeze so the crater forms IN PHASE B from the preserved well (not phase A)
+            for p in method.encoder.parameters():
+                p.requires_grad_(True)
     r00 = _probe(config, method, split["A"])  # R[0][0]: task A right after learning it
     # "Something to forget" is headroom ABOVE CHANCE. A pretrained backbone (skip_a or pretrained_encoder)
     # has no random-init floor — a short phase A only warms the fresh MAE decoder, it cannot lift an
@@ -427,13 +473,14 @@ def _run_arm_supervised(
     """
     torch.manual_seed(config.seed)  # bit-identical init + identical phase A across arms
     device = torch.device(config.device)
-    encoder = instantiate(config.encoder)
-    method = SupervisedMethod(encoder)
     # skip_phase_a: the encoder is ALREADY a well-learned phase-A representation (an ImageNet-
     # pretrained ViT-B/16 — P0.3.4). Keep its loaded weights (no from_scratch re-init) and do not
     # train phase A; the pretrained backbone IS phase A, and phase B alone fine-tunes it. When
     # false (P0.3.4), a from-scratch TinyViT is trained on task A first.
     skip_phase_a = bool(config.get("skip_phase_a", False))
+    _guard_from_scratch_encoder(config, skip_phase_a)
+    encoder = instantiate(config.encoder)
+    method = SupervisedMethod(encoder)
     if not skip_phase_a:
         apply_encoder_init(method.encoder, "from_scratch")
     method.to(device)
