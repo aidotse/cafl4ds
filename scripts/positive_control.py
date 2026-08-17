@@ -40,7 +40,6 @@ Examples:
             python scripts/positive_control.py device=hpu
 """
 
-import json
 import sys
 from pathlib import Path
 from typing import Any
@@ -52,6 +51,7 @@ from hydra.utils import instantiate
 from loguru import logger
 from omegaconf import DictConfig
 
+from cafl4ds.jsonio import dumps_valid
 from cafl4ds.loop import StreamingLoop
 from cafl4ds.metric_envelope import metric_envelope, render_envelope_table
 from cafl4ds.run_log import RunLogger, read_run
@@ -396,7 +396,7 @@ def main(config: DictConfig) -> None:
     )
 
     (out_dir / "comparison.json").write_text(
-        json.dumps({"gate": gate, "envelope": envelope, "pc": pc, "healthy": hc}, indent=2),
+        dumps_valid({"gate": gate, "envelope": envelope, "pc": pc, "healthy": hc}),
         encoding="utf-8",
     )
     logger.info(f"wrote comparison + gate + envelope to {out_dir / 'comparison.json'}")

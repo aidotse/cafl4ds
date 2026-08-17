@@ -28,9 +28,9 @@
       "pc_cosine_drift": 0.666803240776062,
       "healthy_cosine_drift": 0.758825957775116,
       "drift_separates": true,
-      "pc_recon_a_rise": NaN,
-      "healthy_recon_a_rise": NaN,
-      "recon_forget_gap": NaN,
+      "pc_recon_a_rise": null,
+      "healthy_recon_a_rise": null,
+      "recon_forget_gap": null,
       "recon_corroborates": false
     },
     "passed": true
@@ -53,12 +53,12 @@
     "forgetting_measure": 0.05999999999999994,
     "cka_drift": 0.3847843408584595,
     "cosine_drift": 0.666803240776062,
-    "loss_a": NaN,
+    "loss_a": null,
     "loss_b": 0.00537766981869936,
-    "recon_a_after_a": NaN,
-    "recon_a_after_b": NaN,
-    "recon_b_after_b": NaN,
-    "recon_a_rise": NaN
+    "recon_a_after_a": null,
+    "recon_a_after_b": null,
+    "recon_b_after_b": null,
+    "recon_a_rise": null
   },
   "healthy": {
     "run": "sup_healthy_replay",
@@ -78,11 +78,11 @@
     "forgetting_measure": 0.0050000000000000044,
     "cka_drift": 0.3006380796432495,
     "cosine_drift": 0.758825957775116,
-    "loss_a": NaN,
+    "loss_a": null,
     "loss_b": 0.003698706394061446,
-    "recon_a_after_a": NaN,
-    "recon_a_after_b": NaN,
-    "recon_b_after_b": NaN,
-    "recon_a_rise": NaN
+    "recon_a_after_a": null,
+    "recon_a_after_b": null,
+    "recon_b_after_b": null,
+    "recon_a_rise": null
   }
 }

@@ -36,6 +36,17 @@ repos:
         args: [--autofix, --no-sort-keys]
       - id: trailing-whitespace
 
+  # Strict JSON: reject bare Infinity/-Infinity/NaN tokens that the stock `check-json` accepts
+  # leniently. Harnesses serialize via cafl4ds.jsonio.dumps_valid (non-finite -> null); this guards
+  # against regressions and hand-edited artifacts drifting back to spec-invalid JSON.
+  - repo: local
+    hooks:
+      - id: strict-json-no-nonfinite
+        name: strict JSON (reject Infinity/NaN)
+        entry: python3 scripts/check_strict_json.py
+        language: system
+        types: [json]
+
   # Secret scanning (catches API keys/tokens, not just private keys).
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.30.1
