@@ -43,7 +43,6 @@ Examples:
             epochs_a=300 epochs_b=300
 """
 
-import json
 import sys
 from pathlib import Path
 from typing import Any
@@ -58,6 +57,7 @@ from omegaconf import DictConfig, OmegaConf
 
 from cafl4ds.data.streams import EvalSet, EvalSets
 from cafl4ds.eval import backward_transfer, forgetting_measure
+from cafl4ds.jsonio import dumps_valid
 from cafl4ds.measurements import knn_probe, linear_probe
 from cafl4ds.monitor import HealthMonitor
 from cafl4ds.ssl.augment import make_light_augment
@@ -800,7 +800,7 @@ def main(config: DictConfig) -> None:
         r00 = float(pc["matrix"]["0"]["0"])
         comparison["savings"] = _savings_probe(config, split, pc_method, healthy_method, r00, savings_steps, device)
 
-    (out_dir / "comparison.json").write_text(json.dumps(comparison, indent=2), encoding="utf-8")
+    (out_dir / "comparison.json").write_text(dumps_valid(comparison), encoding="utf-8")
     logger.info(f"wrote comparison + gate to {out_dir / 'comparison.json'}")
 
     if not gate["passed"]:

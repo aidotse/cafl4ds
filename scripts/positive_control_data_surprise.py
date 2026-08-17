@@ -52,7 +52,6 @@ Examples:
         uv run python scripts/positive_control_data_surprise.py burst_kind=dataset data_b=cifar100_scrambled
 """
 
-import json
 import math
 import statistics
 import sys
@@ -67,6 +66,7 @@ from loguru import logger
 from omegaconf import DictConfig, OmegaConf
 
 from cafl4ds.data.streams import EvalSet, EvalSets, StreamBatch
+from cafl4ds.jsonio import dumps_valid
 from cafl4ds.loop import _MIN_BATCH, StreamingLoop
 from cafl4ds.run_log import RunLogger, read_run
 
@@ -520,7 +520,7 @@ def main(config: DictConfig) -> None:
         ],
         "op_traces": {"shock": op["shock_trace"], "control": op["control_trace"]},
     }
-    (out_dir / "comparison.json").write_text(json.dumps(comparison, indent=2), encoding="utf-8")
+    (out_dir / "comparison.json").write_text(dumps_valid(comparison), encoding="utf-8")
     logger.info(f"wrote comparison + gate to {out_dir / 'comparison.json'}")
 
     if not gate["passed"]:

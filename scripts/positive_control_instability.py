@@ -38,7 +38,6 @@ Examples:
         uv run python scripts/positive_control_instability.py batch_size=16
 """
 
-import json
 import math
 import statistics
 import sys
@@ -52,6 +51,7 @@ from hydra.utils import instantiate
 from loguru import logger
 from omegaconf import DictConfig, OmegaConf
 
+from cafl4ds.jsonio import dumps_valid
 from cafl4ds.loop import StreamingLoop
 from cafl4ds.run_log import RunLogger, read_run
 from cafl4ds.ssl.base import apply_encoder_init
@@ -377,7 +377,7 @@ def main(config: DictConfig) -> None:
         "healthy": {"summary": healthy, "trace": healthy_trace},
         "sweep": [{"summary": s, "trace": sweep_traces[f"mae_pc_lr{s['lr']:g}"]} for s in sweep],
     }
-    (out_dir / "comparison.json").write_text(json.dumps(comparison, indent=2), encoding="utf-8")
+    (out_dir / "comparison.json").write_text(dumps_valid(comparison), encoding="utf-8")
     logger.info(f"wrote comparison + gate to {out_dir / 'comparison.json'}")
 
     if not gate["passed"]:

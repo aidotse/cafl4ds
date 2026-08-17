@@ -6,7 +6,7 @@
     "pc_forgetting_measure": 0.06333333333333335,
     "healthy_backward_transfer": 0.0016666666666667052,
     "healthy_forgetting_measure": -0.0016666666666667052,
-    "forget_ratio": Infinity,
+    "forget_ratio": null,
     "thresholds": {
       "learn_min": 0.05,
       "bwt_fire": 0.05,
