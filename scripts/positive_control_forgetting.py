@@ -44,6 +44,7 @@ Examples:
 """
 
 import sys
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -342,6 +343,49 @@ def _guard_from_scratch_encoder(config: DictConfig, keep_weights: bool) -> None:
         )
 
 
+def _set_encoder_requires_grad(method: MAE, flag: bool) -> None:
+    """Toggle ``requires_grad`` on every encoder parameter (the decoder-first phase-A warm-up lever)."""
+    for p in method.encoder.parameters():
+        p.requires_grad_(flag)
+
+
+def _train_with_schedule(
+    method: MAE,
+    batches: list[torch.Tensor],
+    epochs: int,
+    optimizer: torch.optim.Optimizer,
+    device: torch.device,
+    *,
+    warmup_epochs: int,
+    probe_fn: Callable[[], float] | None,
+) -> tuple[float, list[float]]:
+    """Train ``epochs`` passes, freezing the encoder for the first ``warmup_epochs`` (decoder-first warm-up).
+
+    Stepping epoch-by-epoch is bit-identical to a single ``_train(epochs)`` call (same batch order, same
+    optimizer, same RNG draw sequence). The encoder is frozen for the leading ``warmup_epochs`` so only the
+    fresh decoder warms, then released at that boundary to consolidate jointly; if it was frozen through all
+    ``epochs`` (the full-freeze endpoint) it is released at the end so later phases can train it. When
+    ``probe_fn`` is given it is called after each epoch (RNG-neutral: an eval-mode + sklearn probe), building
+    the per-epoch trajectory that separates the decoder-warming transient from genuine forgetting.
+
+    Returns:
+        ``(final-step loss, per-epoch probe trajectory)`` — the trajectory is empty when ``probe_fn`` is ``None``.
+    """
+    traj: list[float] = []
+    if warmup_epochs > 0:
+        _set_encoder_requires_grad(method, False)
+    loss = float("nan")
+    for ep in range(epochs):
+        if warmup_epochs > 0 and ep == warmup_epochs:  # decoder warmed → release the encoder to consolidate
+            _set_encoder_requires_grad(method, True)
+        loss = _train(method, batches, 1, optimizer, device)
+        if probe_fn is not None:
+            traj.append(probe_fn())
+    if warmup_epochs >= epochs:  # frozen through every epoch → release for any later phase
+        _set_encoder_requires_grad(method, True)
+    return loss, traj
+
+
 def _run_arm(config: DictConfig, split: dict[str, Any], *, replay: bool, run_name: str) -> tuple[dict[str, Any], MAE]:
     """Run one two-phase arm (shared phase A; phase B = B-only, or A∪B if ``replay``).
 
@@ -368,18 +412,30 @@ def _run_arm(config: DictConfig, split: dict[str, Any], *, replay: bool, run_nam
     skip_a = bool(config.get("skip_phase_a", False))
     keep_weights = skip_a or bool(config.get("pretrained_encoder", False))
     _guard_from_scratch_encoder(config, keep_weights)
-    # D1 (audit P0.3): freeze the encoder during phase A so only the FRESH decoder warms, preserving
-    # the pretrained encoder well (R00 ≈ the pretrained transfer probe, ~0.89) instead of letting the
-    # joint warm-up drift it down to ~0.65-0.71. Phase B then craters from a DEEPER well and R00 no
-    # longer varies with warm-up luck (de-confounds crater depth from R00, audit A3). Meaningful only
-    # with a pretrained well: on a from-scratch encoder it would leave the backbone at random init.
+    # D1 redo (audit P0.3): a DECODER-FIRST phase-A warm-up. Freeze the encoder for the first
+    # `decoder_warmup_epochs` of phase A so the FRESH decoder warms against a fixed (deep) encoder
+    # well, THEN unfreeze and joint-warm the remaining phase-A epochs so the encoder consolidates
+    # into the trained system BEFORE R00 is measured. This preserves well-depth (the decoder no
+    # longer blasts noise into the encoder at step 0) WITHOUT deferring the encoder-warming transient
+    # into phase B — where the original full-freeze D1 mis-counted it as forgetting (the healthy replay
+    # control then craters purely from the deferred warm-up, not from forgetting, and the gate breaks).
+    #   * decoder_warmup_epochs = 0            -> plain joint-warm (the P0.3.6 path).
+    #   * 0 < decoder_warmup_epochs < epochs_a -> decoder-first, then consolidate (the corrected D1).
+    #   * decoder_warmup_epochs >= epochs_a    -> encoder frozen through ALL of phase A (the original,
+    #                                             warming-confounded D1; `freeze_encoder_phase_a` alias).
     freeze_a = bool(config.get("freeze_encoder_phase_a", False))
-    if freeze_a and not keep_weights:
+    warmup_epochs = int(config.get("decoder_warmup_epochs", 0))
+    if freeze_a:  # the flag is the full-freeze endpoint alias — force the whole of phase A frozen
+        warmup_epochs = max(warmup_epochs, int(config.epochs_a))
+    warmup_epochs = max(0, min(warmup_epochs, int(config.epochs_a)))
+    if warmup_epochs > 0 and not keep_weights:
         raise ValueError(
-            "freeze_encoder_phase_a=true warms only the decoder in phase A, which is meaningful ONLY "
-            "with a pretrained encoder well (pretrained_encoder=true); on a from-scratch encoder it "
-            "would leave the backbone at its random init with nothing learned to forget."
+            "decoder_warmup_epochs>0 / freeze_encoder_phase_a=true warms only the decoder while the "
+            "encoder is frozen, which is meaningful ONLY with a pretrained encoder well "
+            "(pretrained_encoder=true); on a from-scratch encoder it would leave the backbone at its "
+            "random init with nothing learned to forget."
         )
+    log_traj = bool(config.get("log_task_a_trajectory", False))
     encoder = instantiate(config.encoder)
     method = instantiate(config.ssl, encoder=encoder)
     if not keep_weights:
@@ -395,18 +451,25 @@ def _run_arm(config: DictConfig, split: dict[str, Any], *, replay: bool, run_nam
     )
 
     chance = 1.0 / len(config.task_a_classes)
+    traj_a: list[float] = []  # per-epoch task-A probe across phase A (only when log_task_a_trajectory)
+    a_probe = (lambda: _probe(config, method, split["A"])) if log_traj else None  # RNG-neutral (eval-mode)
     if skip_a:  # no phase-A training: the pretrained backbone IS phase A (no distinct pre-A probe)
         a_init = chance
         loss_a = float("nan")
     else:
         a_init = _probe(config, method, split["A"])  # from-scratch random-init floor, or pretrained transfer probe
-        if freeze_a:  # D1: warm the decoder alone — the pretrained encoder stays pinned at its well
-            for p in method.encoder.parameters():
-                p.requires_grad_(False)
-        loss_a = _train(method, split["A"]["batches"], config.epochs_a, optimizer, device)
-        if freeze_a:  # unfreeze so the crater forms IN PHASE B from the preserved well (not phase A)
-            for p in method.encoder.parameters():
-                p.requires_grad_(True)
+        # Decoder-first schedule: freeze the encoder for the first `warmup_epochs` (decoder-only warm), then
+        # release it so it consolidates jointly for the rest of phase A — the warm-up transient is paid
+        # BEFORE R00 (`warmup_epochs=0` is plain joint-warm; `>= epochs_a` is the full-freeze endpoint).
+        loss_a, traj_a = _train_with_schedule(
+            method,
+            split["A"]["batches"],
+            int(config.epochs_a),
+            optimizer,
+            device,
+            warmup_epochs=warmup_epochs,
+            probe_fn=a_probe,
+        )
     r00 = _probe(config, method, split["A"])  # R[0][0]: task A right after learning it
     # "Something to forget" is headroom ABOVE CHANCE. A pretrained backbone (skip_a or pretrained_encoder)
     # has no random-init floor — a short phase A only warms the fresh MAE decoder, it cannot lift an
@@ -417,7 +480,10 @@ def _run_arm(config: DictConfig, split: dict[str, Any], *, replay: bool, run_nam
     monitor.measure(method, 0)  # pin the drift reference to the post-A representation
 
     b_batches = split["A"]["batches"] + split["B"]["batches"] if replay else split["B"]["batches"]
-    loss_b = _train(method, b_batches, config.epochs_b, optimizer, device)
+    # Phase B: encoder always trainable; probe task A after each epoch (when logging) to trace warming vs forgetting.
+    loss_b, traj_b = _train_with_schedule(
+        method, b_batches, int(config.epochs_b), optimizer, device, warmup_epochs=0, probe_fn=a_probe
+    )
     r10 = _probe(config, method, split["A"])  # R[1][0]: task A after phase B (craters if forgotten)
     r11 = _probe(config, method, split["B"])  # R[1][1]: task B right after learning it
     recon_a_after_b = _recon_loss(config, method, split["A"]["query"].images, device)  # MAE-native, post-B
@@ -441,6 +507,8 @@ def _run_arm(config: DictConfig, split: dict[str, Any], *, replay: bool, run_nam
         "recon_a_after_b": recon_a_after_b,
         "recon_b_after_b": recon_b_after_b,
         "recon_a_rise": recon_a_after_b - recon_a_after_a,  # >0 ⇒ forgot how to reconstruct task A
+        "task_a_traj_a": traj_a,  # per-epoch task-A probe (phase A) — empty unless log_task_a_trajectory
+        "task_a_traj_b": traj_b,  # per-epoch task-A probe (phase B) — empty unless log_task_a_trajectory
     }
     logger.info(
         f"arm '{run_name}' (replay={replay}): taskA init={a_init:.3f} -> afterA={r00:.3f} -> afterB={r10:.3f} "

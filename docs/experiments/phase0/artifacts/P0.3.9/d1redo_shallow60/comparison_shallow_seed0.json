@@ -1,0 +1,88 @@
+{
+  "gate": {
+    "mode": "forgetting",
+    "pc_task_a_learned": 0.5916666666666667,
+    "pc_backward_transfer": -0.018333333333333313,
+    "pc_forgetting_measure": 0.018333333333333313,
+    "healthy_backward_transfer": 0.043333333333333335,
+    "healthy_forgetting_measure": -0.043333333333333335,
+    "forget_ratio": null,
+    "thresholds": {
+      "learn_min": 0.05,
+      "bwt_fire": 0.05,
+      "fm_fire": 0.05,
+      "bwt_quiet": 0.03,
+      "min_forget_ratio": 2.0,
+      "recon_gap_min": 0.03
+    },
+    "checks": {
+      "pc_learned_A": true,
+      "pc_bwt_fires": false,
+      "pc_fm_fires": false,
+      "healthy_holds": false,
+      "contrast": true
+    },
+    "reported": {
+      "pc_cka_drift": 0.005221962928771973,
+      "healthy_cka_drift": 0.00548940896987915,
+      "pc_cosine_drift": 0.05821561813354492,
+      "healthy_cosine_drift": 0.06989693641662598,
+      "drift_separates": false,
+      "pc_recon_a_rise": 0.02610761672258377,
+      "healthy_recon_a_rise": -0.01739426702260971,
+      "recon_forget_gap": 0.04350188374519348,
+      "recon_corroborates": true
+    },
+    "passed": false
+  },
+  "pc": {
+    "run": "mae_pc_forget",
+    "replay": false,
+    "task_a_init": 0.8933333333333333,
+    "matrix": {
+      "0": {
+        "0": 0.6916666666666667
+      },
+      "1": {
+        "0": 0.6733333333333333,
+        "1": 0.7033333333333334
+      }
+    },
+    "task_a_learned": 0.5916666666666667,
+    "backward_transfer": -0.018333333333333313,
+    "forgetting_measure": 0.018333333333333313,
+    "cka_drift": 0.005221962928771973,
+    "cosine_drift": 0.05821561813354492,
+    "loss_a": 0.49042460322380066,
+    "loss_b": 0.21560980379581451,
+    "recon_a_after_a": 0.5105611309409142,
+    "recon_a_after_b": 0.5366687476634979,
+    "recon_b_after_b": 0.2395736500620842,
+    "recon_a_rise": 0.02610761672258377
+  },
+  "healthy": {
+    "run": "mae_healthy_replay",
+    "replay": true,
+    "task_a_init": 0.8933333333333333,
+    "matrix": {
+      "0": {
+        "0": 0.6916666666666667
+      },
+      "1": {
+        "0": 0.735,
+        "1": 0.715
+      }
+    },
+    "task_a_learned": 0.5916666666666667,
+    "backward_transfer": 0.043333333333333335,
+    "forgetting_measure": -0.043333333333333335,
+    "cka_drift": 0.00548940896987915,
+    "cosine_drift": 0.06989693641662598,
+    "loss_a": 0.49042460322380066,
+    "loss_b": 0.23816914856433868,
+    "recon_a_after_a": 0.5105611309409142,
+    "recon_a_after_b": 0.49316686391830444,
+    "recon_b_after_b": 0.2277884352952242,
+    "recon_a_rise": -0.01739426702260971
+  }
+}

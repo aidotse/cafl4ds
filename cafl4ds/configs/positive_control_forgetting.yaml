@@ -44,12 +44,22 @@ skip_phase_a: false
 # checkpoint is encoder-only, so a short phase A warms the fresh decoder + pins R00 on the pretrained
 # rep before phase B. `skip_phase_a` implies this; set it alone (skip_phase_a=false) to keep phase A.
 pretrained_encoder: false
-# freeze_encoder_phase_a: D1 (audit P0.3). Freeze the encoder during phase A so ONLY the fresh MAE
-# decoder warms — the pretrained encoder well is preserved (R00 ≈ the pretrained transfer probe, ~0.89)
-# instead of being drifted down to ~0.65-0.71 by the joint warm-up. Phase B then craters from a deeper
-# well, and R00 no longer varies with warm-up luck (de-confounds crater depth from R00). SSL/MAE vehicle
-# only; requires a pretrained well (pretrained_encoder=true). Default false (the P0.3.6 joint-warm path).
+# decoder_warmup_epochs: D1 redo (audit P0.3). Number of LEADING phase-A epochs during which the encoder
+# is frozen so ONLY the fresh MAE decoder warms; the remaining (epochs_a - decoder_warmup_epochs) are
+# joint, so the encoder consolidates into the trained system BEFORE R00 is measured. This preserves the
+# deep pretrained well WITHOUT deferring the encoder-warming transient into phase B (where the original
+# full-freeze D1 mis-counted it as forgetting). 0 = plain joint-warm (P0.3.6); >= epochs_a = full freeze
+# (the original, warming-confounded D1). SSL/MAE vehicle only; requires a pretrained well.
+decoder_warmup_epochs: 0
+# freeze_encoder_phase_a: the full-freeze endpoint of decoder_warmup_epochs (freeze the encoder through
+# ALL of phase A → R00 ≈ the pretrained transfer probe, ~0.89, but the warm-up transient lands in phase B
+# on BOTH arms → the healthy control craters too, which is why this original D1 broke the two-sided gate).
+# Kept as an alias (true ⇒ decoder_warmup_epochs = epochs_a). Default false. Requires pretrained_encoder=true.
 freeze_encoder_phase_a: false
+# log_task_a_trajectory: record the task-A probe after EACH phase-A and phase-B epoch (task_a_traj_a /
+# task_a_traj_b on each arm record) to trace warming vs forgetting. RNG-neutral (eval-mode + sklearn probe),
+# so it does not perturb training numerics. Off by default (bulky; drop from promoted artifacts).
+log_task_a_trajectory: false
 # recovery_steps: P0.3.5 recoverability guard. After phase B, re-learn task A for this many mini-batch
 # updates and log how fast the task-A probe returns (geometric checkpoints). Fast recovery ⇒ apparent
 # (recoverable) forgetting; slow ⇒ genuine catastrophic loss. 0 disables (the default; P0.3.4 path).

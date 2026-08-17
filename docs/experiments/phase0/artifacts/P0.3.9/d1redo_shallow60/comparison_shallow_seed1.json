@@ -1,0 +1,88 @@
+{
+  "gate": {
+    "mode": "forgetting",
+    "pc_task_a_learned": 0.6266666666666667,
+    "pc_backward_transfer": -0.06500000000000006,
+    "pc_forgetting_measure": 0.06500000000000006,
+    "healthy_backward_transfer": -0.0016666666666667052,
+    "healthy_forgetting_measure": 0.0016666666666667052,
+    "forget_ratio": 38.99999999999913,
+    "thresholds": {
+      "learn_min": 0.05,
+      "bwt_fire": 0.05,
+      "fm_fire": 0.05,
+      "bwt_quiet": 0.03,
+      "min_forget_ratio": 2.0,
+      "recon_gap_min": 0.03
+    },
+    "checks": {
+      "pc_learned_A": true,
+      "pc_bwt_fires": true,
+      "pc_fm_fires": true,
+      "healthy_holds": true,
+      "contrast": true
+    },
+    "reported": {
+      "pc_cka_drift": 0.012157559394836426,
+      "healthy_cka_drift": 0.00528031587600708,
+      "pc_cosine_drift": 0.05588477849960327,
+      "healthy_cosine_drift": 0.055199384689331055,
+      "drift_separates": true,
+      "pc_recon_a_rise": 0.022073201835155487,
+      "healthy_recon_a_rise": -0.013785962015390396,
+      "recon_forget_gap": 0.03585916385054588,
+      "recon_corroborates": true
+    },
+    "passed": true
+  },
+  "pc": {
+    "run": "mae_pc_forget",
+    "replay": false,
+    "task_a_init": 0.8916666666666667,
+    "matrix": {
+      "0": {
+        "0": 0.7266666666666667
+      },
+      "1": {
+        "0": 0.6616666666666666,
+        "1": 0.6666666666666666
+      }
+    },
+    "task_a_learned": 0.6266666666666667,
+    "backward_transfer": -0.06500000000000006,
+    "forgetting_measure": 0.06500000000000006,
+    "cka_drift": 0.012157559394836426,
+    "cosine_drift": 0.05588477849960327,
+    "loss_a": 0.5037299990653992,
+    "loss_b": 0.22129866480827332,
+    "recon_a_after_a": 0.5007536262273788,
+    "recon_a_after_b": 0.5228268280625343,
+    "recon_b_after_b": 0.24831539206206799,
+    "recon_a_rise": 0.022073201835155487
+  },
+  "healthy": {
+    "run": "mae_healthy_replay",
+    "replay": true,
+    "task_a_init": 0.8916666666666667,
+    "matrix": {
+      "0": {
+        "0": 0.7266666666666667
+      },
+      "1": {
+        "0": 0.725,
+        "1": 0.695
+      }
+    },
+    "task_a_learned": 0.6266666666666667,
+    "backward_transfer": -0.0016666666666667052,
+    "forgetting_measure": 0.0016666666666667052,
+    "cka_drift": 0.00528031587600708,
+    "cosine_drift": 0.055199384689331055,
+    "loss_a": 0.5037299990653992,
+    "loss_b": 0.19965797662734985,
+    "recon_a_after_a": 0.5007536262273788,
+    "recon_a_after_b": 0.48696766421198845,
+    "recon_b_after_b": 0.23493975214660168,
+    "recon_a_rise": -0.013785962015390396
+  }
+}

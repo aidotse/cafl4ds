@@ -182,3 +182,61 @@ def test_freeze_encoder_phase_a_requires_a_pretrained_well(harness: ModuleType) 
     split = harness._task_split(config)
     with pytest.raises(ValueError, match="pretrained encoder well"):
         harness._run_arm(config, split, replay=False, run_name="should_raise")
+
+
+def test_decoder_warmup_full_freeze_pins_the_well(harness: ModuleType) -> None:
+    """D1 redo: decoder_warmup_epochs >= epochs_a is the full-freeze endpoint — R00 == the init probe.
+
+    Frozen through all of phase A, the encoder never moves, so the post-A probe is bit-identical to the
+    pre-A transfer probe (the same property the ``freeze_encoder_phase_a`` alias asserts).
+    """
+    config = _compose([*_BASE, "pretrained_encoder=true", "decoder_warmup_epochs=99"])  # >= epochs_a
+    split = harness._task_split(config)
+    pc, _ = harness._run_arm(config, split, replay=False, run_name="warmup_full")
+    assert pc["matrix"]["0"]["0"] == pytest.approx(pc["task_a_init"], abs=1e-6), "encoder moved under full freeze"
+
+
+def test_freeze_flag_is_the_full_warmup_alias(harness: ModuleType) -> None:
+    """D1 redo: ``freeze_encoder_phase_a=true`` is exactly ``decoder_warmup_epochs = epochs_a`` (same record)."""
+    flag = _compose([*_BASE, "pretrained_encoder=true", "freeze_encoder_phase_a=true"])
+    knob = _compose([*_BASE, "pretrained_encoder=true", "decoder_warmup_epochs=2"])  # _BASE has epochs_a=2
+    split = harness._task_split(flag)
+    pc_flag, _ = harness._run_arm(flag, split, replay=False, run_name="flag")
+    pc_knob, _ = harness._run_arm(knob, split, replay=False, run_name="knob")
+    assert pc_flag["matrix"]["0"]["0"] == pytest.approx(pc_knob["matrix"]["0"]["0"], abs=1e-9)
+    assert pc_flag["backward_transfer"] == pytest.approx(pc_knob["backward_transfer"], abs=1e-9)
+
+
+def test_decoder_warmup_requires_a_pretrained_well(harness: ModuleType) -> None:
+    """D1 redo: a decoder warm-up on a from-scratch arm raises (same guard as the freeze alias)."""
+    config = _compose([*_BASE, "decoder_warmup_epochs=1"])  # from-scratch (keep_weights False)
+    split = harness._task_split(config)
+    with pytest.raises(ValueError, match="pretrained encoder well"):
+        harness._run_arm(config, split, replay=False, run_name="should_raise")
+
+
+def test_task_a_trajectory_logging_is_correct_and_rng_neutral(harness: ModuleType) -> None:
+    """D1 redo: per-epoch logging is correctly shaped, respects the freeze schedule, and is RNG-neutral.
+
+    The probe is eval-mode + sklearn, so it consumes no training RNG. With ``decoder_warmup_epochs=1`` and
+    ``epochs_a=2``, phase-A epoch 0 warms the decoder alone (encoder frozen) so the first logged probe
+    equals the init probe, and epoch 1 is joint. The matrix must be bit-identical to a non-logged run.
+    """
+    base = [*_BASE, "pretrained_encoder=true", "decoder_warmup_epochs=1"]
+    logged = _compose([*base, "log_task_a_trajectory=true"])
+    plain = _compose(base)
+    split = harness._task_split(logged)
+    pc_log, _ = harness._run_arm(logged, split, replay=False, run_name="logged")
+    pc_plain, _ = harness._run_arm(plain, split, replay=False, run_name="plain")
+    # Shape: one probe per phase-A epoch and per phase-B epoch.
+    assert len(pc_log["task_a_traj_a"]) == 2 and len(pc_log["task_a_traj_b"]) == 2
+    # Freeze schedule: epoch 0 is decoder-only (encoder pinned), so the first trajectory probe == init.
+    assert pc_log["task_a_traj_a"][0] == pytest.approx(pc_log["task_a_init"], abs=1e-6)
+    # The last phase-A probe is R00; the last phase-B probe is R10.
+    assert pc_log["task_a_traj_a"][-1] == pytest.approx(pc_log["matrix"]["0"]["0"], abs=1e-6)
+    assert pc_log["task_a_traj_b"][-1] == pytest.approx(pc_log["matrix"]["1"]["0"], abs=1e-6)
+    # RNG-neutral: logging changed nothing about the training path.
+    assert pc_log["matrix"]["0"]["0"] == pytest.approx(pc_plain["matrix"]["0"]["0"], abs=1e-9)
+    assert pc_log["backward_transfer"] == pytest.approx(pc_plain["backward_transfer"], abs=1e-9)
+    # Non-logged runs carry empty trajectories (bulky series stay opt-in).
+    assert pc_plain["task_a_traj_a"] == [] and pc_plain["task_a_traj_b"] == []
