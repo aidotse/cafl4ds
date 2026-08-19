@@ -51,6 +51,29 @@ class UpdateStats(NamedTuple):
     finite: bool
 
 
+class StepResult(NamedTuple):
+    """The outcome of one public :meth:`StreamingLoop.train_step` — the selection + update record.
+
+    Wraps the internal :class:`UpdateStats` with the count the *caller* needs to attribute the
+    step: how many images the filter admitted and the update actually trained on. Federated
+    aggregation reads this as the FedAvg sample weight (see
+    :mod:`cafl4ds.federated.aggregate`); the centralized loop ignores it.
+
+    Attributes:
+        loss: The scalar SSL loss for the step.
+        grad_norm: The global L2 gradient norm measured **pre-clip** (the divergence instrument).
+        finite: Whether both the loss and the grad norm are finite (a non-finite step is the
+            divergence fingerprint — the loop stops there).
+        num_trained: Number of images admitted by the selection filter and trained on this step.
+            Always ``>= _MIN_BATCH``; a sub-minimum step is skipped and returns ``None`` instead.
+    """
+
+    loss: float
+    grad_norm: float
+    finite: bool
+    num_trained: int
+
+
 class StreamingLoop:
     """Runs the streaming SSL adaptation loop with a single selection filter."""
 
@@ -126,7 +149,7 @@ class StreamingLoop:
                 if prev_era is not None and batch.era != prev_era:
                     self._probe_past(prev_era)  # the era just ended — record its probe-on-past row
                 prev_era, last_era = batch.era, batch.era
-                stats = self._step_on_batch(batch, step)
+                stats = self.train_step(batch, step)
                 if stats is None:  # sub-minimum batch after selection — skipped
                     continue
                 last_step = step
@@ -142,16 +165,22 @@ class StreamingLoop:
         self.run_logger.close()
         return self.run_logger
 
-    def _step_on_batch(self, batch: StreamBatch, step: int) -> UpdateStats | None:
+    def train_step(self, batch: StreamBatch, step: int) -> StepResult | None:
         """Select on one batch and run its update, logging the per-step loss + grad-norm trace.
+
+        The single per-step primitive shared by the centralized :meth:`run` loop and the
+        federated client (which drives the stream one round at a time): selection + one SSL
+        update on the admitted images, along the *same* code path so the two settings cannot
+        diverge.
 
         Args:
             batch: The incoming stream batch.
             step: The global step index for this batch.
 
         Returns:
-            The step's :class:`UpdateStats`, or ``None`` if the selected batch was sub-minimum
-            (too few samples to run an update — the step is skipped).
+            The step's :class:`StepResult` (loss, grad-norm trace, and the admitted-image count
+            for FedAvg weighting), or ``None`` if the selected batch was sub-minimum (too few
+            samples to run an update — the step is skipped).
         """
         moved = StreamBatch(images=batch.images.to(self.device), era=batch.era, step=step)
         accepted = self.selection_filter.select(moved, FilterContext(method=self.method, step=step))
@@ -167,7 +196,9 @@ class StreamingLoop:
                 f"step {step}: non-finite update (loss={stats.loss}, grad_norm={stats.grad_norm}) "
                 "— stopping (divergence)."
             )
-        return stats
+        return StepResult(
+            loss=stats.loss, grad_norm=stats.grad_norm, finite=stats.finite, num_trained=int(accepted.shape[0])
+        )
 
     def _finalize(self, *, diverged: bool, last_step: int, last_era: int) -> None:
         """Close the run with a final health reading + probe-on-past (unless it diverged).

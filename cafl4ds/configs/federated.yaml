@@ -1,0 +1,63 @@
+# Federated Phase-0 streaming loop — FedAvg over per-client single-pass streams.
+#
+# One dataset is partitioned across `num_clients` clients (the D factor); each client runs the
+# same streaming SSL loop on its own shard, and every `steps_per_round` stream steps the server
+# FedAvg-averages their weights. Clients continue their stream across rounds (true single pass)
+# and drop out as they exhaust. Global-model health is logged once per round.
+#
+# Fast network-free smoke (no data download):
+#   uv run python scripts/run_federated.py data=synthetic img_size=16 num_clients=3 \
+#     support_per_class=3 query_per_class=2 era_eval_per_class=1 partition.scheme=iid
+#
+# STL-10 on GPU:
+#   uv run python scripts/run_federated.py device=cuda data_root=/home/edgelab/stl10 \
+#     ssl=simsiam num_clients=4 partition.alpha=1.0 batch_size=64
+defaults:
+  - encoder: tiny
+  - ssl: simsiam # C factor: mae | simsiam
+  - data: stl10 # data source: stl10 | synthetic
+  - stream: class_blocked # F factor: only `order` is read (class_blocked | iid)
+  - filter: accept_all # A factor: B-floor (same filter on every client, own local state)
+  - monitor: default
+  - optim: adamw
+  - init: from_scratch # I factor: from_scratch | pretrained
+  - _self_
+
+# Shared scalars (interpolated into the groups above).
+img_size: 32
+batch_size: 32
+seed: 0
+device: cpu
+eval_every: 5
+
+# Data sizing.
+data_root: /mnt/stl10
+max_per_class: 500 # cap images loaded per class from the source
+max_train_per_class: null # no cap on training images per class (after held-out reservations)
+
+# Per-client held-out reservations — smaller than the centralized defaults, because each client
+# holds only a slice of the data and non-IID skew makes some per-class counts small. If a run
+# hits "class X has N images but M are reserved", lower these or raise partition.alpha.
+support_per_class: 5
+query_per_class: 5
+era_eval_per_class: 2
+
+# Federation.
+num_clients: 4
+steps_per_round: 5 # stream steps (batches) each client advances per round
+num_rounds: null # null = run until every client's stream is exhausted
+partition:
+  scheme: dirichlet # dirichlet (label-skewed non-IID) | iid (uniform control)
+  alpha: 1.0 # Dirichlet concentration; smaller = sharper per-client class skew
+
+# Warm-start checkpoints (I=pretrained). Resolved to an absolute path by the run script.
+pretrain_dir: outputs/pretrain
+
+# Run logs: one JSONL per client plus one for the aggregated global model, in the Hydra run dir.
+run_log: run_log.jsonl
+
+loop:
+  _target_: cafl4ds.loop.StreamingLoop
+  eval_every: ${eval_every}
+  grad_clip: 1.0
+  device: ${device}
