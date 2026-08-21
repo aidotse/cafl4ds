@@ -13,11 +13,14 @@ from cafl4ds.models.vit import TinyViTEncoder
 from cafl4ds.monitor import HealthMonitor
 from cafl4ds.ssl.factory import build_mae, build_simsiam
 
-# MAE exposes only the backbone surface and no positive pair, so no `_proj` / `alignment` keys.
+# MAE exposes only the backbone surface (no projector → no `_proj` keys), but it now returns a
+# positive pair from `make_views` (two augmentation draws, for the P0.5 alignment-on-trial read),
+# so `alignment` is reported at the backbone.
 _EXPECTED_KEYS = {
     "step",
     "rankme",
     "uniformity",
+    "alignment",
     "offdiag_cov",
     "mean_feature_var",
     "cka_drift",
@@ -116,3 +119,31 @@ def test_alignment_view_pair_is_fixed_across_checkpoints() -> None:
     assert first is not None
     monitor.measure(method, step=1)  # type: ignore[arg-type]
     assert monitor._views is first  # same cached object, not re-drawn
+
+
+def test_p052_readers_reported_when_enabled_for_mae() -> None:
+    """Enabling the P0.5.2 candidate readers adds their keys for an MAE backbone.
+
+    Clusterability, mean attention distance, and alignment-under-stronger-aug are off by default
+    (so existing runs are unchanged); switching them on must emit exactly those three extra finite
+    keys and nothing else.
+    """
+    method, _ = _method_and_monitor()
+    stream = EraStream(
+        SyntheticSource(num_classes=3, per_class=40, img_size=16),
+        support_per_class=8,
+        query_per_class=8,
+        era_eval_per_class=5,
+    )
+    monitor = HealthMonitor(
+        stream.eval_sets,
+        knn_k=5,
+        run_clusterability=True,
+        run_attn_distance=True,
+        run_alignment_strong=True,
+    )
+    metrics = monitor.measure(method, step=0)  # type: ignore[arg-type]
+    extra = {"clusterability", "attn_distance", "alignment_strong"}
+    assert extra <= set(metrics)
+    assert set(metrics) == _EXPECTED_KEYS | extra
+    assert all(isinstance(metrics[k], float) and metrics[k] == metrics[k] for k in extra)

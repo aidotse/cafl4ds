@@ -17,8 +17,10 @@ for joint-embedding methods; the projector-surface metrics carry a ``_proj`` suf
   L2-normalized embeddings.
 * ``uniformity`` — spread on the hypersphere (Wang & Isola); L2-normalizes internally.
 * ``alignment`` — positive-pair closeness (Wang & Isola); needs a positive pair, so it is
-  reported only for methods that expose one (skipped for MAE). The pair is a **fixed** pair of
-  augmented views of the probe set, drawn once and reused across checkpoints.
+  reported only for methods that expose one via ``make_views`` (joint-embedding methods, and —
+  since P0.5 puts it on trial as a candidate MAE quality reader — MAE, via two augmentation
+  draws). The pair is a **fixed** pair of augmented views of the probe set, drawn once and
+  reused across checkpoints.
 * ``cka_drift`` / ``cosine_drift`` — representation drift of the fixed probe set vs. its
   first-checkpoint (backbone) embeddings (content drift and coordinate-frame churn).
 * ``knn_acc`` / ``linear_acc`` — downstream probe accuracy on frozen features (labels used
@@ -53,6 +55,9 @@ class HealthMonitor:
         run_linear: bool = True,
         run_alignment: bool = True,
         align_seed: int = 0,
+        run_clusterability: bool = False,
+        run_attn_distance: bool = False,
+        run_alignment_strong: bool = False,
     ) -> None:
         """Configure the monitor.
 
@@ -65,6 +70,14 @@ class HealthMonitor:
                 for methods that expose none).
             align_seed: Seed used to draw the fixed alignment view-pair (deterministic and
                 isolated from the training RNG), so alignment is comparable across checkpoints.
+            run_clusterability: Whether to compute the P0.5.2 unsupervised-clusterability reader
+                (silhouette of a k-means partition of the backbone rep; the cluster count is the
+                probe set's class count — metadata, not labels).
+            run_attn_distance: Whether to compute the P0.5.2 mean-attention-distance reader
+                (auto-skipped for encoders that expose no ``attention_maps``).
+            run_alignment_strong: Whether to compute the P0.5.2 alignment-under-stronger-aug reader
+                (needs a strong-augment positive pair via ``make_views_strong``; auto-skipped
+                otherwise).
         """
         self.eval_sets = eval_sets
         self.knn_k = knn_k
@@ -72,9 +85,14 @@ class HealthMonitor:
         self.run_linear = run_linear
         self.run_alignment = run_alignment
         self.align_seed = align_seed
+        self.run_clusterability = run_clusterability
+        self.run_attn_distance = run_attn_distance
+        self.run_alignment_strong = run_alignment_strong
         self._z_ref0: torch.Tensor | None = None
         self._views: tuple[torch.Tensor, torch.Tensor] | None = None
         self._views_cached = False
+        self._views_strong: tuple[torch.Tensor, torch.Tensor] | None = None
+        self._views_strong_cached = False
 
     def measure(self, method: SSLMethod, step: int) -> dict[str, float]:
         """Compute the health metrics for the current model state.
@@ -99,6 +117,12 @@ class HealthMonitor:
             metrics.update(self._drift(surfaces["backbone"]))
             if self.run_alignment:
                 metrics.update(self._alignment(method))
+            if self.run_clusterability:
+                metrics["clusterability"] = self._clusterability(surfaces["backbone"])
+            if self.run_attn_distance:
+                metrics.update(self._attn_distance(method))
+            if self.run_alignment_strong:
+                metrics.update(self._alignment_strong(method))
             if self.run_knn:
                 metrics["knn_acc"] = measurements.knn_probe(
                     method.encode,
@@ -185,6 +209,83 @@ class HealthMonitor:
                 torch.random.set_rng_state(rng_state)
             self._views_cached = True
         return self._views
+
+    def _clusterability(self, z_backbone: torch.Tensor) -> float:
+        """P0.5.2 unsupervised-clusterability reader on the backbone rep.
+
+        The k-means cluster count is the probe set's class *count* (dataset metadata, not the
+        per-sample labels) — a label-free proxy for the separability the frozen probe measures
+        with labels.
+
+        Args:
+            z_backbone: The backbone-surface embeddings of the probe-query set ``[M, d]``.
+
+        Returns:
+            The silhouette clusterability in ``[-1, 1]`` (higher = more separable).
+        """
+        labels = self.eval_sets.probe_query.labels
+        lab = labels if isinstance(labels, torch.Tensor) else torch.as_tensor(labels)
+        n_clusters = int(torch.unique(lab).numel())
+        return measurements.clusterability(z_backbone, n_clusters, seed=self.align_seed)
+
+    def _attn_distance(self, method: SSLMethod) -> dict[str, float]:
+        """P0.5.2 mean-attention-distance reader, averaged over blocks and heads.
+
+        Reads the encoder's self-attention on the fixed probe-query set (a read-only forward that
+        never touches training). Returns ``{}`` for encoders that expose no ``attention_maps``.
+
+        Args:
+            method: The live SSL method.
+
+        Returns:
+            ``{"attn_distance": value}`` in patch units, or ``{}`` if unsupported.
+        """
+        encoder = method.encoder
+        if not hasattr(encoder, "attention_maps"):
+            return {}
+        attns = encoder.attention_maps(self.eval_sets.probe_query.images)  # list of [B, heads, T, T]
+        stacked = torch.stack(attns, dim=0)  # [depth, B, heads, T, T]; leading axes averaged inside
+        return {"attn_distance": measurements.mean_attention_distance(stacked, encoder.grid_size)}
+
+    def _alignment_strong(self, method: SSLMethod) -> dict[str, float]:
+        """P0.5.2 alignment-under-stronger-aug reader, at the backbone surface.
+
+        Uses a fixed strong-augment positive pair (drawn once under an isolated RNG, reused across
+        checkpoints). Returns ``{}`` for methods exposing no strong-augment pair.
+
+        Args:
+            method: The live SSL method.
+
+        Returns:
+            ``{"alignment_strong": value}`` at the backbone, or ``{}`` if unsupported.
+        """
+        views = self._view_pair_strong(method)
+        if views is None:
+            return {}
+        return {"alignment_strong": measurements.alignment(method.encode(views[0]), method.encode(views[1]))}
+
+    def _view_pair_strong(self, method: SSLMethod) -> tuple[torch.Tensor, torch.Tensor] | None:
+        """Draw (once) and cache a deterministic *strong*-augment positive pair of the probe set.
+
+        Mirrors :meth:`_view_pair` but calls ``make_views_strong`` and uses a distinct seed
+        (``align_seed + 1``) so the strong pair is independent of the light pair; restores the
+        global RNG afterwards so training order/augmentation is undisturbed.
+
+        Args:
+            method: The live SSL method (supplies the strong augmentation).
+
+        Returns:
+            The cached strong ``(view_a, view_b)`` pair, or ``None`` if the method exposes none.
+        """
+        if not self._views_strong_cached:
+            rng_state = torch.random.get_rng_state()
+            try:
+                torch.manual_seed(self.align_seed + 1)
+                self._views_strong = method.make_views_strong(self.eval_sets.probe_query.images)
+            finally:
+                torch.random.set_rng_state(rng_state)
+            self._views_strong_cached = True
+        return self._views_strong
 
     def _drift(self, z_query: torch.Tensor) -> dict[str, float]:
         """Compute drift of the fixed probe set vs. its first-checkpoint embeddings.
