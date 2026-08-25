@@ -105,11 +105,30 @@ class Attention(nn.Module):  # type: ignore[misc]  # nn.Module is Any without to
         self.qkv = nn.Linear(dim, dim * 3)
         self.proj = nn.Linear(dim, dim)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Self-attend over the token dimension (``[B, T, d] -> [B, T, d]``)."""
+    def forward(self, x: torch.Tensor, return_attn: bool = False) -> torch.Tensor | tuple[torch.Tensor, torch.Tensor]:
+        """Self-attend over the token dimension (``[B, T, d] -> [B, T, d]``).
+
+        The default path uses the fused ``scaled_dot_product_attention`` (fast; the training
+        path). When ``return_attn`` is set, the attention probabilities are computed explicitly
+        and returned alongside the output — a **read-only** path for the mean-attention-distance
+        instrument (P0.5.2), never used in training.
+
+        Args:
+            x: Token sequence ``[B, T, d]``.
+            return_attn: If ``True``, also return the ``[B, num_heads, T, T]`` attention
+                probability matrix.
+
+        Returns:
+            The attended tokens ``[B, T, d]``, or — when ``return_attn`` — a
+            ``(tokens, attn)`` pair.
+        """
         b, t, d = x.shape
         qkv = self.qkv(x).reshape(b, t, 3, self.num_heads, self.head_dim).permute(2, 0, 3, 1, 4)
         q, k, v = qkv[0], qkv[1], qkv[2]
+        if return_attn:
+            attn = torch.softmax((q @ k.transpose(-2, -1)) * (self.head_dim**-0.5), dim=-1)
+            out = (attn @ v).transpose(1, 2).reshape(b, t, d)
+            return self.proj(out), attn
         out = torch.nn.functional.scaled_dot_product_attention(q, k, v)
         out = out.transpose(1, 2).reshape(b, t, d)
         return self.proj(out)
@@ -310,3 +329,35 @@ class TinyViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is Any witho
         imgs = imgs.to(self.pos_embed.device)
         tokens = self.forward(imgs)
         return tokens[:, 1:, :].mean(dim=1)
+
+    @property
+    def grid_size(self) -> int:
+        """Side length of the square patch grid (``num_patches = grid_size**2``)."""
+        return int(round(self.num_patches**0.5))
+
+    @torch.no_grad()  # type: ignore[misc]  # untyped decorator without torch stubs (mypy hook env)
+    def attention_maps(self, imgs: torch.Tensor) -> list[torch.Tensor]:
+        """Return the per-block self-attention probability matrices (read-only, unmasked).
+
+        Mirrors the pre-norm block computation of :meth:`forward` exactly (so the captured
+        attention is the model's true attention), but threads ``return_attn`` through each block's
+        attention to collect the ``[B, num_heads, T, T]`` probability matrix per block. Used by the
+        mean-attention-distance instrument (P0.5.2); it never enters training.
+
+        Args:
+            imgs: Images ``[B, C, H, W]``.
+
+        Returns:
+            A list of ``depth`` attention tensors, each ``[B, num_heads, 1 + N, 1 + N]``.
+        """
+        imgs = imgs.to(self.pos_embed.device)
+        x = self._embed_patches(imgs)
+        cls = (self.cls_token + self.pos_embed[:, :1, :]).expand(x.shape[0], -1, -1)
+        x = torch.cat([cls, x], dim=1)
+        attns: list[torch.Tensor] = []
+        for blk in self.blocks:
+            attended, attn = blk.attn(blk.norm1(x), return_attn=True)
+            x = x + attended
+            x = x + blk.mlp(blk.norm2(x))
+            attns.append(attn)
+        return attns

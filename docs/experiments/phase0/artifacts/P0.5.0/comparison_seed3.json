@@ -1,0 +1,128 @@
+{
+  "run": {
+    "substudy": "P0.5.0",
+    "lever": "mask_ratio",
+    "shortcut": "mask_ratio=0.1",
+    "healthy": "mask_ratio=0.75",
+    "config": "from-scratch MAE, TinyViT embed192/depth8/heads6, img96, Imagenette, 200ep",
+    "seed": 3
+  },
+  "gate": {
+    "mode": "shortcut",
+    "shortcut_rankme_final": 38.38216018676758,
+    "healthy_rankme_final": 47.57080841064453,
+    "rankme_frac": 0.8068427144529904,
+    "shortcut_probe_final": 0.342,
+    "healthy_probe_final": 0.406,
+    "probe_gap": 0.064,
+    "probe_ratio": 1.1871345029239766,
+    "shortcut_linear_final": 0.466,
+    "healthy_linear_final": 0.518,
+    "linear_probe_gap": 0.05199999999999999,
+    "shortcut_loss_floor": 0.2018049657344818,
+    "healthy_loss_floor": 0.4103313684463501,
+    "thresholds": {
+      "precondition_rankme_frac": 0.7,
+      "healthy_probe_min": 0.3,
+      "min_probe_gap": 0.1,
+      "min_probe_ratio": 1.3,
+      "loss_alarm_margin": 0.02
+    },
+    "checks": {
+      "healthy_has_headroom": true,
+      "rankme_preserved": true,
+      "probe_craters": false,
+      "loss_does_not_alarm": true,
+      "contrast": false
+    },
+    "reader_verdict": {
+      "candidates": [
+        {
+          "reader": "uniformity",
+          "healthy_final": -0.9376736283302307,
+          "shortcut_final": -1.0846468210220337,
+          "degrade_gap": -0.14697319269180298,
+          "fires": false
+        },
+        {
+          "reader": "alignment",
+          "healthy_final": 0.05160476267337799,
+          "shortcut_final": 0.04217083752155304,
+          "degrade_gap": -0.009433925151824951,
+          "fires": false
+        }
+      ],
+      "fired": [],
+      "any_reader_fired": false,
+      "headline": "NO reader fired -> P0.2 suite has a quality blind spot on MAE (candidates -> P0.5.2-4)"
+    },
+    "passed": false
+  },
+  "envelope": [
+    {
+      "metric": "rankme",
+      "surface": "backbone",
+      "direction": "down",
+      "scale": "ratio",
+      "healthy_final": 47.57080841064453,
+      "pc_final": 38.38216018676758,
+      "separation": 1.2393989337537281,
+      "threshold": 2.0,
+      "standalone": true,
+      "note": "reference (calibrated in P0.2.1)",
+      "fires": false
+    },
+    {
+      "metric": "mean_feature_var",
+      "surface": "backbone",
+      "direction": "down",
+      "scale": "ratio",
+      "healthy_final": 0.0014781090430915356,
+      "pc_final": 0.0017218779539689422,
+      "separation": 0.8584284616017545,
+      "threshold": 2.0,
+      "standalone": true,
+      "note": "VICReg variance; L2-normalized",
+      "fires": false
+    },
+    {
+      "metric": "offdiag_cov",
+      "surface": "backbone",
+      "direction": "up",
+      "scale": "ratio",
+      "healthy_final": 5.6612039770698175e-05,
+      "pc_final": 9.892318485071883e-05,
+      "separation": 1.7473877509342186,
+      "threshold": 2.0,
+      "standalone": true,
+      "note": "VICReg redundancy; expected null under point-collapse",
+      "fires": false
+    },
+    {
+      "metric": "uniformity",
+      "surface": "backbone",
+      "direction": "up",
+      "scale": "gap",
+      "healthy_final": -0.9376736283302307,
+      "pc_final": -1.0846468210220337,
+      "separation": -0.14697319269180298,
+      "threshold": 0.5,
+      "standalone": true,
+      "note": "W&I uniformity (negative-valued)",
+      "fires": false
+    },
+    {
+      "metric": "alignment",
+      "surface": "backbone",
+      "direction": "down",
+      "scale": "gap",
+      "healthy_final": 0.05160476267337799,
+      "pc_final": 0.04217083752155304,
+      "separation": 0.009433925151824951,
+      "threshold": 0.5,
+      "standalone": false,
+      "note": "read jointly with uniformity; not a standalone detector",
+      "fires": false
+    }
+  ]
+}

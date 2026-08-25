@@ -105,6 +105,7 @@ combined_certificates.pem
 .scratchpad
 
 # ── Editor / OS / Local Tooling cruft ──────────────────────────────────
+.vscode/
 .DS_Store
 Thumbs.db
 *.swp
