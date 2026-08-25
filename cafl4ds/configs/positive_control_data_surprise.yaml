@@ -88,7 +88,7 @@ max_per_class: null
 gate:
   base_descends_frac: 0.9 # base COMPETENT iff warm final loss <= this x its initial (genuine descent)
   surprise_ratio: 1.2 # SURPRISE real iff shock burst mean loss >= this x its pre-burst base mean loss
-  change_ratio: 2.0 # FIRES iff shock (burst peak / pre-burst base peak) grad norm >= this
+  fire_ratio: 2.0 # FIRES iff the CROSS-ARM shock/control same-step burst-peak grad norm >= this (the gate)
   control_quiet_ratio: 2.0 # QUIET iff control (burst-window peak / pre-burst base peak) grad norm < this
   recover_ratio: 2.0 # (reported) RECOVERS iff shock tail-min grad norm <= this x its pre-burst base peak
 
