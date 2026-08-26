@@ -1,0 +1,34 @@
+{
+  "what": "Cross-mode specificity (P0.4.0): the grad-norm instrument must NOT fire on COLLAPSE. Reads the collapse (P0.2 SimSiam) PC arm's grad-norm trace, multi-seed replication of C2. Device=hpu, epochs=8 (enough to show the PC collapsing toward the -1 floor; the collapse GATE itself needs ~40 epochs and is not the point here).",
+  "device": "hpu",
+  "epochs": 8,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "rows": [
+    {
+      "seed": 0,
+      "pc_peak_grad_norm": 1.939,
+      "pc_all_finite": true,
+      "pc_final_loss": -0.962
+    },
+    {
+      "seed": 1,
+      "pc_peak_grad_norm": 2.213,
+      "pc_all_finite": true,
+      "pc_final_loss": -0.918
+    },
+    {
+      "seed": 2,
+      "pc_peak_grad_norm": 2.534,
+      "pc_all_finite": true,
+      "pc_final_loss": -0.724
+    }
+  ],
+  "reads": [
+    "The collapsing PC keeps its grad norm BOUNDED (peak ~1.9-2.5) and FINITE (never non-finite) on every seed while its loss rides toward the -1 constant-solution floor (genuine collapse) -> grad norm does not fire on collapse, seed-robustly (n=1 -> n=3).",
+    "Peak ~2.5 is orders of magnitude below the divergence scale (>=1e5), so the instrument is specific to divergence vs collapse across seeds."
+  ]
+}

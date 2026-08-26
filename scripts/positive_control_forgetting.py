@@ -43,6 +43,7 @@ Examples:
             epochs_a=300 epochs_b=300
 """
 
+import math
 import sys
 from collections.abc import Callable
 from pathlib import Path
@@ -176,9 +177,21 @@ def _recon_loss(config: DictConfig, method: MAE, imgs: torch.Tensor, device: tor
 
 
 def _train(
-    method: MAE, batches: list[torch.Tensor], epochs: int, optimizer: torch.optim.Optimizer, device: torch.device
+    method: MAE,
+    batches: list[torch.Tensor],
+    epochs: int,
+    optimizer: torch.optim.Optimizer,
+    device: torch.device,
+    grad_stats: dict[str, Any] | None = None,
 ) -> float:
-    """Train ``method`` on ``batches`` for ``epochs`` passes; return the final-step loss."""
+    """Train ``method`` on ``batches`` for ``epochs`` passes; return the final-step loss.
+
+    When ``grad_stats`` is passed it accumulates the **pre-clip** gradient-norm reads (the value
+    ``clip_grad_norm_`` returns, measured before it rescales) into ``max_grad_norm`` / ``all_finite``.
+    This is the P0.4 divergence instrument, read here off the forgetting vehicle for the cross-mode
+    specificity check (grad norm must NOT spike during a slow forgetting event); default ``None`` is a
+    no-op so existing callers are unaffected.
+    """
     method.train()
     last = 0.0
     for _ in range(epochs):
@@ -186,7 +199,12 @@ def _train(
             optimizer.zero_grad()
             loss = method.training_step(imgs.to(device))
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(method.parameters(), 1.0)
+            total_norm = float(torch.nn.utils.clip_grad_norm_(method.parameters(), 1.0))
+            if grad_stats is not None:
+                if math.isfinite(total_norm):
+                    grad_stats["max_grad_norm"] = max(grad_stats["max_grad_norm"], total_norm)
+                else:
+                    grad_stats["all_finite"] = False
             optimizer.step()
             last = float(loss.item())
     return last
@@ -358,6 +376,7 @@ def _train_with_schedule(
     *,
     warmup_epochs: int,
     probe_fn: Callable[[], float] | None,
+    grad_stats: dict[str, Any] | None = None,
 ) -> tuple[float, list[float]]:
     """Train ``epochs`` passes, freezing the encoder for the first ``warmup_epochs`` (decoder-first warm-up).
 
@@ -378,7 +397,7 @@ def _train_with_schedule(
     for ep in range(epochs):
         if warmup_epochs > 0 and ep == warmup_epochs:  # decoder warmed → release the encoder to consolidate
             _set_encoder_requires_grad(method, True)
-        loss = _train(method, batches, 1, optimizer, device)
+        loss = _train(method, batches, 1, optimizer, device, grad_stats=grad_stats)
         if probe_fn is not None:
             traj.append(probe_fn())
     if warmup_epochs >= epochs:  # frozen through every epoch → release for any later phase
@@ -481,8 +500,17 @@ def _run_arm(config: DictConfig, split: dict[str, Any], *, replay: bool, run_nam
 
     b_batches = split["A"]["batches"] + split["B"]["batches"] if replay else split["B"]["batches"]
     # Phase B: encoder always trainable; probe task A after each epoch (when logging) to trace warming vs forgetting.
+    # Read the P0.4 grad-norm instrument off phase B (the crater) for the cross-mode specificity check.
+    grad_stats_b: dict[str, Any] = {"max_grad_norm": 0.0, "all_finite": True}
     loss_b, traj_b = _train_with_schedule(
-        method, b_batches, int(config.epochs_b), optimizer, device, warmup_epochs=0, probe_fn=a_probe
+        method,
+        b_batches,
+        int(config.epochs_b),
+        optimizer,
+        device,
+        warmup_epochs=0,
+        probe_fn=a_probe,
+        grad_stats=grad_stats_b,
     )
     r10 = _probe(config, method, split["A"])  # R[1][0]: task A after phase B (craters if forgotten)
     r11 = _probe(config, method, split["B"])  # R[1][1]: task B right after learning it
@@ -509,6 +537,8 @@ def _run_arm(config: DictConfig, split: dict[str, Any], *, replay: bool, run_nam
         "recon_a_rise": recon_a_after_b - recon_a_after_a,  # >0 ⇒ forgot how to reconstruct task A
         "task_a_traj_a": traj_a,  # per-epoch task-A probe (phase A) — empty unless log_task_a_trajectory
         "task_a_traj_b": traj_b,  # per-epoch task-A probe (phase B) — empty unless log_task_a_trajectory
+        "phase_b_max_grad_norm": grad_stats_b["max_grad_norm"],  # P0.4 instrument off phase B (cross-mode specificity)
+        "phase_b_grad_finite": grad_stats_b["all_finite"],
     }
     logger.info(
         f"arm '{run_name}' (replay={replay}): taskA init={a_init:.3f} -> afterA={r00:.3f} -> afterB={r10:.3f} "

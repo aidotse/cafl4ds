@@ -130,6 +130,13 @@ def test_gate_structure_and_recon_gap_sign(mae_arms: dict[str, Any]) -> None:
     assert gate["reported"]["recon_forget_gap"] == pytest.approx(expected_gap, abs=1e-9)
 
 
+def test_phase_b_grad_norm_is_captured(mae_arms: dict[str, Any]) -> None:
+    """The pre-clip phase-B grad norm is captured (the P0.4 divergence instrument, cross-mode specificity, audit C3)."""
+    for arm in (mae_arms["pc"], mae_arms["healthy"]):
+        assert arm["phase_b_grad_finite"] is True, "phase-B grad went non-finite on a sane-LR forgetting run"
+        assert arm["phase_b_max_grad_norm"] > 0.0, "phase-B grad norm not captured"
+
+
 def test_supervised_vehicle_runs_with_paired_seed(harness: ModuleType) -> None:
     """The supervised vehicle drives ``_run_arm_supervised``/``SupervisedMethod`` with the same wiring."""
     config = _compose([*_BASE, "training_mode=supervised", "supervised_augment=false"])
