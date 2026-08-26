@@ -15,9 +15,10 @@ Round cadence and stopping:
 * Only clients that actually trained this round enter the average (a client that exhausted with
   nothing admitted contributes nothing).
 
-Global health (the dependent variable) is logged once per round when a ``global_monitor`` is
-supplied — the aggregated model is measured on a *global* held-out set, distinct from any
-client's skewed local monitor.
+The round's loss (participants' ``mean_loss``, weighted by ``num_trained`` — the same weighting FedAvg
+uses to aggregate weights) is logged every round via ``run_logger``. Global health (the dependent
+variable) is logged once per round when a ``global_monitor`` is supplied — the aggregated model is
+measured on a *global* held-out set, distinct from any client's skewed local monitor.
 """
 
 from __future__ import annotations
@@ -129,6 +130,12 @@ class FederatedOrchestrator:
         """
         samples = sum(r.num_trained for r in results)
         participants = [r.client_id for r in results]
+        if self.run_logger is not None:
+            # Sample-weighted mean of the round's participants — the same weighting FedAvg uses
+            # to aggregate their weights, so the logged "loss" matches what the average model was
+            # actually trained towards this round.
+            round_loss = sum(r.mean_loss * r.num_trained for r in results if r.mean_loss is not None) / samples
+            self.run_logger.log_loss(round_index, era=-1, loss=round_loss)
         health: dict[str, float] | None = None
         if self.global_monitor is not None:
             # Measure the aggregated model on the global held-out set. The first client's model

@@ -91,7 +91,8 @@ def _build_client(config: DictConfig, shard: DataSource, client_id: int, out_dir
     optimizer = instantiate(config.optim, params=method.parameters())
     monitor = instantiate(config.monitor, eval_sets=stream.eval_sets)
     selection_filter = instantiate(config.filter)
-    run_logger = RunLogger(out_dir / f"client{client_id}_{config.run_log}", run_name=f"client{client_id}")
+    run_name = f"client{client_id}_{method.name}_{config.init.mode}"
+    run_logger = RunLogger(out_dir / f"client{client_id}_{config.run_log}", run_name=run_name)
     loop = instantiate(
         config.loop,
         stream=stream,
@@ -124,7 +125,8 @@ def main(config: DictConfig) -> None:
     # health series is not tied to any one client's skewed local held-out set.
     global_stream = _build_stream(config, source, seed=config.seed)
     global_monitor = instantiate(config.monitor, eval_sets=global_stream.eval_sets)
-    global_logger = RunLogger(out_dir / f"global_{config.run_log}", run_name="global")
+    global_run_name = f"global_{clients[0].method.name}_{config.init.mode}"
+    global_logger = RunLogger(out_dir / f"global_{config.run_log}", run_name=global_run_name)
 
     logger.info(
         f"federated run: {config.num_clients} clients, {config.partition.scheme} partition "
