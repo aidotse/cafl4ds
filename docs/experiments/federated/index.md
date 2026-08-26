@@ -25,7 +25,7 @@ single-process FedAvg simulation layered on the Phase-0 streaming loop:
 
 | ID | Sub-study | What it establishes | Status |
 | -- | -- | -- | -- |
-| F1 | [Federated harness parity](F1.md) | Confirms the FedAvg harness reproduces the centralized [P0.1](../phase0/P0.1.md) reference under a degenerate/IID partition, before any non-IID skew is introduced — the FL analogue of P0.1's "does the loop run end-to-end" check. | 🟡 `num_clients=1` passes exactly (loss + all health metrics but drift, both backbones); multi-client IID variant pending |
+| F1 | [Federated harness parity](F1.md) | Confirms the FedAvg harness reproduces the centralized [P0.1](../phase0/P0.1.md) reference under a degenerate/IID partition, before any non-IID skew is introduced — the FL analogue of P0.1's "does the loop run end-to-end" check. | ✅ **Complete** — exact reproduction at `num_clients=1`; multi-client FedAvg adapts sensibly under the IID control, both backbones |
 
 ## Open questions (not yet scoped into a sub-study)
 
