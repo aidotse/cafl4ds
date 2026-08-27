@@ -47,6 +47,11 @@ nav:
       - P0.3.7: experiments/latest-results/P0.3.7.md
       - P0.3.8: experiments/latest-results/P0.3.8.md
       - P0.3.9: experiments/latest-results/P0.3.9.md
+      - P0.4.0: experiments/latest-results/P0.4.0.md
+      - P0.4.1: experiments/latest-results/P0.4.1.md
+      - P0.5.0: experiments/latest-results/P0.5.0.md
+      - P0.5.1: experiments/latest-results/P0.5.1.md
+      - P0.5.2: experiments/latest-results/P0.5.2.md
   - Phase 0:
       - experiments/phase0/index.md
       - P0.1 Instrument (streaming loop): experiments/phase0/P0.1.md
@@ -65,9 +70,15 @@ nav:
       - P0.3.7 Positive control (forgetting gate - savings audit): experiments/phase0/P0.3.7.md
       - P0.3.8 Positive control (forgetting gate - hard-disjoint vehicle): experiments/phase0/P0.3.8.md
       - P0.3.9 Positive control (forgetting gate - well-depth de-confound): experiments/phase0/P0.3.9.md
+      - P0.4.0 Positive control (instability gate - LR-driven divergence): experiments/phase0/P0.4.0.md
+      - P0.4.1 Positive control (instability gate - data-driven surprise/shock): experiments/phase0/P0.4.1.md
+      - P0.5.0 Positive control (representation degradation - mask-ratio vehicle): experiments/phase0/P0.5.0.md
+      - P0.5.1 Positive control (representation degradation - over-powered-decoder lever): experiments/phase0/P0.5.1.md
+      - P0.5.2 Positive control (representation degradation - full-rank crater + MAE-native readers): experiments/phase0/P0.5.2.md
   - Audits:
       - P0.2 (collapse mode): experiments/audits/P0.2.md
       - P0.3 (forgetting mode): experiments/audits/P0.3.md
+      - P0.4 (instability mode): experiments/audits/P0.4.md
   - API Reference: reference.md
   - Tests: exported/pytest.html
   - Coverage: exported/coverage/index.html
