@@ -1,0 +1,385 @@
+{
+  "what": "burst_scale (noise-shock amplitude) severity dose-response at fixed lr_op=1.0, seeds {0,1,2} \u2014 the FULL seeded dose ladder (no-fire -> transient -> knife-edge -> runaway) for A4 (lead vs severity) and the transient-rung seed replication",
+  "burst_onset_step": 300,
+  "burst_window": [
+    300,
+    308
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "lr_sweep": [
+    1.0
+  ],
+  "columns": [
+    "burst_scale",
+    "regime",
+    "n_runaway/n_seeds",
+    "fire_by_seed + fire_min/median/max (cross-arm grad-norm ratio; gate fires >= 2.0x)",
+    "recovers_by_seed (transient iff recovers & no NaN)",
+    "lead_by_seed (None = transient, no NaN -> no lead) + lead_min/median/max over runaway seeds",
+    "first_nonfinite_by_seed"
+  ],
+  "rows": [
+    {
+      "burst_scale": 1,
+      "regime": "no-fire",
+      "n_runaway": 0,
+      "n_seeds": 3,
+      "fire_by_seed": {
+        "0": 1.512,
+        "1": 2.587,
+        "2": 0.854
+      },
+      "fire_min": 0.854,
+      "fire_median": 1.512,
+      "fire_max": 2.587,
+      "recovers_by_seed": {
+        "0": true,
+        "1": true,
+        "2": true
+      },
+      "lead_by_seed": {
+        "0": null,
+        "1": null,
+        "2": null
+      },
+      "lead_min": null,
+      "lead_median": null,
+      "lead_max": null,
+      "first_nonfinite_by_seed": {
+        "0": null,
+        "1": null,
+        "2": null
+      }
+    },
+    {
+      "burst_scale": 2,
+      "regime": "transient",
+      "n_runaway": 0,
+      "n_seeds": 3,
+      "fire_by_seed": {
+        "0": 18.241,
+        "1": 24.949,
+        "2": 10.857
+      },
+      "fire_min": 10.857,
+      "fire_median": 18.241,
+      "fire_max": 24.949,
+      "recovers_by_seed": {
+        "0": true,
+        "1": true,
+        "2": true
+      },
+      "lead_by_seed": {
+        "0": null,
+        "1": null,
+        "2": null
+      },
+      "lead_min": null,
+      "lead_median": null,
+      "lead_max": null,
+      "first_nonfinite_by_seed": {
+        "0": null,
+        "1": null,
+        "2": null
+      }
+    },
+    {
+      "burst_scale": 4,
+      "regime": "transient",
+      "n_runaway": 0,
+      "n_seeds": 3,
+      "fire_by_seed": {
+        "0": 78.102,
+        "1": 74.463,
+        "2": 33.883
+      },
+      "fire_min": 33.883,
+      "fire_median": 74.463,
+      "fire_max": 78.102,
+      "recovers_by_seed": {
+        "0": true,
+        "1": true,
+        "2": true
+      },
+      "lead_by_seed": {
+        "0": null,
+        "1": null,
+        "2": null
+      },
+      "lead_min": null,
+      "lead_median": null,
+      "lead_max": null,
+      "first_nonfinite_by_seed": {
+        "0": null,
+        "1": null,
+        "2": null
+      }
+    },
+    {
+      "burst_scale": 6,
+      "regime": "knife-edge",
+      "n_runaway": 1,
+      "n_seeds": 3,
+      "fire_by_seed": {
+        "0": 127.707,
+        "1": 188.586,
+        "2": 87.506
+      },
+      "fire_min": 87.506,
+      "fire_median": 127.707,
+      "fire_max": 188.586,
+      "recovers_by_seed": {
+        "0": true,
+        "1": false,
+        "2": true
+      },
+      "lead_by_seed": {
+        "0": null,
+        "1": 70,
+        "2": null
+      },
+      "lead_min": 70,
+      "lead_median": 70,
+      "lead_max": 70,
+      "first_nonfinite_by_seed": {
+        "0": null,
+        "1": 370,
+        "2": null
+      }
+    },
+    {
+      "burst_scale": 8,
+      "regime": "runaway",
+      "n_runaway": 3,
+      "n_seeds": 3,
+      "fire_by_seed": {
+        "0": 483.591,
+        "1": 1624.022,
+        "2": 592.424
+      },
+      "fire_min": 483.591,
+      "fire_median": 592.424,
+      "fire_max": 1624.022,
+      "recovers_by_seed": {
+        "0": false,
+        "1": false,
+        "2": false
+      },
+      "lead_by_seed": {
+        "0": 14,
+        "1": 10,
+        "2": 11
+      },
+      "lead_min": 10,
+      "lead_median": 11,
+      "lead_max": 14,
+      "first_nonfinite_by_seed": {
+        "0": 314,
+        "1": 310,
+        "2": 311
+      }
+    },
+    {
+      "burst_scale": 10,
+      "regime": "runaway",
+      "n_runaway": 3,
+      "n_seeds": 3,
+      "fire_by_seed": {
+        "0": 316246463131639.2,
+        "1": 265758349.217,
+        "2": 2797164.667
+      },
+      "fire_min": 2797164.667,
+      "fire_median": 265758349.217,
+      "fire_max": 316246463131639.2,
+      "recovers_by_seed": {
+        "0": false,
+        "1": false,
+        "2": false
+      },
+      "lead_by_seed": {
+        "0": 8,
+        "1": 7,
+        "2": 6
+      },
+      "lead_min": 6,
+      "lead_median": 7,
+      "lead_max": 8,
+      "first_nonfinite_by_seed": {
+        "0": 308,
+        "1": 307,
+        "2": 306
+      }
+    },
+    {
+      "burst_scale": 12,
+      "regime": "runaway",
+      "n_runaway": 3,
+      "n_seeds": 3,
+      "fire_by_seed": {
+        "0": 978460448.134,
+        "1": 57327813.727,
+        "2": 1546506531.063
+      },
+      "fire_min": 57327813.727,
+      "fire_median": 978460448.134,
+      "fire_max": 1546506531.063,
+      "recovers_by_seed": {
+        "0": false,
+        "1": false,
+        "2": false
+      },
+      "lead_by_seed": {
+        "0": 6,
+        "1": 6,
+        "2": 6
+      },
+      "lead_min": 6,
+      "lead_median": 6,
+      "lead_max": 6,
+      "first_nonfinite_by_seed": {
+        "0": 306,
+        "1": 306,
+        "2": 306
+      }
+    },
+    {
+      "burst_scale": 14,
+      "regime": "runaway",
+      "n_runaway": 3,
+      "n_seeds": 3,
+      "fire_by_seed": {
+        "0": 4.404835930292613e+19,
+        "1": 2.017273596458179e+16,
+        "2": 3.3392992399953715e+17
+      },
+      "fire_min": 2.017273596458179e+16,
+      "fire_median": 3.3392992399953715e+17,
+      "fire_max": 4.404835930292613e+19,
+      "recovers_by_seed": {
+        "0": false,
+        "1": false,
+        "2": false
+      },
+      "lead_by_seed": {
+        "0": 6,
+        "1": 6,
+        "2": 6
+      },
+      "lead_min": 6,
+      "lead_median": 6,
+      "lead_max": 6,
+      "first_nonfinite_by_seed": {
+        "0": 306,
+        "1": 306,
+        "2": 306
+      }
+    },
+    {
+      "burst_scale": 16,
+      "regime": "runaway",
+      "n_runaway": 3,
+      "n_seeds": 3,
+      "fire_by_seed": {
+        "0": 4955374004.36,
+        "1": 696253032.963,
+        "2": 3338013195.179
+      },
+      "fire_min": 696253032.963,
+      "fire_median": 3338013195.179,
+      "fire_max": 4955374004.36,
+      "recovers_by_seed": {
+        "0": false,
+        "1": false,
+        "2": false
+      },
+      "lead_by_seed": {
+        "0": 5,
+        "1": 5,
+        "2": 5
+      },
+      "lead_min": 5,
+      "lead_median": 5,
+      "lead_max": 5,
+      "first_nonfinite_by_seed": {
+        "0": 305,
+        "1": 305,
+        "2": 305
+      }
+    },
+    {
+      "burst_scale": 24,
+      "regime": "runaway",
+      "n_runaway": 3,
+      "n_seeds": 3,
+      "fire_by_seed": {
+        "0": 39951791.043,
+        "1": 18588285.928,
+        "2": 9422458.182
+      },
+      "fire_min": 9422458.182,
+      "fire_median": 18588285.928,
+      "fire_max": 39951791.043,
+      "recovers_by_seed": {
+        "0": false,
+        "1": false,
+        "2": false
+      },
+      "lead_by_seed": {
+        "0": 4,
+        "1": 4,
+        "2": 4
+      },
+      "lead_min": 4,
+      "lead_median": 4,
+      "lead_max": 4,
+      "first_nonfinite_by_seed": {
+        "0": 304,
+        "1": 304,
+        "2": 304
+      }
+    },
+    {
+      "burst_scale": 32,
+      "regime": "runaway",
+      "n_runaway": 3,
+      "n_seeds": 3,
+      "fire_by_seed": {
+        "0": 1007397328.726,
+        "1": 9.258323776289792e+16,
+        "2": 294231438.766
+      },
+      "fire_min": 294231438.766,
+      "fire_median": 1007397328.726,
+      "fire_max": 9.258323776289792e+16,
+      "recovers_by_seed": {
+        "0": false,
+        "1": false,
+        "2": false
+      },
+      "lead_by_seed": {
+        "0": 4,
+        "1": 5,
+        "2": 4
+      },
+      "lead_min": 4,
+      "lead_median": 4,
+      "lead_max": 5,
+      "first_nonfinite_by_seed": {
+        "0": 304,
+        "1": 305,
+        "2": 304
+      }
+    }
+  ],
+  "reads": [
+    "Sub-threshold rungs are seed-robust too: scale 1 sits at the grad-norm variance floor (fire ~0.85-2.6x, no genuine fire), scale 2 and 4 fire (fire ~11-25x and ~34-78x) but all 3 seeds RECOVER (transient) \u2014 the fire ratio climbs monotonically with amplitude and the transient band reproduces across seeds.",
+    "INVERSE lead/severity coupling is seed-stable across ~7 runaway rungs x 3 seeds (not n=2 on one seed): median lead 8->11, 10->7, 12->6, 14->6, 16->5, 24->4, 32->4 \u2014 monotone non-increasing, spread <=4 steps.",
+    "The lead FLOORS at ~4 steps (earliest NaN is step 304, 4 after burst onset 300) even at a 32x shock \u2014 it does NOT shrink to 0; the warning window has a hard floor set by the compounding steps needed to overflow.",
+    "scale 6 is the transient->runaway KNIFE-EDGE and is seed-fragile: 1/3 seeds runs away (lead 70, slow tail overflow @370), 2/3 recover \u2014 the operating-envelope threshold made concrete (lead longest + stochastic AT threshold, floored deep past it)."
+  ]
+}
