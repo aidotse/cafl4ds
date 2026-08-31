@@ -52,6 +52,10 @@ nav:
       - P0.5.0: experiments/latest-results/P0.5.0.md
       - P0.5.1: experiments/latest-results/P0.5.1.md
       - P0.5.2: experiments/latest-results/P0.5.2.md
+      - P0.5.3: experiments/latest-results/P0.5.3.md
+      - P0.6.0: experiments/latest-results/P0.6.0.md
+      - P0.6.1: experiments/latest-results/P0.6.1.md
+
   - Phase 0:
       - experiments/phase0/index.md
       - P0.1 Instrument (streaming loop): experiments/phase0/P0.1.md
@@ -75,10 +79,14 @@ nav:
       - P0.5.0 Positive control (representation degradation - mask-ratio vehicle): experiments/phase0/P0.5.0.md
       - P0.5.1 Positive control (representation degradation - over-powered-decoder lever): experiments/phase0/P0.5.1.md
       - P0.5.2 Positive control (representation degradation - full-rank crater + MAE-native readers): experiments/phase0/P0.5.2.md
+      - P0.5.3 Positive control (representation-health gate - the quality-vs-lever test): experiments/phase0/P0.5.3.md
+      - P0.6.0 Positive control (forgetting gate - the joint-embedding forgetting vehicle): experiments/phase0/P0.6.0.md
+      - P0.6.1 Positive control (forgetting gate - the *past-data-free* drift reader on JE): experiments/phase0/P0.6.1.md
   - Audits:
       - P0.2 (collapse mode): experiments/audits/P0.2.md
       - P0.3 (forgetting mode): experiments/audits/P0.3.md
       - P0.4 (instability mode): experiments/audits/P0.4.md
+      - P0.5 (representation degradation mode): experiments/audits/P0.5.md
   - API Reference: reference.md
   - Tests: exported/pytest.html
   - Coverage: exported/coverage/index.html
