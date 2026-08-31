@@ -64,21 +64,37 @@ This is a guide for how to add documentation on new studies or sub-studies. See 
 \`Explaining your work' below for how to communicate results. There are different levels of granularity at play (here:
 most concise to least concise):
 
-- `docs/experiments/phase<ID>/index.md` - summary details of what the *project phase* is about, plus a routing table to
-    the substudies. In this table: only the *motivation*, and an *executive, 1-2 line summary* of the substudy status:
-    keep brief.
+- `docs/experiments/phase<ID>/index.md` - the phase landing page: what the *project phase* is about, plus the routing
+    tables. Keep each of its three parts at an **at-a-glance** abstraction — the detail lives one level down, linked.
+    Here is an example for Phase0 (sections may change for other Phases):
 
-- `docs/experiments/latest-results/<substudy ID>.md` - a *concise* summary of the results / what was achieved in the
-    substudy. Avoid too many details (in particular: NO results numbers); this is a a brief take-away from the study.
+    - a **Studies** table (example: for Phase0, each study / row corresponds to failure modes). Its last column is a
+        *link* to that study's executive summary (next bullet) fronted by a one-line verdict; columns stay to a scannable
+        clause each.
+    - a **Sub-studies** table (rows = sub-studies). Keep the style uniform: the "What it establishes" cell opens with
+        `Motivation:`, and the Status cell follows `<marker> **<label>** (<finding>)` — marker ∈ ✅ / ✅\* / 🟡 / 🔲, label ∈
+        `Complete` / `Runs complete` / `Designed, awaiting runs`.
+    - an **Artifacts** section holding only the *general* conventions (per-harness `comparison.json` schema, the promotion
+        / slimming policy). The per-sub-study listings live in each detail doc, see below.
+
+- `docs/experiments/latest-results/<study ID>.md` (e.g. `P0.6.md`) - a study-wide **executive summary**, for a reader
+    who may not know the project and does not want to dig. Plain, transparent language (plainer than the index tables),
+    ≲ 100 lines, exactly three subsections: **The value proposition**, **Results**, **The one-line takeaway**. It sits
+    one level above the sub-study summaries and is the target of the Failure-Modes "Summary" link.
+
+- `docs/experiments/latest-results/<substudy ID>.md` (e.g. `P0.6.0.md`)- a *concise* summary of the results / what was
+    achieved in the particular substudy. Avoid too many details (in particular: NO results numbers); this is a a brief
+    take-away from the study.
 
 - `docs/experiments/phase<ID>/<substudy ID>.md` - a detailed, *but not overly verbose or repetetive* description of the
     sub study, including outputs, and key quantitative results. Includes (roughly) a brief section for the motivation,
-    the methodology and findings, any interesting insights, and how to run the experiments in the substudy. Do not
-    mention progress or status here, that goes in `docs/experiments/latest-results/<substudy ID>.md`.
+    the methodology and findings, any interesting insights, a dedicated `Artifacts` section (the per-sub-study artifact
+    listing: which runs back its numbers, and the slim schema each was promoted to), and how to run the experiments. Do
+    not mention progress or status here, that goes in `docs/experiments/latest-results/<substudy ID>.md`.
 
 When we say something like "update the docs", this means going through each of these levels for the relevant study /
 substudy and checking them for completeness and accuracy against the latest results. In addition, this implies verifying
-the 'Artifacts' and 'Handover to Phase ...' sections in the relevant `index.md` are complete and accurate as well.
+that the substudy's 'Handover to Phase ...' section in the relevant `index.md` are complete and accurate as well.
 
 ### Writing audits
 
