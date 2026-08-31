@@ -60,9 +60,9 @@ Runs behind a token-compression pipeline (RTK shell-hook + Headroom API proxy): 
 
 ## Documenting experiments
 
-You is a guide for how to add documentation on new studies or sub-studies. See notes above on `docs/experiments`. Use
-informative, but not terse language. There are different levels of granularity at play (here: most concise to least
-concise):
+This is a guide for how to add documentation on new studies or sub-studies. See notes above on `docs/experiments`. See
+\`Explaining your work' below for how to communicate results. There are different levels of granularity at play (here:
+most concise to least concise):
 
 - `docs/experiments/phase<ID>/index.md` - summary details of what the *project phase* is about, plus a routing table to
     the substudies. In this table: only the *motivation*, and an *executive, 1-2 line summary* of the substudy status:
@@ -75,6 +75,10 @@ concise):
     sub study, including outputs, and key quantitative results. Includes (roughly) a brief section for the motivation,
     the methodology and findings, any interesting insights, and how to run the experiments in the substudy. Do not
     mention progress or status here, that goes in `docs/experiments/latest-results/<substudy ID>.md`.
+
+When we say something like "update the docs", this means going through each of these levels for the relevant study /
+substudy and checking them for completeness and accuracy against the latest results. In addition, this implies verifying
+the 'Artifacts' and 'Handover to Phase ...' sections in the relevant `index.md` are complete and accurate as well.
 
 ### Writing audits
 
@@ -121,7 +125,7 @@ formula:
         a new substudy doc if the arc warrants one); the Conclusion carries only the verdict label, a one-line outcome,
         and a **pointer** to where it landed — never the seed tables or derivations themselves.
 
-## Explaining your work (in your replies to me)
+## Explaining your work
 
 When you explain reasoning, summarize a finding, or walk me through a concept in a reply — this is about your
 conversational prose, and documentation language, but not code (this keep its own rules) — write for a reader who wants

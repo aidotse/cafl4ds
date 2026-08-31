@@ -56,10 +56,24 @@ decoder_warmup_epochs: 0
 # on BOTH arms → the healthy control craters too, which is why this original D1 broke the two-sided gate).
 # Kept as an alias (true ⇒ decoder_warmup_epochs = epochs_a). Default false. Requires pretrained_encoder=true.
 freeze_encoder_phase_a: false
+# healthy_replay_mode: what the HEALTHY arm trains on in phase B (the PC arm is always B-only and forgets):
+#   * "a_only" — phase B = task A ONLY (the no-shift oracle; P0.6.0 primary). Task A is retained by
+#                construction, so the sole PC-vs-healthy variable is the phase-B distribution (A vs B) and
+#                both arms do a matched step count — no arbitrary rehearsal ratio, and the healthy arm never
+#                touches a far phase-B domain that could destabilise it. Does NOT test rehearsal-prevention.
+#   * "mixed"  — phase B = replay_a_mult×A ∪ B (rehearsal: learn B while replaying A → matched task-B
+#                exposure, the crater is the task-A loss replay prevents). DEFAULT, reproduces the P0.3 MAE
+#                forgetting runs (1:1 A∪B) bit-for-bit.
+healthy_replay_mode: mixed
+# replay_a_mult: rehearsal DOSE for healthy_replay_mode=mixed — copies of task A interleaved per copy of B
+# (1 = the P0.3 1:1 A∪B; 2,3,… oversample A to hold task A against a far phase-B shift → the P0.6.0 FYI
+# rehearsal-dose ablation). Ignored when healthy_replay_mode=a_only.
+replay_a_mult: 1
 # log_task_a_trajectory: record the task-A probe after EACH phase-A and phase-B epoch (task_a_traj_a /
 # task_a_traj_b on each arm record) to trace warming vs forgetting. RNG-neutral (eval-mode + sklearn probe),
 # so it does not perturb training numerics. Off by default (bulky; drop from promoted artifacts).
 log_task_a_trajectory: false
+current_stream_drift: false # P0.6.1/C3: also pin a past-data-free drift ref to a phase-B (current-stream) batch
 # recovery_steps: P0.3.5 recoverability guard. After phase B, re-learn task A for this many mini-batch
 # updates and log how fast the task-A probe returns (geometric checkpoints). Fast recovery ⇒ apparent
 # (recoverable) forgetting; slow ⇒ genuine catastrophic loss. 0 disables (the default; P0.3.4 path).
@@ -112,5 +126,6 @@ gate:
   bwt_quiet: 0.03 # healthy |BackwardTransfer| <= this (task A holds)
   min_forget_ratio: 2.0 # PC ForgettingMeasure >= this x healthy's (the replay-toggle contrast)
   recon_gap_min: 0.03 # REPORTED: PC held-out task-A recon retained >= this worse than replay
+  rankme_proj_hold_frac: 0.5 # P0.6.0/A1 (JE only): PC rankme_proj must stay >= this x its post-A value (not collapse)
 
 run_log: run_log.jsonl

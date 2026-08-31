@@ -32,15 +32,18 @@ from torch import nn
 _IMAGENET_MEAN = (0.485, 0.456, 0.406)
 _IMAGENET_STD = (0.229, 0.224, 0.225)
 _VIT_INPUT = 224  # the resolution vit_b_16 was trained at (patch 16 -> 14x14 tokens)
+_VIT_PATCH = 16  # vit_b_16 patch size (14x14 = 196 tokens over the 224 input)
 
 
 class TorchvisionViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is Any without torch stubs (mypy hook env)
     """A pretrained torchvision ViT-B/16 as a pooled-embedding backbone for the harness.
 
-    Exposes exactly the surface the forgetting harness reads: ``embed_dim`` and a grad-enabled
-    ``embed`` returning the class-token representation. The classification head is discarded
-    (replaced by identity) so ``embed`` yields the 768-d pre-head features; the whole backbone
-    is trainable, so a supervised phase B fine-tunes (and respecializes) it.
+    Exposes the surface the harness reads: ``embed_dim`` and a grad-enabled ``embed`` returning the
+    class-token representation, plus the ``patch_size`` / ``num_patches`` / ``in_chans`` token-grid
+    contract the SSL factory and MAE decoder size against (so a JE method — SimSiam / Barlow, the P0.6
+    vehicle — can be built on this pretrained backbone). The classification head is discarded (replaced
+    by identity) so ``embed`` yields the 768-d pre-head features; the whole backbone is trainable, so a
+    phase B fine-tunes (and respecializes) it.
     """
 
     def __init__(self, state_dict_path: str | None = None, weights: str | None = None) -> None:
@@ -67,6 +70,13 @@ class TorchvisionViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is An
             net = tvm.vit_b_16(weights=weights)
             logger.info(f"built ViT-B/16 with torchvision weights={weights}")
         self.embed_dim: int = int(net.hidden_dim)  # 768
+        # The 224/16 token-grid contract, matching the cafl4ds ViT's own attributes so the SSL factory
+        # (`_encoder_img_size` → the SimSiam/Barlow augmentation crop) and the MAE decoder can size
+        # against a torchvision backbone too. Inputs at any size are resized to 224 in `_prep`, so the
+        # grid is fixed (P0.6 reads the JE projector off this backbone).
+        self.patch_size: int = _VIT_PATCH
+        self.in_chans: int = 3
+        self.num_patches: int = (_VIT_INPUT // _VIT_PATCH) ** 2  # 196
         net.heads = nn.Identity()  # embed() returns the pooled class-token features
         self.vit = net
         self.register_buffer("_mean", torch.tensor(_IMAGENET_MEAN).view(1, 3, 1, 1))

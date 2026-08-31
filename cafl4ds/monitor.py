@@ -58,6 +58,7 @@ class HealthMonitor:
         run_clusterability: bool = False,
         run_attn_distance: bool = False,
         run_alignment_strong: bool = False,
+        drift_surfaces: bool = False,
     ) -> None:
         """Configure the monitor.
 
@@ -78,6 +79,9 @@ class HealthMonitor:
             run_alignment_strong: Whether to compute the P0.5.2 alignment-under-stronger-aug reader
                 (needs a strong-augment positive pair via ``make_views_strong``; auto-skipped
                 otherwise).
+            drift_surfaces: Whether to track drift at **every** embedding surface (backbone +
+                ``_proj`` for a joint-embedding method), not just the backbone (P0.6.1). Default
+                ``False`` keeps the backbone-only ``cka_drift`` / ``cosine_drift`` behaviour.
         """
         self.eval_sets = eval_sets
         self.knn_k = knn_k
@@ -88,7 +92,8 @@ class HealthMonitor:
         self.run_clusterability = run_clusterability
         self.run_attn_distance = run_attn_distance
         self.run_alignment_strong = run_alignment_strong
-        self._z_ref0: torch.Tensor | None = None
+        self.drift_surfaces = drift_surfaces
+        self._z_ref0: dict[str, torch.Tensor] = {}
         self._views: tuple[torch.Tensor, torch.Tensor] | None = None
         self._views_cached = False
         self._views_strong: tuple[torch.Tensor, torch.Tensor] | None = None
@@ -112,9 +117,12 @@ class HealthMonitor:
             metrics: dict[str, float] = {"step": float(step)}
             for name, z in surfaces.items():
                 metrics.update(self._geometry(name, z))
-            # Drift is tracked on the backbone surface only — the representation under study,
-            # matching the P0.2.1 RankMe calibration reference.
-            metrics.update(self._drift(surfaces["backbone"]))
+            # Drift is tracked on the backbone surface (the representation under study, matching the
+            # P0.2.1 RankMe calibration reference); with ``drift_surfaces`` it is *also* tracked at
+            # every other surface (the projector, ``_proj``) for the P0.6.1 current-stream reader.
+            drift_on = surfaces if self.drift_surfaces else {"backbone": surfaces["backbone"]}
+            for name, z in drift_on.items():
+                metrics.update(self._drift(name, z))
             if self.run_alignment:
                 metrics.update(self._alignment(method))
             if self.run_clusterability:
@@ -287,22 +295,26 @@ class HealthMonitor:
             self._views_strong_cached = True
         return self._views_strong
 
-    def _drift(self, z_query: torch.Tensor) -> dict[str, float]:
-        """Compute drift of the fixed probe set vs. its first-checkpoint embeddings.
+    def _drift(self, name: str, z_query: torch.Tensor) -> dict[str, float]:
+        """Compute drift of the fixed probe set at surface ``name`` vs. its first-checkpoint embeddings.
 
-        The first call stores the reference embeddings and reports zero drift; later calls
-        compare against that stored reference.
+        The first call for a surface stores its reference embeddings and reports zero drift; later
+        calls compare against that stored reference. The backbone keys are unsuffixed
+        (``cka_drift`` / ``cosine_drift``); other surfaces carry a ``_<name>`` suffix (``_proj``).
 
         Args:
-            z_query: Current embeddings of the fixed probe-query set.
+            name: Surface name (``"backbone"``, ``"proj"``, …).
+            z_query: Current embeddings of the fixed probe-query set at that surface.
 
         Returns:
-            ``{"cka_drift": ..., "cosine_drift": ...}``.
+            ``{"cka_drift"+suffix: ..., "cosine_drift"+suffix: ...}``.
         """
-        if self._z_ref0 is None:
-            self._z_ref0 = z_query.clone()
-            return {"cka_drift": 0.0, "cosine_drift": 0.0}
+        s = _surface_suffix(name)
+        ref = self._z_ref0.get(name)
+        if ref is None:
+            self._z_ref0[name] = z_query.clone()
+            return {f"cka_drift{s}": 0.0, f"cosine_drift{s}": 0.0}
         return {
-            "cka_drift": measurements.cka_drift(self._z_ref0, z_query),
-            "cosine_drift": measurements.cosine_drift(self._z_ref0, z_query),
+            f"cka_drift{s}": measurements.cka_drift(ref, z_query),
+            f"cosine_drift{s}": measurements.cosine_drift(ref, z_query),
         }
