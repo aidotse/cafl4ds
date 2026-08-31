@@ -5,6 +5,17 @@ All notable changes to this project are documented in this file.
 This file is managed by [Commitizen](https://commitizen-tools.github.io/commitizen/) and is updated automatically on
 each `poe bump` (driven by [Conventional Commits](https://www.conventionalcommits.org/)). Do not edit it by hand.
 
+## v0.22.0 (2026-08-31)
+
+### Feat
+
+- P0.6 review
+- P0.6.{0,1} done, pre-audit
+
+### Fix
+
+- docs merge
+
 ## v0.21.0 (2026-08-28)
 
 ### Feat
