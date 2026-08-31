@@ -68,6 +68,34 @@ _BASE = [
 ]
 
 
+# SimSiam (joint-embedding) variant of the base: the P0.6 vehicle, which exposes a projector surface
+# (so the current-stream drift reader can read ``_proj`` too). Drops the MAE-decoder overrides and
+# scales the projector/predictor heads down for speed.
+_SIMSIAM_BASE = [
+    "data=synthetic",
+    "data.per_class=16",
+    "img_size=16",
+    "encoder.embed_dim=32",
+    "encoder.depth=1",
+    "encoder.num_heads=2",
+    "ssl=simsiam",
+    "ssl.proj_hidden=32",
+    "ssl.proj_dim=16",
+    "ssl.pred_hidden=16",
+    "epochs_a=2",
+    "epochs_b=2",
+    "batch_size=8",
+    "seed=0",
+    "task_a_classes=[0,1]",
+    "task_b_classes=[2,3]",
+    "support_per_class=4",
+    "query_per_class=4",
+    "probe=knn",
+    "knn_k=3",
+    "recon_masks=2",
+]
+
+
 def _load_harness() -> ModuleType:
     """Import ``scripts/positive_control_forgetting.py`` as a module (it is a script, not a package)."""
     path = _REPO_ROOT / "scripts" / "positive_control_forgetting.py"
@@ -130,6 +158,34 @@ def test_gate_structure_and_recon_gap_sign(mae_arms: dict[str, Any]) -> None:
     assert gate["reported"]["recon_forget_gap"] == pytest.approx(expected_gap, abs=1e-9)
 
 
+def _synth_arm(bwt: float) -> dict[str, Any]:
+    """A minimal arm record carrying just the fields ``_evaluate_forgetting_gate`` reads."""
+    return {
+        "task_a_learned": 0.5,
+        "backward_transfer": bwt,
+        "forgetting_measure": -bwt,  # FM = −BWT
+        "cka_drift": 0.5,
+        "cosine_drift": 0.3,
+        "recon_a_rise": 0.0,
+    }
+
+
+@pytest.mark.parametrize(
+    ("h_bwt", "holds"),
+    [(-0.20, False), (-0.05, False), (-0.02, True), (0.0, True), (0.05, True), (0.20, True)],
+)
+def test_healthy_holds_is_one_sided(harness: ModuleType, h_bwt: float, holds: bool) -> None:
+    """``healthy_holds`` flags forgetting only (BWT < −bwt_quiet); an *improving* healthy arm still holds.
+
+    Regression for the P0.6.0 A-only vehicle, where phase B = task A: a shallow-well seed can *over-improve*
+    task A (BWT up to +0.05), which a symmetric ``|BWT| ≤ bwt_quiet`` would spuriously fail. The check is
+    one-sided (``bwt_quiet`` default 0.03), so only a genuine crater trips it.
+    """
+    config = _compose(_BASE)
+    gate = harness._evaluate_forgetting_gate(config, _synth_arm(-0.10), _synth_arm(h_bwt))
+    assert gate["checks"]["healthy_holds"] is holds
+
+
 def test_phase_b_grad_norm_is_captured(mae_arms: dict[str, Any]) -> None:
     """The pre-clip phase-B grad norm is captured (the P0.4 divergence instrument, cross-mode specificity, audit C3)."""
     for arm in (mae_arms["pc"], mae_arms["healthy"]):
@@ -148,6 +204,38 @@ def test_supervised_vehicle_runs_with_paired_seed(harness: ModuleType) -> None:
     assert pc["backward_transfer"] is not None and healthy["backward_transfer"] is not None
     # The MAE-native recon readouts do not apply to the supervised vehicle → reported as NaN.
     assert math.isnan(pc["recon_a_rise"]) and math.isnan(pc["recon_a_after_a"])
+
+
+def test_current_stream_drift_is_past_data_free_and_two_sided(harness: ModuleType) -> None:
+    """P0.6.1/C3: ``current_stream_drift`` adds a past-data-free drift readout, reported two-sided.
+
+    Enabling the flag pins a *second* drift reference to a phase-B (current-stream) batch — not the
+    task-A canary — and records it at both surfaces (backbone + ``_proj`` for the JE vehicle). The
+    gate then reports the PC-vs-healthy separation on that shared reference. This is a wiring guard
+    (toy SimSiam need not fire): the ``cs_drift`` block is present and finite on both arms, and the
+    gate carries the two-sided ``cs_*_separates`` reads. Off by default, the block is absent.
+    """
+    config = _compose([*_SIMSIAM_BASE, "current_stream_drift=true"])
+    split = harness._task_split(config)
+    healthy, _ = harness._run_arm(config, split, replay=True, run_name="simsiam_healthy")
+    pc, _ = harness._run_arm(config, split, replay=False, run_name="simsiam_pc")
+    # Each arm carries the current-stream drift block at both surfaces, all finite (proj present for JE).
+    for arm in (pc, healthy):
+        cs = arm["cs_drift"]
+        for key in ("cka_drift", "cosine_drift", "cka_drift_proj", "cosine_drift_proj"):
+            assert cs[key] is not None and math.isfinite(cs[key]), f"cs_drift[{key}] missing/non-finite"
+    # The gate reports the two-sided separation on the shared phase-B reference, at both surfaces.
+    r = harness._evaluate_forgetting_gate(config, pc, healthy)["reported"]
+    for key in ("cs_cka_drift_separates", "cs_cka_drift_proj_separates", "cs_cosine_drift_separates"):
+        assert isinstance(r[key], bool)
+    assert r["cs_cka_drift_pc"] == pytest.approx(pc["cs_drift"]["cka_drift"])
+    # Off by default: no current-stream block, and the gate does not report it.
+    off_config = _compose(_SIMSIAM_BASE)
+    off_split = harness._task_split(off_config)
+    off_pc, _ = harness._run_arm(off_config, off_split, replay=False, run_name="simsiam_off")
+    assert "cs_drift" not in off_pc
+    off_gate = harness._evaluate_forgetting_gate(off_config, off_pc, off_pc)
+    assert "cs_cka_drift_separates" not in off_gate["reported"]
 
 
 def test_from_scratch_guard_rejects_a_checkpoint_encoder(harness: ModuleType) -> None:

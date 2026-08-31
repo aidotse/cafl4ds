@@ -107,6 +107,40 @@ def test_joint_embedding_reports_both_surfaces_and_alignment() -> None:
     assert all(isinstance(v, float) and v == v for v in metrics.values())  # all finite
 
 
+def test_drift_surfaces_adds_projector_drift() -> None:
+    """P0.6.1: ``drift_surfaces`` tracks drift at the projector too, keeping the backbone keys.
+
+    By default drift is backbone-only (unsuffixed ``cka_drift`` / ``cosine_drift``). With
+    ``drift_surfaces=True`` a joint-embedding method additionally reports ``cka_drift_proj`` /
+    ``cosine_drift_proj`` — the past-data-free reader's second surface — and the backbone keys are
+    unchanged. Both are zero at the first checkpoint (no reference yet).
+    """
+    torch.manual_seed(0)
+    encoder = TinyViTEncoder(img_size=16, patch_size=8, embed_dim=32, depth=2, num_heads=2)
+    method = build_simsiam(encoder, proj_hidden=64, proj_dim=32, pred_hidden=32)
+    stream = EraStream(
+        SyntheticSource(num_classes=3, per_class=40, img_size=16),
+        support_per_class=8,
+        query_per_class=8,
+        era_eval_per_class=5,
+    )
+    monitor = HealthMonitor(stream.eval_sets, knn_k=5, run_knn=False, run_linear=False, drift_surfaces=True)
+    first = monitor.measure(method, step=0)
+    assert {"cka_drift", "cosine_drift", "cka_drift_proj", "cosine_drift_proj"} <= set(first)
+    assert first["cka_drift"] == 0.0 and first["cka_drift_proj"] == 0.0  # both surfaces zero at t0
+
+    opt = torch.optim.AdamW(method.parameters(), lr=1e-2)
+    x = SyntheticSource(num_classes=3, per_class=8, img_size=16).load()[0]
+    for _ in range(10):
+        opt.zero_grad()
+        loss = method.training_step(x)
+        loss.backward()
+        opt.step()
+
+    later = monitor.measure(method, step=10)
+    assert later["cosine_drift"] > 0.0 and later["cosine_drift_proj"] > 0.0  # both surfaces move
+
+
 def test_alignment_view_pair_is_fixed_across_checkpoints() -> None:
     """Alignment view across checkpoints.
 

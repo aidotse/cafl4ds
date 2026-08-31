@@ -176,6 +176,39 @@ def _recon_loss(config: DictConfig, method: MAE, imgs: torch.Tensor, device: tor
         method.train(was)
 
 
+def _projector_readers(health_a: dict[str, float], health_b: dict[str, float]) -> dict[str, float | None]:
+    """P0.6.0/A1: the joint-embedding projector-surface label-free readers, post-A vs post-B.
+
+    Read on the task-A canary, so a rise in ``alignment_proj`` — task-A positive pairs drifting apart at
+    the projector — is a *label-free* forgetting signal, while ``rankme_proj`` is the collapse-specificity
+    precondition (it must stay high; a crater there is collapse, the P0.2 mode, not forgetting). Each
+    reader is reported as its absolute value at both checkpoints plus the post-A → post-B ``rise`` (delta);
+    a value is ``None`` where the surface is absent (a non-JE method exposes no ``_proj`` surface).
+
+    Args:
+        health_a: The post-A :meth:`HealthMonitor.measure` dict (checkpoint 0).
+        health_b: The post-B :meth:`HealthMonitor.measure` dict (checkpoint 1).
+
+    Returns:
+        ``{align_*, uniformity_*, rankme_*}`` — the projector readers behind the A1 verdict.
+    """
+
+    def rise(key: str) -> float | None:
+        a, b = health_a.get(key), health_b.get(key)
+        return None if a is None or b is None else b - a
+
+    return {
+        "align_after_a": health_a.get("alignment_proj"),
+        "align_after_b": health_b.get("alignment_proj"),
+        "align_rise": rise("alignment_proj"),
+        "uniformity_after_a": health_a.get("uniformity_proj"),
+        "uniformity_after_b": health_b.get("uniformity_proj"),
+        "uniformity_rise": rise("uniformity_proj"),
+        "rankme_after_a": health_a.get("rankme_proj"),
+        "rankme_after_b": health_b.get("rankme_proj"),
+    }
+
+
 def _train(
     method: MAE,
     batches: list[torch.Tensor],
@@ -405,8 +438,39 @@ def _train_with_schedule(
     return loss, traj
 
 
+def _current_stream_monitor(config: DictConfig, split: dict[str, Any]) -> HealthMonitor | None:
+    """P0.6.1/C3: build the *past-data-free* current-stream drift monitor (or ``None`` when off).
+
+    Where the canary monitor pins its drift reference to a RETAINED task-A batch (P0.6.0/A1 —
+    trustworthy but canary-bound), this monitor pins it to a **current-stream** (phase-B) batch —
+    ``split["B"]["query"]``, snapshotted at post-A (the A→B boundary). It stores only a fixed vector
+    set (no task-A data), so it is the one reader a genuinely transient stream can run. Both arms
+    reference the SAME phase-B batch, so PC-vs-healthy drift on it isolates the respecialisation that
+    *causes* forgetting (the PC arm trains on this distribution and moves; the a-only healthy arm never
+    does). Drift is read at every surface (backbone + the quality-tied ``_proj``) via ``drift_surfaces``.
+
+    Args:
+        config: The composed config (``current_stream_drift`` gates this on).
+        split: The task split from :func:`_task_split` (its task-B held-out set is the reference).
+
+    Returns:
+        The current-stream :class:`HealthMonitor`, or ``None`` when ``current_stream_drift`` is off.
+    """
+    if not bool(config.get("current_stream_drift", False)):
+        return None
+    cs_eval = EvalSets(probe_support=split["B"]["support"], probe_query=split["B"]["query"])
+    return HealthMonitor(
+        eval_sets=cs_eval,
+        run_knn=False,
+        run_linear=False,
+        run_alignment=False,
+        knn_k=config.knn_k,
+        drift_surfaces=True,
+    )
+
+
 def _run_arm(config: DictConfig, split: dict[str, Any], *, replay: bool, run_name: str) -> tuple[dict[str, Any], MAE]:
-    """Run one two-phase arm (shared phase A; phase B = B-only, or A∪B if ``replay``).
+    """Run one two-phase arm (shared phase A; phase B = B-only for PC, else the healthy composition).
 
     The global seed is reset here so both arms start from a bit-identical encoder and train an
     identical phase A — the ``replay`` toggle in phase B is the only variable. Records the task
@@ -415,7 +479,8 @@ def _run_arm(config: DictConfig, split: dict[str, Any], *, replay: bool, run_nam
     Args:
         config: The composed config.
         split: The task split from :func:`_task_split`.
-        replay: Phase-B replay toggle — ``False`` = PC (B-only, forgets), ``True`` = healthy.
+        replay: Arm toggle — ``False`` = PC (phase B = B-only, forgets), ``True`` = healthy (phase B per
+            ``healthy_replay_mode``: ``a_only`` no-shift oracle, or ``mixed`` rehearsal at ``replay_a_mult``).
         run_name: Label recorded on the returned record.
 
     Returns:
@@ -461,13 +526,22 @@ def _run_arm(config: DictConfig, split: dict[str, Any], *, replay: bool, run_nam
         apply_encoder_init(method.encoder, "from_scratch")
     method.to(device)
     optimizer = instantiate(config.optim, params=method.parameters())
+    # A joint-embedding (JE) method (SimSiam / Barlow — the P0.6 vehicle) exposes a `proj` surface and a
+    # positive pair, so it carries the projector-surface label-free readers (`alignment_proj` /
+    # `uniformity_proj` / `rankme_proj`) MAE cannot. This flag routes the two vehicles: MAE reads its
+    # recon gap, a JE method reads its projector; the shared BWT/FM probe path is identical for both.
+    is_mae = isinstance(method, MAE)
 
-    # Drift monitor: task-A query is the fixed reference; the post-A embedding is checkpoint 0,
-    # so the post-B reading is the movement induced by phase B alone.
-    drift_eval = EvalSets(probe_support=split["A"]["support"], probe_query=split["A"]["query"])
+    # Health monitor for the label-free readers. The query set is the task-A CANARY (P0.6.0/A1): reading
+    # the P0.2-calibrated projector geometry on RETAINED task-A data turns the collapse suite into a
+    # label-free FORGETTING reader (task-A structure lost ⇒ its positive pairs drift apart at the
+    # projector). Drift is referenced to checkpoint 0 (post-A), so the post-B read is phase-B movement
+    # alone. Alignment runs only for a JE method (MAE has no positive-pair projector surface).
+    canary_eval = EvalSets(probe_support=split["A"]["support"], probe_query=split["A"]["query"])
     monitor = HealthMonitor(
-        eval_sets=drift_eval, run_knn=False, run_linear=False, run_alignment=False, knn_k=config.knn_k
+        eval_sets=canary_eval, run_knn=False, run_linear=False, run_alignment=not is_mae, knn_k=config.knn_k
     )
+    cs_monitor = _current_stream_monitor(config, split)  # P0.6.1/C3: past-data-free phase-B drift ref (or None)
 
     chance = 1.0 / len(config.task_a_classes)
     traj_a: list[float] = []  # per-epoch task-A probe across phase A (only when log_task_a_trajectory)
@@ -495,10 +569,27 @@ def _run_arm(config: DictConfig, split: dict[str, Any], *, replay: bool, run_nam
     # already-strong probe — so gate the well against chance, not the pretrained transfer probe (which
     # would make the headroom structurally negative). Matches the supervised P0.3.4 convention.
     learn_floor = chance if keep_weights else a_init
-    recon_a_after_a = _recon_loss(config, method, split["A"]["query"].images, device)  # MAE-native, post-A
-    monitor.measure(method, 0)  # pin the drift reference to the post-A representation
+    recon_a_after_a = _recon_loss(config, method, split["A"]["query"].images, device) if is_mae else float("nan")
+    health_a = monitor.measure(method, 0)  # pin the drift reference + read the post-A canary geometry
+    if cs_monitor is not None:  # P0.6.1: pin the past-data-free current-stream (phase-B) drift reference
+        cs_monitor.measure(method, 0)
 
-    b_batches = split["A"]["batches"] + split["B"]["batches"] if replay else split["B"]["batches"]
+    # Healthy-arm phase-B composition (the PC arm, `replay=False`, is always B-only and forgets). Two modes:
+    #   * "a_only"  (P0.6.0 primary): phase B = task A ONLY — the no-shift oracle. Task A is retained
+    #     because the fine-tune distribution never changes, so the sole PC-vs-healthy variable is the
+    #     phase-B distribution (A vs B) and both arms do a MATCHED step count (|A| ≈ |B| batches) — no
+    #     arbitrary rehearsal ratio, and the healthy arm never touches a far phase-B domain that could
+    #     destabilise it. What it does NOT test is rehearsal-preventability (healthy never learns B).
+    #   * "mixed"   (rehearsal; P0.3 default): phase B = `replay_a_mult`×A ∪ B — the encoder learns B
+    #     while replaying A, so the crater is the task-A loss replay would prevent (matched task-B
+    #     exposure). `replay_a_mult` sweeps the rehearsal dose (1 = the P0.3 1:1 A∪B) and is the default
+    #     so the MAE forgetting runs reproduce bit-for-bit.
+    if not replay:  # PC: forgets on B-only
+        b_batches = split["B"]["batches"]
+    elif str(config.get("healthy_replay_mode", "mixed")) == "a_only":  # healthy: no-shift oracle
+        b_batches = split["A"]["batches"]
+    else:  # healthy: rehearsal (mixed A∪B at the given dose)
+        b_batches = int(config.get("replay_a_mult", 1)) * split["A"]["batches"] + split["B"]["batches"]
     # Phase B: encoder always trainable; probe task A after each epoch (when logging) to trace warming vs forgetting.
     # Read the P0.4 grad-norm instrument off phase B (the crater) for the cross-mode specificity check.
     grad_stats_b: dict[str, Any] = {"max_grad_norm": 0.0, "all_finite": True}
@@ -514,9 +605,12 @@ def _run_arm(config: DictConfig, split: dict[str, Any], *, replay: bool, run_nam
     )
     r10 = _probe(config, method, split["A"])  # R[1][0]: task A after phase B (craters if forgotten)
     r11 = _probe(config, method, split["B"])  # R[1][1]: task B right after learning it
-    recon_a_after_b = _recon_loss(config, method, split["A"]["query"].images, device)  # MAE-native, post-B
-    recon_b_after_b = _recon_loss(config, method, split["B"]["query"].images, device)
-    drift = monitor.measure(method, 1)
+    recon_a_after_b = _recon_loss(config, method, split["A"]["query"].images, device) if is_mae else float("nan")
+    recon_b_after_b = _recon_loss(config, method, split["B"]["query"].images, device) if is_mae else float("nan")
+    health_b = monitor.measure(method, 1)  # post-B canary geometry + phase-B drift
+    drift = health_b  # the record + log below read cka_drift / cosine_drift off this
+    # P0.6.1: the past-data-free drift, referenced to the post-A current-stream (phase-B) snapshot.
+    cs_drift = cs_monitor.measure(method, 1) if cs_monitor is not None else None
 
     matrix = {0: {0: r00}, 1: {0: r10, 1: r11}}
     record = {
@@ -540,6 +634,15 @@ def _run_arm(config: DictConfig, split: dict[str, Any], *, replay: bool, run_nam
         "phase_b_max_grad_norm": grad_stats_b["max_grad_norm"],  # P0.4 instrument off phase B (cross-mode specificity)
         "phase_b_grad_finite": grad_stats_b["all_finite"],
     }
+    if not is_mae:  # P0.6.0/A1: the JE projector-surface label-free readers, read on the task-A canary
+        record["proj"] = _projector_readers(health_a, health_b)
+    if cs_drift is not None:  # P0.6.1/C3: past-data-free current-stream drift (backbone + projector)
+        record["cs_drift"] = {
+            "cka_drift": cs_drift["cka_drift"],
+            "cosine_drift": cs_drift["cosine_drift"],
+            "cka_drift_proj": cs_drift.get("cka_drift_proj"),
+            "cosine_drift_proj": cs_drift.get("cosine_drift_proj"),
+        }
     logger.info(
         f"arm '{run_name}' (replay={replay}): taskA init={a_init:.3f} -> afterA={r00:.3f} -> afterB={r10:.3f} "
         f"| taskB afterB={r11:.3f} | BWT={record['backward_transfer']:+.4f} FM={record['forgetting_measure']:+.4f} "
@@ -770,13 +873,88 @@ def _savings_probe(
     return {"r00": r00, "steps": steps, "savings_fraction": savings, "summary": summary, "curves": curves}
 
 
+def _projector_gate(config: DictConfig, pc: dict[str, Any], healthy: dict[str, Any]) -> dict[str, Any]:
+    """P0.6.0/A1 reporting: is a JE projector label-free reader two-sided against the BWT crater?
+
+    The A1 deliverable, **reported not hard-gated** (thresholds settle after the runs, mirroring how
+    drift / the recon gap are reported). ``alignment_proj`` rises when task-A positive pairs drift apart
+    at the projector, so the forgetting signal is the PC arm's rise *exceeding* the replay-protected
+    healthy arm's — two-sided on the replay toggle. ``rankme_proj`` is the collapse-specificity
+    **precondition**: it must *hold* (not crater) on the PC arm, else the projector move is collapse (the
+    P0.2 mode), not forgetting, and the run is out of scope for a forgetting verdict.
+
+    Args:
+        config: The composed config (``gate.rankme_proj_hold_frac`` sets the not-collapsed bar).
+        pc: The PC arm's ``proj`` reader block.
+        healthy: The healthy (replay) arm's ``proj`` reader block.
+
+    Returns:
+        A flat dict of the two-sided projector reads + the ``rankme_proj`` precondition boolean.
+    """
+    frac = float(config.gate.get("rankme_proj_hold_frac", 0.5))
+    pc_r0, pc_r1 = pc.get("rankme_after_a"), pc.get("rankme_after_b")
+    rankme_holds = pc_r0 is not None and pc_r1 is not None and pc_r0 > 0 and pc_r1 >= frac * pc_r0
+
+    def separates(reader: str) -> bool | None:
+        p, h = pc.get(f"{reader}_rise"), healthy.get(f"{reader}_rise")
+        return None if p is None or h is None else p > h
+
+    return {
+        "proj_align_pc_rise": pc.get("align_rise"),
+        "proj_align_healthy_rise": healthy.get("align_rise"),
+        "proj_align_separates": separates("align"),  # PC task-A pairs drift apart more than replay?
+        "proj_uniformity_pc_rise": pc.get("uniformity_rise"),
+        "proj_uniformity_healthy_rise": healthy.get("uniformity_rise"),
+        "proj_uniformity_separates": separates("uniformity"),
+        "proj_pc_rankme_after_a": pc_r0,
+        "proj_pc_rankme_after_b": pc_r1,
+        "proj_pc_rankme_holds": rankme_holds,  # collapse-specificity precondition (must be True)
+    }
+
+
+def _current_stream_drift_report(pc: dict[str, Any], healthy: dict[str, Any]) -> dict[str, Any]:
+    """P0.6.1/C3 reporting: is the *past-data-free* current-stream drift two-sided against the crater?
+
+    The deliverable of P0.6.1, **reported not hard-gated** (thresholds settle after the runs, like the
+    other label-free reads). Both arms are pinned to the SAME post-A phase-B snapshot, so a forgetting-
+    specific signal is the PC arm (free to respecialise onto phase B) drifting *materially more* than
+    the healthy arm (which never trains phase B) on that shared reference. Reported at both surfaces —
+    the backbone and the quality-tied projector (``_proj``). A separation says drift carries a
+    forgetting-specific signal *past-data-free*; drift alike across arms is the pre-registered null
+    (drift reads plasticity indiscriminately). ``rankme_proj`` collapse-specificity is the projector
+    gate's job (a JE arm always carries it), so it is not re-checked here.
+
+    Args:
+        pc: The PC (B-only) arm's ``cs_drift`` block.
+        healthy: The healthy arm's ``cs_drift`` block.
+
+    Returns:
+        A flat dict of the two-sided current-stream drift reads at both surfaces.
+    """
+    p, h = pc["cs_drift"], healthy["cs_drift"]
+
+    def separates(key: str) -> bool | None:
+        pv, hv = p.get(key), h.get(key)
+        return None if pv is None or hv is None else pv > hv
+
+    out: dict[str, Any] = {}
+    for metric in ("cka_drift", "cosine_drift"):
+        for surf in ("", "_proj"):
+            key = f"{metric}{surf}"
+            out[f"cs_{key}_pc"] = p.get(key)
+            out[f"cs_{key}_healthy"] = h.get(key)
+            out[f"cs_{key}_separates"] = separates(key)  # PC drifts more than the replay arm?
+    return out
+
+
 def _evaluate_forgetting_gate(config: DictConfig, pc: dict[str, Any], healthy: dict[str, Any]) -> dict[str, Any]:
     """Two-sided forgetting gate: the PC must forget *for the right reason*, healthy must hold.
 
     The gate rests on the **transfer-probe** forgetting metrics, which P0.3.0 found to be the
     reliable signal on a distinct-task split. It **passes** iff phase A genuinely learned task A
     (so there is something to forget: task-A gain ≥ ``learn_min``), task A then craters in the PC
-    arm (BWT ≤ −``bwt_fire``, FM ≥ ``fm_fire``), the healthy arm **holds** (|BWT| ≤ ``bwt_quiet``),
+    arm (BWT ≤ −``bwt_fire``, FM ≥ ``fm_fire``), the healthy arm **holds** — does not forget, i.e.
+    BWT ≥ −``bwt_quiet`` (one-sided: improving task A is not a failure) —
     and the PC forgets at least ``min_forget_ratio``× the healthy arm's forgetting (``contrast`` —
     so the verdict rests on the *difference* the replay toggle makes, not an absolute bar alone).
 
@@ -812,10 +990,15 @@ def _evaluate_forgetting_gate(config: DictConfig, pc: dict[str, Any], healthy: d
         "pc_learned_A": pc["task_a_learned"] >= g.learn_min,
         "pc_bwt_fires": pc_bwt is not None and pc_bwt <= -g.bwt_fire,
         "pc_fm_fires": pc_fm is not None and pc_fm >= g.fm_fire,
-        "healthy_holds": h_bwt is not None and abs(h_bwt) <= g.bwt_quiet,
+        # One-sided: "holds" means the healthy arm did not FORGET (BWT ≥ −bwt_quiet). A POSITIVE BWT is
+        # not a failure — it is task A *improving*, the opposite of forgetting, and the A-only healthy arm
+        # (P0.6.0: phase B = task A only) routinely over-improves off a shallow well (e.g. +0.05). A
+        # symmetric |BWT| ≤ bwt_quiet would spuriously fail those seeds; it also contradicts P0.3.9's own
+        # "over-improvement still holds" reading (its shallow-well control reports a +0.043 hold).
+        "healthy_holds": h_bwt is not None and h_bwt >= -g.bwt_quiet,
         "contrast": forget_ratio >= g.min_forget_ratio,
     }
-    reported = {
+    reported: dict[str, Any] = {
         "pc_cka_drift": pc["cka_drift"],
         "healthy_cka_drift": healthy["cka_drift"],
         "pc_cosine_drift": pc["cosine_drift"],
@@ -826,6 +1009,10 @@ def _evaluate_forgetting_gate(config: DictConfig, pc: dict[str, Any], healthy: d
         "recon_forget_gap": recon_gap,
         "recon_corroborates": recon_gap >= g.recon_gap_min,  # relative retention; corroborates, not gated
     }
+    if "proj" in pc and "proj" in healthy:  # P0.6.0/A1: the JE projector label-free readers, two-sided
+        reported.update(_projector_gate(config, pc["proj"], healthy["proj"]))
+    if "cs_drift" in pc and "cs_drift" in healthy:  # P0.6.1/C3: past-data-free current-stream drift
+        reported.update(_current_stream_drift_report(pc, healthy))
     return {
         "mode": "forgetting",
         "pc_task_a_learned": pc["task_a_learned"],
@@ -845,7 +1032,7 @@ def _render_summary(gate: dict[str, Any]) -> str:
     """Render the forgetting-gate verdict block (hard gate + reported label-free observations)."""
     c, t, r = gate["checks"], gate["thresholds"], gate["reported"]
     verdict = "PASS ✅" if gate["passed"] else "FAIL ❌"
-    return (
+    base = (
         f"POSITIVE-CONTROL GATE [forgetting]: {verdict}\n"
         f"  PC learned task A       = {gate['pc_task_a_learned']:+.3f} "
         f"(>= {t['learn_min']} -> something to forget?  {c['pc_learned_A']})\n"
@@ -854,7 +1041,7 @@ def _render_summary(gate: dict[str, Any]) -> str:
         f"  PC ForgettingMeasure    = {gate['pc_forgetting_measure']:+.4f} "
         f"(>= {t['fm_fire']} -> fires?  {c['pc_fm_fires']})\n"
         f"  healthy BackwardTransfer= {gate['healthy_backward_transfer']:+.4f} "
-        f"(|.| <= {t['bwt_quiet']} -> task A holds?  {c['healthy_holds']})\n"
+        f"(>= -{t['bwt_quiet']} -> task A holds (did not forget)?  {c['healthy_holds']})\n"
         f"  forget ratio (PC/healthy FM) = {gate['forget_ratio']:.2f}x "
         f"(>= {t['min_forget_ratio']}x -> contrast?  {c['contrast']})\n"
         f"  [reported, not gated] cka_drift PC {r['pc_cka_drift']:.4f} vs healthy "
@@ -864,6 +1051,23 @@ def _render_summary(gate: dict[str, Any]) -> str:
         f"(PC held task-A recon {r['recon_forget_gap']:+.4f} worse than replay; corroborates?  "
         f"{r['recon_corroborates']})"
     )
+    if "proj_align_separates" in r:  # P0.6.0/A1: the JE projector-surface label-free readers
+        base += (
+            f"\n  [A1, reported] projector canary (task-A): alignment_proj rise PC "
+            f"{r['proj_align_pc_rise']} vs healthy {r['proj_align_healthy_rise']} "
+            f"(PC pairs drift apart more?  {r['proj_align_separates']}); rankme_proj PC "
+            f"{r['proj_pc_rankme_after_a']} -> {r['proj_pc_rankme_after_b']} "
+            f"(holds, not collapse?  {r['proj_pc_rankme_holds']})"
+        )
+    if "cs_cka_drift_separates" in r:  # P0.6.1/C3: the past-data-free current-stream drift reader
+        base += (
+            f"\n  [C3, reported] current-stream drift (past-data-free, phase-B ref): cka backbone PC "
+            f"{r['cs_cka_drift_pc']} vs healthy {r['cs_cka_drift_healthy']} "
+            f"(PC drifts more?  {r['cs_cka_drift_separates']}); cka proj PC "
+            f"{r['cs_cka_drift_proj_pc']} vs healthy {r['cs_cka_drift_proj_healthy']} "
+            f"(PC drifts more?  {r['cs_cka_drift_proj_separates']})"
+        )
+    return base
 
 
 @hydra.main(version_base=None, config_path="../cafl4ds/configs", config_name="positive_control_forgetting")  # type: ignore[misc]
@@ -877,11 +1081,21 @@ def main(config: DictConfig) -> None:
     # instrument calibration when SSL is too forgetting-resistant to fire — see P0.3.4). Both read
     # forgetting through the identical frozen-backbone probe + drift instruments.
     supervised = config.get("training_mode", "ssl") == "supervised"
+    # Short vehicle name for the run tag + log, from the SSL target (mae / simsiam / barlow — the P0.6 JE
+    # vehicle), so a SimSiam run is not mislabelled "mae". Supervised keeps its own cross-entropy tag.
+    ssl_name = str(config.ssl.get("_target_", "ssl")).rsplit(".", 1)[-1].removeprefix("build_").lower()
     run_arm = _run_arm_supervised if supervised else _run_arm
-    tag = "sup" if supervised else "mae"
-    logger.info(f"forgetting vehicle: {'supervised cross-entropy' if supervised else 'MAE (self-supervised)'}")
+    tag = "sup" if supervised else ssl_name
+    logger.info(f"forgetting vehicle: {'supervised cross-entropy' if supervised else f'self-supervised ({ssl_name})'}")
 
-    healthy, healthy_method = run_arm(config, split, replay=True, run_name=f"{tag}_healthy_replay")
+    # Label the healthy arm by its phase-B composition: the A-only no-shift oracle vs a rehearsal dose.
+    healthy_mode = str(config.get("healthy_replay_mode", "mixed"))
+    healthy_label = (
+        f"{tag}_healthy_aonly"
+        if healthy_mode == "a_only"
+        else f"{tag}_healthy_replay_r{int(config.get('replay_a_mult', 1))}"
+    )
+    healthy, healthy_method = run_arm(config, split, replay=True, run_name=healthy_label)
     pc, pc_method = run_arm(config, split, replay=False, run_name=f"{tag}_pc_forget")
 
     gate = _evaluate_forgetting_gate(config, pc, healthy)

@@ -24,7 +24,7 @@ import torch
 import torch.nn.functional as F  # noqa: N812 - conventional alias
 from loguru import logger
 from torchvision import transforms
-from torchvision.datasets import CIFAR100, STL10, ImageFolder
+from torchvision.datasets import CIFAR100, STL10, EuroSAT, ImageFolder
 
 
 class DataSource(ABC):
@@ -240,6 +240,70 @@ class ImagenetteSource(DataSource):
                 labels.append(label)
         images = torch.stack(imgs)
         logger.info(f"ImagenetteSource: loaded {images.shape[0]} images ({self.split}) at {self.img_size}px")
+        return images, torch.tensor(labels, dtype=torch.long)
+
+
+class EuroSATSource(DataSource):
+    """EuroSAT — Sentinel-2 satellite RGB, a phase-B domain deliberately *far* from ImageNet.
+
+    A far-from-pretraining phase-B vehicle for the JE forgetting study ([P0.6](../../docs/experiments/
+    phase0/P0.6.0.md)): where CIFAR shares ImageNet's natural-object-photo statistics (so continued SSL
+    training on it largely *reinforces* the task-A features rather than overwriting them), aerial
+    land-cover imagery has low-level and semantic statistics unlike ImageNet objects — so phase-B
+    training on it should respecialize the encoder *harder*, a stronger test of whether a
+    joint-embedding backbone forgets than the same-domain CIFAR shift. 10 land-cover classes, ~27k
+    native 64px images. Same label-only contract as the other sources (labels feed the probe / task
+    split, never the SSL loss). Download once with ``torchvision.datasets.EuroSAT(root=..., download=
+    True)`` and point ``root`` at it.
+    """
+
+    def __init__(self, root: str, img_size: int = 64, max_per_class: int | None = None) -> None:
+        """Configure the EuroSAT source.
+
+        Args:
+            root: Directory holding the downloaded ``eurosat`` (torchvision layout).
+            img_size: Side length to resize the native 64px images to (upsampled to 224 by the ViT-B
+                encoder). Kept independent of the harness's global ``img_size`` so task A (Imagenette)
+                can stay at its own resolution.
+            max_per_class: If set, keep at most this many images per class (bounds memory / run time).
+        """
+        self.root = root
+        self.img_size = img_size
+        self.max_per_class = max_per_class
+
+    @property
+    def num_classes(self) -> int:
+        """EuroSAT has 10 land-cover classes."""
+        return 10
+
+    def load(self) -> tuple[torch.Tensor, torch.Tensor]:
+        """Load, resize, and (optionally) per-class-subsample EuroSAT.
+
+        Returns:
+            ``(images, labels)`` with images ``[N, 3, img_size, img_size]`` in ``[0, 1]`` and labels
+            ``0..9`` (sorted class order).
+
+        Raises:
+            FileNotFoundError: If the EuroSAT data is not present under ``root``.
+        """
+        if not (Path(self.root) / "eurosat").is_dir():
+            raise FileNotFoundError(
+                f"EuroSAT data not found under {self.root}. Download once with "
+                "torchvision.datasets.EuroSAT(root=..., download=True)."
+            )
+        ds = EuroSAT(root=self.root, download=False)  # ImageFolder-backed: exposes (path, label) samples
+        resize = transforms.Compose([transforms.Resize((self.img_size, self.img_size)), transforms.ToTensor()])
+        by_cls: dict[int, list[str]] = {}
+        for path, label in ds.samples:
+            by_cls.setdefault(label, []).append(path)
+        imgs, labels = [], []
+        for label in sorted(by_cls):
+            paths = by_cls[label][: self.max_per_class] if self.max_per_class is not None else by_cls[label]
+            for path in paths:
+                imgs.append(resize(ds.loader(path).convert("RGB")))
+                labels.append(label)
+        images = torch.stack(imgs)
+        logger.info(f"EuroSATSource: loaded {images.shape[0]} images at {self.img_size}px")
         return images, torch.tensor(labels, dtype=torch.long)
 
 

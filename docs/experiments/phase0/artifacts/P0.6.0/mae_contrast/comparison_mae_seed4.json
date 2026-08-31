@@ -1,0 +1,97 @@
+{
+  "gate": {
+    "mode": "forgetting",
+    "pc_task_a_learned": 0.5416666666666667,
+    "pc_backward_transfer": -0.03166666666666673,
+    "pc_forgetting_measure": 0.03166666666666673,
+    "healthy_backward_transfer": 0.0016666666666665941,
+    "healthy_forgetting_measure": -0.0016666666666665941,
+    "forget_ratio": null,
+    "thresholds": {
+      "learn_min": 0.05,
+      "bwt_fire": 0.05,
+      "fm_fire": 0.05,
+      "bwt_quiet": 0.03,
+      "min_forget_ratio": 2.0,
+      "recon_gap_min": 0.03,
+      "rankme_proj_hold_frac": 0.5
+    },
+    "checks": {
+      "pc_learned_A": true,
+      "pc_bwt_fires": false,
+      "pc_fm_fires": false,
+      "healthy_holds": true,
+      "contrast": true
+    },
+    "reported": {
+      "pc_cka_drift": 0.042274296283721924,
+      "healthy_cka_drift": 0.013796627521514893,
+      "pc_cosine_drift": 0.05900561809539795,
+      "healthy_cosine_drift": 0.0625719428062439,
+      "drift_separates": true,
+      "pc_recon_a_rise": -0.04227179288864136,
+      "healthy_recon_a_rise": -0.09601225703954697,
+      "recon_forget_gap": 0.05374046415090561,
+      "recon_corroborates": true
+    },
+    "passed": false
+  },
+  "pc": {
+    "run": "mae_pc_forget",
+    "replay": false,
+    "task_a_init": 0.8733333333333333,
+    "matrix": {
+      "0": {
+        "0": 0.6416666666666667
+      },
+      "1": {
+        "0": 0.61,
+        "1": 0.86
+      }
+    },
+    "task_a_learned": 0.5416666666666667,
+    "backward_transfer": -0.03166666666666673,
+    "forgetting_measure": 0.03166666666666673,
+    "cka_drift": 0.042274296283721924,
+    "cosine_drift": 0.05900561809539795,
+    "loss_a": 0.7103126645088196,
+    "loss_b": 0.2938677668571472,
+    "recon_a_after_a": 0.6889131665229797,
+    "recon_a_after_b": 0.6466413736343384,
+    "recon_b_after_b": 0.332876306027174,
+    "recon_a_rise": -0.04227179288864136,
+    "task_a_traj_a": [],
+    "task_a_traj_b": [],
+    "phase_b_max_grad_norm": 1.243520736694336,
+    "phase_b_grad_finite": true
+  },
+  "healthy": {
+    "run": "mae_healthy_aonly",
+    "replay": true,
+    "task_a_init": 0.8733333333333333,
+    "matrix": {
+      "0": {
+        "0": 0.6416666666666667
+      },
+      "1": {
+        "0": 0.6433333333333333,
+        "1": 0.8566666666666667
+      }
+    },
+    "task_a_learned": 0.5416666666666667,
+    "backward_transfer": 0.0016666666666665941,
+    "forgetting_measure": -0.0016666666666665941,
+    "cka_drift": 0.013796627521514893,
+    "cosine_drift": 0.0625719428062439,
+    "loss_a": 0.7103126645088196,
+    "loss_b": 0.6112545132637024,
+    "recon_a_after_a": 0.6889131665229797,
+    "recon_a_after_b": 0.5929009094834328,
+    "recon_b_after_b": 0.3302019499242306,
+    "recon_a_rise": -0.09601225703954697,
+    "task_a_traj_a": [],
+    "task_a_traj_b": [],
+    "phase_b_max_grad_norm": 4.916051864624023,
+    "phase_b_grad_finite": true
+  }
+}
