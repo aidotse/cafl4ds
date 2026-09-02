@@ -83,10 +83,10 @@ most concise to least concise):
     one level above the sub-study summaries and is the target of the Failure-Modes "Summary" link.
 
 - `docs/experiments/latest-results/<substudy ID>.md` (e.g. `P0.6.0.md`)- a *concise* summary of the results / what was
-    achieved in the particular substudy. Avoid too many details (in particular: NO results numbers); this is a a brief
+    achieved in the particular substudy. Avoid too many details (in particular: NO results numbers); this is a brief
     take-away from the study.
 
-- `docs/experiments/phase<ID>/<substudy ID>.md` - a detailed, *but not overly verbose or repetetive* description of the
+- `docs/experiments/phase<ID>/<substudy ID>.md` - a detailed, *but not overly verbose or repetitive* description of the
     sub study, including outputs, and key quantitative results. Includes (roughly) a brief section for the motivation,
     the methodology and findings, any interesting insights, a dedicated `Artifacts` section (the per-sub-study artifact
     listing: which runs back its numbers, and the slim schema each was promoted to), and how to run the experiments. Do
@@ -166,5 +166,9 @@ explanatory paragraphs, where following along matters more than compression.
 
 ## Mandates
 
-- Ensure your updates do not contradict the specific index or substudy files you have been instructed to read. Do not
-    read additional documentation files solely to check for global project consistency unless explicitly requested.
+We have two general mandates: completeness and accuracy. For completeness, this means e.g. making suggestions to the
+user when a study has an evident, open scientific gap; always get permission to go down research tangents before doing
+so. For accuracy, this means making sure the docs reflect the latest results, and ensuring your updates do not
+contradict the specific index or substudy files you have been instructed to read - if this should happen, notify the
+user immediately to remediate before moving on. Do not read additional documentation files solely to check for global
+project consistency unless explicitly requested.
