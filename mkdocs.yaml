@@ -87,6 +87,7 @@ nav:
       - P0.3 (forgetting mode): experiments/audits/P0.3.md
       - P0.4 (instability mode): experiments/audits/P0.4.md
       - P0.5 (representation degradation mode): experiments/audits/P0.5.md
+      - P0.6 (forgetting mode on JE): experiments/audits/P0.6.md
   - API Reference: reference.md
   - Tests: exported/pytest.html
   - Coverage: exported/coverage/index.html
