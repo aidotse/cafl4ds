@@ -17,6 +17,7 @@ Adding BDD100K/ZOD later means adding a new source, not touching the stream.
 
 from __future__ import annotations
 
+import random
 from abc import ABC, abstractmethod
 from pathlib import Path
 
@@ -24,7 +25,7 @@ import torch
 import torch.nn.functional as F  # noqa: N812 - conventional alias
 from loguru import logger
 from torchvision import transforms
-from torchvision.datasets import CIFAR100, STL10, EuroSAT, ImageFolder
+from torchvision.datasets import CIFAR100, DTD, STL10, EuroSAT, ImageFolder
 
 
 class DataSource(ABC):
@@ -304,6 +305,123 @@ class EuroSATSource(DataSource):
                 labels.append(label)
         images = torch.stack(imgs)
         logger.info(f"EuroSATSource: loaded {images.shape[0]} images at {self.img_size}px")
+        return images, torch.tensor(labels, dtype=torch.long)
+
+
+class DTDSource(DataSource):
+    """DTD (Describable Textures) — a *far* phase-B domain matched for inpainting difficulty (P0.3.10).
+
+    The far-domain MAE forgetting test needs a phase B that is both (a) genuinely far from the ImageNet
+    object manifold and (b) as *hard to inpaint* as task A, because in MAE the reconstruction-loss
+    magnitude sets the gradient magnitude, hence the encoder-update pressure a phase-B domain applies
+    (the P0.4.1 finding: recon loss reads inpaintability, not novelty). EuroSAT is far but *easy* to
+    inpaint (blurred 64px tiles), so it under-powers the shift. DTD textures are far (texture, not
+    objects) and, at native high resolution, ~1.26x *harder* to inpaint than Imagenette at the
+    phase-B-start condition — a conservative choice (it applies more update pressure than continued
+    task-A training, so a resistance verdict cannot be dismissed as under-powered).
+
+    DTD is small — 47 classes x 120 images (pooled over the train/val/test splits of partition 1). To
+    supply enough phase-B training data at the harness's 60/60 eval sizing, textures (crop/flip/rotation-
+    invariant by construction) are **augmented** up to ``max_per_class`` with random-resized crops, flips
+    and 90-degree rotations. The augmentation draws from a *fixed* internal seed and restores the global
+    RNG, so the far-domain dataset is identical across model seeds (only the model varies) and training
+    numerics are untouched. Same label-only contract as the other sources. Any crop-leakage between the
+    augmented train and eval pools touches only the *secondary* task-B probe; the forgetting ground truth
+    is the clean, un-augmented task-A (Imagenette) probe.
+    """
+
+    def __init__(
+        self,
+        root: str,
+        img_size: int = 224,
+        max_per_class: int | None = None,
+        partition: int = 1,
+        augment_seed: int = 0,
+        classes: list[int] | None = None,
+    ) -> None:
+        """Configure the DTD source.
+
+        Args:
+            root: Directory holding the downloaded ``dtd`` (torchvision layout).
+            img_size: Side length to resize / crop the native high-res textures to.
+            max_per_class: Target images per class. When it exceeds the ~120 pooled base images, the
+                remainder is filled with texture-preserving augmented crops (``None`` = base only).
+            partition: DTD split partition (1..10); the three splits of one partition are pooled.
+            augment_seed: Fixed seed for the fill augmentation, so the far-domain data is seed-stable.
+            classes: If set, load only these class ids (the phase-B split uses ≤ 10 of DTD's 47 classes,
+                so restricting the load avoids decoding + augmenting the ~37 unused classes).
+        """
+        self.root = root
+        self.img_size = img_size
+        self.max_per_class = max_per_class
+        self.partition = partition
+        self.augment_seed = augment_seed
+        self.classes = classes
+
+    @property
+    def num_classes(self) -> int:
+        """DTD has 47 texture classes."""
+        return 47
+
+    def load(self) -> tuple[torch.Tensor, torch.Tensor]:
+        """Load the pooled DTD splits, resize, and augment each class up to ``max_per_class``.
+
+        Returns:
+            ``(images, labels)`` with images ``[N, 3, img_size, img_size]`` in ``[0, 1]`` and labels
+            ``0..46`` (sorted class order); base images first, then augmented crops.
+
+        Raises:
+            FileNotFoundError: If the DTD data is not present under ``root``.
+        """
+        if not (Path(self.root) / "dtd").is_dir():
+            raise FileNotFoundError(
+                f"DTD data not found under {self.root}. Download once with "
+                "torchvision.datasets.DTD(root=..., split='train', download=True)."
+            )
+        keep = set(self.classes) if self.classes is not None else None
+        by_cls: dict[int, list[str]] = {}
+        for split in ("train", "val", "test"):
+            ds = DTD(root=self.root, split=split, partition=self.partition, download=False)
+            for path, label in zip(ds._image_files, ds._labels, strict=True):
+                if keep is None or int(label) in keep:
+                    by_cls.setdefault(int(label), []).append(str(path))
+        loader = DTD(root=self.root, split="train", partition=self.partition, download=False).loader
+
+        base_resize = transforms.Compose([transforms.Resize((self.img_size, self.img_size)), transforms.ToTensor()])
+        aug = transforms.Compose(
+            [
+                transforms.RandomResizedCrop(self.img_size, scale=(0.4, 1.0), ratio=(0.75, 1.333)),
+                transforms.RandomHorizontalFlip(),
+                transforms.RandomVerticalFlip(),
+                transforms.RandomChoice([transforms.RandomRotation((r, r)) for r in (0, 90, 180, 270)]),
+                transforms.ToTensor(),
+            ]
+        )
+        # Deterministic, RNG-neutral augmentation: seed both RNGs the transforms draw from (torch +
+        # Python `random`), then restore global state on exit so the far-domain data is seed-stable.
+        torch_state, py_state = torch.get_rng_state(), random.getstate()
+        torch.manual_seed(self.augment_seed)
+        random.seed(self.augment_seed)
+        try:
+            imgs: list[torch.Tensor] = []
+            labels: list[int] = []
+            for label in sorted(by_cls):
+                paths = by_cls[label]
+                pil = [loader(p).convert("RGB") for p in paths]
+                target = self.max_per_class if self.max_per_class is not None else len(pil)
+                base = pil[:target]
+                imgs.extend(base_resize(im) for im in base)
+                labels.extend([label] * len(base))
+                for i in range(len(base), target):  # fill the remainder with texture-preserving crops
+                    imgs.append(aug(pil[i % len(pil)]))
+                    labels.append(label)
+        finally:
+            torch.set_rng_state(torch_state)
+            random.setstate(py_state)
+        images = torch.stack(imgs)
+        logger.info(
+            f"DTDSource: loaded {images.shape[0]} images at {self.img_size}px (target {self.max_per_class}/class)"
+        )
         return images, torch.tensor(labels, dtype=torch.long)
 
 
