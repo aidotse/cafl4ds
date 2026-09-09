@@ -14,11 +14,11 @@ Guidance for Claude Code (claude.ai/code) in this repo.
     when introducing new architectural modules, changing core pipelines, or when explicitly requested.
 
 - **`docs/experiments/` is the implementation state** - also split hierarchically for targeted agent reads. To find
-    implementation states, always read `docs/experiments/latest-results/index.md` first. Use its routing table to find
-    the exact substudy file you need. Never read an entire directory at once; read only the sub-studies required for the
-    task. Additionally, the `docs/experiments/` directory has more specific docs for each project phase. When working in
-    a specific phase, always read the `index.md` of that phase (e.g. `docs/experiments/phase0/index.md`), and use the
-    routing table in that file to find and read only the relevant sub-study doc for the required task.
+    implementation states, always read the phase landing page `docs/experiments/phase<X>/index.md` first (e.g.
+    `docs/experiments/phase0/index.md`), and use the routing table in that file to find the exact substudy file you
+    need. Never read an entire directory at once; read only the sub-studies required for the task. The
+    `docs/experiments/latest-results/` directory is the distilled logbook — concise study/substudy summaries reached via
+    the phase index, not a router in its own right.
 
 ## Environment (uv)
 
@@ -90,7 +90,8 @@ most concise to least concise):
     sub study, including outputs, and key quantitative results. Includes (roughly) a brief section for the motivation,
     the methodology and findings, any interesting insights, a dedicated `Artifacts` section (the per-sub-study artifact
     listing: which runs back its numbers, and the slim schema each was promoted to), and how to run the experiments. Do
-    not mention progress or status here, that goes in `docs/experiments/latest-results/<substudy ID>.md`.
+    not mention progress or status here (unless results change an existing verdict), that goes in
+    `docs/experiments/latest-results/<substudy ID>.md`.
 
 When we say something like "update the docs", this means going through each of these levels for the relevant study /
 substudy and checking them for completeness and accuracy against the latest results. In addition, this implies verifying
