@@ -1,9 +1,11 @@
 """Federated Phase-0 streaming-loop entry point (FedAvg over per-client streams).
 
 Partitions one data source across ``num_clients`` clients, gives each its own streaming SSL
-loop over its shard, and runs synchronous FedAvg: every ``steps_per_round`` stream steps the
-server averages the client weights. Clients continue their single-pass streams across rounds
-and drop out as they exhaust; the aggregated model's health is logged once per round.
+loop over its shard, and runs a synchronous federated round loop: every ``steps_per_round``
+stream steps the server averages the client weights and applies the result via the configured
+server optimizer (``server_optim``, FedAvg by default). Clients continue their single-pass
+streams across rounds and drop out as they exhaust; the aggregated model's health is logged once
+per round.
 
 Mirrors :mod:`scripts.run_loop`'s config-instantiation recipe, one level up: the per-client
 components (encoder, method, optimizer, filter, monitor) are instantiated fresh for each client
@@ -19,6 +21,10 @@ Examples:
 
         uv run python scripts/run_federated.py device=cuda data_root=/home/edgelab/stl10 \
             ssl=simsiam num_clients=4 partition.alpha=1.0 batch_size=64
+
+    Adaptive server optimizer (``server_optim.lr`` is the *server* rate, not the client one)::
+
+        uv run python scripts/run_federated.py server_optim=fedadam server_optim.lr=1e-2
 """
 
 import sys
@@ -138,6 +144,9 @@ def main(config: DictConfig) -> None:
         num_rounds=config.num_rounds,
         global_monitor=global_monitor,
         run_logger=global_logger,
+        # How the server applies the aggregate (FedAvg's identity step by default). Stateful for
+        # the adaptive variants, so it is built here, once per run — never shared across runs.
+        server_optimizer=instantiate(config.server_optim),
     )
     _, history = orchestrator.run()
     logger.info(f"done: {len(history)} rounds; global health log at {global_logger.path}")

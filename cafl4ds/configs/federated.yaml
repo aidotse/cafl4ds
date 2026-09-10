@@ -12,6 +12,10 @@
 # STL-10 on GPU:
 #   uv run python scripts/run_federated.py device=cuda data_root=/home/edgelab/stl10 \
 #     ssl=simsiam num_clients=4 partition.alpha=1.0 batch_size=64
+#
+# Adaptive server optimizer (FedOpt) instead of FedAvg — note `server_optim.lr` is the SERVER
+# learning rate, distinct from the client `optim.lr`:
+#   uv run python scripts/run_federated.py server_optim=fedadam server_optim.lr=1e-2
 defaults:
   - encoder: tiny
   - ssl: simsiam # C factor: mae | simsiam
@@ -19,7 +23,8 @@ defaults:
   - stream: class_blocked # F factor: only `order` is read (class_blocked | iid)
   - filter: accept_all # A factor: B-floor (same filter on every client, own local state)
   - monitor: default
-  - optim: adamw
+  - optim: adamw # the CLIENT optimizer (per-client, instantiated in the run script)
+  - server_optim: fedavg # how the server applies the aggregate: fedavg | fedadam | fedyogi | fedadagrad
   - init: from_scratch # I factor: from_scratch | pretrained
   - _self_
 

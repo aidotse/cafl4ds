@@ -1,9 +1,16 @@
-"""The orchestrator — the synchronous FedAvg round loop over streaming clients.
+"""The orchestrator — the synchronous federated round loop over streaming clients.
 
 The server side. Each round: broadcast the current global weights, let every still-active
-client train one local round on the next slice of its stream, then FedAvg their updates into the
-next global model. This is a single-process *simulation* — clients are objects iterated in turn,
-no networking — which is the standard, reproducible setup for FL research at this scale.
+client train one local round on the next slice of its stream, aggregate their updates, then hand
+the aggregate to the server optimizer to form the next global model. This is a single-process
+*simulation* — clients are objects iterated in turn, no networking — which is the standard,
+reproducible setup for FL research at this scale.
+
+The two server-side decisions are separate objects, so the loop itself is algorithm-agnostic:
+:func:`~cafl4ds.federated.aggregate.federated_average` decides *how the clients are mixed*, and
+the injected :class:`~cafl4ds.federated.server_optim.ServerOptimizer` decides *what is done with
+the mixture*. The default is :class:`~cafl4ds.federated.server_optim.FedAvgServer`, whose step is
+the identity — so the default behaviour is plain FedAvg, unchanged.
 
 Round cadence and stopping:
 
@@ -30,6 +37,7 @@ from loguru import logger
 
 from cafl4ds.federated.aggregate import StateDict, federated_average, weights_from_samples
 from cafl4ds.federated.client import FederatedClient, RoundResult
+from cafl4ds.federated.server_optim import FedAvgServer, ServerOptimizer
 from cafl4ds.monitor import HealthMonitor
 from cafl4ds.run_log import RunLogger
 
@@ -49,7 +57,7 @@ class RoundSummary:
 
 
 class FederatedOrchestrator:
-    """Runs synchronous FedAvg over a set of streaming clients until they exhaust."""
+    """Runs a synchronous federated round loop over streaming clients until they exhaust."""
 
     def __init__(
         self,
@@ -58,6 +66,7 @@ class FederatedOrchestrator:
         num_rounds: int | None = None,
         global_monitor: HealthMonitor | None = None,
         run_logger: RunLogger | None = None,
+        server_optimizer: ServerOptimizer | None = None,
     ) -> None:
         """Configure the orchestrator.
 
@@ -68,6 +77,10 @@ class FederatedOrchestrator:
             global_monitor: Optional monitor (on a *global* held-out set) used to log the
                 aggregated model's health each round.
             run_logger: Optional run log for the per-round global health series.
+            server_optimizer: How the aggregated client update becomes the next global model
+                (see :mod:`~cafl4ds.federated.server_optim`). Defaults to
+                :class:`~cafl4ds.federated.server_optim.FedAvgServer` — the identity step, i.e.
+                plain FedAvg. Stateful implementations must not be shared between runs.
 
         Raises:
             ValueError: If ``clients`` is empty or ``steps_per_round < 1``.
@@ -81,6 +94,13 @@ class FederatedOrchestrator:
         self.num_rounds = num_rounds
         self.global_monitor = global_monitor
         self.run_logger = run_logger
+        self.server_optimizer: ServerOptimizer = server_optimizer if server_optimizer is not None else FedAvgServer()
+        # Which state_dict entries the server optimizer may touch. Only *parameters* are
+        # optimized: a state_dict also holds non-learned buffers (BatchNorm running statistics,
+        # step counters), and those are estimates rather than things to descend on. This
+        # orchestrator is the only component holding a model, so it is the only one that can
+        # tell the two apart exactly — see `_apply_server_step`.
+        self._param_keys = frozenset(dict(self.clients[0].method.named_parameters()))
 
     def run(self) -> tuple[StateDict, list[RoundSummary]]:
         """Run the federated training loop to completion.
@@ -91,6 +111,7 @@ class FederatedOrchestrator:
         global_state = self.clients[0].get_weights()  # a single, shared starting point for all
         history: list[RoundSummary] = []
         round_index = 0
+        logger.info(f"server optimizer: {self.server_optimizer.name}")
         while self._should_continue(round_index):
             active = [c for c in self.clients if not c.exhausted]
             if not active:
@@ -102,10 +123,14 @@ class FederatedOrchestrator:
             trained = [(c, r) for c, r in results if r.num_trained > 0]
             if not trained:
                 break  # every active client exhausted with nothing admitted
-            global_state = federated_average(
+            # Mix the clients, then apply the mixture. Every participant trained from
+            # `global_state`, so the aggregate minus it is the round's pseudo-gradient — which is
+            # what the server optimizer consumes (a no-op under FedAvg).
+            aggregated = federated_average(
                 [c.get_weights() for c, _ in trained],
                 weights_from_samples([r.num_trained for _, r in trained]),
             )
+            global_state = self._apply_server_step(global_state, aggregated)
             history.append(self._record_round(round_index, [r for _, r in trained], global_state))
             round_index += 1
         logger.info(f"federated run complete: {len(history)} rounds")
@@ -116,6 +141,31 @@ class FederatedOrchestrator:
     def _should_continue(self, round_index: int) -> bool:
         """Whether another round is allowed under the optional ``num_rounds`` cap."""
         return self.num_rounds is None or round_index < self.num_rounds
+
+    def _apply_server_step(self, old_state: StateDict, aggregated: StateDict) -> StateDict:
+        """Run the server optimizer over the *parameters*, keeping buffers at their FedAvg mean.
+
+        A ``state_dict`` is not uniformly optimizable. Alongside learnable parameters it carries
+        buffers that are *measurements* of the data rather than variables to descend on — for
+        SimSiam's BatchNorm heads, ``running_mean`` and ``running_var``. An adaptive step is
+        actively wrong for those on two counts: momentum makes a statistic lag its own data, and
+        the normalized update moves each coordinate by about ``lr`` no matter how little the
+        clients changed it. A running *variance* also has to stay non-negative, and a step
+        decoupled from the true change can walk it past zero, which turns the model's output into
+        ``NaN``. Their plain weighted mean — what ``federated_average`` already produced — is the
+        right answer, and is what FedAvg has always used.
+
+        Args:
+            old_state: The global weights broadcast at the start of the round.
+            aggregated: The round's aggregated client weights.
+
+        Returns:
+            The next global ``state_dict``: server-stepped parameters over an aggregate-mean base,
+            so every key is present and buffers pass through untouched.
+        """
+        params = {key: value for key, value in aggregated.items() if key in self._param_keys}
+        stepped = self.server_optimizer.step({key: old_state[key] for key in params}, params)
+        return {**aggregated, **stepped}
 
     def _record_round(self, round_index: int, results: list[RoundResult], global_state: StateDict) -> RoundSummary:
         """Measure/log the aggregated model and build the round summary.

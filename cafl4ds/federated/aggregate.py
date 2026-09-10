@@ -1,8 +1,10 @@
-"""Aggregation — combine client model updates into a new global model (FedAvg).
+"""Aggregation — mix the participating clients' weights into one averaged ``state_dict``.
 
-The server-side half of a federated round: given each participating client's updated weights
-and how much local training backed them, produce the next global ``state_dict``. Phase-0 FL
-ships **FedAvg** (McMahan et al. 2017) only — the sample-weighted mean of client weights.
+The *first* of the two server-side steps in a federated round: given each participating client's
+updated weights and how much local training backed them, produce their weighted mean. What
+happens to that mean is the second step, and lives in
+:mod:`~cafl4ds.federated.server_optim` — under FedAvg (McMahan et al. 2017) it simply *becomes*
+the next global model, which is why the two steps are easy to conflate.
 
 Two deliberate details:
 
@@ -17,7 +19,9 @@ Two deliberate details:
 
 Extension points (later phases): a health-gated aggregator that down-weights or drops a client
 whose representation health has degraded (**N-F**), and FedProx's proximal term (a *client*-side
-change, not here). Keep those behind the same ``(states, weights) -> state`` shape.
+change, not here). Keep those behind the same ``(states, weights) -> state`` shape. Anything that
+changes how the *mean* is applied rather than how it is formed — server momentum, the adaptive
+FedOpt family — belongs in :mod:`~cafl4ds.federated.server_optim` instead.
 """
 
 from __future__ import annotations
