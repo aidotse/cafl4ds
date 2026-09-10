@@ -17,10 +17,15 @@ single axis.*
 **N-A — The coupling, run as a live loop `[NEW]`.** *Claim:* the two loop **edges** operate together and are studied
 live — the **fast edge** (model→filter: the filter scores informativeness against the continuously-adapting backbone, so
 what counts as novel shifts as the model learns) and the **slow edge** (monitor→filter: the health monitor re-aims
-selection based on the degradation regime). *Closest prior:* DiSF (2025) links selection→collapse but *offline, fixed
-budget, no model in the loop*; SOFed/FedCoCo (2022) does selection in streaming SSL but with *one fixed criterion and no
-health coupling*. *Open:* nobody runs selection ↔ representation-health as a closed feedback loop with a co-adapting
-model.
+selection based on the degradation regime). *Closest prior:* DiSF (2025) selects diverse *files* to combat dimensional
+collapse in **LLM pre-training data** — *offline, submodular, no model in the loop*; the **streaming-SSL degradation
+line** (Purushwalkam's MinRed 2022; Memory Storyboard 2025; Orthogonal Gradients 2025) runs streaming SSL under temporal
+correlation but **de-correlates via replay / segmentation / optimizer, with no health monitor and no health-driven
+selection**; SOFed/FedCoCo (2022) does selection in streaming SSL but with *one fixed criterion and no health coupling*;
+on the **forgetting** side, continual-MAE **pretraining** (Beyond Cosine Decay, CoLLAs 2025; CoSMAE 2025) shows a
+streamed MAE forgets *little* and that replay trivially protects it — but *samples randomly / by replay, with no
+selection filter in the loop*. *Open:* nobody runs selection ↔ representation-health as a closed feedback loop with a
+co-adapting model — and, on forgetting specifically, nobody has asked whether **selection** (not replay) is the lever.
 
 **N-B — Does the budget flip survive co-adaptation? `[NEW]`** *Terms:* **storage budget** = how many frames the buffer
 may keep; **coverage** selection = pick frames that represent/span the data distribution; **novelty** selection = pick

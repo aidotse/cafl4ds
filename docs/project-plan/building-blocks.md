@@ -10,9 +10,13 @@ informativeness signal). **MAE is collapse-resistant** (a constant code can't re
 *collapse* demonstration uses a **joint-embedding method** (SimSiam/BYOL/DINO/SimCLR) — MAE's own degradation mode is
 forgetting/overspecialization. We start with **SimSiam** as the minimal joint-embedding variant (predictor +
 stop-gradient, no EMA target, no negatives — fewest moving parts, and its stop-gradient is *precisely* the
-collapse-avoidance mechanism under study), expanding to BYOL then SimCLR once the dynamics are established. Adapt an
-ImageNet-pretrained backbone (data too small for from-scratch); ViTDet-compatible if detection is a target. *Methods
-used as-is: MAE (He 2022), SimSiam/BYOL/DINO/SimCLR (Chen & He 2021 / Grill 2020 / Caron 2021 / Chen 2020).*
+collapse-avoidance mechanism under study), expanding to BYOL then SimCLR once the dynamics are established.
+*Collapse-demo confound:* SimSiam collapse is **extraordinarily sensitive to model and dataset size** (a too-small model
+partially dimensionally-collapses regardless of the diet), and contrastive variants collapse under **small effective
+batches** — so the streaming collapse demo must **control batch-size and model-size** to attribute collapse to the
+correlated diet (Jing 2022; SimSiam size-sensitivity). Adapt an ImageNet-pretrained backbone (data too small for
+from-scratch); ViTDet-compatible if detection is a target. *Methods used as-is: MAE (He 2022), SimSiam/BYOL/DINO/SimCLR
+(Chen & He 2021 / Grill 2020 / Caron 2021 / Chen 2020).*
 
 **Filter families (the knobs):**
 

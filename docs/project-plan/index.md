@@ -95,9 +95,9 @@ spine** that underpins our [experiment plan](experiments.md#phased-plan) and imp
 
 - **Phase 0 — Instrument calibration `[STD]`.** Each failure mode's instruments (metrics) calibrated — its PC fires, a
     healthy baseline stays quiet.
-- **Phase 1 — Degradation envelope `[NEW]`.** 1a STL-10 pilot (synthetic correlation) → 1b BDD100K (real,
-    make-or-break); sweep pressure incl. initialization **Go:** a coupling exists. **No-Go:** reframe to
-    selection-for-efficiency.
+- **Phase 1 — Degradation envelope `[NEW]`.** Take calibrated instruments and point them at the real phenomenon. 1a
+    STL-10 pilot (synthetic correlation) → 1b BDD100K (real, make-or-break); sweep pressure incl. initialization **Go:**
+    a coupling exists. **No-Go:** reframe to selection-for-efficiency.
 - **Phase 2 — Open-loop criterion study `[NEW]`** Centralized; Explore budget flip: at small budgets coverage wins, at
     large budgets novelty wins. Does the flip survive co-adaptation; does the loop self-reinforce?
 - **Phase 3 — Closed loop `[NEW]`** Centralized; build the monitor→filter controller; open vs. closed-loop ablations on
