@@ -1,4 +1,0 @@
-# Server optimizer = FedAvg (McMahan et al. 2017): the aggregated client mean IS the next global
-# model. The identity server step, memoryless, no hyperparameters — the Phase-0 baseline that
-# every other option in this group is measured against.
-_target_: cafl4ds.federated.server_optim.FedAvgServer

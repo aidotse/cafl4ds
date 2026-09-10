@@ -1,0 +1,16 @@
+# Strategy = FedProx + FedAdam. Both halves of the round at once, and the reason a strategy is a
+# bundle rather than a flat menu: the two cures for client drift are not rivals.
+#
+# FedProx (client side) stops clients drifting apart in the first place; FedAdam (server side)
+# reconciles whatever disagreement is left when applying the average. Preventative plus post-hoc.
+# Worth trying when either alone helps but neither is enough — expect to re-tune both knobs
+# together, since a tighter leash shrinks the pseudo-gradient the server sees.
+_target_: cafl4ds.federated.strategy.FederatedStrategy
+server_optimizer:
+  _target_: cafl4ds.federated.server_optim.FedAdamServer
+  lr: 1.0e-2
+  beta_1: 0.9
+  beta_2: 0.99
+  tau: 1.0e-3
+  bias_correction: true
+proximal_mu: 0.01

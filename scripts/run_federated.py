@@ -2,10 +2,10 @@
 
 Partitions one data source across ``num_clients`` clients, gives each its own streaming SSL
 loop over its shard, and runs a synchronous federated round loop: every ``steps_per_round``
-stream steps the server averages the client weights and applies the result via the configured
-server optimizer (``server_optim``, FedAvg by default). Clients continue their single-pass
-streams across rounds and drop out as they exhaust; the aggregated model's health is logged once
-per round.
+stream steps the server averages the client weights and applies the result. The FL algorithm is
+one config choice — ``strategy`` (FedAvg by default), which sets both the server's rule and any
+client-side constraint. Clients continue their single-pass streams across rounds and drop out as
+they exhaust; the aggregated model's health is logged once per round.
 
 Mirrors :mod:`scripts.run_loop`'s config-instantiation recipe, one level up: the per-client
 components (encoder, method, optimizer, filter, monitor) are instantiated fresh for each client
@@ -22,9 +22,10 @@ Examples:
         uv run python scripts/run_federated.py device=cuda data_root=/home/edgelab/stl10 \
             ssl=simsiam num_clients=4 partition.alpha=1.0 batch_size=64
 
-    Adaptive server optimizer (``server_optim.lr`` is the *server* rate, not the client one)::
+    A different FL strategy (``server_optimizer.lr`` is the *server* rate, not the client one)::
 
-        uv run python scripts/run_federated.py server_optim=fedadam server_optim.lr=1e-2
+        uv run python scripts/run_federated.py strategy=fedadam strategy.server_optimizer.lr=1e-2
+        uv run python scripts/run_federated.py strategy=fedprox strategy.proximal_mu=0.1
 """
 
 import sys
@@ -42,6 +43,7 @@ from cafl4ds.data.streams import EraStream
 from cafl4ds.federated.client import FederatedClient
 from cafl4ds.federated.orchestrator import FederatedOrchestrator
 from cafl4ds.federated.partition import partition_source
+from cafl4ds.federated.strategy import FederatedStrategy
 from cafl4ds.run_log import RunLogger
 from cafl4ds.ssl.base import apply_encoder_init
 
@@ -72,7 +74,9 @@ def _build_stream(config: DictConfig, source: DataSource, seed: int) -> EraStrea
     )
 
 
-def _build_client(config: DictConfig, shard: DataSource, client_id: int, out_dir: Path) -> FederatedClient:
+def _build_client(
+    config: DictConfig, shard: DataSource, client_id: int, out_dir: Path, strategy: FederatedStrategy
+) -> FederatedClient:
     """Instantiate one client's full streaming loop from config, wrapped as a federated client.
 
     Args:
@@ -80,6 +84,7 @@ def _build_client(config: DictConfig, shard: DataSource, client_id: int, out_dir
         shard: This client's data shard.
         client_id: Stable client identifier (also seeds the per-client stream/model).
         out_dir: Hydra run directory the client's run log is written under.
+        strategy: The FL strategy, supplying this client's half of the algorithm.
 
     Returns:
         The assembled :class:`~cafl4ds.federated.client.FederatedClient`.
@@ -107,6 +112,9 @@ def _build_client(config: DictConfig, shard: DataSource, client_id: int, out_dir
         selection_filter=selection_filter,
         monitor=monitor,
         run_logger=run_logger,
+        # A fresh term per client: each holds its own per-round anchor, so instances must not
+        # be shared. At the strategy's default mu=0 this is an exact no-op.
+        proximal=strategy.make_proximal(),
     )
     return FederatedClient(client_id, loop)
 
@@ -117,6 +125,10 @@ def main(config: DictConfig) -> None:
     torch.manual_seed(config.seed)
     out_dir = Path(HydraConfig.get().runtime.output_dir)
 
+    # The FL algorithm, as one object. Built once per run: its server half is stateful across
+    # rounds, and each client gets a fresh proximal term from its client half.
+    strategy: FederatedStrategy = instantiate(config.strategy)
+
     source = instantiate(config.data)
     shards = partition_source(
         source,
@@ -125,7 +137,7 @@ def main(config: DictConfig) -> None:
         alpha=config.partition.alpha,
         seed=config.seed,
     )
-    clients = [_build_client(config, shard, cid, out_dir) for cid, shard in enumerate(shards)]
+    clients = [_build_client(config, shard, cid, out_dir, strategy) for cid, shard in enumerate(shards)]
 
     # Global readout: measure the aggregated model on an IID view of the *full* dataset, so the
     # health series is not tied to any one client's skewed local held-out set.
@@ -135,8 +147,9 @@ def main(config: DictConfig) -> None:
     global_logger = RunLogger(out_dir / f"global_{config.run_log}", run_name=global_run_name)
 
     logger.info(
-        f"federated run: {config.num_clients} clients, {config.partition.scheme} partition "
-        f"(alpha={config.partition.alpha}), {config.steps_per_round} steps/round, device={config.device}"
+        f"federated run: strategy={strategy.name}, {config.num_clients} clients, "
+        f"{config.partition.scheme} partition (alpha={config.partition.alpha}), "
+        f"{config.steps_per_round} steps/round, device={config.device}"
     )
     orchestrator = FederatedOrchestrator(
         clients,
@@ -144,9 +157,7 @@ def main(config: DictConfig) -> None:
         num_rounds=config.num_rounds,
         global_monitor=global_monitor,
         run_logger=global_logger,
-        # How the server applies the aggregate (FedAvg's identity step by default). Stateful for
-        # the adaptive variants, so it is built here, once per run — never shared across runs.
-        server_optimizer=instantiate(config.server_optim),
+        server_optimizer=strategy.server_optimizer,  # the strategy's server half
     )
     _, history = orchestrator.run()
     logger.info(f"done: {len(history)} rounds; global health log at {global_logger.path}")

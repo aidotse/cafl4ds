@@ -1,0 +1,16 @@
+# Strategy = FedAdagrad (Reddi et al. 2021). Server half only: a running SUM of squared
+# pseudo-gradients, with no decay. The effective step therefore only ever shrinks — a built-in
+# annealing schedule that suits a fixed-horizon run, but a poor fit if the gradient scale shifts
+# mid-run, since the early rounds permanently set the denominator. Note that clients here exhaust
+# at different rounds, so the scale DOES shift; prefer fedadam/fedyogi unless testing that.
+#
+# See `fedadam.yaml` for what `lr` and `tau` mean. No `beta_2`: the accumulator is a plain sum.
+_target_: cafl4ds.federated.strategy.FederatedStrategy
+server_optimizer:
+  _target_: cafl4ds.federated.server_optim.FedAdagradServer
+  lr: 1.0e-2
+  beta_1: 0.9
+  tau: 1.0e-3
+  bias_correction: true # first moment only; a sum has no initialization bias to remove
+  v_init: 1.0e-6
+proximal_mu: 0.0

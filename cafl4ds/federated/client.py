@@ -89,10 +89,16 @@ class FederatedClient:
         The optimizer and the filter's local state are deliberately left untouched — under true
         streaming the client resumes its own optimization/replay memory against the new weights.
 
+        If the loop carries a FedProx penalty, its anchor is re-tied here. The leash is therefore
+        measured against *this* round's consensus, which is what limits within-round drift
+        without ever pinning the model to its initialization.
+
         Args:
             state: The global ``state_dict`` to load.
         """
         self.loop.method.load_state_dict(state)
+        if self.loop.proximal is not None:
+            self.loop.proximal.set_anchor(state)
 
     def train_round(self, steps_per_round: int) -> RoundResult:
         """Advance the local stream by ``steps_per_round`` and train on what is admitted.

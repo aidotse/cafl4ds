@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Iterable, Sized
-from typing import NamedTuple
+from typing import TYPE_CHECKING, NamedTuple
 
 import torch
 from loguru import logger
@@ -31,6 +31,11 @@ from cafl4ds.filters.base import Filter, FilterContext
 from cafl4ds.monitor import HealthMonitor
 from cafl4ds.run_log import RunLogger
 from cafl4ds.ssl.base import SSLMethod
+
+if TYPE_CHECKING:  # import-time only: cafl4ds.federated imports this module, so a runtime
+    # import here would close a cycle. `from __future__ import annotations` keeps the
+    # annotation lazy, and the loop only ever calls `proximal.apply_gradient`.
+    from cafl4ds.federated.proximal import ProximalTerm
 
 # BatchNorm heads (SimSiam) and per-patch stats need at least two samples in a batch.
 _MIN_BATCH = 2
@@ -91,6 +96,7 @@ class StreamingLoop:
         grad_clip: float | None = 1.0,
         device: str = "cpu",
         era_evaluator: PerEraProbe | None = None,
+        proximal: ProximalTerm | None = None,
     ) -> None:
         """Build the loop.
 
@@ -113,6 +119,10 @@ class StreamingLoop:
                 the current encoder is probed over all seen eras at each era boundary and at the
                 end, building the accuracy matrix behind Backward Transfer / Forgetting. ``None``
                 (default) runs no downstream probing — the loop is unchanged.
+            proximal: Optional FedProx penalty pulling the update back towards a broadcast
+                anchor (see :class:`~cafl4ds.federated.proximal.ProximalTerm`). Federated only — a
+                centralized run has nothing to anchor to and passes ``None`` (default), which
+                leaves the update path untouched.
         """
         self.stream = stream
         self.method = method
@@ -126,6 +136,7 @@ class StreamingLoop:
         self.grad_clip = grad_clip
         self.device = torch.device(device)
         self.era_evaluator = era_evaluator
+        self.proximal = proximal
 
     def run(self) -> RunLogger:
         """Run the stream (``epochs`` passes), logging loss and health over global steps.
@@ -242,6 +253,14 @@ class StreamingLoop:
         instrument — a blow-up must be visible even when a clip would otherwise mask it) and
         flags the step non-finite if the loss or that norm is inf/NaN.
 
+        When a FedProx ``proximal`` term is set, its force is added to the gradient *before* the
+        norm is read, so the reported norm stays the norm of what is actually clipped and
+        stepped. The trade-off is deliberate: it means a FedProx run's ``grad_norm`` series is
+        not directly comparable to a ``mu=0`` run's, since the two optimize different objectives.
+        That confound is visible and honest, where measuring the SSL gradient alone would quietly
+        report a different number from the one being clipped. The logged **loss** is unaffected —
+        it remains the pure SSL loss, comparable across every run in the project.
+
         Args:
             images: The accepted image batch ``[K, C, H, W]``.
 
@@ -252,6 +271,8 @@ class StreamingLoop:
         self.optimizer.zero_grad()
         loss = self.method.training_step(images)
         loss.backward()
+        if self.proximal is not None:
+            self.proximal.apply_gradient(self.method.named_parameters())
         grad_norm = self._grad_norm()
         if self.grad_clip is not None:
             torch.nn.utils.clip_grad_norm_(self.method.parameters(), self.grad_clip)

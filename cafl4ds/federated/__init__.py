@@ -6,6 +6,9 @@ Wraps the centralized streaming loop in a synchronous FedAvg simulation. The pie
 * :mod:`~cafl4ds.federated.client` — a resumable per-client :class:`~cafl4ds.loop.StreamingLoop`.
 * :mod:`~cafl4ds.federated.aggregate` — mix client ``state_dict``s into a weighted mean.
 * :mod:`~cafl4ds.federated.server_optim` — apply that mean (FedAvg, or the adaptive FedOpt family).
+* :mod:`~cafl4ds.federated.proximal` — constrain local training (FedProx).
+* :mod:`~cafl4ds.federated.strategy` — bundle a server rule + client constraint into one named
+  algorithm; this is the single ``strategy=`` choice a run makes.
 * :mod:`~cafl4ds.federated.orchestrator` — the round loop tying them together.
 """
 
@@ -13,6 +16,7 @@ from cafl4ds.federated.aggregate import federated_average, weights_from_samples
 from cafl4ds.federated.client import FederatedClient, RoundResult
 from cafl4ds.federated.orchestrator import FederatedOrchestrator, RoundSummary
 from cafl4ds.federated.partition import partition_source
+from cafl4ds.federated.proximal import ProximalTerm
 from cafl4ds.federated.server_optim import (
     AdaptiveServerOptimizer,
     FedAdagradServer,
@@ -21,6 +25,7 @@ from cafl4ds.federated.server_optim import (
     FedYogiServer,
     ServerOptimizer,
 )
+from cafl4ds.federated.strategy import FederatedStrategy
 
 __all__ = [
     "AdaptiveServerOptimizer",
@@ -30,6 +35,8 @@ __all__ = [
     "FedYogiServer",
     "FederatedClient",
     "FederatedOrchestrator",
+    "FederatedStrategy",
+    "ProximalTerm",
     "RoundResult",
     "RoundSummary",
     "ServerOptimizer",

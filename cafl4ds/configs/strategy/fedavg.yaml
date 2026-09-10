@@ -1,0 +1,8 @@
+# Strategy = FedAvg (McMahan et al. 2017). The Phase-0 baseline every other strategy is measured
+# against: the server takes the client mean as-is, and clients train unconstrained.
+#
+# Both halves of a round at their neutral setting — identity server step, no client leash.
+_target_: cafl4ds.federated.strategy.FederatedStrategy
+server_optimizer:
+  _target_: cafl4ds.federated.server_optim.FedAvgServer
+proximal_mu: 0.0

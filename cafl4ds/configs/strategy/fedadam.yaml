@@ -1,0 +1,26 @@
+# Strategy = FedAdam (Reddi et al. 2021). Changes the SERVER half only: Adam on the round's
+# pseudo-gradient `avg_i(client weights) - global weights`. The first adaptive variant to try.
+#
+# Override the server hyperparameters through the nested key, e.g.
+#   uv run python scripts/run_federated.py strategy=fedadam strategy.server_optimizer.lr=1e-2
+#
+# `lr` is the SERVER learning rate. It has no FedAvg counterpart (FedAvg's is implicitly 1.0) and
+# is unrelated to the client learning rate in `configs/optim/` — do not copy that value here. The
+# adaptive update is normalized, so `lr` is roughly the per-coordinate step in weight space per
+# round; sweep {1e-3, 1e-2, 1e-1} before trusting a number.
+#
+# `tau` sits where local Adam puts `eps`, but it is a real knob, not numerical safety: at a
+# local-Adam 1e-8 every coordinate moves by ~±lr (sign-SGD), throwing away which coordinates the
+# clients actually agreed on.
+#
+# `beta_2` is 0.99, not Adam's 0.999: the horizon is ~1/(1 - beta_2) ROUNDS, and 1000 rounds never
+# warms up in a run of ~100.
+_target_: cafl4ds.federated.strategy.FederatedStrategy
+server_optimizer:
+  _target_: cafl4ds.federated.server_optim.FedAdamServer
+  lr: 1.0e-2
+  beta_1: 0.9
+  beta_2: 0.99
+  tau: 1.0e-3
+  bias_correction: true # false reproduces the published algorithm, which omits it
+proximal_mu: 0.0

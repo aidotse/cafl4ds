@@ -13,9 +13,14 @@
 #   uv run python scripts/run_federated.py device=cuda data_root=/home/edgelab/stl10 \
 #     ssl=simsiam num_clients=4 partition.alpha=1.0 batch_size=64
 #
-# Adaptive server optimizer (FedOpt) instead of FedAvg — note `server_optim.lr` is the SERVER
-# learning rate, distinct from the client `optim.lr`:
-#   uv run python scripts/run_federated.py server_optim=fedadam server_optim.lr=1e-2
+# Pick an FL strategy; tune it through its nested keys. Note `server_optimizer.lr` is the SERVER
+# learning rate, a different quantity from the client `optim.lr`:
+#   uv run python scripts/run_federated.py strategy=fedadam strategy.server_optimizer.lr=1e-2
+#   uv run python scripts/run_federated.py strategy=fedprox strategy.proximal_mu=0.1
+#   uv run python scripts/run_federated.py strategy=fedprox_fedadam
+#
+# Sweep strategies against a partition sharpness (the D factor) with `-m`:
+#   uv run python scripts/run_federated.py -m strategy=fedavg,fedadam,fedprox partition.alpha=0.1,1.0
 defaults:
   - encoder: tiny
   - ssl: simsiam # C factor: mae | simsiam
@@ -24,7 +29,10 @@ defaults:
   - filter: accept_all # A factor: B-floor (same filter on every client, own local state)
   - monitor: default
   - optim: adamw # the CLIENT optimizer (per-client, instantiated in the run script)
-  - server_optim: fedavg # how the server applies the aggregate: fedavg | fedadam | fedyogi | fedadagrad
+  # The FL algorithm, as one choice. Each strategy sets both halves of a round (the server's
+  # rule for applying the aggregate, and any client-side constraint):
+  #   fedavg | fedadam | fedyogi | fedadagrad | fedprox | fedprox_fedadam
+  - strategy: fedavg
   - init: from_scratch # I factor: from_scratch | pretrained
   - _self_
 

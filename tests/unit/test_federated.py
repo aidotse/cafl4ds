@@ -6,6 +6,7 @@ aggregation (including non-float buffer handling), and the synchronous round loo
 client exhaustion.
 """
 
+import math
 from pathlib import Path
 
 import pytest
@@ -18,6 +19,7 @@ from cafl4ds.federated.aggregate import federated_average, weights_from_samples
 from cafl4ds.federated.client import FederatedClient
 from cafl4ds.federated.orchestrator import FederatedOrchestrator
 from cafl4ds.federated.partition import dirichlet_partition, iid_partition, partition_source
+from cafl4ds.federated.proximal import ProximalTerm
 from cafl4ds.federated.server_optim import (
     AdaptiveServerOptimizer,
     FedAdagradServer,
@@ -25,6 +27,7 @@ from cafl4ds.federated.server_optim import (
     FedAvgServer,
     FedYogiServer,
 )
+from cafl4ds.federated.strategy import FederatedStrategy
 from cafl4ds.filters.accept_all import AcceptAll
 from cafl4ds.loop import StreamingLoop
 from cafl4ds.models.vit import TinyViTEncoder
@@ -250,6 +253,136 @@ def test_client_is_true_single_pass_across_rounds(tmp_path: Path) -> None:
     assert pulled == total_batches
 
 
+# --- strategies (the single user-facing FL choice) ----------------------------
+
+
+def test_default_strategy_is_fedavg() -> None:
+    """An unconfigured strategy is FedAvg: identity server step, unconstrained client."""
+    strategy = FederatedStrategy()
+    assert strategy.name == "fedavg"
+    assert strategy.server_optimizer.name == "fedavg"
+    assert not strategy.make_proximal().enabled  # mu=0 is an exact no-op
+
+
+def test_strategy_names_report_both_halves() -> None:
+    """The run-log name says which halves of the round a strategy actually changes."""
+    assert FederatedStrategy(server_optimizer=FedAdamServer()).name == "fedadam"
+    assert FederatedStrategy(proximal_mu=0.1).name == "fedavg+fedprox(mu=0.1)"
+    assert FederatedStrategy(server_optimizer=FedAdamServer(), proximal_mu=0.1).name == "fedadam+fedprox(mu=0.1)"
+
+
+def test_strategy_builds_a_fresh_proximal_term_per_client() -> None:
+    """Clients must not share a term: each holds its own per-round anchor."""
+    strategy = FederatedStrategy(proximal_mu=0.5)
+    first, second = strategy.make_proximal(), strategy.make_proximal()
+    assert first is not second
+    assert first.mu == second.mu == 0.5
+    first.set_anchor({"w": torch.zeros(2)})
+    assert first.enabled and not second.enabled  # anchoring one leaves the other alone
+
+
+def test_strategy_rejects_a_negative_mu() -> None:
+    """A bad config fails at construction, before any training happens."""
+    with pytest.raises(ValueError, match="proximal_mu must be >= 0"):
+        FederatedStrategy(proximal_mu=-1.0)
+
+
+# --- FedProx (client-side proximal term) -------------------------------------
+
+
+def test_proximal_term_is_an_exact_noop_at_mu_zero() -> None:
+    """mu=0 must not touch a single gradient, so `strategy=fedavg` cannot perturb a run."""
+    term = ProximalTerm(mu=0.0)
+    param = torch.nn.Parameter(torch.tensor([5.0, 5.0]))
+    param.grad = torch.tensor([1.0, 1.0])
+    term.set_anchor({"w": torch.tensor([0.0, 0.0])})  # a huge drift, deliberately
+    assert not term.enabled
+    assert term.apply_gradient([("w", param)]) == 0.0
+    assert torch.equal(param.grad, torch.tensor([1.0, 1.0]))  # gradient untouched
+
+
+def test_proximal_gradient_is_mu_times_the_drift() -> None:
+    """The added force is exactly d/dw of (mu/2)*||w - anchor||^2, i.e. mu*(w - anchor)."""
+    term = ProximalTerm(mu=0.5)
+    term.set_anchor({"w": torch.tensor([1.0, 1.0])})
+    param = torch.nn.Parameter(torch.tensor([3.0, -1.0]))  # drift = [+2, -2]
+    param.grad = torch.zeros(2)
+    penalty = term.apply_gradient([("w", param)])
+    assert torch.allclose(param.grad, torch.tensor([1.0, -1.0]))  # mu * drift
+    assert penalty == pytest.approx(0.5 * 0.5 * (4.0 + 4.0))  # (mu/2)*||drift||^2
+
+
+def test_proximal_force_pulls_back_towards_the_anchor() -> None:
+    """The force opposes the drift on every coordinate — a leash, not a push."""
+    term = ProximalTerm(mu=0.1)
+    term.set_anchor({"w": torch.zeros(2)})
+    param = torch.nn.Parameter(torch.tensor([4.0, -4.0]))
+    param.grad = torch.zeros(2)
+    term.apply_gradient([("w", param)])
+    # Gradient DESCENT subtracts the gradient, so a positive drift needs a positive gradient.
+    assert (param.grad * param.detach() > 0).all()
+
+
+def test_proximal_penalty_is_zero_at_the_start_of_a_round() -> None:
+    """Right after the broadcast the local weights *are* the anchor, so there is no penalty."""
+    term = ProximalTerm(mu=1.0)
+    param = torch.nn.Parameter(torch.tensor([2.0, 3.0]))
+    param.grad = torch.tensor([1.0, 1.0])
+    term.set_anchor({"w": param.detach().clone()})
+    assert term.apply_gradient([("w", param)]) == 0.0
+    assert torch.equal(param.grad, torch.tensor([1.0, 1.0]))  # no drift, no force
+
+
+def test_proximal_anchor_is_a_snapshot_not_a_view() -> None:
+    """Local training must not drag the anchor along with it."""
+    term = ProximalTerm(mu=1.0)
+    live = torch.tensor([1.0, 1.0])
+    term.set_anchor({"w": live})
+    live.add_(10.0)  # the model moves after the broadcast
+    param = torch.nn.Parameter(torch.tensor([1.0, 1.0]))
+    param.grad = torch.zeros(2)
+    term.apply_gradient([("w", param)])
+    assert torch.equal(param.grad, torch.zeros(2))  # still anchored at the broadcast value
+
+
+def test_proximal_term_rejects_a_negative_mu() -> None:
+    """A negative penalty would reward drift, so it is refused up front."""
+    with pytest.raises(ValueError, match="mu must be >= 0"):
+        ProximalTerm(mu=-0.1)
+
+
+def test_client_reties_the_anchor_every_round(tmp_path: Path) -> None:
+    """The leash tracks the current consensus, rather than pinning the run's initialization."""
+    src = SyntheticSource(num_classes=3, per_class=30, img_size=16, seed=0)
+    loop = _make_loop(src, seed=1, log_path=tmp_path / "a.jsonl")
+    loop.proximal = ProximalTerm(mu=0.01)
+    client = FederatedClient(0, loop)
+    other = FederatedClient(1, _make_loop(src, seed=2, log_path=tmp_path / "b.jsonl"))
+
+    first = other.get_weights()
+    client.set_weights(first)
+    key = "encoder.blocks.0.norm1.weight"
+    assert torch.equal(loop.proximal._anchor[key], first[key])
+
+    second = {k: v + 1.0 if v.is_floating_point() else v for k, v in first.items()}
+    client.set_weights(second)  # a later round broadcasts different weights
+    assert torch.equal(loop.proximal._anchor[key], second[key])  # re-tied, not stale
+
+
+def test_proximal_term_ignores_batchnorm_buffers(tmp_path: Path) -> None:
+    """Only parameters are leashed: a gradient force on a running statistic is meaningless."""
+    src = SyntheticSource(num_classes=3, per_class=30, img_size=16, seed=0)
+    loop = _make_loop(src, seed=1, log_path=tmp_path / "a.jsonl")
+    term = ProximalTerm(mu=1.0)
+    loop.proximal = term
+    client = FederatedClient(0, loop)
+    client.set_weights(client.get_weights())
+    # The anchor holds buffers, but apply_gradient walks named_parameters(), which excludes them.
+    assert any("running_" in k for k in term._anchor)
+    leashed = {name for name, _ in loop.method.named_parameters()}
+    assert not any("running_" in name or "num_batches_tracked" in name for name in leashed)
+
+
 # --- orchestrator ------------------------------------------------------------
 
 
@@ -371,6 +504,48 @@ def test_adaptive_server_diverges_from_fedavg(tmp_path: Path) -> None:
     ).run()
     key = "encoder.blocks.0.norm1.weight"
     assert not torch.allclose(baseline[key], adaptive[key])
+
+
+def _client_drift(tmp_path: Path, mu: float, rounds: int = 3) -> float:
+    """Run a federation at a given `mu` and return how far the clients ended from consensus.
+
+    Client drift is the whole quantity FedProx exists to control, so this measures it directly:
+    the total L2 distance between each client's post-round weights and the global model they
+    were all working from.
+    """
+    clients = _make_clients(tmp_path, num_clients=3)
+    for client in clients:
+        client.loop.proximal = ProximalTerm(mu=mu)
+    final_state, _ = FederatedOrchestrator(clients, steps_per_round=2, num_rounds=rounds).run()
+    param_keys = {name for name, _ in clients[0].method.named_parameters()}
+    squared: float = sum(
+        float((client.get_weights()[key] - final_state[key]).pow(2).sum())
+        for client in clients
+        for key in param_keys
+    )
+    return math.sqrt(squared)
+
+
+def test_fedprox_reduces_client_drift(tmp_path: Path) -> None:
+    """The behavioural claim: a tighter leash keeps clients closer to the global model.
+
+    This is the test that would catch a sign error or a stale anchor — the unit tests pin the
+    arithmetic, but only a real run shows the penalty doing its job across rounds.
+    """
+    loose = _client_drift(tmp_path / "loose", mu=0.0)
+    tight = _client_drift(tmp_path / "tight", mu=5.0)
+    assert tight < loose, f"mu=5.0 drift {tight} should be below mu=0 drift {loose}"
+
+
+def test_fedprox_composes_with_an_adaptive_server(tmp_path: Path) -> None:
+    """Client-side and server-side drift cures act at opposite ends of the round."""
+    clients = _make_clients(tmp_path, num_clients=2)
+    for client in clients:
+        client.loop.proximal = ProximalTerm(mu=0.1)
+    orch = FederatedOrchestrator(clients, steps_per_round=1, num_rounds=3, server_optimizer=FedAdamServer(lr=1e-3))
+    final_state, history = orch.run()
+    assert len(history) == 3
+    assert all(torch.isfinite(v).all() for v in final_state.values() if v.is_floating_point())
 
 
 def test_orchestrator_validates_inputs(tmp_path: Path) -> None:

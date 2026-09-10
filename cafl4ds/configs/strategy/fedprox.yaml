@@ -1,0 +1,16 @@
+# Strategy = FedProx (Li et al. 2020). Changes the CLIENT half only: penalize a client for
+# straying from the weights it was handed at the start of the round, by
+# `(proximal_mu / 2) * ||w - w_global||^2`. The server still does plain FedAvg.
+#
+# `proximal_mu` is the leash length: 0 is FedAvg, and large values freeze the client so federation
+# stops learning. Useful values are small and data-dependent — Li et al. sweep
+# {0.001, 0.01, 0.1, 1.0}. Expect the useful setting to tighten (larger mu) as the partition
+# sharpens (smaller `partition.alpha`), since that is when clients pull hardest against each other.
+# The 0.01 default is deliberately conservative; on an IID partition it is nearly indistinguishable
+# from fedavg, because there is little drift to prevent.
+#
+#   uv run python scripts/run_federated.py strategy=fedprox strategy.proximal_mu=0.1
+_target_: cafl4ds.federated.strategy.FederatedStrategy
+server_optimizer:
+  _target_: cafl4ds.federated.server_optim.FedAvgServer
+proximal_mu: 0.01
