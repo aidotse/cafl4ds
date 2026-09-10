@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 This file is managed by [Commitizen](https://commitizen-tools.github.io/commitizen/) and is updated automatically on
 each `poe bump` (driven by [Conventional Commits](https://www.conventionalcommits.org/)). Do not edit it by hand.
 
+## v0.28.0 (2026-09-10)
+
+### Feat
+
+- P1 scoping done, re-audit prior art, all synced. Ready for studies
+
 ## v0.27.0 (2026-09-09)
 
 ### Feat
