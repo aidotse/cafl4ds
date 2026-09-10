@@ -58,6 +58,16 @@ mode calibrated.
     (small) is the degradation-sensitive primary; pretrained checks whether degradation persists or is masked.
     Instrument **both modes** (collapse on joint-embedding, forgetting on MAE); diagnostic = rank-vs-loss divergence;
     **PC must fire.**
+- *Closest prior (forgetting):* continual-MAE **pretraining** already shows MAE resists and replay protects (Beyond
+    Cosine Decay 2025; CoSMAE 2025) under random/replay sampling — so Phase 1's novel target is the **selection lever**
+    \+ the envelope, read label-free (none of that prior work puts a filter in the loop; see [novelty.md](novelty.md)
+    N-A). Hold the **LR schedule** fixed and swept as a confound (re-warming manufactures forgetting independently of
+    the diet).
+- *Closest prior (streaming premise):* the streaming-SSL line (Purushwalkam's MinRed 2022; Memory Storyboard 2025;
+    Orthogonal Gradients 2025) already shows temporal correlation degrades streaming SSL and that de-correlating replay
+    mitigates — our distinction is steering **selection by health**, live. For *collapse*, **control batch-size +
+    model-size**: streaming's small effective batch and a small from-scratch model each induce dimensional collapse
+    independent of the diet (Jing 2022; SimSiam size-sensitivity).
 - **Go:** a coupling exists. **No-Go:** reframe to selection-for-efficiency.
 
 ### Phase 2 — Open-loop criterion study `[NEW]` (N-A, N-B, N-C).
@@ -159,7 +169,7 @@ Keeping (1) and (2) apart makes a null interpretable — control failed, vs. the
 | **G** | PCA dim (F-a) | full · 32 · 16 · 8 | "How far can we compress before novelty degrades." |
 | **H** | Reference encoder (F-a) | frozen · adapting | Tests the stability invariant. |
 | **K** | Controller signal (when L=closed) | oracle (probe-based) · label-free | Separates *control benefit* from *detection-in-time*. |
-| **P** | Pressure sweep | correlation · LR · model size · horizon · replay on/off | Stress knobs to locate the degradation envelope. |
+| **P** | Pressure sweep | correlation · LR (+ schedule) · model size · horizon · replay on/off | Stress knobs to locate the degradation envelope. **LR includes the *schedule*** (re-warming vs. constant/infinite) — itself a forgetting confound (Beyond Cosine Decay, CoLLAs 2025), pinned & reported per run. |
 
 *B5 is always init-matched (frozen-random for from-scratch, frozen-pretrained for pretrained). Probes are used freely
 throughout (the study, not an edge pipeline).*
@@ -182,7 +192,11 @@ throughout (the study, not an edge pipeline).*
     each metric (*Asks:* under which operating regime does each metric behave correctly, or unexpectedly?)
 - **Phase 1 — Degradation envelope.** Vary **A**{B-floor,reservoir,dedup,loss} × **I** × **C**{MAE,joint-embedding} ×
     **P**; fixed L=open, D=centralized, F=correlated, E STL-10→BDD; PC + B5 every batch. *Asks:* does degradation appear
-    and where does it onset; does adaptation beat B5; does the knob move health? (Both modes instrumented.)
+    and where does it onset; does adaptation beat B5; does the knob move health? (Both modes instrumented.) *Prior-art
+    reframe (forgetting):* continual-MAE pretraining shows MAE resists and replay protects (Beyond Cosine Decay, CoLLAs
+    2025; CoSMAE 2025), so the MAE headline is **whether selection moves health** + how far the envelope must be pushed
+    — not a spontaneous crater; the LR **schedule** is held as a confound. *Confounds to hold for collapse:* batch-size
+    \+ model-size (both cause dimensional collapse independent of the diet).
 - **Phase 2 — Open-loop dynamics (N-B, N-C).** Vary **A**{F-a,F-b,F-c-static} × **B** over a long horizon; fixed L=open,
     D=centralized, F2 (+F1 control), I = the regime where Ph1 showed the dynamics. *Asks:* does the flip survive
     co-adaptation (N-B); does the loop self-reinforce, do damping interventions help (N-C)?
