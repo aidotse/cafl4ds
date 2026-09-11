@@ -1,0 +1,52 @@
+# P1.0.2 deployment-prototype de-risker harness. Streams a configurable BDD driving diet through a
+# config-selected backbone and logs a Phase-0-informed multivariate health signal (label-free +
+# labelled-canary channels, trust-annotated). Engineering only — it reads no degradation.
+#
+# Tier-A wiring check (fresh clone, no dataset needed):
+#   uv run python scripts/run_deploy_harness.py data=attr_synthetic img_size=32 eval_every=3
+# The default BDD diet, joint-embedding backbone:
+#   uv run python scripts/run_deploy_harness.py data=bdd bdd_root=/abs/path/to/bdd backbone=je
+# MAE backbone, downscaled for a low-memory box, gate arms off:
+#   uv run python scripts/run_deploy_harness.py data=bdd bdd_root=/abs/path backbone=mae img_size=128 gate_arms=false
+defaults:
+  - encoder: tiny
+  - backbone: je # backbone family: mae | je (selects ssl + monitor + trust family)
+  - data: attr_synthetic # attribute source: attr_synthetic | bdd
+  - stream: regime
+  - filter: accept_all
+  - optim: adamw
+  - init: from_scratch
+  - pc: collapse # the manufactured-pathology gate arm (used iff gate_arms=true)
+  - _self_
+
+# Shared scalars (interpolated into the groups above).
+img_size: 32
+batch_size: 32
+seed: 0
+device: cpu
+eval_every: 5
+
+# BDD sizing (data=bdd). bdd_root points at the canonical download; max_images caps the load.
+bdd_root: /mnt/bdd100k
+max_images: null
+max_train_per_regime: null
+
+# Co-log the PC/B5 gate arms (false keeps the corpus to the live backbone only — the hand-off case).
+gate_arms: true
+
+# The manufactured-collapse gate thresholds (used iff gate_arms=true).
+gate:
+  pc_loss_floor_max: -0.3
+  pc_rankme_drop_frac: 0.6
+
+# Log/un-log lever: null logs every emitted signal; a list restricts to those (bookkeeping kept).
+log_signals: null
+
+# Tier-A flat-memory (leak) check: repeat the live arm over the diet and confirm memory stays flat.
+long_horizon: false
+long_horizon_passes: 4
+long_horizon_growth_frac_max: 0.10
+
+# The deploy corpus written into the Hydra run dir.
+report: deploy.json
+run_name: null # defaults to "<backbone>_deploy" in the run script

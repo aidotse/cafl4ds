@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "config": {
+    "C": "mae",
+    "I": "from_scratch",
+    "mode": "long_horizon",
+    "seed": 0
+  },
+  "gate": {
+    "mode": "long_horizon",
+    "passed": true,
+    "checks": {
+      "finite": true,
+      "memory_flat": true
+    }
+  },
+  "arms": {
+    "live": {
+      "run_name": "long_horizon_p4",
+      "health": [
+        {
+          "run": "long_horizon_p4",
+          "series": "health",
+          "step": 0.0,
+          "era": 0,
+          "loss": 1.0024428367614746,
+          "rankme": 2.885221242904663,
+          "mean_feature_var": 8.066573172982316e-06,
+          "offdiag_cov": 3.9574465926506264e-10,
+          "uniformity": -0.0030971996020525694,
+          "cka_drift": 0.0,
+          "cosine_drift": 0.0,
+          "alignment": 0.0007766663329675794,
+          "knn_acc": 1.0,
+          "linear_acc": 1.0
+        },
+        {
+          "run": "long_horizon_p4",
+          "series": "health",
+          "step": 5.0,
+          "era": 1,
+          "loss": 1.0015329122543335,
+          "rankme": 2.870784044265747,
+          "mean_feature_var": 7.959593858686276e-06,
+          "offdiag_cov": 3.853347363413917e-10,
+          "uniformity": -0.0030561848543584347,
+          "cka_drift": 2.205371856689453e-06,
+          "cosine_drift": 0.00042247772216796875,
+          "alignment": 0.0007663975120522082,
+          "knn_acc": 1.0,
+          "linear_acc": 1.0
+        },
+        {
+          "run": "long_horizon_p4",
+          "series": "health",
+          "step": 10.0,
+          "era": 3,
+          "loss": 1.0024065971374512,
+          "rankme": 2.8609859943389893,
+          "mean_feature_var": 7.886511411925312e-06,
+          "offdiag_cov": 3.781003565794805e-10,
+          "uniformity": -0.00302808522246778,
+          "cka_drift": 5.4836273193359375e-06,
+          "cosine_drift": 0.0011509060859680176,
+          "alignment": 0.0007594518829137087,
+          "knn_acc": 1.0,
+          "linear_acc": 1.0
+        },
+        {
+          "run": "long_horizon_p4",
+          "series": "health",
+          "step": 11.0,
+          "era": 3,
+          "loss": 1.0024596452713013,
+          "rankme": 2.85939884185791,
+          "mean_feature_var": 7.874879884184338e-06,
+          "offdiag_cov": 3.7698236199368296e-10,
+          "uniformity": -0.003023541532456875,
+          "cka_drift": 5.841255187988281e-06,
+          "cosine_drift": 0.0012469291687011719,
+          "alignment": 0.0007583360420539975,
+          "knn_acc": 1.0,
+          "linear_acc": 1.0
+        }
+      ]
+    }
+  },
+  "finite": true,
+  "leak_check": {
+    "rss_mb": [
+      467.24609375,
+      469.5234375,
+      497.3125,
+      520.76953125,
+      520.8125
+    ],
+    "tail_mb": [
+      497.3125,
+      520.76953125,
+      520.8125
+    ],
+    "tail_spread_frac": 0.047253990197310546,
+    "growth_frac_max": 0.1,
+    "flat": true
+  }
+}

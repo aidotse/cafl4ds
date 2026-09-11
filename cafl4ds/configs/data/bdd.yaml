@@ -1,0 +1,8 @@
+# The real BDD100K images + driving attributes (the deployment substrate). Point `bdd_root` at a
+# canonical BDD100K download (100k images, not video); see docs/experiments/phase1/P1.0.2.md for
+# the expected layout and from-scratch setup.
+_target_: cafl4ds.data.attributes.BDD100KSource
+bdd_root: ${bdd_root}
+split: train
+img_size: ${img_size}
+max_images: ${max_images}

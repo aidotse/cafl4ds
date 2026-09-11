@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "study": "P1.0.1",
+  "config": {
+    "C": "mae",
+    "I": "from_scratch",
+    "F": "class_blocked",
+    "seed": 0,
+    "alignment": "shared_iterator"
+  },
+  "data_identity": {
+    "num_steps": 30,
+    "era_step_aligned": true,
+    "max_abs_image_diff": 0.0,
+    "bit_identical": true
+  },
+  "trajectory": {
+    "matched_seed": {
+      "num_checkpoints": 7,
+      "step_grid_matched": true,
+      "max_abs_divergence": 0.0,
+      "per_surface_max": {
+        "loss": 0.0,
+        "rankme": 0.0,
+        "mean_feature_var": 0.0,
+        "offdiag_cov": 0.0,
+        "uniformity": 0.0,
+        "cka_drift": 0.0,
+        "cosine_drift": 0.0,
+        "alignment": 0.0,
+        "knn_acc": 0.0,
+        "linear_acc": 0.0
+      },
+      "bit_identical": true
+    },
+    "inarm_rng_desynced": {
+      "num_checkpoints": 7,
+      "step_grid_matched": true,
+      "max_abs_divergence": 0.04460334777832031,
+      "per_surface_max": {
+        "loss": 0.03208732604980469,
+        "rankme": 0.04460334777832031,
+        "mean_feature_var": 3.66134918294847e-06,
+        "offdiag_cov": 4.938124220643658e-08,
+        "uniformity": 0.0013065263628959656,
+        "cka_drift": 0.005371749401092529,
+        "cosine_drift": 0.021108269691467285,
+        "alignment": 8.951406925916672e-05,
+        "knn_acc": 0.01999999999999999,
+        "linear_acc": 0.020000000000000018
+      },
+      "bit_identical": false
+    }
+  },
+  "attribution": {
+    "stream_construction": 0.0,
+    "in_arm_rng_matched": 0.0,
+    "in_arm_rng_desynced": 0.04460334777832031
+  },
+  "verdict": {
+    "same_seed_certified": true,
+    "measurement_sensitive": true
+  }
+}
