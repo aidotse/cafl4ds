@@ -24,6 +24,7 @@ Examples:
 import copy
 import json
 import sys
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any
 
@@ -34,7 +35,7 @@ from hydra.utils import instantiate, to_absolute_path
 from loguru import logger
 from omegaconf import DictConfig
 
-from cafl4ds import deploy, harness
+from cafl4ds import deploy, deploy_corpus, harness, warmup
 from cafl4ds.health_trust import CANARY_SIGNALS, DEFAULT_LABEL_FREE_SIGNALS, Backbone, backbone_family
 from cafl4ds.ssl.base import SSLMethod, apply_encoder_init
 
@@ -43,17 +44,29 @@ logger.add(sys.stdout, level="INFO")
 
 
 def _live_method(config: DictConfig) -> SSLMethod:
-    """Instantiate the selected backbone and apply its initialization."""
+    """Instantiate the selected backbone and apply its initialization.
+
+    Precedence: a ``well`` (a full-method warm well from ``scripts/warm_well.py``) resumes the model
+    intact — encoder *and* head — so a warm drive starts from genuine competence with no fresh-head
+    transient (P0.3.9). With no well, the ``init`` factor applies (``from_scratch`` / encoder-only
+    ``pretrained``) exactly as the Phase-0 harness.
+    """
     method: SSLMethod = instantiate(config.ssl, encoder=instantiate(config.encoder))
     checkpoint = config.init.checkpoint
     if config.init.mode == "pretrained" and not checkpoint:
         checkpoint = str(Path(to_absolute_path(config.pretrain_dir)) / f"{method.name}.pt")
     apply_encoder_init(method.encoder, config.init.mode, checkpoint)
+    if config.get("well"):
+        warmup.load_well(method, to_absolute_path(str(config.well)))
     return method
 
 
-def _run_live(config: DictConfig, out_dir: Path, name: str) -> harness.Arm:
-    """Run the live backbone over the regime diet, logging the full multivariate health vector."""
+def _run_live(config: DictConfig, out_dir: Path, name: str) -> tuple[harness.Arm, dict[int, str], dict[int, Any]]:
+    """Run the live backbone over the regime diet, logging the full multivariate health vector.
+
+    Returns the completed arm, the stream's era→regime-name map, and its per-era label composition
+    (both for labelling the corpus legs).
+    """
     torch.manual_seed(int(config.seed))
     method = _live_method(config)
     if backbone_family(method.name) is not Backbone(str(config.family)):
@@ -65,7 +78,7 @@ def _run_live(config: DictConfig, out_dir: Path, name: str) -> harness.Arm:
     logger.info(
         f"deploy '{name}': backbone={method.name}, {stream.num_eras} eras, {len(stream)} batches, dev={config.device}"
     )
-    return harness.run_stream_arm(
+    arm = harness.run_stream_arm(
         name=f"{name}_live",
         role="live",
         method=method,
@@ -77,6 +90,7 @@ def _run_live(config: DictConfig, out_dir: Path, name: str) -> harness.Arm:
         eval_every=config.eval_every,
         device=config.device,
     )
+    return arm, stream.era_names, stream.era_composition()
 
 
 def _run_gate_arms(
@@ -149,10 +163,11 @@ def _run_leak_check(config: DictConfig, out_dir: Path, name: str) -> dict[str, A
     return harness.leak_report(rss_samples, growth_frac_max=float(config.long_horizon_growth_frac_max))
 
 
-def _build(config: DictConfig, out_dir: Path) -> dict[str, Any]:
-    """Run the arms, read the multivariate signal, and assemble the deploy corpus."""
-    name = config.run_name or f"{config.family}_deploy"
-    live = _run_live(config, out_dir, name)
+def _build(config: DictConfig, out_dir: Path, seed: int) -> tuple[dict[str, Any], dict[int, str], dict[int, Any]]:
+    """Run the arms for one seed, read the multivariate signal, and assemble the deploy report."""
+    config.seed = seed  # drive per-seed determinism and the stream's held-out reservation
+    name = f"{config.run_name or f'{config.family}_deploy'}_s{seed}"
+    live, era_names, composition = _run_live(config, out_dir, name)
     family = Backbone(str(config.family))
 
     grid = harness.health_grid(live)
@@ -165,10 +180,11 @@ def _build(config: DictConfig, out_dir: Path) -> dict[str, Any]:
     header = {
         "backbone": config.family,
         "I": config.init.mode,
+        "warm": bool(config.get("well")),
         "diet": "regime",
         "block_size": config.stream.block_size,
         "A": _target_leaf(config.filter),
-        "seed": int(config.seed),
+        "seed": int(seed),
         "img_size": int(config.img_size),
         "device": str(config.device),
         "gate_arms": bool(config.gate_arms),
@@ -184,7 +200,16 @@ def _build(config: DictConfig, out_dir: Path) -> dict[str, Any]:
         log_signals=log_signals,
     )
     _log_verdict(report)
-    return report
+    return report, era_names, composition
+
+
+def _git_sha() -> str | None:
+    """The build's git provenance from the hatch-vcs version local segment (no subprocess)."""
+    try:
+        local = version("cafl4ds").split("+", 1)
+    except PackageNotFoundError:
+        return None
+    return local[1] if len(local) > 1 else None
 
 
 def _target_leaf(node: DictConfig) -> str:
@@ -206,14 +231,35 @@ def _log_verdict(report: dict[str, Any]) -> None:
 
 @hydra.main(version_base=None, config_path="../cafl4ds/configs", config_name="deploy")  # type: ignore[misc]
 def main(config: DictConfig) -> None:
-    """Run the P1.0.2 deployment harness and write the deploy corpus."""
+    """Run the P1.0.2 deployment harness over the seed ensemble and write the hand-off corpus."""
     out_dir = Path(HydraConfig.get().runtime.output_dir)
-    report = _build(config, out_dir)
+    seeds = [int(s) for s in config.seeds] if config.get("seeds") else [int(config.seed)]
+    reports_dir = out_dir / "reports"
+    reports_dir.mkdir(parents=True, exist_ok=True)
 
-    (out_dir / config.report).write_text(json.dumps(report, indent=2), encoding="utf-8")
-    logger.info(f"wrote deploy corpus to {out_dir / config.report}")
-    if not report["validation"]["passed"]:
-        logger.error("Tier-A validation did NOT pass — the deployment pipeline is mis-wired; investigate before use.")
+    reports: list[tuple[int, dict[str, Any]]] = []
+    era_names: dict[int, str] = {}
+    composition: dict[int, Any] = {}
+    for seed in seeds:
+        report, era_names, composition = _build(config, out_dir, seed)
+        (reports_dir / f"{config.family}_deploy_s{seed}.json").write_text(
+            json.dumps(report, indent=2), encoding="utf-8"
+        )
+        reports.append((seed, report))
+
+    manifest = {
+        "git_sha": _git_sha(),
+        "n_seeds": len(seeds),
+        "warm": bool(config.get("well")),
+        "eval_every": int(config.eval_every),
+    }
+    paths = deploy_corpus.write_corpus(
+        out_dir / "corpus", reports=reports, era_names=era_names, composition=composition, manifest=manifest
+    )
+    logger.info(f"wrote deploy corpus ({len(reports)} seed(s)) to {paths['manifest'].parent}")
+
+    if not all(report["validation"]["passed"] for _, report in reports):
+        logger.error("Tier-A validation did NOT pass for a seed — the pipeline is mis-wired; investigate before use.")
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from cafl4ds.data.attributes import SyntheticAttributeSource
+from cafl4ds.data.attributes import AttributedImages, AttributeSource, SyntheticAttributeSource
 from cafl4ds.data.regime import RegimeStream, count_ordered_batches, iter_ordered_batches
 from cafl4ds.data.streams import StreamBatch
 
@@ -13,6 +13,36 @@ from cafl4ds.data.streams import StreamBatch
 def _source() -> SyntheticAttributeSource:
     """A modest network-free attributed source with enough images to reserve probes from."""
     return SyntheticAttributeSource(num_regimes=3, num_canary_classes=3, per_cell=20, img_size=12, long_tail=False)
+
+
+class _CategorySource(AttributeSource):
+    """A tiny attributed source carrying per-image object-category counts (a BDD label stand-in)."""
+
+    def __init__(self, per_cell: int = 8) -> None:
+        self.per_cell = per_cell
+
+    @property
+    def num_canary_classes(self) -> int:
+        return 2
+
+    def load(self) -> AttributedImages:
+        images, era_key, canary, cats = [], [], [], []
+        for regime in (0, 1):
+            for scene in (0, 1):
+                for _ in range(self.per_cell):
+                    images.append(torch.rand(3, 8, 8))
+                    era_key.append(regime)
+                    canary.append(scene)
+                    cats.append({"car": 1} if scene == 0 else {"person": 2})
+        return AttributedImages(
+            images=torch.stack(images),
+            era_key=torch.tensor(era_key, dtype=torch.long),
+            canary=torch.tensor(canary, dtype=torch.long),
+            regime_order=[0, 1],
+            regime_names={0: "daytime·clear", 1: "night·rainy"},
+            canary_names={0: "highway", 1: "city street"},
+            object_categories=cats,
+        )
 
 
 def test_eval_sets_are_balanced_on_the_canary_axis_and_disjoint() -> None:
@@ -107,6 +137,48 @@ def test_raises_when_a_canary_class_is_too_small_for_reservations() -> None:
     tiny = SyntheticAttributeSource(num_regimes=2, num_canary_classes=2, per_cell=3, long_tail=False)
     with pytest.raises(ValueError, match="reserved for probes"):
         RegimeStream(tiny, support_per_canary=20, query_per_canary=20)
+
+
+def test_era_names_map_walk_positions_to_regime_names() -> None:
+    """era_names resolves each delivered era (walk position) to its source regime name."""
+    stream = RegimeStream(_source(), batch_size=8)
+    assert stream.era_names == {0: "regime0", 1: "regime1", 2: "regime2"}
+    # the map only covers eras that actually deliver batches
+    assert set(stream.era_names) == {b.era for b in stream}
+
+
+def test_era_composition_scene_histogram_sums_to_image_count() -> None:
+    """Each era's scene histogram totals its delivered image count; no category labels → empty hist."""
+    stream = RegimeStream(_source(), batch_size=8, support_per_canary=5, query_per_canary=5)
+    comp = stream.era_composition()
+    assert set(comp) == {b.era for b in stream}
+    for entry in comp.values():
+        assert sum(entry["scene_hist"].values()) == entry["n_images"]
+        assert entry["category_hist"] == {}  # synthetic source carries no detection labels
+
+
+def test_era_composition_aggregates_object_categories() -> None:
+    """With detection labels, each era's category histogram sums the per-image box counts."""
+    stream = RegimeStream(_CategorySource(per_cell=8), batch_size=4, support_per_canary=2, query_per_canary=2)
+    comp = stream.era_composition()
+    # each era has both scenes; per training image: highway→{car:1}, city street→{person:2}
+    for era, entry in comp.items():
+        highway = entry["scene_hist"].get("highway", 0)
+        city = entry["scene_hist"].get("city street", 0)
+        assert entry["category_hist"] == {"car": highway, "person": 2 * city}, era
+
+
+def test_stationary_batches_cover_the_training_pool_without_probes() -> None:
+    """The stationary diet reshuffles the exact training pool — same images, no era ordering."""
+    stream = RegimeStream(_source(), batch_size=8, support_per_canary=5, query_per_canary=5)
+    walk = list(stream)
+    stationary = list(stream.stationary_batches())
+    # every stationary batch is tagged era 0 (no regime ordering) ...
+    assert {b.era for b in stationary} == {0}
+    # ... and the image content matches the walk's training pool exactly (a permutation of it)
+    walk_imgs = {tuple(img.flatten().tolist()) for b in walk for img in b.images}
+    stat_imgs = {tuple(img.flatten().tolist()) for b in stationary for img in b.images}
+    assert walk_imgs == stat_imgs
 
 
 def test_iter_and_count_helpers_agree_and_never_split_eras() -> None:

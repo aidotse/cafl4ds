@@ -24,7 +24,15 @@ img_size: 32
 batch_size: 32
 seed: 0
 device: cpu
-eval_every: 5
+eval_every: 1 # dense checkpointing — a health reading per batch, for temporal resolution
+
+# The seed ensemble — one trajectory per seed (null falls back to the single `seed`). The corpus is
+# the union; event-relative coordinates (see cafl4ds/deploy_corpus.py) make the trajectories comparable.
+seeds: null
+
+# The warm well (a full-method checkpoint from scripts/warm_well.py). null = cold drive (from scratch);
+# a path = warm drive resuming the competent well intact. The configurable warm-start pointer.
+well: null
 
 # BDD sizing (data=bdd). bdd_root points at the canonical download; max_images caps the load.
 bdd_root: /mnt/bdd100k
@@ -47,6 +55,6 @@ long_horizon: false
 long_horizon_passes: 4
 long_horizon_growth_frac_max: 0.10
 
-# The deploy corpus written into the Hydra run dir.
-report: deploy.json
+# The corpus (health.csv/parquet + segments/trust/manifest) and per-seed reports land in the Hydra
+# run dir under corpus/ and reports/ respectively.
 run_name: null # defaults to "<backbone>_deploy" in the run script

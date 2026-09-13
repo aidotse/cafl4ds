@@ -104,7 +104,10 @@ def _write_bdd_fixture(root: Path, records: list[dict[str, object]], split: str 
         # only write a file for records that should be found (skip a deliberately-missing one)
         if rec.get("_write", True):
             Image.new("RGB", (32, 24), color=(100, 50, 50)).save(images_dir / name)
-    labels = [{"name": r["name"], "attributes": r["attributes"]} for r in records]
+    labels = [
+        {"name": r["name"], "attributes": r["attributes"], **({"labels": r["labels"]} if "labels" in r else {})}
+        for r in records
+    ]
     (root / "labels" / f"bdd100k_labels_images_{split}.json").write_text(json.dumps(labels), encoding="utf-8")
 
 
@@ -123,6 +126,25 @@ def test_bdd_source_parses_layout_and_maps_both_axes(tmp_path: Path) -> None:
     assert a.regime_names[0] == "daytime·clear"
     assert set(a.canary.tolist()) == {0, 1}  # two scenes
     assert a.canary_names[0] == "city street"  # sorted
+
+
+def test_bdd_source_counts_detection_categories_per_image(tmp_path: Path) -> None:
+    """The detection boxes are aggregated into per-image category counts aligned to the images."""
+    records: list[dict[str, object]] = [
+        {
+            "name": "a.jpg",
+            "attributes": {"timeofday": "daytime", "weather": "clear", "scene": "highway"},
+            "labels": [{"category": "car"}, {"category": "car"}, {"category": "person"}, {"note": "no-category"}],
+        },
+        {
+            "name": "b.jpg",
+            "attributes": {"timeofday": "night", "weather": "rainy", "scene": "city street"},
+            "labels": [],
+        },
+    ]
+    _write_bdd_fixture(tmp_path, records)
+    a = BDD100KSource(str(tmp_path), img_size=16).load()
+    assert a.object_categories == [{"car": 2, "person": 1}, {}]
 
 
 def test_bdd_source_skips_undefined_attributes_and_missing_files(tmp_path: Path) -> None:
@@ -150,6 +172,30 @@ def test_bdd_source_respects_max_images(tmp_path: Path) -> None:
     _write_bdd_fixture(tmp_path, records)
     a = BDD100KSource(str(tmp_path), max_images=2).load()
     assert a.images.shape[0] == 2
+
+
+def test_bdd_source_drops_rare_canary_scenes_below_min_count(tmp_path: Path) -> None:
+    """min_canary_count drops scenes with too few images to support a probe; 0 keeps every scene."""
+    records: list[dict[str, object]] = []
+    records.extend(
+        {"name": f"c{i}.jpg", "attributes": {"timeofday": "daytime", "weather": "clear", "scene": "city street"}}
+        for i in range(5)
+    )
+    records.extend(
+        {"name": f"t{i}.jpg", "attributes": {"timeofday": "night", "weather": "clear", "scene": "tunnel"}}
+        for i in range(2)
+    )
+    _write_bdd_fixture(tmp_path, records)
+    # keep-all: both scenes present
+    keep_all = BDD100KSource(str(tmp_path))
+    keep_all.load()
+    assert keep_all.num_canary_classes == 2
+    # threshold 3: the 2-image "tunnel" scene is dropped, its images excluded
+    src = BDD100KSource(str(tmp_path), min_canary_count=3)
+    filtered = src.load()
+    assert src.num_canary_classes == 1
+    assert set(filtered.canary_names.values()) == {"city street"}
+    assert filtered.images.shape[0] == 5
 
 
 def test_bdd_source_raises_on_missing_root(tmp_path: Path) -> None:

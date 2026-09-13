@@ -16,6 +16,7 @@ Phase-0 stream is untouched.
 from __future__ import annotations
 
 from collections.abc import Iterator
+from typing import Any
 
 import torch
 
@@ -138,7 +139,9 @@ class RegimeStream:
         self._images = attributed.images
         self.regime_names = attributed.regime_names
         self.canary_names = attributed.canary_names
+        self._object_categories = attributed.object_categories
         era_key, canary = attributed.era_key, attributed.canary
+        self._canary = canary
 
         # Reserve a balanced held-out probe set on the canary axis; the rest is the training pool.
         support_idx, query_idx, train_mask = [], [], torch.ones(self._images.shape[0], dtype=torch.bool)
@@ -162,6 +165,7 @@ class RegimeStream:
         )
 
         requested = regime_order if regime_order is not None else attributed.regime_order
+        self._regime_order = requested
         self._order_stream = self._build_order(era_key, train_mask, requested, max_train_per_regime)
 
     def _build_order(
@@ -218,10 +222,63 @@ class RegimeStream:
                 pointers[k] = start + block_size
         return ordered
 
+    def stationary_batches(self) -> Iterator[StreamBatch]:
+        """Yield the training pool in fully shuffled, regime-agnostic order — the warmup diet.
+
+        Where :meth:`__iter__` delivers the *nonstationary* regime walk, this reshuffles the same
+        reserved training pool with no regime ordering (every batch tagged ``era=0``), so a warm-up
+        pass sees a stationary all-regime mix. The reserved canary probe set is excluded exactly as in
+        the drive, so a well warmed here is competent on the same probes the drive reads.
+
+        Yields:
+            Stationary :class:`StreamBatch` batches over the training pool.
+        """
+        indices = [idx for _, idx in self._order_stream]
+        perm = torch.randperm(len(indices), generator=self._generator)
+        order = [(0, indices[p]) for p in perm.tolist()]
+        return iter_ordered_batches(order, self._images, self.batch_size, self.drop_last)
+
     @property
     def eval_sets(self) -> EvalSets:
         """The held-out eval sets (probe support/query on the canary axis)."""
         return self._eval_sets
+
+    @property
+    def era_names(self) -> dict[int, str]:
+        """Map each era (walk position) present in the stream to its human regime name.
+
+        Resolves the era tag carried on every batch — its position in the regime walk — back to the
+        source's ``(timeofday·weather)`` name, so the deploy corpus can label each leg. Only eras with
+        training data (those actually delivered) appear.
+        """
+        present = {era for era, _ in self._order_stream}
+        return {era: self.regime_names[self._regime_order[era]] for era in sorted(present)}
+
+    def era_composition(self) -> dict[int, dict[str, Any]]:
+        """Per-era label composition of the delivered training pool — the leg's self-description.
+
+        Aggregates, for each era actually delivered, the canary (scene) histogram and — when the
+        source carries detection labels (BDD) — the object-category histogram, over the images that
+        era streams. This is the label-derived tag set the deploy corpus attaches to each leg, so a
+        consumer can read what each ``sunny → rain → …`` block *contained* without the raw frames.
+
+        Returns:
+            ``era -> {"n_images", "scene_hist", "category_hist"}`` (histograms sorted for
+            determinism; ``category_hist`` is empty when the source has no detection labels).
+        """
+        composition: dict[int, dict[str, Any]] = {}
+        for era, idx in self._order_stream:
+            entry = composition.setdefault(era, {"n_images": 0, "scene_hist": {}, "category_hist": {}})
+            entry["n_images"] += 1
+            scene = self.canary_names[int(self._canary[idx])]
+            entry["scene_hist"][scene] = entry["scene_hist"].get(scene, 0) + 1
+            if self._object_categories is not None:
+                for category, count in self._object_categories[idx].items():
+                    entry["category_hist"][category] = entry["category_hist"].get(category, 0) + count
+        for entry in composition.values():
+            entry["scene_hist"] = dict(sorted(entry["scene_hist"].items()))
+            entry["category_hist"] = dict(sorted(entry["category_hist"].items()))
+        return composition
 
     @property
     def num_eras(self) -> int:

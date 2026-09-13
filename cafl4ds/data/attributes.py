@@ -48,6 +48,9 @@ class AttributedImages:
         regime_order: Regime ids in the default shift-walk order (a stream may override it).
         regime_names: Human-readable name per regime id (e.g. ``"daytime·clear"``).
         canary_names: Human-readable name per canary id (e.g. ``"city street"``).
+        object_categories: Optional per-image detection-category counts (e.g. ``{"car": 4,
+            "person": 1}``) aligned to ``images`` — the free label aggregate BDD's boxes give, used
+            to tag each corpus leg. ``None`` when the source carries no detection labels (synthetic).
     """
 
     images: torch.Tensor
@@ -56,6 +59,7 @@ class AttributedImages:
     regime_order: list[int]
     regime_names: dict[int, str]
     canary_names: dict[int, str]
+    object_categories: list[dict[str, int]] | None = None
 
 
 class AttributeSource(ABC):
@@ -175,6 +179,7 @@ class BDD100KSource(AttributeSource):
         max_images: int | None = None,
         images_dir: str | None = None,
         labels_file: str | None = None,
+        min_canary_count: int = 0,
     ) -> None:
         """Configure the BDD100K source.
 
@@ -186,6 +191,10 @@ class BDD100KSource(AttributeSource):
             images_dir: Override for the image directory (default ``<root>/images/100k/<split>``).
             labels_file: Override for the attributes JSON (default
                 ``<root>/labels/bdd100k_labels_images_<split>.json``).
+            min_canary_count: Drop images whose **scene** (canary class) has fewer than this many
+                attribute-valid images. Real BDD has a long scene tail (e.g. ``tunnel`` ≈ a handful of
+                frames) that cannot support a balanced held-out probe; this keeps the canary to
+                probeable classes. ``0`` (default) keeps every observed scene — no change.
         """
         self.bdd_root = bdd_root
         self.split = split
@@ -193,6 +202,7 @@ class BDD100KSource(AttributeSource):
         self.max_images = max_images
         self._images_dir = images_dir
         self._labels_file = labels_file
+        self.min_canary_count = min_canary_count
         self._num_canary = 0  # set on load (number of observed scenes)
 
     @property
@@ -234,8 +244,8 @@ class BDD100KSource(AttributeSource):
                 "under <bdd_root>/labels/ (or pass labels_file=)."
             )
         records = json.loads(labels_file.read_text(encoding="utf-8"))
-        # Collect (path, regime-tuple, scene) for every attribute-valid, present image.
-        valid: list[tuple[Path, tuple[str, str], str]] = []
+        # Collect (path, regime-tuple, scene, category-counts) for every attribute-valid, present image.
+        valid: list[tuple[Path, tuple[str, str], str, dict[str, int]]] = []
         for rec in records:
             attrs = rec.get("attributes", {})
             timeofday, weather, scene = attrs.get("timeofday"), attrs.get("weather"), attrs.get("scene")
@@ -244,23 +254,27 @@ class BDD100KSource(AttributeSource):
             path = images_dir / rec["name"]
             if not path.is_file():
                 continue
-            valid.append((path, (timeofday, weather), scene))
+            valid.append((path, (timeofday, weather), scene, _count_categories(rec)))
             if self.max_images is not None and len(valid) >= self.max_images:
                 break
         if not valid:
             raise ValueError(f"no attribute-valid BDD100K images found under {images_dir}")
 
-        regime_order, regime_id, regime_names = _rank_regimes({r for _, r, _ in valid})
-        scene_id, canary_names = _index_scenes({s for _, _, s in valid})
+        if self.min_canary_count > 0:
+            valid = _drop_rare_scenes(valid, self.min_canary_count)
+
+        regime_order, regime_id, regime_names = _rank_regimes({r for _, r, _, _ in valid})
+        scene_id, canary_names = _index_scenes({s for _, _, s, _ in valid})
         self._num_canary = len(scene_id)
 
         resize = transforms.Compose([transforms.Resize((self.img_size, self.img_size)), transforms.ToTensor()])
-        imgs, era_key, canary = [], [], []
-        for path, regime, scene in valid:
+        imgs, era_key, canary, categories = [], [], [], []
+        for path, regime, scene, cats in valid:
             with Image.open(path) as im:
                 imgs.append(resize(im.convert("RGB")))
             era_key.append(regime_id[regime])
             canary.append(scene_id[scene])
+            categories.append(cats)
         logger.info(
             f"BDD100KSource: loaded {len(imgs)} images ({self.split}) at {self.img_size}px "
             f"over {len(regime_order)} regimes, {len(scene_id)} scenes"
@@ -272,6 +286,7 @@ class BDD100KSource(AttributeSource):
             regime_order=regime_order,
             regime_names=regime_names,
             canary_names=canary_names,
+            object_categories=categories,
         )
 
 
@@ -289,6 +304,57 @@ def _rank_regimes(regimes: set[tuple[str, str]]) -> tuple[list[int], dict[tuple[
     regime_id = {tw: i for i, tw in enumerate(ordered)}
     regime_names = {i: f"{tw[0]}·{tw[1]}" for tw, i in regime_id.items()}
     return list(range(len(ordered))), regime_id, regime_names
+
+
+def _count_categories(record: dict[str, object]) -> dict[str, int]:
+    """Count detection-box categories in a BDD label record (the free per-image object aggregate).
+
+    Args:
+        record: One BDD100K label record (its ``labels`` list holds the detection boxes, each with a
+            ``category``); a record with no boxes yields an empty count.
+
+    Returns:
+        A ``category -> count`` map over the record's boxes.
+    """
+    counts: dict[str, int] = {}
+    labels = record.get("labels")
+    if isinstance(labels, list):
+        for box in labels:
+            category = box.get("category") if isinstance(box, dict) else None
+            if isinstance(category, str):
+                counts[category] = counts.get(category, 0) + 1
+    return counts
+
+
+def _drop_rare_scenes(
+    valid: list[tuple[Path, tuple[str, str], str, dict[str, int]]], min_count: int
+) -> list[tuple[Path, tuple[str, str], str, dict[str, int]]]:
+    """Drop images whose scene (canary class) has fewer than ``min_count`` valid images.
+
+    BDD's scene axis is long-tailed — rare scenes (``tunnel``, ``gas stations``) carry too few frames
+    to reserve a balanced held-out probe. This trims those from the canary; the ordering (regime) axis
+    is untouched beyond losing those few images.
+
+    Args:
+        valid: The collected ``(path, regime, scene, category-counts)`` tuples.
+        min_count: The per-scene frame floor.
+
+    Returns:
+        The subset whose scene is populated enough to probe.
+
+    Raises:
+        ValueError: If no scene meets the floor.
+    """
+    scene_counts: dict[str, int] = {}
+    for _, _, scene, _ in valid:
+        scene_counts[scene] = scene_counts.get(scene, 0) + 1
+    kept = {s for s, n in scene_counts.items() if n >= min_count}
+    if not kept:
+        raise ValueError(f"no BDD100K scene has >= {min_count} images (min_canary_count too high)")
+    dropped = sorted(set(scene_counts) - kept)
+    if dropped:
+        logger.info(f"BDD100KSource: dropped rare scenes below min_canary_count={min_count}: {dropped}")
+    return [v for v in valid if v[2] in kept]
 
 
 def _index_scenes(scenes: set[str]) -> tuple[dict[str, int], dict[int, str]]:
