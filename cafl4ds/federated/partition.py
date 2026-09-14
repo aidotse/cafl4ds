@@ -19,6 +19,10 @@ A partition is over *indices only*; the pixels are sliced into per-client
 :class:`_ShardSource` views. Downstream, each client's :class:`EraStream` reserves its own
 held-out eval sets from its shard, so under sharp skew the per-class reservations must be sized
 to what the smallest shard can afford (see the note in :func:`partition_source`).
+
+:func:`holdout_split` is the step that must come *before* partitioning: it carves a
+class-balanced pool out of the dataset for the **global** health monitor, so no client can train
+on the images the aggregated model is scored on. Partition the remainder, never the original.
 """
 
 from __future__ import annotations
@@ -97,6 +101,61 @@ def iid_partition(labels: torch.Tensor, num_clients: int, seed: int) -> list[tor
     generator = torch.Generator().manual_seed(seed)
     perm = torch.randperm(labels.shape[0], generator=generator)
     return [torch.sort(chunk).values for chunk in perm.tensor_split(num_clients)]
+
+
+def holdout_split(source: DataSource, per_class: int, seed: int = 0) -> tuple[DataSource, DataSource]:
+    """Carve a class-balanced hold-out pool out of ``source``, *before* any client sees it.
+
+    The global health monitor is the dependent variable of a federated run, so the aggregated
+    model must not be scored on images its clients trained on. Building the global eval sets from
+    the same source that was partitioned to clients does exactly that: each client's
+    :class:`~cafl4ds.data.streams.EraStream` reserves its *own* eval slice with its *own* RNG, so
+    whether a given global probe image is withheld anywhere is essentially chance. Splitting
+    first removes the question — the two pools are disjoint by construction.
+
+    The remainder keeps the source's original image order, so ``partition_source`` still
+    degenerates to that order at ``num_clients=1``.
+
+    Args:
+        source: The full dataset.
+        per_class: Images per class to reserve for the global monitor. Must exceed the global
+            stream's own ``support + query + era_eval`` total, since that stream reserves its
+            eval sets *from this pool*.
+        seed: RNG seed for the per-class draw.
+
+    Returns:
+        ``(holdout, remainder)`` — the global monitor's pool, and the pool to partition.
+
+    Raises:
+        ValueError: If ``per_class < 1``, or a class holds too few images to fund it.
+    """
+    if per_class < 1:
+        raise ValueError(f"holdout per_class must be >= 1; got {per_class}.")
+    images, labels = source.load()
+    generator = torch.Generator().manual_seed(seed)
+    held: list[torch.Tensor] = []
+    rest: list[torch.Tensor] = []
+    for cls in sorted(set(labels.tolist())):
+        idx = (labels == cls).nonzero(as_tuple=True)[0]
+        perm = idx[torch.randperm(idx.numel(), generator=generator)]
+        if perm.numel() <= per_class:
+            raise ValueError(
+                f"class {cls} has {perm.numel()} images but {per_class} are held out for the global "
+                "monitor; lower the global hold-out or use more data."
+            )
+        held.append(perm[:per_class])
+        rest.append(perm[per_class:])
+    # Sort so both pools keep the source's original ordering (the num_clients=1 parity property).
+    held_idx = torch.cat(held).sort().values
+    rest_idx = torch.cat(rest).sort().values
+    logger.info(
+        f"global hold-out: {held_idx.numel()} images ({per_class}/class) withheld from partitioning; "
+        f"{rest_idx.numel()} remain for clients"
+    )
+    return (
+        _ShardSource(images[held_idx], labels[held_idx], source.num_classes),
+        _ShardSource(images[rest_idx], labels[rest_idx], source.num_classes),
+    )
 
 
 def partition_source(

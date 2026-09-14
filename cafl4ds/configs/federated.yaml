@@ -55,6 +55,25 @@ support_per_class: 5
 query_per_class: 5
 era_eval_per_class: 2
 
+# --- Global readout vs per-client reservations --------------------------------------------------
+# The three keys above now size the GLOBAL monitor's eval sets only (the dependent variable).
+#
+# Images per class carved out of the dataset for that monitor BEFORE partitioning, so no client
+# can train on what the aggregated model is scored on. `null` = the minimum the global stream
+# needs (support + query + era_eval + 1). `0` disables the split — correct ONLY when the client
+# and global streams coincide anyway, i.e. num_clients=1 with matching client reservations below
+# (the F1 exact-reproduction arm); any other run with 0 leaks client training data into the eval.
+global_holdout_per_class: null
+#
+# Per-client reservations. Zero by default: a client's local eval sets are NEVER read in a
+# federated run (nothing calls `measure_health`, and the client drives `train_step` rather than
+# `StreamingLoop.run`), so reserving per-client data only withholds it from training — and the
+# per-class check then fails on sharply skewed shards (100-class CIFAR-100 at any Dirichlet
+# alpha). Set these to match the centralized run only for the num_clients=1 parity arm.
+client_support_per_class: 0
+client_query_per_class: 0
+client_era_eval_per_class: 0
+
 # Federation.
 num_clients: 4
 steps_per_round: 5 # stream steps (batches) each client advances per round

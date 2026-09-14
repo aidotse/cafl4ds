@@ -18,7 +18,7 @@ from cafl4ds.data.streams import EraStream
 from cafl4ds.federated.aggregate import federated_average, weights_from_samples
 from cafl4ds.federated.client import FederatedClient
 from cafl4ds.federated.orchestrator import FederatedOrchestrator
-from cafl4ds.federated.partition import dirichlet_partition, iid_partition, partition_source
+from cafl4ds.federated.partition import dirichlet_partition, holdout_split, iid_partition, partition_source
 from cafl4ds.federated.proximal import ProximalTerm
 from cafl4ds.federated.server_optim import (
     AdaptiveServerOptimizer,
@@ -84,6 +84,41 @@ def test_partition_source_returns_usable_shards() -> None:
     imgs, lbls = shards[0].load()
     assert imgs.shape[0] == lbls.shape[0] > 0
     assert shards[0].num_classes == 4  # global class count preserved
+
+
+def test_holdout_split_is_class_balanced_and_disjoint() -> None:
+    """The global pool and the client pool share no image, and the hold-out is balanced."""
+    source = SyntheticSource(num_classes=4, per_class=50, img_size=16, seed=0)
+    held, rest = holdout_split(source, per_class=10, seed=0)
+    h_imgs, h_lbls = held.load()
+    r_imgs, r_lbls = rest.load()
+    assert h_imgs.shape[0] == 4 * 10  # 10 per class
+    assert torch.bincount(h_lbls, minlength=4).tolist() == [10] * 4  # balanced
+    assert h_imgs.shape[0] + r_imgs.shape[0] == 4 * 50  # a partition, nothing lost
+    assert held.num_classes == rest.num_classes == 4  # global class count preserved
+    # The disjointness that makes the global readout meaningful.
+    flat_h, flat_r = h_imgs.flatten(1), r_imgs.flatten(1)
+    assert not any(bool((flat_r == q).all(dim=1).any()) for q in flat_h)
+
+
+def test_holdout_split_preserves_source_order_for_parity() -> None:
+    """The remainder keeps the original order, so num_clients=1 still degenerates to it."""
+    source = SyntheticSource(num_classes=3, per_class=20, img_size=16, seed=0)
+    images, labels = source.load()
+    _, rest = holdout_split(source, per_class=5, seed=0)
+    r_imgs, _ = rest.load()
+    # Every remainder image appears in the source, in the same relative order.
+    positions = [int(((images.flatten(1) == r).all(dim=1)).nonzero()[0]) for r in r_imgs.flatten(1)]
+    assert positions == sorted(positions)
+
+
+def test_holdout_split_rejects_an_unaffordable_holdout() -> None:
+    """A hold-out larger than a class can fund is a hard error, not a silent shortfall."""
+    source = SyntheticSource(num_classes=2, per_class=8, img_size=16, seed=0)
+    with pytest.raises(ValueError, match="per_class must be >= 1"):
+        holdout_split(source, per_class=0)
+    with pytest.raises(ValueError, match="are held out for the global"):
+        holdout_split(source, per_class=8)  # needs strictly fewer than the class holds
 
 
 def test_partition_source_rejects_bad_args() -> None:
@@ -383,6 +418,36 @@ def test_proximal_term_ignores_batchnorm_buffers(tmp_path: Path) -> None:
     assert not any("running_" in name or "num_batches_tracked" in name for name in leashed)
 
 
+def test_global_eval_set_never_reaches_client_training() -> None:
+    """The end-to-end property the hold-out exists for: no global probe image is trained on.
+
+    This is the pipeline `run_federated.py` builds — split first, partition the remainder — and
+    it is the reason the global health series can be read as generalization. Without the split,
+    each client reserves its own eval slice with its own RNG, so whether a given global probe
+    image is withheld anywhere is chance (measured: 8 of 20 leaked).
+    """
+    source = SyntheticSource(num_classes=4, per_class=60, img_size=16, seed=0)
+    global_pool, client_pool = holdout_split(source, per_class=5 + 5 + 2 + 1, seed=0)
+
+    global_stream = EraStream(
+        global_pool, batch_size=8, order="iid", seed=0, support_per_class=5, query_per_class=5, era_eval_per_class=2
+    )
+    probe = global_stream.eval_sets.probe_query.images.flatten(1)
+
+    trained: list[torch.Tensor] = []
+    for cid, shard in enumerate(partition_source(client_pool, num_clients=3, scheme="iid", seed=0)):
+        # Clients reserve nothing, the federated default — the worst case for leakage.
+        stream = EraStream(
+            shard, batch_size=8, order="iid", seed=cid, support_per_class=0, query_per_class=0, era_eval_per_class=0
+        )
+        trained.extend(batch.images.flatten(1) for batch in stream)
+    trained_images = torch.cat(trained)
+
+    assert probe.shape[0] > 0 and trained_images.shape[0] > 0  # both sides non-empty
+    leaked = sum(int((trained_images == q).all(dim=1).any()) for q in probe)
+    assert leaked == 0, f"{leaked}/{probe.shape[0]} global probe images found in client training data"
+
+
 # --- orchestrator ------------------------------------------------------------
 
 
@@ -519,9 +584,7 @@ def _client_drift(tmp_path: Path, mu: float, rounds: int = 3) -> float:
     final_state, _ = FederatedOrchestrator(clients, steps_per_round=2, num_rounds=rounds).run()
     param_keys = {name for name, _ in clients[0].method.named_parameters()}
     squared: float = sum(
-        float((client.get_weights()[key] - final_state[key]).pow(2).sum())
-        for client in clients
-        for key in param_keys
+        float((client.get_weights()[key] - final_state[key]).pow(2).sum()) for client in clients for key in param_keys
     )
     return math.sqrt(squared)
 
