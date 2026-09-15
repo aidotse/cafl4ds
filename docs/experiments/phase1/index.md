@@ -139,12 +139,12 @@ either way:
 
 ## Studies
 
-The ordering below follows the scientific dependency: build the loop (P1.0), earn the right to *read* it (P1.1) and the
-right to *continue* (P1.2, the existential floor), then run the two prioritized mode-dynamics studies up their substrate
-ladders to BDD (P1.3 forgetting, primary; P1.4 collapse, secondary), with a cross-cutting regime-and-downstream check
-(P1.5). The FL and monitoring tracks (P1.6) run in parallel from the start. The three existential legs map to studies
-as: **(a) → P1.2**; **(b) and (c) → read off the *same* runs inside P1.3 / P1.4** (you cannot vary the knob without also
-reading degradation), landing on BDD via each study's top rung.
+The ordering below follows the scientific dependency: build the loop ([P1.0](../latest-results/P1.0.md)), earn the right
+to *read* it (P1.1) and the right to *continue* (P1.2, the existential floor), then run the two prioritized
+mode-dynamics studies up their substrate ladders to BDD (P1.3 forgetting, primary; P1.4 collapse, secondary), with a
+cross-cutting regime-and-downstream check (P1.5). The FL and monitoring tracks (P1.6) run in parallel from the start.
+The three existential legs map to studies as: **(a) → P1.2**; **(b) and (c) → read off the *same* runs inside P1.3 /
+P1.4** (you cannot vary the knob without also reading degradation), landing on BDD via each study's top rung.
 
 Studies and their sub-studies share **one table**. A study appears as a single `P1.x` row until its work begins; once it
 is broken down, that row is **replaced** by its `P1.x.y` sub-study rows (so nothing is stated at both levels). Sub-study

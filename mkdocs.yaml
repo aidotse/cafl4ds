@@ -29,14 +29,17 @@ nav:
       - Metrics (signals, control, eval): project-plan/metrics.md
       - Reading list: project-plan/reading-list.md
       - Risks & gates: project-plan/risks.md
+
   - Latest Results:
       - experiments/latest-results/index.md
-      - P0.1: experiments/latest-results/P0.1.md
+      - P0.1.0: experiments/latest-results/P0.1.0.md
+      - P0.2: experiments/latest-results/P0.2.md
       - P0.2.0: experiments/latest-results/P0.2.0.md
       - P0.2.1: experiments/latest-results/P0.2.1.md
       - P0.2.2: experiments/latest-results/P0.2.2.md
       - P0.2.3: experiments/latest-results/P0.2.3.md
       - P0.2.4: experiments/latest-results/P0.2.4.md
+      - P0.3: experiments/latest-results/P0.3.md
       - P0.3.0: experiments/latest-results/P0.3.0.md
       - P0.3.1: experiments/latest-results/P0.3.1.md
       - P0.3.2: experiments/latest-results/P0.3.2.md
@@ -47,18 +50,25 @@ nav:
       - P0.3.7: experiments/latest-results/P0.3.7.md
       - P0.3.8: experiments/latest-results/P0.3.8.md
       - P0.3.9: experiments/latest-results/P0.3.9.md
+      - P0.4: experiments/latest-results/P0.4.md
       - P0.4.0: experiments/latest-results/P0.4.0.md
       - P0.4.1: experiments/latest-results/P0.4.1.md
+      - P0.5: experiments/latest-results/P0.5.md
       - P0.5.0: experiments/latest-results/P0.5.0.md
       - P0.5.1: experiments/latest-results/P0.5.1.md
       - P0.5.2: experiments/latest-results/P0.5.2.md
       - P0.5.3: experiments/latest-results/P0.5.3.md
+      - P0.6: experiments/latest-results/P0.6.md
       - P0.6.0: experiments/latest-results/P0.6.0.md
       - P0.6.1: experiments/latest-results/P0.6.1.md
+      - P1.0: experiments/latest-results/P1.0.md
+      - P1.0.0: experiments/latest-results/P1.0.0.md
+      - P1.0.1: experiments/latest-results/P1.0.1.md
+      - P1.0.2: experiments/latest-results/P1.0.2.md
 
   - Phase 0:
       - experiments/phase0/index.md
-      - P0.1 Instrument (streaming loop): experiments/phase0/P0.1.md
+      - P0.1.0 Instrument (streaming loop): experiments/phase0/P0.1.0.md
       - P0.2.0 Positive control (collapse gate - first investigation): experiments/phase0/P0.2.0.md
       - P0.2.1 Positive control (collapse gate - baseline): experiments/phase0/P0.2.1.md
       - P0.2.2 Positive control (collapse gate - full metric suite): experiments/phase0/P0.2.2.md
@@ -82,12 +92,21 @@ nav:
       - P0.5.3 Positive control (representation-health gate - the quality-vs-lever test): experiments/phase0/P0.5.3.md
       - P0.6.0 Positive control (forgetting gate - the joint-embedding forgetting vehicle): experiments/phase0/P0.6.0.md
       - P0.6.1 Positive control (forgetting gate - the *past-data-free* drift reader on JE): experiments/phase0/P0.6.1.md
+
+  - Phase 1:
+      - experiments/phase1/index.md
+      - P1.0.0 Open loop instrumentation (P0 integration): experiments/phase1/P1.0.0.md
+      - P1.0.1 Open loop instrumentation (same-seed vs. shared-iterator): experiments/phase1/P1.0.1.md
+      - P1.0.2 Open loop instrumentation (deployment prototype de-risker): experiments/phase1/P1.0.2.md
+
   - Audits:
       - P0.2 (collapse mode): experiments/audits/P0.2.md
       - P0.3 (forgetting mode): experiments/audits/P0.3.md
       - P0.4 (instability mode): experiments/audits/P0.4.md
       - P0.5 (representation degradation mode): experiments/audits/P0.5.md
       - P0.6 (forgetting mode on JE): experiments/audits/P0.6.md
+      - P1.0 (open-loop harness engineering): experiments/audits/P1.0.md
+
   - API Reference: reference.md
   - Tests: exported/pytest.html
   - Coverage: exported/coverage/index.html
