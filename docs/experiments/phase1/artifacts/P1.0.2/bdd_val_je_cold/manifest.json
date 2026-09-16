@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "study": "P1.0.2",
+  "backbone_family": "je",
+  "config": {
+    "backbone": "je",
+    "I": "from_scratch",
+    "warm": false,
+    "diet": "regime",
+    "block_size": null,
+    "A": "AcceptAll",
+    "seed": 0,
+    "img_size": 64,
+    "device": "hpu",
+    "gate_arms": false
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "n_rows": 1385,
+  "channels": {
+    "label_free": [
+      "alignment",
+      "alignment_proj",
+      "cka_drift",
+      "cka_drift_proj",
+      "cosine_drift",
+      "cosine_drift_proj",
+      "mean_feature_var",
+      "mean_feature_var_proj",
+      "offdiag_cov",
+      "offdiag_cov_proj",
+      "rankme",
+      "rankme_proj",
+      "uniformity",
+      "uniformity_proj"
+    ],
+    "canary": [
+      "knn_acc",
+      "linear_acc"
+    ]
+  },
+  "tier_a_passed": {
+    "0": true,
+    "1": true,
+    "2": true,
+    "3": true,
+    "4": true
+  },
+  "tier_b_passed": {
+    "0": true,
+    "1": true,
+    "2": true,
+    "3": true,
+    "4": true
+  },
+  "git_sha": null,
+  "n_seeds": 5,
+  "warm": false,
+  "eval_every": 1,
+  "hardware": "Gaudi2 HL-225 (hpu)",
+  "bdd": {
+    "source": "dgural/bdd100k (val split)",
+    "split": "val",
+    "img_size": 64,
+    "n_valid_images": 8753,
+    "n_regimes": 18,
+    "canary_scenes": [
+      "city street",
+      "highway",
+      "residential"
+    ],
+    "canary_note": "canary restricted via data.min_canary_count=50 (drops rare scenes tunnel/gas stations/parking lot that cannot support a probe)",
+    "support_per_canary": 25,
+    "query_per_canary": 25
+  },
+  "note": "re-driven 2026-09-15 under the fixed canary_seed reservation (audit P1.0 A1)"
+}

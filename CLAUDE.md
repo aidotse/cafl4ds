@@ -53,6 +53,8 @@ Tasks are **`poe`** tasks — `uv run poe <task>`; Run `uv run poe --help` to se
     `hydra.utils.instantiate` — plain classes wired via config (`_target_: ...`), not hardcoded. Override on the CLI as
     per Hydra docs.
 - Logging via **`loguru`**.
+- All business logic / code / experiments should be validated with unit tests; be careful not to overfit the tests on
+    the logic / code.
 
 ## Claude Code in this repo
 
