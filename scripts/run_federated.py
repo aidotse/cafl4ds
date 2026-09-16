@@ -45,7 +45,7 @@ from cafl4ds.federated.orchestrator import FederatedOrchestrator
 from cafl4ds.federated.partition import holdout_split, partition_source
 from cafl4ds.federated.strategy import FederatedStrategy
 from cafl4ds.run_log import RunLogger
-from cafl4ds.ssl.base import apply_encoder_init
+from cafl4ds.ssl.base import apply_method_init
 
 logger.remove()
 logger.add(sys.stdout, level="INFO")
@@ -105,7 +105,7 @@ def _build_client(
     checkpoint = config.init.checkpoint
     if config.init.mode == "pretrained" and not checkpoint:
         checkpoint = str(Path(to_absolute_path(config.pretrain_dir)) / f"{method.name}.pt")
-    apply_encoder_init(method.encoder, config.init.mode, checkpoint)
+    apply_method_init(method, config.init.mode, checkpoint)
 
     stream = _build_stream(
         config,

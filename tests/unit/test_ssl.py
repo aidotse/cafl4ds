@@ -2,8 +2,8 @@
 
 Checks the two things the loop relies on: ``training_step`` returns a differentiable scalar
 whose value can be driven down by optimization, and ``encode`` yields the pooled backbone
-embedding. Also covers the ``I`` (init) factor: from-scratch, pretrained warm-start, and the
-checkpoint round-trip.
+embedding. Also covers the ``I`` (init) factor: from-scratch, the pretrained warm-start, and the
+checkpoint round-trips.
 """
 
 from pathlib import Path
@@ -12,7 +12,15 @@ import pytest
 import torch
 
 from cafl4ds.models.vit import TinyViTEncoder
-from cafl4ds.ssl.base import SSLMethod, apply_encoder_init, load_encoder_checkpoint, save_encoder_checkpoint
+from cafl4ds.ssl.base import (
+    SSLMethod,
+    apply_encoder_init,
+    apply_method_init,
+    load_encoder_checkpoint,
+    load_method_checkpoint,
+    save_encoder_checkpoint,
+    save_method_checkpoint,
+)
 from cafl4ds.ssl.factory import build_mae, build_simsiam
 from cafl4ds.ssl.simsiam import _neg_cosine
 
@@ -252,3 +260,50 @@ def test_missing_checkpoint_raises(tmp_path: Path) -> None:
     """Loading a non-existent checkpoint raises a clear error."""
     with pytest.raises(FileNotFoundError, match="not found"):
         load_encoder_checkpoint(_encoder(), tmp_path / "nope.pt")
+
+
+@pytest.mark.parametrize("build", [build_mae, build_simsiam])
+def test_method_checkpoint_restores_encoder_and_heads(build: object, tmp_path: Path) -> None:
+    """A ``pretrained`` warm start reproduces the whole method — the objective's heads included.
+
+    The heads are the point: restoring only the encoder leaves them random, and the first steps
+    then backprop through an untrained head and transiently degrade the encoder (audit P0.3's
+    warm-up confound), which on a single-pass run can mask the effect under study.
+    """
+    torch.manual_seed(0)
+    src = build(_encoder())  # type: ignore[operator]
+    ckpt = tmp_path / "method.pt"
+    save_method_checkpoint(src, ckpt)
+
+    torch.manual_seed(1)  # a differently-initialized twin, so a partial load would be visible
+    dst = build(_encoder())  # type: ignore[operator]
+    heads = [k for k in src.state_dict() if not k.startswith("encoder.")]
+    assert heads, "this method should expose head parameters for the test to be meaningful"
+
+    apply_method_init(dst, mode="pretrained", checkpoint=ckpt)
+    for key, want in src.state_dict().items():
+        assert torch.allclose(dst.state_dict()[key], want), f"{key} was not restored"
+
+
+def test_method_load_accepts_an_encoder_only_checkpoint(tmp_path: Path) -> None:
+    """``save_heads=false`` artifacts (and external backbones) still load — heads stay random."""
+    torch.manual_seed(0)
+    src = build_mae(_encoder())
+    save_encoder_checkpoint(src.encoder, tmp_path / "enc.pt")
+
+    torch.manual_seed(1)
+    dst = build_mae(_encoder())
+    apply_method_init(dst, mode="pretrained", checkpoint=tmp_path / "enc.pt")
+
+    for key, want in src.encoder.state_dict().items():
+        assert torch.allclose(dst.encoder.state_dict()[key], want), f"encoder.{key} was not restored"
+    assert any(
+        not torch.allclose(dst.state_dict()[k], v) for k, v in src.state_dict().items() if not k.startswith("encoder.")
+    ), "an encoder-only checkpoint must leave the decoder at its own random init"
+
+
+def test_method_checkpoint_rejects_a_mismatched_head_config(tmp_path: Path) -> None:
+    """A checkpoint from a differently-sized decoder fails loudly rather than loading partially."""
+    save_method_checkpoint(build_mae(_encoder(), decoder_dim=64), tmp_path / "method.pt")
+    with pytest.raises(RuntimeError):
+        load_method_checkpoint(build_mae(_encoder(), decoder_dim=32), tmp_path / "method.pt")

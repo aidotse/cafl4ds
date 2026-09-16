@@ -23,4 +23,9 @@ max_per_class: 120
 max_train_per_class: 80
 
 pretrain_dir: outputs/pretrain # checkpoints saved as <pretrain_dir>/<method_name>.pt
+# Include the objective's heads (MAE's decoder, SimSiam's projector/predictor) in the checkpoint.
+# Keep true for SHORT downstream runs — a random head's first gradients transiently degrade the
+# restored encoder (audit P0.3's warm-up confound), which on a single-pass or federated run can eat
+# most of the horizon. false saves the backbone alone; both shapes load.
+save_heads: true
 grad_clip: 1.0

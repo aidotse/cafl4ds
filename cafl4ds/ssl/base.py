@@ -9,10 +9,10 @@ streaming loop only ever calls two things on it:
   instruments and probes read (no gradient).
 
 The ``C`` factor of the experiment matrix selects the concrete method (:mod:`cafl4ds.ssl.mae`
-or :mod:`cafl4ds.ssl.simsiam`); the ``I`` factor selects the encoder initialization, applied
-here via :func:`apply_encoder_init` (``from_scratch`` leaves the random init in place;
-``pretrained`` loads a checkpoint produced by an *IID* pre-pass, so stream correlation never
-contaminates the starting point).
+or :mod:`cafl4ds.ssl.simsiam`); the ``I`` factor selects the initialization, applied here via
+:func:`apply_method_init` (``from_scratch`` leaves the random init in place; ``pretrained``
+loads a checkpoint produced by an *IID* pre-pass, so stream correlation never contaminates the
+starting point).
 """
 
 from __future__ import annotations
@@ -185,3 +185,80 @@ def apply_encoder_init(
         load_encoder_checkpoint(encoder, checkpoint)
         return
     raise ValueError(f"unknown init mode {mode!r}; expected 'from_scratch' or 'pretrained'.")
+
+
+def load_method_checkpoint(method: SSLMethod, checkpoint: str | Path) -> None:
+    """Load a warm start into ``method``, accepting either checkpoint shape.
+
+    The ``encoder.``-prefixed keys of a :func:`save_method_checkpoint` file identify it as a full
+    method, so the shape is read off the file rather than configured twice: a full checkpoint
+    restores the objective's heads too, while a bare encoder ``state_dict``
+    (:func:`save_encoder_checkpoint`, or an externally-sourced backbone) loads into the encoder
+    and leaves the heads random. The log line says which happened, because it matters:
+
+    Restoring the heads (MAE's decoder, SimSiam's projector/predictor) is what makes a *short*
+    warm-started run interpretable. Leave them random and the first steps backpropagate through an
+    untrained head, transiently degrading the restored encoder before it recovers — the warm-up
+    confound audit P0.3 caught. On a single-pass streaming or federated run that transient can
+    consume most of the horizon and mask the effect under study.
+
+    Args:
+        method: The method to load weights into (in place). Must be built from the same ``ssl``
+            and ``encoder`` config as the checkpoint.
+        checkpoint: Path to a ``state_dict`` file — full method or encoder-only.
+
+    Raises:
+        FileNotFoundError: If ``checkpoint`` does not exist.
+        RuntimeError: If the keys or shapes do not match ``method`` — a config mismatch between
+            the pre-pass and this run (e.g. different ``decoder_dim``), not a corrupt file.
+    """
+    path = Path(checkpoint)
+    if not path.is_file():
+        raise FileNotFoundError(f"pretrained method checkpoint not found: {path}")
+    state = torch.load(path, map_location="cpu")
+    if any(key.startswith("encoder.") for key in state):
+        method.load_state_dict(state)
+        logger.info(f"loaded pretrained method weights (encoder + heads) from {path}")
+    else:
+        method.encoder.load_state_dict(state)
+        logger.info(f"loaded pretrained ENCODER-ONLY weights from {path}; heads keep their random init")
+
+
+def save_method_checkpoint(method: SSLMethod, checkpoint: str | Path) -> None:
+    """Save a method's ``state_dict`` — encoder + objective heads — as the pre-pass warm start.
+
+    Args:
+        method: The method whose weights to save.
+        checkpoint: Destination path (parent directories are created).
+    """
+    path = Path(checkpoint)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    # Same CPU/contiguous normalization as save_encoder_checkpoint: device-agnostic on disk, and
+    # it sidesteps the Habana storage-copy bug when serializing an `hpu` state_dict directly.
+    state = {k: v.detach().contiguous().cpu() for k, v in method.state_dict().items()}
+    torch.save(state, path)
+    logger.info(f"saved pretrained method weights (encoder + heads) to {path}")
+
+
+def apply_method_init(method: SSLMethod, mode: str = "from_scratch", checkpoint: str | Path | None = None) -> None:
+    """Apply the ``I`` (initialization) factor to a whole method.
+
+    The method-level entry point the run scripts use: ``from_scratch`` keeps the random init,
+    ``pretrained`` restores a pre-pass checkpoint — encoder *and* heads (see
+    :func:`load_method_checkpoint`). Delegates ``from_scratch`` to :func:`apply_encoder_init` so
+    the documented no-op contract has a single implementation.
+
+    Args:
+        method: The method to initialize.
+        mode: ``"from_scratch"`` or ``"pretrained"``.
+        checkpoint: Path to the warm-start checkpoint; required when ``mode`` is ``"pretrained"``.
+
+    Raises:
+        ValueError: If ``mode`` is unknown, or ``"pretrained"`` without a ``checkpoint``.
+    """
+    if mode == "pretrained":
+        if checkpoint is None:
+            raise ValueError("init mode 'pretrained' requires a checkpoint path.")
+        load_method_checkpoint(method, checkpoint)
+        return
+    apply_encoder_init(method.encoder, mode, checkpoint)

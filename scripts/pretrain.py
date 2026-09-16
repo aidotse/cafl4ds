@@ -1,10 +1,13 @@
 """Produce the ``I=pretrained`` warm-start checkpoint via an IID SSL pre-pass.
 
-Runs the chosen SSL method over the **shuffled** (IID) stream for a few epochs and saves the
-encoder's ``state_dict`` to ``<pretrain_dir>/<method_name>.pt``. The IID ordering is the whole
-point: the warm start must be a well-behaved reference, so stream correlation enters only in
-the streaming phase (:mod:`scripts.run_loop`). This is a plain training loop — no monitor, no
-filter — because it produces an artifact, not a health trajectory.
+Runs the chosen SSL method over the **shuffled** (IID) stream for a few epochs and saves its
+``state_dict`` to ``<pretrain_dir>/<method_name>.pt``. ``save_heads=true`` (the default) includes
+the objective's heads, so a short downstream run does not pay their warm-up transient; set
+``save_heads=false`` for a backbone-only artifact. Either shape loads — see
+:func:`cafl4ds.ssl.base.load_method_checkpoint`. The IID ordering is the whole point: the warm
+start must be a well-behaved reference, so stream correlation enters only in the streaming phase
+(:mod:`scripts.run_loop`). This is a plain training loop — no monitor, no filter — because it
+produces an artifact, not a health trajectory.
 
 Examples:
     Both backbones::
@@ -25,7 +28,7 @@ from hydra.utils import instantiate, to_absolute_path
 from loguru import logger
 from omegaconf import DictConfig
 
-from cafl4ds.ssl.base import save_encoder_checkpoint
+from cafl4ds.ssl.base import save_encoder_checkpoint, save_method_checkpoint
 
 logger.remove()
 logger.add(sys.stdout, level="INFO")
@@ -62,7 +65,10 @@ def main(config: DictConfig) -> None:
             step += 1
 
     out = Path(to_absolute_path(config.pretrain_dir)) / f"{method.name}.pt"
-    save_encoder_checkpoint(method.encoder, out)
+    if config.save_heads:
+        save_method_checkpoint(method, out)
+    else:
+        save_encoder_checkpoint(method.encoder, out)
 
 
 if __name__ == "__main__":

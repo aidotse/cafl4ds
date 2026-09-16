@@ -35,7 +35,7 @@ from omegaconf import DictConfig
 from cafl4ds.data.streams import EraStream
 from cafl4ds.eval import PerEraProbe, adaptation_report
 from cafl4ds.run_log import RunLogger
-from cafl4ds.ssl.base import SSLMethod, apply_encoder_init
+from cafl4ds.ssl.base import SSLMethod, apply_method_init
 
 logger.remove()
 logger.add(sys.stdout, level="INFO")
@@ -105,7 +105,7 @@ def main(config: DictConfig) -> None:
     checkpoint = config.init.checkpoint
     if config.init.mode == "pretrained" and not checkpoint:
         checkpoint = str(Path(to_absolute_path(config.pretrain_dir)) / f"{method.name}.pt")
-    apply_encoder_init(method.encoder, config.init.mode, checkpoint)
+    apply_method_init(method, config.init.mode, checkpoint)
 
     stream = instantiate(config.stream)
     optimizer = instantiate(config.optim, params=method.parameters())
