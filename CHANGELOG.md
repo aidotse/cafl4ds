@@ -5,6 +5,19 @@ All notable changes to this project are documented in this file.
 This file is managed by [Commitizen](https://commitizen-tools.github.io/commitizen/) and is updated automatically on
 each `poe bump` (driven by [Conventional Commits](https://www.conventionalcommits.org/)). Do not edit it by hand.
 
+## v0.29.0 (2026-09-16)
+
+### Feat
+
+- P1.0 audit remediation done
+- P1.0 audit, pre-remediation
+- P1.0 finished, pre-audit
+- P1.0.{0,1} done, working on prototype deployment harness P1.0.2
+
+### Fix
+
+- deptry fixes
+
 ## v0.28.0 (2026-09-10)
 
 ### Feat
