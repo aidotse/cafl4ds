@@ -210,8 +210,15 @@ extend_exclude = ["noxfile.py"] # dev-only orchestration, not shipped code — d
 # headroom-ai is optional agent/dev tooling, intentionally not imported by the package.
 # optimum-habana acts as a backend for Hugging Face/PyTorch on Gaudi; we don't explicitly import it
 DEP002 = ["headroom-ai", "optimum-habana"]
+# PIL (Pillow) is bundled with torchvision — it rides along with the vision stack declared in the
+# cpu/cu124 extras (and comes from the Habana base image on Gaudi), so we import it directly rather
+# than pinning a second, redundant copy.
+DEP003 = ["PIL"]
 # pytest is imported by the test suite (the test/ dir) but is correctly a dev dependency.
-DEP004 = ["pytest"]
+# pyarrow is a dev/analysis extra: deploy_corpus.py imports it lazily and skips the parquet twin
+# gracefully when it is absent (health.csv is the portable primary), so it stays out of the wheel's
+# runtime requirements — see cafl4ds/deploy_corpus.py:_maybe_write_parquet.
+DEP004 = ["pytest", "pyarrow"]
 
 
 # --- Tasks: Quality gate ----------------------------------------------------------------------------------------------
