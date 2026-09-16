@@ -39,13 +39,24 @@ bdd_root: /mnt/bdd100k
 max_images: null
 max_train_per_regime: null
 
-# Co-log the PC/B5 gate arms (false keeps the corpus to the live backbone only — the hand-off case).
-gate_arms: true
+# Co-log the PC/B5 gate arms. Default false — the hand-off case: the corpus stays the live backbone
+# only, and a BDD drive decodes the source once (gate arms would each build another stream). Flip to
+# true to co-log the manufactured-collapse PC and the frozen B5 floor beside the live arm.
+gate_arms: false
 
 # The manufactured-collapse gate thresholds (used iff gate_arms=true).
 gate:
   pc_loss_floor_max: -0.3
   pc_rankme_drop_frac: 0.6
+
+# Tier-B sanity-of-readings thresholds — the reproducible plausibility floor (see cafl4ds/deploy.py
+# tier_b_report). Loose by design: floors on aggregates, not a per-checkpoint gate, so a healthy
+# near-stationary warm drive does not flap. Downstream studies tighten these as their diets bite.
+tier_b:
+  rankme_lo: 0.5 # RankMe must stay above near-collapse ...
+  rankme_hi: 1000.0 # ... and stay bounded (not blown up)
+  min_final_drift: 0.0 # representation drift must accumulate off zero
+  canary_margin: 0.0 # the mean canary must clear chance (1/#scenes) by at least this
 
 # Log/un-log lever: null logs every emitted signal; a list restricts to those (bookkeeping kept).
 log_signals: null

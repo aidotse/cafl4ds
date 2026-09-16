@@ -16,6 +16,7 @@ writes; the arm execution reuses :mod:`cafl4ds.harness` untouched.
 
 from __future__ import annotations
 
+import math
 from typing import Any
 
 from cafl4ds.harness import Arm, all_finite
@@ -26,6 +27,97 @@ SCHEMA_VERSION = 1
 
 # Health-record bookkeeping fields that are not instrument signals.
 _BOOKKEEPING = frozenset({"step", "era", "loss", "run", "series"})
+
+# Drift keys in preference order — the first present in the series is the Tier-B drift read (the
+# projector current-stream reader when logged, else the backbone drift).
+_TIER_B_DRIFT_KEYS = ("cosine_drift_proj", "cosine_drift", "cka_drift_proj", "cka_drift")
+
+# The Tier-B plausibility floor — loose by design (see :func:`tier_b_report`).
+DEFAULT_TIER_B_THRESHOLDS: dict[str, float] = {
+    "rankme_lo": 0.5,  # RankMe must stay above near-collapse ...
+    "rankme_hi": 1000.0,  # ... and bounded (not blown up to a degenerate value)
+    "min_final_drift": 0.0,  # representation drift must accumulate off zero
+    "canary_margin": 0.0,  # the mean canary must clear chance by at least this
+}
+
+
+def _finite_series(health: list[dict[str, Any]], key: str) -> list[float]:
+    """The finite numeric values of one signal across a health series (bools/NaN excluded)."""
+    out: list[float] = []
+    for record in health:
+        value = record.get(key)
+        if isinstance(value, bool) or not isinstance(value, int | float):
+            continue
+        if math.isfinite(float(value)):
+            out.append(float(value))
+    return out
+
+
+def tier_b_report(
+    live_health: list[dict[str, Any]],
+    *,
+    canary_chance: float,
+    thresholds: dict[str, float] | None = None,
+    canary_key: str = "knn_acc",
+    rankme_key: str = "rankme",
+) -> dict[str, Any]:
+    """The Tier-B sanity-of-readings verdict — a reproducible, *loose* plausibility floor.
+
+    Not a degradation read, and not the Tier-A wiring gate: it confirms the logged trajectory is
+    *plausible* the way P1.0.2's acceptance bar describes — RankMe stays in a sane range, drift
+    accumulates off zero, and the labelled canary sits above chance. Deliberately loose (floors on
+    *aggregates*, never a per-checkpoint gate): the canary is the thin channel — its mean clears
+    chance by only a few points and *individual* checkpoints dip below chance — so a per-step canary
+    gate would flap ``passed=false`` on a perfectly healthy drive (RankMe stays comfortably in range
+    and the projector drift accumulates fine; the canary is the one that needs the aggregate floor —
+    audit P1.0 B1 / C2). Downstream studies can tighten the thresholds as their diets bite harder.
+
+    Args:
+        live_health: The live arm's (projected) health records.
+        canary_chance: Random-guess accuracy for the canary probe (``1 / #canary classes``).
+        thresholds: Overrides for :data:`DEFAULT_TIER_B_THRESHOLDS` (``rankme_lo`` / ``rankme_hi`` /
+            ``min_final_drift`` / ``canary_margin``).
+        canary_key: The labelled-probe key averaged for the above-chance check.
+        rankme_key: The RankMe key range-checked (the backbone surface, logged for both families).
+
+    Returns:
+        The Tier-B report: per-criterion booleans, the reported aggregates, the thresholds, and the
+        overall ``passed``.
+    """
+    t = {**DEFAULT_TIER_B_THRESHOLDS, **(thresholds or {})}
+    rankme = _finite_series(live_health, rankme_key)
+    rankme_in_range = bool(rankme) and all(t["rankme_lo"] <= v <= t["rankme_hi"] for v in rankme)
+
+    drift_key, drift_final = None, None
+    for key in _TIER_B_DRIFT_KEYS:
+        series = _finite_series(live_health, key)
+        if series:
+            drift_key, drift_final = key, series[-1]
+            break
+    drift_accumulated = drift_final is not None and drift_final > t["min_final_drift"]
+
+    canary = _finite_series(live_health, canary_key)
+    canary_mean = (sum(canary) / len(canary)) if canary else None
+    canary_above_chance = canary_mean is not None and canary_mean > canary_chance + t["canary_margin"]
+
+    return {
+        "passed": bool(rankme_in_range and drift_accumulated and canary_above_chance),
+        "checks": {
+            "rankme_in_range": rankme_in_range,
+            "drift_accumulated": bool(drift_accumulated),
+            "canary_above_chance": bool(canary_above_chance),
+        },
+        "reported": {
+            "rankme_min": min(rankme) if rankme else None,
+            "rankme_max": max(rankme) if rankme else None,
+            "drift_key": drift_key,
+            "final_drift": drift_final,
+            "canary_key": canary_key,
+            "canary_mean": canary_mean,
+            "canary_chance": canary_chance,
+        },
+        "thresholds": t,
+    }
 
 
 def emitted_signals(health: list[dict[str, Any]]) -> list[str]:
@@ -110,6 +202,8 @@ def build_deploy_report(
     b5: Arm | None = None,
     leak: dict[str, Any] | None = None,
     log_signals: list[str] | None = None,
+    canary_chance: float | None = None,
+    tier_b_thresholds: dict[str, float] | None = None,
 ) -> dict[str, Any]:
     """Assemble the deploy corpus — the config, the trust-annotated channels, the arms, the validation.
 
@@ -122,6 +216,10 @@ def build_deploy_report(
         b5: Optional frozen-floor gate arm.
         leak: Optional long-horizon leak report (adds the flat-memory check to the verdict).
         log_signals: Optional restriction of the logged signals (``None`` logs all emitted).
+        canary_chance: Random-guess accuracy for the canary probe (``1 / #canary classes``). When
+            given, the reproducible **Tier-B** sanity-of-readings verdict is computed and attached
+            under ``tier_b`` — separate from the Tier-A ``validation.passed`` wiring gate.
+        tier_b_thresholds: Optional overrides for the loose Tier-B plausibility floor.
 
     Returns:
         The deploy-corpus dict, ready to serialize.
@@ -167,4 +265,6 @@ def build_deploy_report(
     }
     if leak is not None:
         report["leak_check"] = leak
+    if canary_chance is not None:
+        report["tier_b"] = tier_b_report(live_health, canary_chance=canary_chance, thresholds=tier_b_thresholds)
     return report

@@ -111,6 +111,25 @@ def _write_bdd_fixture(root: Path, records: list[dict[str, object]], split: str 
     (root / "labels" / f"bdd100k_labels_images_{split}.json").write_text(json.dumps(labels), encoding="utf-8")
 
 
+def test_synthetic_source_caches_the_decode() -> None:
+    """Repeated ``load()`` on one source returns the identical cached object (decode once — A2)."""
+    src = SyntheticAttributeSource(num_regimes=2, num_canary_classes=2, per_cell=4, img_size=8, long_tail=False)
+    first = src.load()
+    assert src.load() is first
+
+
+def test_bdd_source_caches_the_decode(tmp_path: Path) -> None:
+    """The BDD source decodes once and reuses the cache — so threading it through arms is cheap (A2)."""
+    records: list[dict[str, object]] = [
+        {"name": "a.jpg", "attributes": {"timeofday": "daytime", "weather": "clear", "scene": "highway"}},
+        {"name": "b.jpg", "attributes": {"timeofday": "night", "weather": "rainy", "scene": "city street"}},
+    ]
+    _write_bdd_fixture(tmp_path, records)
+    src = BDD100KSource(str(tmp_path), img_size=16)
+    first = src.load()
+    assert src.load() is first
+
+
 def test_bdd_source_parses_layout_and_maps_both_axes(tmp_path: Path) -> None:
     """The real canonical layout parses into resized images with regime + scene axes."""
     records: list[dict[str, object]] = [

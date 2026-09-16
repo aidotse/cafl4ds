@@ -8,4 +8,6 @@ block_size: null
 support_per_canary: 10
 query_per_canary: 10
 max_train_per_regime: ${max_train_per_regime}
-seed: ${seed}
+seed: ${seed} # within-regime frame shuffle — varies per drive across the seed ensemble
+canary_seed: 0 # held-out probe reservation — FIXED (decoupled from ${seed}) so every drive and the
+# warm well hold out the identical probe set, disjoint from all SSL training (audit P1.0 A1)

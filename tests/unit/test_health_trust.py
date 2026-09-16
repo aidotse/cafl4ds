@@ -6,6 +6,8 @@ import re
 
 import pytest
 
+from cafl4ds.data.attributes import SyntheticAttributeSource
+from cafl4ds.data.regime import RegimeStream
 from cafl4ds.health_trust import (
     CANARY_SIGNALS,
     DEFAULT_LABEL_FREE_SIGNALS,
@@ -18,8 +20,52 @@ from cafl4ds.health_trust import (
     backbone_family,
     trust_for,
 )
+from cafl4ds.models.vit import TinyViTEncoder
+from cafl4ds.monitor import HealthMonitor
+from cafl4ds.ssl.factory import build_mae, build_simsiam
 
 _P0_ID = re.compile(r"^P0\.\d+(\.\d+)?$")
+
+
+def _monitor_emitted_keys(family: Backbone) -> set[str]:
+    """The signal keys the deploy-default monitor actually emits for a backbone family.
+
+    Builds the tiny backbone + the monitor with the deploy-default flags (kNN / linear / alignment
+    on; ``drift_surfaces`` on for the projector-bearing JE, off for MAE) and reads one checkpoint —
+    so the load-bearing key list is checked against the monitor's *real* output, not a hand copy.
+    """
+    source = SyntheticAttributeSource(num_regimes=2, num_canary_classes=3, per_cell=16, img_size=16, long_tail=False)
+    stream = RegimeStream(source, batch_size=8, support_per_canary=6, query_per_canary=6)
+    encoder = TinyViTEncoder(img_size=16, patch_size=8, in_chans=3, embed_dim=32, depth=2, num_heads=2, mlp_ratio=2.0)
+    if family is Backbone.JE:
+        method = build_simsiam(encoder=encoder, proj_hidden=32, proj_dim=16, pred_hidden=16)
+        drift_surfaces = True
+    else:
+        method = build_mae(encoder=encoder, decoder_dim=32, decoder_depth=1, decoder_heads=2, decoder_mlp_ratio=2.0)
+        drift_surfaces = False
+    monitor = HealthMonitor(
+        eval_sets=stream.eval_sets,
+        knn_k=3,
+        run_knn=True,
+        run_linear=True,
+        run_alignment=True,
+        align_seed=0,
+        drift_surfaces=drift_surfaces,
+    )
+    return {k for k in monitor.measure(method, 0) if k != "step"}
+
+
+@pytest.mark.parametrize("family", list(Backbone))
+def test_load_bearing_keys_are_emitted_by_the_monitor(family: Backbone) -> None:
+    """The curated load-bearing key list is checked against the monitor's emitted menu — B2.
+
+    Guards the realistic regression: if a load-bearing signal were renamed or dropped from the
+    monitor, its key would no longer appear here and this test would catch it (rather than the trust
+    map silently defaulting it to ``uncalibrated``).
+    """
+    emitted = _monitor_emitted_keys(family)
+    missing = set(LOAD_BEARING_KEYS[family]) - emitted
+    assert not missing, f"{family.value}: load-bearing keys not emitted by the monitor: {sorted(missing)}"
 
 
 def test_backbone_family_resolves_known_methods() -> None:

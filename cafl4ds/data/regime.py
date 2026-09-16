@@ -107,6 +107,7 @@ class RegimeStream:
         max_train_per_regime: int | None = None,
         drop_last: bool = False,
         seed: int = 0,
+        canary_seed: int = 0,
     ) -> None:
         """Build the stream (loads the source and constructs the splits eagerly).
 
@@ -122,7 +123,15 @@ class RegimeStream:
             query_per_canary: Images per canary class reserved for the probe query / drift set.
             max_train_per_regime: If set, cap the training images per regime (bounds run length).
             drop_last: Whether to drop the final short batch.
-            seed: RNG seed for the held-out sampling and within-regime shuffle.
+            seed: RNG seed for the **within-regime shuffle** (frame order inside each era, and — with
+                ``max_train_per_regime`` — which frames survive). Varies per drive across a seed
+                ensemble; does **not** touch the held-out reservation (see ``canary_seed``).
+            canary_seed: RNG seed for the **held-out canary reservation** — which support/query
+                frames each scene sets aside. Deliberately *decoupled* from ``seed`` and fixed by
+                default, so every drive in a seed ensemble (and the warm well, which reserves the
+                same way) holds out the **identical** probe set, disjoint from all SSL training. A
+                per-drive reservation would leave each drive probed on images an earlier drive's well
+                had already seen unsupervised — a soft transductive leak (audit P1.0 A1).
 
         Raises:
             ValueError: If ``block_size`` is non-positive, or a canary class has too few images to
@@ -134,6 +143,7 @@ class RegimeStream:
         self.block_size = block_size
         self.drop_last = drop_last
         self._generator = torch.Generator().manual_seed(seed)
+        reserve_generator = torch.Generator().manual_seed(canary_seed)
 
         attributed = source.load()
         self._images = attributed.images
@@ -144,10 +154,13 @@ class RegimeStream:
         self._canary = canary
 
         # Reserve a balanced held-out probe set on the canary axis; the rest is the training pool.
+        # The reservation draws from `reserve_generator` (seeded by `canary_seed`, not the drive
+        # `seed`), so the probe set is identical across every drive and the warm well — never a
+        # per-drive split that would let a later drive train on an earlier drive's probe images.
         support_idx, query_idx, train_mask = [], [], torch.ones(self._images.shape[0], dtype=torch.bool)
         for cls in sorted(set(canary.tolist())):
             cls_idx = (canary == cls).nonzero(as_tuple=True)[0]
-            perm = cls_idx[torch.randperm(cls_idx.numel(), generator=self._generator)]
+            perm = cls_idx[torch.randperm(cls_idx.numel(), generator=reserve_generator)]
             need = support_per_canary + query_per_canary
             if perm.numel() <= need:
                 raise ValueError(

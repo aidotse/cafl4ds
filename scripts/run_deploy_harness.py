@@ -36,6 +36,7 @@ from loguru import logger
 from omegaconf import DictConfig
 
 from cafl4ds import deploy, deploy_corpus, harness, warmup
+from cafl4ds.data.attributes import AttributeSource
 from cafl4ds.health_trust import CANARY_SIGNALS, DEFAULT_LABEL_FREE_SIGNALS, Backbone, backbone_family
 from cafl4ds.ssl.base import SSLMethod, apply_encoder_init
 
@@ -61,11 +62,14 @@ def _live_method(config: DictConfig) -> SSLMethod:
     return method
 
 
-def _run_live(config: DictConfig, out_dir: Path, name: str) -> tuple[harness.Arm, dict[int, str], dict[int, Any]]:
+def _run_live(
+    config: DictConfig, out_dir: Path, name: str, source: AttributeSource
+) -> tuple[harness.Arm, dict[int, str], dict[int, Any]]:
     """Run the live backbone over the regime diet, logging the full multivariate health vector.
 
     Returns the completed arm, the stream's era→regime-name map, and its per-era label composition
-    (both for labelling the corpus legs).
+    (both for labelling the corpus legs). ``source`` is the one decoded attribute source threaded
+    through every arm, so the corpus is decoded once per drive (not re-decoded per arm).
     """
     torch.manual_seed(int(config.seed))
     method = _live_method(config)
@@ -74,7 +78,7 @@ def _run_live(config: DictConfig, out_dir: Path, name: str) -> tuple[harness.Arm
             f"config family={config.family!r} disagrees with the instantiated backbone "
             f"{method.name!r} ({backbone_family(method.name).value}) — check the backbone override."
         )
-    stream = instantiate(config.stream)
+    stream = instantiate(config.stream, source=source)
     logger.info(
         f"deploy '{name}': backbone={method.name}, {stream.num_eras} eras, {len(stream)} batches, dev={config.device}"
     )
@@ -94,7 +98,7 @@ def _run_live(config: DictConfig, out_dir: Path, name: str) -> tuple[harness.Arm
 
 
 def _run_gate_arms(
-    config: DictConfig, out_dir: Path, name: str, grid: list[tuple[int, int]]
+    config: DictConfig, out_dir: Path, name: str, grid: list[tuple[int, int]], source: AttributeSource
 ) -> tuple[harness.Arm, harness.Arm]:
     """Run the optional PC (manufactured collapse) and B5 (frozen floor) gate arms on the diet.
 
@@ -103,6 +107,8 @@ def _run_gate_arms(
         out_dir: Directory the arm logs are written to.
         name: The run name prefix.
         grid: The live arm's ``(step, era)`` checkpoints — B5 is stamped onto them (measured only).
+        source: The one decoded attribute source (shared with the live arm — the gate streams reuse
+            its cached decode rather than re-decoding the corpus).
 
     Returns:
         The ``(pc, b5)`` gate arms.
@@ -113,7 +119,7 @@ def _run_gate_arms(
     b5 = harness.run_frozen_arm(
         name=f"{name}_b5",
         frozen_method=copy.deepcopy(b5_method),
-        monitor=instantiate(config.monitor, eval_sets=instantiate(config.stream).eval_sets),
+        monitor=instantiate(config.monitor, eval_sets=instantiate(config.stream, source=source).eval_sets),
         grid=grid,
         device=config.device,
     )
@@ -121,7 +127,7 @@ def _run_gate_arms(
     torch.manual_seed(int(config.seed))
     pc_method = instantiate(config.pc.ssl, encoder=instantiate(config.encoder))
     apply_encoder_init(pc_method.encoder, "from_scratch")
-    pc_stream = instantiate(config.stream)
+    pc_stream = instantiate(config.stream, source=source)
     pc = harness.run_stream_arm(
         name=f"{pc_method.name}_pc",
         role="pc",
@@ -138,14 +144,14 @@ def _run_gate_arms(
     return pc, b5
 
 
-def _run_leak_check(config: DictConfig, out_dir: Path, name: str) -> dict[str, Any]:
+def _run_leak_check(config: DictConfig, out_dir: Path, name: str, source: AttributeSource) -> dict[str, Any]:
     """Repeat the live arm over the diet, sampling RSS per pass — the Tier-A flat-memory check."""
     torch.manual_seed(int(config.seed))
     method = _live_method(config)
     optimizer = instantiate(config.optim, params=method.parameters())
     rss_samples: list[float] = []
     for p in range(int(config.long_horizon_passes)):
-        stream = instantiate(config.stream)
+        stream = instantiate(config.stream, source=source)
         harness.run_stream_arm(
             name=f"{name}_leak_p{p}",
             role="live",
@@ -165,17 +171,24 @@ def _run_leak_check(config: DictConfig, out_dir: Path, name: str) -> dict[str, A
 
 def _build(config: DictConfig, out_dir: Path, seed: int) -> tuple[dict[str, Any], dict[int, str], dict[int, Any]]:
     """Run the arms for one seed, read the multivariate signal, and assemble the deploy report."""
-    config.seed = seed  # drive per-seed determinism and the stream's held-out reservation
+    config.seed = seed  # drive per-seed determinism (the held-out reservation is fixed by canary_seed)
     name = f"{config.run_name or f'{config.family}_deploy'}_s{seed}"
-    live, era_names, composition = _run_live(config, out_dir, name)
+    source = instantiate(config.data)  # decode once, thread through every arm (cached — see A2)
+    live, era_names, composition = _run_live(config, out_dir, name, source)
     family = Backbone(str(config.family))
 
     grid = harness.health_grid(live)
-    pc, b5 = _run_gate_arms(config, out_dir, name, grid) if config.gate_arms else (None, None)
-    leak = _run_leak_check(config, out_dir, name) if config.long_horizon else None
+    pc, b5 = _run_gate_arms(config, out_dir, name, grid, source) if config.gate_arms else (None, None)
+    leak = _run_leak_check(config, out_dir, name, source) if config.long_horizon else None
 
     log_signals = list(config.log_signals) if config.log_signals else None
     expected = log_signals or [*DEFAULT_LABEL_FREE_SIGNALS[family], *CANARY_SIGNALS]
+
+    # Tier-B sanity-of-readings inputs: chance is 1/(#canary scenes); the loose plausibility floor
+    # comes from the `tier_b` config block. Computed on the live series, kept separate from the
+    # Tier-A `passed` wiring verdict.
+    canary_chance = (1.0 / source.num_canary_classes) if source.num_canary_classes else None
+    tier_b = {k: float(v) for k, v in config.tier_b.items()} if config.get("tier_b") else None
 
     header = {
         "backbone": config.family,
@@ -198,6 +211,8 @@ def _build(config: DictConfig, out_dir: Path, seed: int) -> tuple[dict[str, Any]
         b5=b5,
         leak=leak,
         log_signals=log_signals,
+        canary_chance=canary_chance,
+        tier_b_thresholds=tier_b,
     )
     _log_verdict(report)
     return report, era_names, composition
@@ -218,7 +233,7 @@ def _target_leaf(node: DictConfig) -> str:
 
 
 def _log_verdict(report: dict[str, Any]) -> None:
-    """Log the human-readable Tier-A validation verdict."""
+    """Log the human-readable Tier-A wiring verdict and (when computed) the Tier-B sanity verdict."""
     val, chan = report["validation"], report["channels"]
     logger.info(
         "P1.0.2 deploy corpus (Tier-A wiring):\n"
@@ -227,12 +242,32 @@ def _log_verdict(report: dict[str, Any]) -> None:
         f"finite={val['finite']}  memory_flat={val['memory_flat']}\n"
         f"  Tier-A passed: {val['passed']}"
     )
+    tier_b = report.get("tier_b")
+    if tier_b is not None:
+        rep, checks = tier_b["reported"], tier_b["checks"]
+        logger.info(
+            "P1.0.2 deploy corpus (Tier-B sanity-of-readings):\n"
+            f"  rankme in [{rep['rankme_min']}, {rep['rankme_max']}] -> in_range={checks['rankme_in_range']}\n"
+            f"  final {rep['drift_key']}={rep['final_drift']} -> accumulated={checks['drift_accumulated']}\n"
+            f"  canary({rep['canary_key']}) mean={rep['canary_mean']} vs chance {rep['canary_chance']} -> "
+            f"above_chance={checks['canary_above_chance']}\n"
+            f"  Tier-B passed: {tier_b['passed']}"
+        )
 
 
-@hydra.main(version_base=None, config_path="../cafl4ds/configs", config_name="deploy")  # type: ignore[misc]
-def main(config: DictConfig) -> None:
-    """Run the P1.0.2 deployment harness over the seed ensemble and write the hand-off corpus."""
-    out_dir = Path(HydraConfig.get().runtime.output_dir)
+def run_deploy(config: DictConfig, out_dir: Path) -> dict[str, Path]:
+    """Drive the seed ensemble, write the per-seed reports, and assemble the hand-off corpus.
+
+    The Hydra-free core (so it is unit-testable on the synthetic source): runs :func:`_build` per
+    seed, writes each seed's report, then unions them into the corpus under ``out_dir/corpus``.
+
+    Args:
+        config: The composed deploy config.
+        out_dir: The run directory the ``reports/`` and ``corpus/`` land in.
+
+    Returns:
+        The written corpus paths (from :func:`cafl4ds.deploy_corpus.write_corpus`).
+    """
     seeds = [int(s) for s in config.seeds] if config.get("seeds") else [int(config.seed)]
     reports_dir = out_dir / "reports"
     reports_dir.mkdir(parents=True, exist_ok=True)
@@ -260,6 +295,13 @@ def main(config: DictConfig) -> None:
 
     if not all(report["validation"]["passed"] for _, report in reports):
         logger.error("Tier-A validation did NOT pass for a seed — the pipeline is mis-wired; investigate before use.")
+    return paths
+
+
+@hydra.main(version_base=None, config_path="../cafl4ds/configs", config_name="deploy")  # type: ignore[misc]
+def main(config: DictConfig) -> None:
+    """Run the P1.0.2 deployment harness over the seed ensemble and write the hand-off corpus."""
+    run_deploy(config, Path(HydraConfig.get().runtime.output_dir))
 
 
 if __name__ == "__main__":

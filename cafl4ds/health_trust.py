@@ -8,8 +8,11 @@ artifact, so the multivariate health traces are **self-describing**: a consumer 
 that is a known *trap* in the mode it cares about (e.g. ``uniformity_proj``, calibrated to collapse,
 *mis-signals* on forgetting — P0.6.0).
 
-This is **fixed reference truth**, not a runtime knob — hence code, enum-typed, and unit-tested for
-completeness against the signal menu. Each entry cites the Phase-0 substudy that earned it, which
+This is **fixed reference truth**, not a runtime knob — hence code, enum-typed, and unit-tested: a
+curated ``LOAD_BEARING_KEYS`` list is checked both for calibrated provenance *and* to be actually
+emitted by the deploy-default monitor (``test_health_trust.py``), so a load-bearing signal renamed
+or dropped from the monitor is caught rather than silently defaulting to ``uncalibrated``. Each entry
+cites the Phase-0 substudy that earned it, which
 binds the registry to ``phase0/index.md`` under the accuracy mandate: if a Phase-0 verdict changes,
 both move together.
 

@@ -276,8 +276,9 @@ def write_corpus(
 
     Emits ``health.csv`` + ``health.parquet`` (the wide time series across all seeds and arms),
     ``segments.json`` (the leg map), ``trust.json`` (the per-signal calibrated status), and
-    ``manifest.json`` (provenance + the per-seed Tier-A verdicts). The segment map and trust block are
-    shared across seeds (same config), so they are taken from the first report.
+    ``manifest.json`` (provenance + the per-seed Tier-A verdicts, and the Tier-B sanity verdicts when
+    they were computed). The segment map and trust block are shared across seeds (same config), so they
+    are taken from the first report.
 
     Args:
         out_dir: The directory to write the corpus into (created if absent).
@@ -316,6 +317,10 @@ def write_corpus(
         "channels": first["channels"],
         "tier_a_passed": {str(seed): report["validation"]["passed"] for seed, report in reports},
     }
+    if any("tier_b" in report for _, report in reports):
+        provenance["tier_b_passed"] = {
+            str(seed): report["tier_b"]["passed"] for seed, report in reports if "tier_b" in report
+        }
     if manifest:
         provenance.update(manifest)
 

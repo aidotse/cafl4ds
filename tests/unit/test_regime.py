@@ -126,6 +126,38 @@ def test_is_deterministic_in_seed() -> None:
     assert all(torch.equal(x.images, y.images) and x.era == y.era for x, y in zip(a, b, strict=True))
 
 
+def _probe_images(stream: RegimeStream) -> tuple[set[tuple[float, ...]], set[tuple[float, ...]]]:
+    """The stream's held-out (support, query) probe sets as hashable image contents."""
+    ev = stream.eval_sets
+    sup = {tuple(img.flatten().tolist()) for img in ev.probe_support.images}
+    qry = {tuple(img.flatten().tolist()) for img in ev.probe_query.images}
+    return sup, qry
+
+
+def test_reservation_is_fixed_across_drive_seeds() -> None:
+    """Different drive seeds reserve the *identical* probe set — the reservation is decoupled from seed.
+
+    The A1 fix: the held-out canary probe set is drawn from ``canary_seed`` (fixed), not the drive
+    ``seed``, so every drive in a seed ensemble (and the warm well) holds out the same images and no
+    drive ever trains on another drive's probe queries.
+    """
+    a = RegimeStream(_source(), batch_size=8, support_per_canary=5, query_per_canary=5, seed=0)
+    b = RegimeStream(_source(), batch_size=8, support_per_canary=5, query_per_canary=5, seed=7)
+    assert _probe_images(a) == _probe_images(b)  # identical held-out probe set across drive seeds
+    # ... while the within-regime training order genuinely varies with the drive seed
+    walk_a = [tuple(img.flatten().tolist()) for batch in a for img in batch.images]
+    walk_b = [tuple(img.flatten().tolist()) for batch in b for img in batch.images]
+    assert set(walk_a) == set(walk_b)  # same training pool (identical reservation removed the same rows)
+    assert walk_a != walk_b  # but a different frame order
+
+
+def test_canary_seed_redraws_the_reservation() -> None:
+    """Changing ``canary_seed`` (independently of the drive seed) re-draws the held-out probe set."""
+    a = RegimeStream(_source(), batch_size=8, support_per_canary=5, query_per_canary=5, canary_seed=0)
+    b = RegimeStream(_source(), batch_size=8, support_per_canary=5, query_per_canary=5, canary_seed=1)
+    assert _probe_images(a) != _probe_images(b)
+
+
 def test_num_eras_counts_regimes_with_training_data() -> None:
     """num_eras reflects the regimes that actually contribute training batches."""
     stream = RegimeStream(_source(), batch_size=8)

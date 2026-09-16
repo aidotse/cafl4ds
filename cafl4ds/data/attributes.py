@@ -120,6 +120,7 @@ class SyntheticAttributeSource(AttributeSource):
         self.regime_tint = regime_tint
         self.long_tail = long_tail
         self.seed = seed
+        self._cache: AttributedImages | None = None
 
     @property
     def num_canary_classes(self) -> int:
@@ -131,8 +132,12 @@ class SyntheticAttributeSource(AttributeSource):
 
         Returns:
             :class:`AttributedImages` with canary-clustered content, an independent (optionally
-            long-tailed) regime axis, and ``regime_order = 0..num_regimes-1``.
+            long-tailed) regime axis, and ``regime_order = 0..num_regimes-1``. Cached on the
+            instance, so threading one source through several streams (the live + gate arms) decodes
+            it once.
         """
+        if self._cache is not None:
+            return self._cache
         g = torch.Generator().manual_seed(self.seed)
         shape = (self.channels, self.img_size, self.img_size)
         canary_patterns = [torch.rand(shape, generator=g) for _ in range(self._num_canary)]
@@ -147,7 +152,7 @@ class SyntheticAttributeSource(AttributeSource):
                 images.append(block.clamp_(0.0, 1.0))
                 era_key.append(torch.full((keep,), r, dtype=torch.long))
                 canary.append(torch.full((keep,), k, dtype=torch.long))
-        return AttributedImages(
+        self._cache = AttributedImages(
             images=torch.cat(images),
             era_key=torch.cat(era_key),
             canary=torch.cat(canary),
@@ -155,6 +160,7 @@ class SyntheticAttributeSource(AttributeSource):
             regime_names={r: f"regime{r}" for r in range(self._num_regimes)},
             canary_names={k: f"canary{k}" for k in range(self._num_canary)},
         )
+        return self._cache
 
 
 class BDD100KSource(AttributeSource):
@@ -204,6 +210,7 @@ class BDD100KSource(AttributeSource):
         self._labels_file = labels_file
         self.min_canary_count = min_canary_count
         self._num_canary = 0  # set on load (number of observed scenes)
+        self._cache: AttributedImages | None = None
 
     @property
     def num_canary_classes(self) -> int:
@@ -228,10 +235,19 @@ class BDD100KSource(AttributeSource):
         Returns:
             :class:`AttributedImages` with regimes id'd in shift-walk order and scenes as the canary.
 
+        The decoded result is cached on the instance: threading one source through the live and
+        (optional) gate arms then decodes the corpus **once** rather than 2–3× per drive.
+
         Raises:
             FileNotFoundError: If the image directory or the attributes JSON is missing.
             ValueError: If no image survives attribute filtering.
         """
+        if self._cache is None:
+            self._cache = self._decode()
+        return self._cache
+
+    def _decode(self) -> AttributedImages:
+        """Parse the attribute records and decode the referenced images (the uncached work)."""
         images_dir, labels_file = self._paths()
         if not images_dir.is_dir():
             raise FileNotFoundError(

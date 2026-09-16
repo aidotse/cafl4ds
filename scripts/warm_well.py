@@ -32,9 +32,17 @@ logger.remove()
 logger.add(sys.stdout, level="INFO")
 
 
-@hydra.main(version_base=None, config_path="../cafl4ds/configs", config_name="warm_well")  # type: ignore[misc]
-def main(config: DictConfig) -> None:
-    """Warm a competent well on the stationary diet and save the full method."""
+def warm(config: DictConfig) -> Path:
+    """Warm a competent well on the stationary diet and save the full method (Hydra-free core).
+
+    Kept separate from :func:`main` so it is unit-testable on the synthetic source.
+
+    Args:
+        config: The composed ``warm_well`` config.
+
+    Returns:
+        The path the warmed well was saved to.
+    """
     torch.manual_seed(int(config.seed))
     method: SSLMethod = instantiate(config.ssl, encoder=instantiate(config.encoder))
     apply_encoder_init(method.encoder, config.init.mode, config.init.checkpoint)
@@ -62,6 +70,13 @@ def main(config: DictConfig) -> None:
     well_path = Path(to_absolute_path(str(config.well_out)))
     warmup.save_well(method, well_path)
     logger.info(f"warm well ready — drive it with `well={well_path}`")
+    return well_path
+
+
+@hydra.main(version_base=None, config_path="../cafl4ds/configs", config_name="warm_well")  # type: ignore[misc]
+def main(config: DictConfig) -> None:
+    """Warm a competent well on the stationary diet and save the full method."""
+    warm(config)
 
 
 if __name__ == "__main__":

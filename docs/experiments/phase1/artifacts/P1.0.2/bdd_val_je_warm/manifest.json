@@ -51,10 +51,18 @@
     "3": true,
     "4": true
   },
+  "tier_b_passed": {
+    "0": true,
+    "1": true,
+    "2": true,
+    "3": true,
+    "4": true
+  },
   "git_sha": null,
   "n_seeds": 5,
   "warm": true,
   "eval_every": 1,
+  "hardware": "Gaudi2 HL-225 (hpu)",
   "bdd": {
     "source": "dgural/bdd100k (val split)",
     "split": "val",
@@ -70,5 +78,5 @@
     "support_per_canary": 25,
     "query_per_canary": 25
   },
-  "hardware": "Gaudi2 HL-225 (hpu)"
+  "note": "re-driven 2026-09-15 under the fixed canary_seed reservation (audit P1.0 A1)"
 }

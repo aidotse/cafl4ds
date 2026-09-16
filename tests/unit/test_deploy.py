@@ -15,6 +15,7 @@ from cafl4ds.deploy import (
     emitted_signals,
     project_health,
     split_channels,
+    tier_b_report,
 )
 from cafl4ds.filters.accept_all import AcceptAll
 from cafl4ds.harness import Arm, run_stream_arm
@@ -167,6 +168,51 @@ def test_build_report_respects_log_signals_restriction() -> None:
     # the pruned health records carry only the kept signal (+ bookkeeping)
     kept = set(report["arms"]["live"]["health"][0])
     assert "knn_acc" not in kept and "rankme_proj" in kept
+
+
+def test_tier_b_passes_on_a_plausible_series() -> None:
+    """A plausible trajectory clears the loose sanity floor: RankMe in range, drift up, canary > chance."""
+    tb = tier_b_report(_je_arm().health, canary_chance=1 / 3)
+    assert tb["passed"]
+    assert tb["checks"] == {"rankme_in_range": True, "drift_accumulated": True, "canary_above_chance": True}
+    # the projector current-stream drift is preferred over the backbone drift when both are logged
+    assert tb["reported"]["drift_key"] == "cosine_drift_proj"
+
+
+def test_tier_b_flags_collapsed_rankme_flat_drift_and_chance_canary() -> None:
+    """Each criterion fails independently on an implausible series (collapse / no drift / chance canary)."""
+    bad = {**_je_signals(), "rankme": 0.0, "cosine_drift_proj": 0.0, "knn_acc": 1 / 3}
+    health = [_health(s, s % 2, **bad) for s in range(3)]
+    tb = tier_b_report(health, canary_chance=1 / 3)
+    assert tb["passed"] is False
+    assert tb["checks"] == {"rankme_in_range": False, "drift_accumulated": False, "canary_above_chance": False}
+
+
+def test_build_report_attaches_tier_b_separately_from_tier_a() -> None:
+    """Tier B rides in the report only when chance is given, and never touches the Tier-A wiring verdict."""
+    plausible = build_deploy_report(
+        config_header={}, family=Backbone.JE, live=_je_arm(), expected_signals=_expected(), canary_chance=1 / 3
+    )
+    assert plausible["tier_b"]["passed"] is True
+    # a wired-but-implausible series still passes Tier A (wiring) while failing Tier B (sanity)
+    bad = {**_je_signals(), "cosine_drift_proj": 0.0, "knn_acc": 1 / 3}
+    arm = Arm(name="live", role="live", records=[_health(s, s % 2, **bad) for s in range(3)])
+    report = build_deploy_report(
+        config_header={}, family=Backbone.JE, live=arm, expected_signals=_expected(), canary_chance=1 / 3
+    )
+    assert report["validation"]["passed"] is True
+    assert report["tier_b"]["passed"] is False
+    # with no chance supplied, Tier B is simply not computed
+    no_chance = build_deploy_report(config_header={}, family=Backbone.JE, live=_je_arm(), expected_signals=_expected())
+    assert "tier_b" not in no_chance
+
+
+def test_tier_b_thresholds_are_overridable() -> None:
+    """A stricter canary margin can fail a series the default (loose) floor would pass."""
+    health = _je_arm().health  # knn_acc = 0.9, chance 1/3
+    assert tier_b_report(health, canary_chance=1 / 3)["passed"]
+    strict = tier_b_report(health, canary_chance=1 / 3, thresholds={"canary_margin": 0.6})
+    assert strict["checks"]["canary_above_chance"] is False
 
 
 def test_end_to_end_regime_stream_feeds_the_monitor_and_validates(tmp_path: Path) -> None:

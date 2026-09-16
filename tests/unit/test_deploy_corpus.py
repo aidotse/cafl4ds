@@ -169,9 +169,31 @@ def test_write_corpus_writes_a_readable_ensemble(tmp_path: Path) -> None:
     assert manifest["seeds"] == [0, 1] and manifest["backbone_family"] == "je"
     assert manifest["git_sha"] == "abc123"
     assert manifest["tier_a_passed"] == {"0": True, "1": True}
+    # Tier-B was not computed for these reports (no canary_chance), so it is absent — no false verdict
+    assert "tier_b_passed" not in manifest
 
     segments = json.loads(paths["segments"].read_text(encoding="utf-8"))["segments"]
     assert [s["era_name"] for s in segments] == ["daytime·clear", "daytime·rain", "night·clear"]
+
+
+def test_write_corpus_records_tier_b_when_computed(tmp_path: Path) -> None:
+    """When the seed reports carry a Tier-B block, the manifest records the per-seed sanity verdict."""
+    reports = [
+        (
+            seed,
+            build_deploy_report(
+                config_header={"backbone": "je", "seed": seed},
+                family=Backbone.JE,
+                live=_je_arm("live"),
+                expected_signals=[*DEFAULT_LABEL_FREE_SIGNALS[Backbone.JE], *CANARY_SIGNALS],
+                canary_chance=1 / 3,
+            ),
+        )
+        for seed in (0, 1)
+    ]
+    paths = write_corpus(tmp_path, reports=reports)
+    manifest = json.loads(paths["manifest"].read_text(encoding="utf-8"))
+    assert manifest["tier_b_passed"] == {"0": True, "1": True}
 
 
 def test_write_corpus_threads_composition_into_segments(tmp_path: Path) -> None:
