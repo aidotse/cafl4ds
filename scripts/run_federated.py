@@ -198,6 +198,7 @@ def main(config: DictConfig) -> None:
         global_monitor=global_monitor,
         run_logger=global_logger,
         server_optimizer=strategy.server_optimizer,  # the strategy's server half
+        track_divergence=config.track_divergence,
     )
     _, history = orchestrator.run()
     logger.info(f"done: {len(history)} rounds; global health log at {global_logger.path}")

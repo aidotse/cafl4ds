@@ -17,6 +17,7 @@ from cafl4ds.data.sources import DataSource, SyntheticSource
 from cafl4ds.data.streams import EraStream
 from cafl4ds.federated.aggregate import federated_average, weights_from_samples
 from cafl4ds.federated.client import FederatedClient
+from cafl4ds.federated.divergence import divergence_metrics, embed_probe
 from cafl4ds.federated.orchestrator import FederatedOrchestrator
 from cafl4ds.federated.partition import dirichlet_partition, holdout_split, iid_partition, partition_source
 from cafl4ds.federated.proximal import ProximalTerm
@@ -618,3 +619,101 @@ def test_orchestrator_validates_inputs(tmp_path: Path) -> None:
     clients = _make_clients(tmp_path, num_clients=1)
     with pytest.raises(ValueError, match="steps_per_round"):
         FederatedOrchestrator(clients, steps_per_round=0)
+
+
+# --- per-client divergence ---------------------------------------------------
+
+
+def test_divergence_is_zero_when_no_client_moved() -> None:
+    """Clients still holding the anchor's representation register no divergence."""
+    torch.manual_seed(0)
+    z = torch.randn(24, 8)
+    metrics = divergence_metrics(z, [z.clone(), z.clone()])
+    for key, value in metrics.items():
+        assert value == pytest.approx(0.0, abs=1e-5), f"{key} should vanish for identical clients"
+
+
+def test_divergence_detects_clients_that_pulled_apart() -> None:
+    """Distinct client representations register both anchor and cross-client divergence."""
+    torch.manual_seed(0)
+    anchor = torch.randn(24, 8)
+    metrics = divergence_metrics(anchor, [torch.randn(24, 8), torch.randn(24, 8)])
+    assert metrics["client_anchor_cka_max"] > 0.0
+    assert metrics["cross_client_cka_max"] > 0.0
+    # A max is never below its own mean.
+    assert metrics["client_anchor_cka_max"] >= metrics["client_anchor_cka_mean"]
+    assert metrics["cross_client_cka_max"] >= metrics["cross_client_cka_mean"]
+
+
+def test_divergence_omits_cross_client_terms_for_a_lone_participant() -> None:
+    """One client has no pair, so the cross-client keys are absent rather than faked."""
+    torch.manual_seed(0)
+    z = torch.randn(24, 8)
+    metrics = divergence_metrics(z, [torch.randn(24, 8)])
+    assert "client_anchor_cka_mean" in metrics
+    assert not any(key.startswith("cross_client") for key in metrics)
+
+
+def test_divergence_rejects_no_clients() -> None:
+    """An empty participant list is a caller error, not a zero."""
+    with pytest.raises(ValueError, match="at least one client"):
+        divergence_metrics(torch.randn(8, 4), [])
+
+
+def test_embed_probe_restores_the_training_flag(tmp_path: Path) -> None:
+    """Reading the probe must not leave the method in eval mode mid-round."""
+    method = _make_loop(SyntheticSource(num_classes=2, per_class=20, img_size=16), 0, tmp_path / "e.jsonl").method
+    method.train()
+    embed_probe(method, torch.rand(6, 3, 16, 16))
+    assert method.training, "embed_probe left the method in eval mode"
+
+
+def _run_with_divergence(tmp_path: Path, *, track: bool) -> dict[str, float]:
+    """Run a tiny 3-client federation and return round 0's logged health."""
+    clients = _make_clients(tmp_path, num_clients=3)
+    global_stream = EraStream(
+        SyntheticSource(num_classes=4, per_class=40, img_size=16, seed=1),
+        batch_size=8,
+        order="iid",
+        seed=1,
+        support_per_class=3,
+        query_per_class=2,
+        era_eval_per_class=1,
+    )
+    orch = FederatedOrchestrator(
+        clients,
+        steps_per_round=3,
+        num_rounds=1,
+        global_monitor=HealthMonitor(global_stream.eval_sets, knn_k=3),
+        run_logger=RunLogger(tmp_path / f"g{track}.jsonl", run_name="global"),
+        track_divergence=track,
+    )
+    _, history = orch.run()
+    health = history[0].health
+    assert health is not None
+    return health
+
+
+def test_orchestrator_logs_per_client_divergence(tmp_path: Path) -> None:
+    """Divergence lands in the same per-round health series as the global metrics."""
+    health = _run_with_divergence(tmp_path, track=True)
+    assert "rankme" in health  # the global half is untouched
+    for key in ("client_anchor_cka_mean", "client_anchor_cka_max", "cross_client_cka_mean", "cross_client_cka_max"):
+        assert key in health, f"missing {key}"
+    # Clients trained locally from a shared anchor, so they must have moved away from it.
+    assert health["client_anchor_cka_max"] > 0.0
+
+
+def test_orchestrator_divergence_is_opt_out(tmp_path: Path) -> None:
+    """track_divergence=False restores the pre-existing global-only health series."""
+    health = _run_with_divergence(tmp_path, track=False)
+    assert "rankme" in health
+    assert not any(key.startswith(("client_anchor", "cross_client")) for key in health)
+
+
+def test_orchestrator_divergence_is_inert_without_a_global_monitor(tmp_path: Path) -> None:
+    """No global monitor means no shared probe set, so tracking disables itself quietly."""
+    orch = FederatedOrchestrator(_make_clients(tmp_path, num_clients=2), steps_per_round=1, num_rounds=1)
+    assert orch.track_divergence is False
+    _, history = orch.run()
+    assert history[0].health is None

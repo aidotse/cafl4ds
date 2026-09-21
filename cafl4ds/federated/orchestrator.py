@@ -26,6 +26,12 @@ The round's loss (participants' ``mean_loss``, weighted by ``num_trained`` — t
 uses to aggregate weights) is logged every round via ``run_logger``. Global health (the dependent
 variable) is logged once per round when a ``global_monitor`` is supplied — the aggregated model is
 measured on a *global* held-out set, distinct from any client's skewed local monitor.
+
+Alongside it, ``track_divergence`` adds the **per-client** half of the readout
+(:mod:`~cafl4ds.federated.divergence`): how far each client's representation moved from the
+broadcast anchor, and how far the clients moved from each other. The aggregate can hide
+heterogeneity that the clients plainly exhibit — clients drifting in opposite directions average
+back towards their start — so these are logged into the same per-round health series.
 """
 
 from __future__ import annotations
@@ -33,13 +39,16 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 
+import torch
 from loguru import logger
 
 from cafl4ds.federated.aggregate import StateDict, federated_average, weights_from_samples
 from cafl4ds.federated.client import FederatedClient, RoundResult
+from cafl4ds.federated.divergence import divergence_metrics, embed_probe
 from cafl4ds.federated.server_optim import FedAvgServer, ServerOptimizer
 from cafl4ds.monitor import HealthMonitor
 from cafl4ds.run_log import RunLogger
+from cafl4ds.ssl.base import SSLMethod
 
 
 @dataclass(frozen=True)
@@ -67,6 +76,7 @@ class FederatedOrchestrator:
         global_monitor: HealthMonitor | None = None,
         run_logger: RunLogger | None = None,
         server_optimizer: ServerOptimizer | None = None,
+        track_divergence: bool = True,
     ) -> None:
         """Configure the orchestrator.
 
@@ -81,6 +91,10 @@ class FederatedOrchestrator:
                 (see :mod:`~cafl4ds.federated.server_optim`). Defaults to
                 :class:`~cafl4ds.federated.server_optim.FedAvgServer` — the identity step, i.e.
                 plain FedAvg. Stateful implementations must not be shared between runs.
+            track_divergence: Also measure per-client representation divergence each round (see
+                :mod:`~cafl4ds.federated.divergence`), merged into the global health series.
+                Requires ``global_monitor`` (it supplies the shared probe set) and is silently
+                inert without one. Costs one extra probe-set encode per participant per round.
 
         Raises:
             ValueError: If ``clients`` is empty or ``steps_per_round < 1``.
@@ -94,6 +108,9 @@ class FederatedOrchestrator:
         self.num_rounds = num_rounds
         self.global_monitor = global_monitor
         self.run_logger = run_logger
+        # Divergence needs the global monitor's probe set — a *shared* probe is what makes the
+        # per-client numbers comparable, and it is disjoint from every client's training data.
+        self.track_divergence = track_divergence and global_monitor is not None
         self.server_optimizer: ServerOptimizer = server_optimizer if server_optimizer is not None else FedAvgServer()
         # Which state_dict entries the server optimizer may touch. Only *parameters* are
         # optimized: a state_dict also holds non-learned buffers (BatchNorm running statistics,
@@ -116,13 +133,24 @@ class FederatedOrchestrator:
             active = [c for c in self.clients if not c.exhausted]
             if not active:
                 break
-            results: list[tuple[FederatedClient, RoundResult]] = []
             for client in active:
                 client.set_weights(global_state)
-                results.append((client, client.train_round(self.steps_per_round)))
+            # Read the anchor's representation while every client still holds it, before any
+            # local step — so the divergence baseline is exactly the weights broadcast this round.
+            anchor_z = self._embed_probe(active[0].method) if self.track_divergence else None
+            results: list[tuple[FederatedClient, RoundResult]] = [
+                (client, client.train_round(self.steps_per_round)) for client in active
+            ]
             trained = [(c, r) for c, r in results if r.num_trained > 0]
             if not trained:
                 break  # every active client exhausted with nothing admitted
+            # Read divergence while the clients still hold their own post-round weights: the
+            # `_record_round` global measurement borrows client 0's model as a load vessel.
+            divergence = (
+                divergence_metrics(anchor_z, [self._embed_probe(c.method) for c, _ in trained])
+                if anchor_z is not None
+                else {}
+            )
             # Mix the clients, then apply the mixture. Every participant trained from
             # `global_state`, so the aggregate minus it is the round's pseudo-gradient — which is
             # what the server optimizer consumes (a no-op under FedAvg).
@@ -131,7 +159,7 @@ class FederatedOrchestrator:
                 weights_from_samples([r.num_trained for _, r in trained]),
             )
             global_state = self._apply_server_step(global_state, aggregated)
-            history.append(self._record_round(round_index, [r for _, r in trained], global_state))
+            history.append(self._record_round(round_index, [r for _, r in trained], global_state, divergence))
             round_index += 1
         logger.info(f"federated run complete: {len(history)} rounds")
         if self.run_logger is not None:
@@ -141,6 +169,24 @@ class FederatedOrchestrator:
     def _should_continue(self, round_index: int) -> bool:
         """Whether another round is allowed under the optional ``num_rounds`` cap."""
         return self.num_rounds is None or round_index < self.num_rounds
+
+    def _embed_probe(self, method: SSLMethod) -> torch.Tensor:
+        """Embed the global monitor's probe-query set — the shared probe divergence is read on.
+
+        Args:
+            method: The model to read (a client mid-round, or the broadcast anchor).
+
+        Returns:
+            Pooled backbone embeddings of the global probe-query set ``[N, d]``.
+
+        Raises:
+            RuntimeError: If no ``global_monitor`` is set (unreachable: ``track_divergence``
+                already requires one).
+        """
+        monitor = self.global_monitor
+        if monitor is None:
+            raise RuntimeError("divergence tracking requires a global_monitor to supply the probe set.")
+        return embed_probe(method, monitor.eval_sets.probe_query.images)
 
     def _apply_server_step(self, old_state: StateDict, aggregated: StateDict) -> StateDict:
         """Run the server optimizer over the *parameters*, keeping buffers at their FedAvg mean.
@@ -167,13 +213,22 @@ class FederatedOrchestrator:
         stepped = self.server_optimizer.step({key: old_state[key] for key in params}, params)
         return {**aggregated, **stepped}
 
-    def _record_round(self, round_index: int, results: list[RoundResult], global_state: StateDict) -> RoundSummary:
+    def _record_round(
+        self,
+        round_index: int,
+        results: list[RoundResult],
+        global_state: StateDict,
+        divergence: dict[str, float],
+    ) -> RoundSummary:
         """Measure/log the aggregated model and build the round summary.
 
         Args:
             round_index: The round just completed.
             results: The results of the clients that trained this round.
             global_state: The freshly aggregated global weights.
+            divergence: Per-client divergence metrics for this round (empty when not tracked),
+                merged into the logged health so the aggregate and the client spread sit in one
+                series.
 
         Returns:
             The :class:`RoundSummary` for this round.
@@ -192,7 +247,7 @@ class FederatedOrchestrator:
             # is the load vessel — it is overwritten by set_weights at the next round anyway.
             vessel = self.clients[0].method
             vessel.load_state_dict(global_state)
-            health = self.global_monitor.measure(vessel, round_index)
+            health = {**self.global_monitor.measure(vessel, round_index), **divergence}
             if self.run_logger is not None:
                 self.run_logger.log_health(round_index, era=-1, metrics=health)
         logger.info(f"round {round_index}: {len(participants)} clients, {samples} imgs trained")
