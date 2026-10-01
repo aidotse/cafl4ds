@@ -44,6 +44,7 @@ from cafl4ds.federated.client import FederatedClient
 from cafl4ds.federated.orchestrator import FederatedOrchestrator
 from cafl4ds.federated.partition import holdout_split, partition_source
 from cafl4ds.federated.strategy import FederatedStrategy
+from cafl4ds.final_eval import FinalEvaluator
 from cafl4ds.run_log import RunLogger
 from cafl4ds.ssl.base import apply_method_init
 
@@ -138,6 +139,29 @@ def _build_client(
     return FederatedClient(client_id, loop)
 
 
+def _build_final_eval(config: DictConfig, train: DataSource) -> FinalEvaluator | None:
+    """Build the test-split evaluator from ``config.final_eval``, or ``None`` when disabled.
+
+    Args:
+        config: The composed config.
+        train: The run's training-split source (the probe support pool).
+
+    Returns:
+        The evaluator, or ``None`` if ``final_eval.enabled`` is false.
+    """
+    cfg = config.final_eval
+    if not cfg.enabled:
+        return None
+    return FinalEvaluator.from_sources(
+        train,
+        instantiate(config.data, **cfg.test_overrides),
+        support_per_class=cfg.support_per_class,
+        knn_k=cfg.knn_k,
+        batch_size=cfg.batch_size,
+        seed=config.seed,
+    )
+
+
 @hydra.main(version_base=None, config_path="../cafl4ds/configs", config_name="federated")  # type: ignore[misc]
 def main(config: DictConfig) -> None:
     """Instantiate and run the federated Phase-0 streaming loop from the Hydra config."""
@@ -201,8 +225,17 @@ def main(config: DictConfig) -> None:
         track_divergence=config.track_divergence,
         track_client_health=config.track_client_health,
     )
-    _, history = orchestrator.run()
+    # Final verdict on the test split: score the shared starting point now, the final global model
+    # after the run, under the same probes (see `cafl4ds.final_eval`).
+    final_eval = _build_final_eval(config, source)
+    start = final_eval.evaluate(clients[0].method) if final_eval is not None else None
+
+    final_state, history = orchestrator.run()
     logger.info(f"done: {len(history)} rounds; global health log at {global_logger.path}")
+
+    if final_eval is not None and start is not None:
+        clients[0].method.load_state_dict(final_state)  # client 0's model as the vessel, as in the orchestrator
+        final_eval.write_report(start, final_eval.evaluate(clients[0].method), out_dir / "final_eval.json")
 
 
 if __name__ == "__main__":

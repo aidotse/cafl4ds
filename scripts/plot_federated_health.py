@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Plot a federated run's health series over rounds: one panel per metric, one line per client.
 
 Reads the run logs ``run_federated.py`` writes into its Hydra output directory: ``global_*.jsonl``

@@ -50,3 +50,12 @@ eval:
   compare_b5: false # compare the adapted encoder vs the init-matched frozen backbone (B5)
   probe: knn # knn | linear (labels used HERE ONLY)
   knn_k: 20
+# Final test-split evaluation (cafl4ds.final_eval): kNN + linear probes fitted on the training
+# split, scored on the test split, for the starting and the final model -> final_eval.json.
+final_eval:
+  enabled: false
+  test_overrides: # merged into the data config to build the test source
+    split: test # CIFAR-100 / STL-10: test; Imagenette: val
+  support_per_class: null # null = every training image; e.g. 100 cuts the linear-probe fit time
+  knn_k: 20
+  batch_size: 1024 # images per forward pass when encoding

@@ -32,8 +32,10 @@ from hydra.utils import instantiate, to_absolute_path
 from loguru import logger
 from omegaconf import DictConfig
 
+from cafl4ds.data.sources import DataSource
 from cafl4ds.data.streams import EraStream
 from cafl4ds.eval import PerEraProbe, adaptation_report
+from cafl4ds.final_eval import FinalEvaluator
 from cafl4ds.run_log import RunLogger
 from cafl4ds.ssl.base import SSLMethod, apply_method_init
 
@@ -94,6 +96,29 @@ def _report_establish(
     logger.info(f"wrote establishing report to {out_dir / 'establish.json'}")
 
 
+def _build_final_eval(config: DictConfig, train: DataSource) -> FinalEvaluator | None:
+    """Build the test-split evaluator from ``config.final_eval``, or ``None`` when disabled.
+
+    Args:
+        config: The composed config.
+        train: The run's training-split source (the probe support pool).
+
+    Returns:
+        The evaluator, or ``None`` if ``final_eval.enabled`` is false.
+    """
+    cfg = config.final_eval
+    if not cfg.enabled:
+        return None
+    return FinalEvaluator.from_sources(
+        train,
+        instantiate(config.data, **cfg.test_overrides),
+        support_per_class=cfg.support_per_class,
+        knn_k=cfg.knn_k,
+        batch_size=cfg.batch_size,
+        seed=config.seed,
+    )
+
+
 @hydra.main(version_base=None, config_path="../cafl4ds/configs", config_name="loop")  # type: ignore[misc]
 def main(config: DictConfig) -> None:
     """Instantiate and run the Phase-0 streaming loop from the Hydra config."""
@@ -138,7 +163,15 @@ def main(config: DictConfig) -> None:
         run_logger=run_logger,
         era_evaluator=era_evaluator,
     )
+    # Final verdict on the test split, same protocol before and after (see `cafl4ds.final_eval`).
+    final_eval = _build_final_eval(config, instantiate(config.data))
+    start = final_eval.evaluate(method) if final_eval is not None else None
+
     loop.run()
+
+    if final_eval is not None and start is not None:
+        out_dir = Path(HydraConfig.get().runtime.output_dir)
+        final_eval.write_report(start, final_eval.evaluate(method), out_dir / "final_eval.json")
 
     if b5 is not None or era_evaluator is not None:
         _report_establish(config, method, b5, era_evaluator, stream, Path(HydraConfig.get().runtime.output_dir))
