@@ -113,15 +113,34 @@ class SSLMethod(nn.Module, ABC):  # type: ignore[misc]  # nn.Module is Any witho
         """Return a positive pair (two augmented views) for pair-based instruments, or ``None``.
 
         Alignment (Wang & Isola 2020) needs a positive pair. Joint-embedding methods override
-        this to return two independently augmented views; single-view methods (MAE) return
-        ``None``, signalling that pair-based instruments are not applicable and should be
-        skipped.
+        this to return two independently augmented views; MAE also overrides it (two draws of its
+        own augmentation) so alignment can be put *on trial* as a candidate MAE quality reader
+        (P0.5). A method with no positive-pair notion returns ``None`` here, signalling that
+        pair-based instruments are not applicable and should be skipped.
 
         Args:
             imgs: A batch of raw images ``[B, C, H, W]``.
 
         Returns:
             A ``(view_a, view_b)`` pair, or ``None`` if the method has no positive-pair notion.
+        """
+        return None
+
+    def make_views_strong(self, imgs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor] | None:
+        """Return a *strong*-augmentation positive pair for alignment-under-stronger-aug, or ``None``.
+
+        The P0.5.2 candidate reader *alignment under stronger augmentations* repurposes alignment
+        with a heavier, still semantic-preserving augment: a semantic representation should stay
+        invariant to a strong-but-meaning-preserving transform, whereas a low-level shortcut
+        representation should not — the invariance the light-augment :meth:`make_views` could not
+        read on MAE (P0.5.0/P0.5.1). Methods that can supply such a pair override this; the default
+        returns ``None`` so the instrument is skipped.
+
+        Args:
+            imgs: A batch of raw images ``[B, C, H, W]``.
+
+        Returns:
+            A ``(view_a, view_b)`` pair under a strong augment, or ``None`` if unsupported.
         """
         return None
 

@@ -17,7 +17,7 @@ from torchvision.transforms import v2
 
 from cafl4ds.models.heads import MAEDecoder
 from cafl4ds.models.vit import TinyViTEncoder, patchify
-from cafl4ds.ssl.augment import make_light_augment
+from cafl4ds.ssl.augment import make_light_augment, make_ssl_augment
 from cafl4ds.ssl.base import SSLMethod
 
 
@@ -49,6 +49,9 @@ class MAE(SSLMethod):
         self.norm_pix_loss = norm_pix_loss
         img_size = int(round(encoder.num_patches**0.5)) * encoder.patch_size
         self.augment = augment if augment is not None else make_light_augment(img_size)
+        # A heavier, still semantic-preserving augment used ONLY by the P0.5.2 read-only
+        # alignment-under-stronger-aug instrument (via make_views_strong) — never in training.
+        self.strong_augment = make_ssl_augment(img_size)
 
     @property
     def name(self) -> str:
@@ -121,3 +124,42 @@ class MAE(SSLMethod):
             loss_per_patch, mask = self._masked_recon_loss(imgs)
             per_image = (loss_per_patch * mask).sum(dim=-1) / mask.sum(dim=-1).clamp_min(1.0)
         return per_image
+
+    def make_views(self, imgs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        """Return a positive pair via two independent draws of MAE's own augmentation.
+
+        MAE has no joint-embedding positive pair (it never optimizes augmentation-invariance),
+        so the base :class:`~cafl4ds.ssl.base.SSLMethod` returns ``None`` and the alignment
+        instrument is skipped. P0.5 puts the collapse suite *on trial* on an MAE backbone (does
+        any label-free reader track the frozen-probe crater of a shortcut-degraded rep?), and
+        alignment is one candidate reader. So MAE exposes a pair here — two independent passes of
+        its light spatial augmentation, the same transform :meth:`_masked_recon_loss` applies
+        before masking. This makes ``alignment`` *measurable* on MAE; whether it reads quality is
+        exactly the open question (a semantic rep should be more augmentation-invariant than a
+        low-level shortcut rep). It is a read-only measurement path — nothing here enters
+        :meth:`training_step`, so the MAE objective is unchanged.
+
+        Args:
+            imgs: A batch of raw images ``[B, C, H, W]``.
+
+        Returns:
+            A ``(view_a, view_b)`` pair, each an independently augmented view of ``imgs``.
+        """
+        return self.augment(imgs), self.augment(imgs)
+
+    def make_views_strong(self, imgs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        """Return a positive pair under a *strong* (SSL-grade) augment, for P0.5.2's reader.
+
+        Two independent draws of the heavier :func:`~cafl4ds.ssl.augment.make_ssl_augment`
+        pipeline (random-resized-crop + flip + colour jitter + grayscale) — a strong but
+        semantic-preserving transform. The *alignment-under-stronger-aug* candidate reader tests
+        the invariance a semantic MAE representation should have but a low-level shortcut should
+        not. Read-only: this augment never enters :meth:`training_step`.
+
+        Args:
+            imgs: A batch of raw images ``[B, C, H, W]``.
+
+        Returns:
+            A ``(view_a, view_b)`` pair, each a strongly augmented view of ``imgs``.
+        """
+        return self.strong_augment(imgs), self.strong_augment(imgs)

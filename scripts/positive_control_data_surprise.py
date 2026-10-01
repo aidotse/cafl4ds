@@ -271,7 +271,7 @@ def _summarize(config: DictConfig, trace: list[dict[str, Any]]) -> dict[str, Any
         "base_median_grad_norm": statistics.median([r["grad_norm"] for r in base_win]) if base_win else float("nan"),
         "burst_peak_grad_norm": burst_peak,
         "tail_min_grad_norm": tail_min,
-        "change_ratio": (burst_peak / base_peak) if base_peak else float("inf"),
+        "within_arm_ratio": (burst_peak / base_peak) if base_peak else float("inf"),
         "recover_ratio": (tail_min / base_peak) if base_peak else float("inf"),
         "base_mean_loss": _mean_loss(base_win),
         "burst_mean_loss": _mean_loss(burst_win),
@@ -356,10 +356,12 @@ def _evaluate_surprise_gate(config: DictConfig, shock: dict[str, Any], control: 
     Passes iff: the base is **competent** (the shock arm's warm loss descended — an under-trained
     MAE finds everything surprising, voiding the contrast); the burst is genuinely **surprising**
     (shock burst mean loss ≥ ``surprise_ratio`` x the **control's same-step** burst-window loss); the
-    grad norm **fires** (shock burst peak ≥ ``change_ratio`` x the control's same-step burst-window
-    peak — the two-sided change point); and the **control is flat** (the base-only arm's own
-    within-arm burst peak / pre-burst base peak < ``control_quiet_ratio`` and it never diverges — no
-    spurious change without the injection).
+    grad norm **fires** (the CROSS-ARM ``fire_ratio`` = shock burst peak / control same-step burst
+    peak ≥ ``gate.fire_ratio`` — the two-sided change point, the headline gate); and the **control is
+    flat** (the base-only arm's own WITHIN-ARM ``within_arm_ratio`` = burst peak / pre-burst base peak
+    < ``control_quiet_ratio`` and it never diverges — no spurious change without the injection). Note
+    the two ratios are distinct quantities: ``fire_ratio`` is cross-arm (the gate); ``within_arm_ratio``
+    is within-arm (the control's own change-point sanity check).
 
     Reported but not gated: whether the shock **recovers** to the base band in the tail (transient,
     the P0.3 severity ≠ permanence analogue) — the runaway pole + its lead time is read from the
@@ -378,8 +380,8 @@ def _evaluate_surprise_gate(config: DictConfig, shock: dict[str, Any], control: 
     x = _cross_ratios(shock, control)
     base_competent = shock["base_final_loss"] <= g.base_descends_frac * shock["base_init_loss"]
     surprise_real = x["surprise_ratio"] >= g.surprise_ratio
-    fires = x["fire_ratio"] >= g.change_ratio
-    control_flat = control["change_ratio"] < g.control_quiet_ratio and control["first_nonfinite_step"] is None
+    fires = x["fire_ratio"] >= g.fire_ratio
+    control_flat = control["within_arm_ratio"] < g.control_quiet_ratio and control["first_nonfinite_step"] is None
 
     checks = {
         "base_competent": bool(base_competent),
@@ -403,7 +405,7 @@ def _evaluate_surprise_gate(config: DictConfig, shock: dict[str, Any], control: 
         "shock_burst_peak_grad_norm": shock["burst_peak_grad_norm"],
         "control_burst_peak_grad_norm": control["burst_peak_grad_norm"],
         "fire_ratio": x["fire_ratio"],
-        "control_within_arm_ratio": control["change_ratio"],
+        "control_within_arm_ratio": control["within_arm_ratio"],
         "thresholds": OmegaConf.to_container(g),
         "checks": checks,
         "reported": reported,
@@ -438,7 +440,7 @@ def _render_summary(gate: dict[str, Any], ladder: list[dict[str, Any]]) -> str:
         f"(>= {t['surprise_ratio']}x -> SURPRISE real?  {c['surprise_real']})\n"
         f"  change point  shock burst peak {gate['shock_burst_peak_grad_norm']:.3g} / control same-step "
         f"{gate['control_burst_peak_grad_norm']:.3g} = {gate['fire_ratio']:.3g}x "
-        f"(>= {t['change_ratio']}x -> FIRES?  {c['shock_fires']})\n"
+        f"(>= {t['fire_ratio']}x -> FIRES?  {c['shock_fires']})\n"
         f"  control flat  within-arm burst/base = {gate['control_within_arm_ratio']:.3g}x "
         f"(< {t['control_quiet_ratio']}x & finite -> FLAT?  {c['control_flat']})\n"
         f"  [reported] shock recovers to base band in tail (recover ratio {r['shock_recover_ratio']:.3g} "
@@ -494,7 +496,7 @@ def main(config: DictConfig) -> None:
         rung: dict[str, Any] = {"lr": lr, "shock": shock, "control": control}
         # Lead time only where the shock actually ran away (the runaway pole).
         if shock["first_nonfinite_step"] is not None:
-            blowup = config.gate.change_ratio * shock["base_peak_grad_norm"]
+            blowup = config.gate.fire_ratio * shock["base_peak_grad_norm"]
             rung["lead"] = _lead_time(config, shock_trace, blowup)
         ladder.append(rung)
         if lr == float(config.lr_op):

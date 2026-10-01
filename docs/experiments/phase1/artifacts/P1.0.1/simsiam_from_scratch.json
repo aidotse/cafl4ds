@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "study": "P1.0.1",
+  "config": {
+    "C": "simsiam",
+    "I": "from_scratch",
+    "F": "class_blocked",
+    "seed": 0,
+    "alignment": "shared_iterator"
+  },
+  "data_identity": {
+    "num_steps": 30,
+    "era_step_aligned": true,
+    "max_abs_image_diff": 0.0,
+    "bit_identical": true
+  },
+  "trajectory": {
+    "matched_seed": {
+      "num_checkpoints": 7,
+      "step_grid_matched": true,
+      "max_abs_divergence": 0.0,
+      "per_surface_max": {
+        "loss": 0.0,
+        "rankme": 0.0,
+        "mean_feature_var": 0.0,
+        "offdiag_cov": 0.0,
+        "uniformity": 0.0,
+        "rankme_proj": 0.0,
+        "mean_feature_var_proj": 0.0,
+        "offdiag_cov_proj": 0.0,
+        "uniformity_proj": 0.0,
+        "cka_drift": 0.0,
+        "cosine_drift": 0.0,
+        "alignment": 0.0,
+        "alignment_proj": 0.0,
+        "knn_acc": 0.0,
+        "linear_acc": 0.0
+      },
+      "bit_identical": true
+    },
+    "inarm_rng_desynced": {
+      "num_checkpoints": 7,
+      "step_grid_matched": true,
+      "max_abs_divergence": 11.84427261352539,
+      "per_surface_max": {
+        "loss": 0.1370956301689148,
+        "rankme": 0.6587040424346924,
+        "mean_feature_var": 0.0002821411471813917,
+        "offdiag_cov": 2.872654931707075e-05,
+        "uniformity": 0.07592737674713135,
+        "rankme_proj": 11.84427261352539,
+        "mean_feature_var_proj": 0.001960639376193285,
+        "offdiag_cov_proj": 0.0007651401101611555,
+        "uniformity_proj": 0.960074782371521,
+        "cka_drift": 0.04622608423233032,
+        "cosine_drift": 0.03115403652191162,
+        "alignment": 0.026036351919174194,
+        "alignment_proj": 0.7655648291110992,
+        "knn_acc": 0.03,
+        "linear_acc": 0.06
+      },
+      "bit_identical": false
+    }
+  },
+  "attribution": {
+    "stream_construction": 0.0,
+    "in_arm_rng_matched": 0.0,
+    "in_arm_rng_desynced": 11.84427261352539
+  },
+  "verdict": {
+    "same_seed_certified": true,
+    "measurement_sensitive": true
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "gate": {
+    "mode": "shortcut",
+    "shortcut_rankme_final": 30.02950668334961,
+    "healthy_rankme_final": 31.118078231811523,
+    "rankme_frac": 0.965018034200162,
+    "shortcut_probe_final": 0.34,
+    "healthy_probe_final": 0.372,
+    "well_baseline_probe": null,
+    "healthy_drop_from_well": null,
+    "healthy_recovers_baseline": true,
+    "probe_gap": 0.03199999999999997,
+    "probe_ratio": 1.0941176470588234,
+    "shortcut_linear_final": 0.372,
+    "healthy_linear_final": 0.466,
+    "linear_probe_gap": 0.09400000000000003,
+    "shortcut_loss_floor": 0.3634990453720093,
+    "healthy_loss_floor": 0.4194055497646332,
+    "thresholds": {
+      "precondition_rankme_frac": 0.85,
+      "healthy_probe_min": 0.3,
+      "min_probe_gap": 0.05,
+      "min_probe_ratio": 1.15,
+      "loss_alarm_margin": 0.02
+    },
+    "checks": {
+      "healthy_has_headroom": true,
+      "rankme_preserved": true,
+      "probe_craters": false,
+      "loss_does_not_alarm": true,
+      "contrast": false
+    },
+    "reader_verdict": {
+      "candidates": [
+        {
+          "reader": "uniformity",
+          "healthy_final": -1.0657979249954224,
+          "shortcut_final": -1.6085883378982544,
+          "degrade_gap": -0.542790412902832,
+          "threshold": 0.2,
+          "fires": false
+        },
+        {
+          "reader": "alignment",
+          "healthy_final": 0.05309620499610901,
+          "shortcut_final": 0.07921906560659409,
+          "degrade_gap": 0.026122860610485077,
+          "threshold": 0.2,
+          "fires": false
+        },
+        {
+          "reader": "alignment_strong",
+          "healthy_final": 0.09314744919538498,
+          "shortcut_final": 0.15644410252571106,
+          "degrade_gap": 0.06329665333032608,
+          "threshold": 0.05,
+          "fires": true
+        },
+        {
+          "reader": "clusterability",
+          "healthy_final": 0.1258287876844406,
+          "shortcut_final": 0.18660244345664978,
+          "degrade_gap": -0.06077365577220917,
+          "threshold": 0.05,
+          "fires": false
+        },
+        {
+          "reader": "attn_distance",
+          "healthy_final": 4.130657196044922,
+          "shortcut_final": 6.098971366882324,
+          "degrade_gap": -1.9683141708374023,
+          "threshold": 0.5,
+          "fires": false
+        }
+      ],
+      "fired": [
+        "alignment_strong"
+      ],
+      "any_reader_fired": true,
+      "headline": "reader(s) fired: alignment_strong"
+    },
+    "passed": false
+  },
+  "envelope": [
+    {
+      "metric": "rankme",
+      "surface": "backbone",
+      "direction": "down",
+      "scale": "ratio",
+      "healthy_final": 31.118078231811523,
+      "pc_final": 30.02950668334961,
+      "separation": 1.036250064309764,
+      "threshold": 2.0,
+      "standalone": true,
+      "note": "reference (calibrated in P0.2.1)",
+      "fires": false
+    },
+    {
+      "metric": "mean_feature_var",
+      "surface": "backbone",
+      "direction": "down",
+      "scale": "ratio",
+      "healthy_final": 0.003519646590575576,
+      "pc_final": 0.005659913178533316,
+      "separation": 0.6218552263177367,
+      "threshold": 2.0,
+      "standalone": true,
+      "note": "VICReg variance; L2-normalized",
+      "fires": false
+    },
+    {
+      "metric": "offdiag_cov",
+      "surface": "backbone",
+      "direction": "up",
+      "scale": "ratio",
+      "healthy_final": 0.00021094562544021755,
+      "pc_final": 0.000537351705133915,
+      "separation": 2.5473469952862406,
+      "threshold": 2.0,
+      "standalone": true,
+      "note": "VICReg redundancy; expected null under point-collapse",
+      "fires": true
+    },
+    {
+      "metric": "uniformity",
+      "surface": "backbone",
+      "direction": "up",
+      "scale": "gap",
+      "healthy_final": -1.0657979249954224,
+      "pc_final": -1.6085883378982544,
+      "separation": -0.542790412902832,
+      "threshold": 0.5,
+      "standalone": true,
+      "note": "W&I uniformity (negative-valued)",
+      "fires": false
+    },
+    {
+      "metric": "alignment",
+      "surface": "backbone",
+      "direction": "down",
+      "scale": "gap",
+      "healthy_final": 0.05309620499610901,
+      "pc_final": 0.07921906560659409,
+      "separation": -0.026122860610485077,
+      "threshold": 0.5,
+      "standalone": false,
+      "note": "read jointly with uniformity; not a standalone detector",
+      "fires": false
+    }
+  ]
+}

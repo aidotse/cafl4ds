@@ -1,0 +1,148 @@
+{
+  "alignment": [
+    {
+      "mode": "collapse",
+      "status": "uncalibrated",
+      "caveat": "no Phase-0 verdict for this signal on this backbone",
+      "provenance": ""
+    }
+  ],
+  "alignment_proj": [
+    {
+      "mode": "collapse",
+      "status": "candidate",
+      "caveat": "a non-standalone qualifier",
+      "provenance": "P0.2.2"
+    },
+    {
+      "mode": "forgetting",
+      "status": "candidate",
+      "caveat": "regime-level 2nd reader: co-separates 5/5 but reads the far-shift regime, not forgetting magnitude",
+      "provenance": "P0.6.0"
+    }
+  ],
+  "cka_drift": [
+    {
+      "mode": "forgetting",
+      "status": "needs-two-sided-control",
+      "caveat": "canary A1 reader (task-A content drift) \u2014 trustworthy but canary-bound (needs retained task-A data) and reads change, so needs a two-sided control",
+      "provenance": "P0.6.0"
+    }
+  ],
+  "cka_drift_proj": [
+    {
+      "mode": "forgetting",
+      "status": "trap",
+      "caveat": "backbone content-drift does not port past-data-free at the projector (3/5, inverts on a seed)",
+      "provenance": "P0.6.1"
+    }
+  ],
+  "cosine_drift": [
+    {
+      "mode": "forgetting",
+      "status": "needs-two-sided-control",
+      "caveat": "drift reads representation change, not forgetting; needs a matched control to subtract benign plasticity",
+      "provenance": "P0.6.1"
+    }
+  ],
+  "cosine_drift_proj": [
+    {
+      "mode": "forgetting",
+      "status": "calibrated",
+      "caveat": "past-data-free reader: projector frame-churn separates two-sided 5/5, keeps no task-A data (needs drift_surfaces)",
+      "provenance": "P0.6.1"
+    }
+  ],
+  "knn_acc": [
+    {
+      "mode": "forgetting",
+      "status": "needs-labels",
+      "caveat": "ground-truth canary probe \u2014 trustworthy but needs labels",
+      "provenance": "P0.6.0"
+    }
+  ],
+  "linear_acc": [
+    {
+      "mode": "forgetting",
+      "status": "needs-labels",
+      "caveat": "ground-truth canary probe \u2014 trustworthy but needs labels",
+      "provenance": "P0.6.0"
+    }
+  ],
+  "mean_feature_var": [
+    {
+      "mode": "collapse",
+      "status": "needs-two-sided-control",
+      "caveat": "read at the projector, not the backbone",
+      "provenance": "P0.2.4"
+    }
+  ],
+  "mean_feature_var_proj": [
+    {
+      "mode": "collapse",
+      "status": "calibrated",
+      "caveat": "point-vs-redundancy discriminator at the projector",
+      "provenance": "P0.2.2"
+    }
+  ],
+  "offdiag_cov": [
+    {
+      "mode": "collapse",
+      "status": "needs-two-sided-control",
+      "caveat": "read at the projector, not the backbone",
+      "provenance": "P0.2.4"
+    }
+  ],
+  "offdiag_cov_proj": [
+    {
+      "mode": "collapse",
+      "status": "calibrated",
+      "caveat": "redundancy-collapse detector (fires ~13-20x on whitening-ablated Barlow); a principled null under point collapse",
+      "provenance": "P0.2.3"
+    }
+  ],
+  "rankme": [
+    {
+      "mode": "collapse",
+      "status": "needs-two-sided-control",
+      "caveat": "backbone has genuine in-regime blind spots \u2014 read collapse at the projector, keep the backbone as reference only",
+      "provenance": "P0.2.4"
+    }
+  ],
+  "rankme_proj": [
+    {
+      "mode": "collapse",
+      "status": "calibrated",
+      "caveat": "universal collapse detector; but thins to ~1 marginal, LR-conditional reader (~2.17x, on the 2.0 bar) in the correlated single-pass corner",
+      "provenance": "P0.2.2"
+    },
+    {
+      "mode": "forgetting",
+      "status": "needs-two-sided-control",
+      "caveat": "collapse-specificity guard: full-rank throughout means forgetting, not collapse \u2014 not itself a forgetting reader",
+      "provenance": "P0.6.0"
+    }
+  ],
+  "uniformity": [
+    {
+      "mode": "collapse",
+      "status": "needs-two-sided-control",
+      "caveat": "read at the projector, not the backbone",
+      "provenance": "P0.2.4"
+    }
+  ],
+  "uniformity_proj": [
+    {
+      "mode": "collapse",
+      "status": "candidate",
+      "caveat": "long-horizon-only \u2014 quiet single-pass, rho~0.92 redundant with rankme_proj",
+      "provenance": "P0.2.2"
+    },
+    {
+      "mode": "forgetting",
+      "status": "trap",
+      "caveat": "calibrated to collapse; mis-signals on forgetting (flips direction, separates 3/5)",
+      "provenance": "P0.6.0"
+    }
+  ]
+}

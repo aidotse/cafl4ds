@@ -1,0 +1,126 @@
+{
+  "gate": {
+    "mode": "forgetting",
+    "pc_task_a_learned": 0.7916666666666667,
+    "pc_backward_transfer": -0.09333333333333338,
+    "pc_forgetting_measure": 0.09333333333333338,
+    "healthy_backward_transfer": -0.05666666666666664,
+    "healthy_forgetting_measure": 0.05666666666666664,
+    "forget_ratio": 1.6470588235294132,
+    "thresholds": {
+      "learn_min": 0.05,
+      "bwt_fire": 0.05,
+      "fm_fire": 0.05,
+      "bwt_quiet": 0.03,
+      "min_forget_ratio": 2.0,
+      "recon_gap_min": 0.03,
+      "rankme_proj_hold_frac": 0.5
+    },
+    "checks": {
+      "pc_learned_A": true,
+      "pc_bwt_fires": true,
+      "pc_fm_fires": true,
+      "healthy_holds": false,
+      "contrast": false
+    },
+    "reported": {
+      "pc_cka_drift": 0.7592658698558807,
+      "healthy_cka_drift": 0.39659810066223145,
+      "pc_cosine_drift": 0.25068438053131104,
+      "healthy_cosine_drift": 0.34069889783859253,
+      "drift_separates": true,
+      "pc_recon_a_rise": null,
+      "healthy_recon_a_rise": null,
+      "recon_forget_gap": null,
+      "recon_corroborates": false,
+      "proj_align_pc_rise": 0.17036795988678932,
+      "proj_align_healthy_rise": 0.08976881951093674,
+      "proj_align_separates": true,
+      "proj_uniformity_pc_rise": 0.3116114139556885,
+      "proj_uniformity_healthy_rise": -0.04525160789489746,
+      "proj_uniformity_separates": true,
+      "proj_pc_rankme_after_a": 13.362809181213379,
+      "proj_pc_rankme_after_b": 20.732891082763672,
+      "proj_pc_rankme_holds": true
+    },
+    "passed": false
+  },
+  "pc": {
+    "run": "simsiam_pc_forget",
+    "replay": false,
+    "task_a_init": 0.9933333333333333,
+    "matrix": {
+      "0": {
+        "0": 0.8916666666666667
+      },
+      "1": {
+        "0": 0.7983333333333333,
+        "1": 0.925
+      }
+    },
+    "task_a_learned": 0.7916666666666667,
+    "backward_transfer": -0.09333333333333338,
+    "forgetting_measure": 0.09333333333333338,
+    "cka_drift": 0.7592658698558807,
+    "cosine_drift": 0.25068438053131104,
+    "loss_a": -0.9752477407455444,
+    "loss_b": -0.916790246963501,
+    "recon_a_after_a": null,
+    "recon_a_after_b": null,
+    "recon_b_after_b": null,
+    "recon_a_rise": null,
+    "task_a_traj_a": [],
+    "task_a_traj_b": [],
+    "phase_b_max_grad_norm": 6.220847129821777,
+    "phase_b_grad_finite": true,
+    "proj": {
+      "align_after_a": 0.04686259850859642,
+      "align_after_b": 0.21723055839538574,
+      "align_rise": 0.17036795988678932,
+      "uniformity_after_a": -1.4829857349395752,
+      "uniformity_after_b": -1.1713743209838867,
+      "uniformity_rise": 0.3116114139556885,
+      "rankme_after_a": 13.362809181213379,
+      "rankme_after_b": 20.732891082763672
+    }
+  },
+  "healthy": {
+    "run": "simsiam_healthy_replay_r2",
+    "replay": true,
+    "task_a_init": 0.9933333333333333,
+    "matrix": {
+      "0": {
+        "0": 0.9216666666666666
+      },
+      "1": {
+        "0": 0.865,
+        "1": 0.895
+      }
+    },
+    "task_a_learned": 0.8216666666666667,
+    "backward_transfer": -0.05666666666666664,
+    "forgetting_measure": 0.05666666666666664,
+    "cka_drift": 0.39659810066223145,
+    "cosine_drift": 0.34069889783859253,
+    "loss_a": -0.9721656441688538,
+    "loss_b": -0.9223799705505371,
+    "recon_a_after_a": null,
+    "recon_a_after_b": null,
+    "recon_b_after_b": null,
+    "recon_a_rise": null,
+    "task_a_traj_a": [],
+    "task_a_traj_b": [],
+    "phase_b_max_grad_norm": 5.38537073135376,
+    "phase_b_grad_finite": true,
+    "proj": {
+      "align_after_a": 0.05467280000448227,
+      "align_after_b": 0.144441619515419,
+      "align_rise": 0.08976881951093674,
+      "uniformity_after_a": -1.7268468141555786,
+      "uniformity_after_b": -1.772098422050476,
+      "uniformity_rise": -0.04525160789489746,
+      "rankme_after_a": 13.339795112609863,
+      "rankme_after_b": 11.140515327453613
+    }
+  }
+}

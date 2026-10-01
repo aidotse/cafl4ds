@@ -1,0 +1,44 @@
+{
+  "what": "Cross-mode specificity (P0.4.0 / audit C3): the grad-norm divergence instrument must NOT fire on FORGETTING. Reads the pre-clip phase-B grad norm off the P0.3.9 seed-stable SSL-MAE forgetting vehicle (pretrained ViT-B, task A=Imagenette -> task B=CIFAR-100, decoder-first well epochs_a=60/warmup 30 + epochs_b=40, lr=3e-4). Device=hpu, seeds 0/1/2.",
+  "device": "hpu",
+  "vehicle": "P0.3.9 seed-stable forgetting fire",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "rows": [
+    {
+      "seed": 0,
+      "pc_backward_transfer": -0.075,
+      "pc_phase_b_max_grad_norm": 4.201,
+      "pc_phase_b_grad_finite": true,
+      "healthy_backward_transfer": 0.0283,
+      "healthy_phase_b_max_grad_norm": 5.786,
+      "healthy_phase_b_grad_finite": true
+    },
+    {
+      "seed": 1,
+      "pc_backward_transfer": -0.065,
+      "pc_phase_b_max_grad_norm": 4.853,
+      "pc_phase_b_grad_finite": true,
+      "healthy_backward_transfer": 0.015,
+      "healthy_phase_b_max_grad_norm": 5.242,
+      "healthy_phase_b_grad_finite": true
+    },
+    {
+      "seed": 2,
+      "pc_backward_transfer": -0.0717,
+      "pc_phase_b_max_grad_norm": 8.316,
+      "pc_phase_b_grad_finite": true,
+      "healthy_backward_transfer": -0.0117,
+      "healthy_phase_b_max_grad_norm": 6.602,
+      "healthy_phase_b_grad_finite": true
+    }
+  ],
+  "reads": [
+    "Every seed CRATERS (PC BWT -0.065..-0.075, a genuine 3/3 forgetting fire) yet the phase-B grad norm peaks at only ~4.2-8.3 and is ALWAYS finite -> grad norm does NOT fire on forgetting, seed-robustly and ~4 orders of magnitude below the divergence scale (>=1e5).",
+    "The PC grad norm (~4-8) is indistinguishable from the healthy arm's (~5-7): forgetting is a slow representation drift, not an optimization instability, so the divergence instrument is correctly blind to it. Closes C3's forgetting leg from predicted-but-unread to shown.",
+    "Grad norm captured via the pre-clip return of clip_grad_norm_ in the forgetting harness _train (the P0.3 harness pre-dates the P0.4.0 instrumentation, so the trace had to be added + re-run)."
+  ]
+}

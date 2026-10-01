@@ -1,0 +1,84 @@
+encoder:
+  _target_: cafl4ds.models.vit.TinyViTEncoder
+  img_size: 16
+  patch_size: 8
+  in_chans: 3
+  embed_dim: 96
+  depth: 4
+  num_heads: 3
+  mlp_ratio: 2.0
+family: je
+ssl:
+  _target_: cafl4ds.ssl.factory.build_simsiam
+  proj_hidden: 256
+  proj_dim: 128
+  pred_hidden: 64
+  anti_collapse: true
+monitor:
+  _target_: cafl4ds.monitor.HealthMonitor
+  knn_k: 20
+  run_knn: true
+  run_linear: true
+  run_alignment: true
+  align_seed: 0
+  drift_surfaces: true
+data:
+  _target_: cafl4ds.data.attributes.SyntheticAttributeSource
+  num_regimes: 4
+  num_canary_classes: 3
+  per_cell: 20
+  img_size: ${img_size}
+  channels: 3
+  noise: 0.3
+  regime_tint: 0.15
+  long_tail: false
+  seed: ${seed}
+stream:
+  _target_: cafl4ds.data.regime.RegimeStream
+  source: ${data}
+  batch_size: ${batch_size}
+  block_size: null
+  support_per_canary: 10
+  query_per_canary: 10
+  max_train_per_regime: ${max_train_per_regime}
+  seed: ${seed}
+filter:
+  _target_: cafl4ds.filters.accept_all.AcceptAll
+optim:
+  _target_: torch.optim.AdamW
+  lr: 0.001
+  weight_decay: 0.05
+init:
+  mode: from_scratch
+  checkpoint: null
+pc:
+  kind: collapse
+  ssl:
+    _target_: cafl4ds.ssl.factory.build_simsiam
+    proj_hidden: 256
+    proj_dim: 128
+    pred_hidden: 64
+    anti_collapse: false
+  epochs: 4
+img_size: 16
+batch_size: 32
+seed: 0
+device: cpu
+eval_every: 1
+seeds:
+- 0
+- 1
+- 2
+well: null
+bdd_root: /mnt/bdd100k
+max_images: null
+max_train_per_regime: null
+gate_arms: false
+gate:
+  pc_loss_floor_max: -0.3
+  pc_rankme_drop_frac: 0.6
+log_signals: null
+long_horizon: false
+long_horizon_passes: 4
+long_horizon_growth_frac_max: 0.1
+run_name: null

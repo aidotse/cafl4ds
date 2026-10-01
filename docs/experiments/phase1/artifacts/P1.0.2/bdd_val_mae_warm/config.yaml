@@ -1,0 +1,85 @@
+encoder:
+  _target_: cafl4ds.models.vit.TinyViTEncoder
+  img_size: ${img_size}
+  patch_size: 8
+  in_chans: 3
+  embed_dim: 96
+  depth: 4
+  num_heads: 3
+  mlp_ratio: 2.0
+family: mae
+ssl:
+  _target_: cafl4ds.ssl.factory.build_mae
+  mask_ratio: 0.75
+  decoder_dim: 64
+  decoder_depth: 2
+  decoder_heads: 4
+  decoder_mlp_ratio: 2.0
+  norm_pix_loss: true
+monitor:
+  _target_: cafl4ds.monitor.HealthMonitor
+  knn_k: 20
+  run_knn: true
+  run_linear: true
+  run_alignment: true
+  align_seed: 0
+  drift_surfaces: false
+data:
+  _target_: cafl4ds.data.attributes.BDD100KSource
+  bdd_root: ${bdd_root}
+  split: val
+  img_size: ${img_size}
+  max_images: ${max_images}
+  min_canary_count: 50
+stream:
+  _target_: cafl4ds.data.regime.RegimeStream
+  source: ${data}
+  batch_size: ${batch_size}
+  block_size: null
+  support_per_canary: 25
+  query_per_canary: 25
+  max_train_per_regime: ${max_train_per_regime}
+  seed: ${seed}
+  canary_seed: 0
+filter:
+  _target_: cafl4ds.filters.accept_all.AcceptAll
+optim:
+  _target_: torch.optim.AdamW
+  lr: 0.001
+  weight_decay: 0.05
+init:
+  mode: from_scratch
+  checkpoint: null
+pc:
+  kind: collapse
+  ssl:
+    _target_: cafl4ds.ssl.factory.build_simsiam
+    proj_hidden: 256
+    proj_dim: 128
+    pred_hidden: 64
+    anti_collapse: false
+  epochs: 4
+img_size: 64
+batch_size: 32
+seed: 0
+device: hpu
+eval_every: 1
+seeds: null
+well: wells/bdd_mae_well.pt
+bdd_root: /mnt/pr_2018_scaleout_workdir/bdd100k
+max_images: null
+max_train_per_regime: null
+gate_arms: false
+gate:
+  pc_loss_floor_max: -0.3
+  pc_rankme_drop_frac: 0.6
+tier_b:
+  rankme_lo: 0.5
+  rankme_hi: 1000.0
+  min_final_drift: 0.0
+  canary_margin: 0.0
+log_signals: null
+long_horizon: false
+long_horizon_passes: 4
+long_horizon_growth_frac_max: 0.1
+run_name: null

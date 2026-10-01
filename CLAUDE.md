@@ -14,11 +14,11 @@ Guidance for Claude Code (claude.ai/code) in this repo.
     when introducing new architectural modules, changing core pipelines, or when explicitly requested.
 
 - **`docs/experiments/` is the implementation state** - also split hierarchically for targeted agent reads. To find
-    implementation states, always read `docs/experiments/latest-results/index.md` first. Use its routing table to find
-    the exact substudy file you need. Never read an entire directory at once; read only the sub-studies required for the
-    task. Additionally, the `docs/experiments/` directory has more specific docs for each project phase. When working in
-    a specific phase, always read the `index.md` of that phase (e.g. `docs/experiments/phase0/index.md`), and use the
-    routing table in that file to find and read only the relevant sub-study doc for the required task.
+    implementation states, always read the phase landing page `docs/experiments/phase<X>/index.md` first (e.g.
+    `docs/experiments/phase0/index.md`), and use the routing table in that file to find the exact substudy file you
+    need. Never read an entire directory at once; read only the sub-studies required for the task. The
+    `docs/experiments/latest-results/` directory is the distilled logbook — concise study/substudy summaries reached via
+    the phase index, not a router in its own right.
 
 ## Environment (uv)
 
@@ -53,6 +53,8 @@ Tasks are **`poe`** tasks — `uv run poe <task>`; Run `uv run poe --help` to se
     `hydra.utils.instantiate` — plain classes wired via config (`_target_: ...`), not hardcoded. Override on the CLI as
     per Hydra docs.
 - Logging via **`loguru`**.
+- All business logic / code / experiments should be validated with unit tests; be careful not to overfit the tests on
+    the logic / code.
 
 ## Claude Code in this repo
 
@@ -60,21 +62,42 @@ Runs behind a token-compression pipeline (RTK shell-hook + Headroom API proxy): 
 
 ## Documenting experiments
 
-You is a guide for how to add documentation on new studies or sub-studies. See notes above on `docs/experiments`. Use
-informative, but not terse language. There are different levels of granularity at play (here: most concise to least
-concise):
+This is a guide for how to add documentation on new studies or sub-studies. See notes above on `docs/experiments`. See
+\`Explaining your work' below for how to communicate results. There are different levels of granularity at play (here:
+most concise to least concise):
 
-- `docs/experiments/phase<ID>/index.md` - summary details of what the *project phase* is about, plus a routing table to
-    the substudies. In this table: only the *motivation*, and an *executive, 1-2 line summary* of the substudy status:
-    keep brief.
+- `docs/experiments/phase<ID>/index.md` - the phase landing page: what the *project phase* is about, plus the routing
+    tables. Keep each of its three parts at an **at-a-glance** abstraction — the detail lives one level down, linked.
+    Here is an example for Phase0 (sections may change for other Phases):
 
-- `docs/experiments/latest-results/<substudy ID>.md` - a *concise* summary of the results / what was achieved in the
-    substudy. Avoid too many details (in particular: NO results numbers); this is a a brief take-away from the study.
+    - a **Studies** table (example: for Phase0, each study / row corresponds to failure modes). Its last column is a
+        *link* to that study's executive summary (next bullet) fronted by a one-line verdict; columns stay to a scannable
+        clause each.
+    - a **Sub-studies** table (rows = sub-studies). Keep the style uniform: the "What it establishes" cell opens with
+        `Motivation:`, and the Status cell follows `<marker> **<label>** (<finding>)` — marker ∈ ✅ / ✅\* / 🟡 / 🔲, label ∈
+        `Complete` / `Runs complete` / `Designed, awaiting runs`.
+    - an **Artifacts** section holding only the *general* conventions (per-harness `comparison.json` schema, the promotion
+        / slimming policy). The per-sub-study listings live in each detail doc, see below.
 
-- `docs/experiments/phase<ID>/<substudy ID>.md` - a detailed, *but not overly verbose or repetetive* description of the
+- `docs/experiments/latest-results/<study ID>.md` (e.g. `P0.6.md`) - a study-wide **executive summary**, for a reader
+    who may not know the project and does not want to dig. Plain, transparent language (plainer than the index tables),
+    ≲ 100 lines, exactly three subsections: **The value proposition**, **Results**, **The one-line takeaway**. It sits
+    one level above the sub-study summaries and is the target of the Failure-Modes "Summary" link.
+
+- `docs/experiments/latest-results/<substudy ID>.md` (e.g. `P0.6.0.md`)- a *concise* summary of the results / what was
+    achieved in the particular substudy. Avoid too many details (in particular: NO results numbers); this is a brief
+    take-away from the study.
+
+- `docs/experiments/phase<ID>/<substudy ID>.md` - a detailed, *but not overly verbose or repetitive* description of the
     sub study, including outputs, and key quantitative results. Includes (roughly) a brief section for the motivation,
-    the methodology and findings, any interesting insights, and how to run the experiments in the substudy. Do not
-    mention progress or status here, that goes in `docs/experiments/latest-results/<substudy ID>.md`.
+    the methodology and findings, any interesting insights, a dedicated `Artifacts` section (the per-sub-study artifact
+    listing: which runs back its numbers, and the slim schema each was promoted to), and how to run the experiments. Do
+    not mention progress or status here (unless results change an existing verdict), that goes in
+    `docs/experiments/latest-results/<substudy ID>.md`.
+
+When we say something like "update the docs", this means going through each of these levels for the relevant study /
+substudy and checking them for completeness and accuracy against the latest results. In addition, this implies verifying
+that the substudy's 'Handover to Phase ...' section in the relevant `index.md` are complete and accurate as well.
 
 ### Writing audits
 
@@ -121,7 +144,7 @@ formula:
         a new substudy doc if the arc warrants one); the Conclusion carries only the verdict label, a one-line outcome,
         and a **pointer** to where it landed — never the seed tables or derivations themselves.
 
-## Explaining your work (in your replies to me)
+## Explaining your work
 
 When you explain reasoning, summarize a finding, or walk me through a concept in a reply — this is about your
 conversational prose, and documentation language, but not code (this keep its own rules) — write for a reader who wants
@@ -146,5 +169,9 @@ explanatory paragraphs, where following along matters more than compression.
 
 ## Mandates
 
-- Ensure your updates do not contradict the specific index or substudy files you have been instructed to read. Do not
-    read additional documentation files solely to check for global project consistency unless explicitly requested.
+We have two general mandates: completeness and accuracy. For completeness, this means e.g. making suggestions to the
+user when a study has an evident, open scientific gap; always get permission to go down research tangents before doing
+so. For accuracy, this means making sure the docs reflect the latest results, and ensuring your updates do not
+contradict the specific index or substudy files you have been instructed to read - if this should happen, notify the
+user immediately to remediate before moving on. Do not read additional documentation files solely to check for global
+project consistency unless explicitly requested.

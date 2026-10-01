@@ -1,0 +1,45 @@
+{
+  "what": "batch16 divergence ablation (P0.4.0), multi-seed replication of C2. Device=hpu, trimmed lr_sweep=[1,3,10] (healthy lr=1 + threshold + above -> same verdict as the full CPU sweep). The original CPU batch16_seed0 (full sweep [0.1..30]) agrees: threshold_lr=3, lead=5.",
+  "device": "hpu",
+  "batch_size": 16,
+  "lr_sweep": [
+    1,
+    3,
+    10
+  ],
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "rows": [
+    {
+      "seed": 0,
+      "threshold_lr": 3.0,
+      "lead": 5,
+      "healthy_final_over_init": 0.782,
+      "grad_norm_separation": 39012270.4,
+      "passed": true
+    },
+    {
+      "seed": 1,
+      "threshold_lr": 3.0,
+      "lead": 5,
+      "healthy_final_over_init": 0.655,
+      "grad_norm_separation": 958126.0,
+      "passed": true
+    },
+    {
+      "seed": 2,
+      "threshold_lr": 3.0,
+      "lead": 5,
+      "healthy_final_over_init": 0.788,
+      "grad_norm_separation": 4775574.6,
+      "passed": true
+    }
+  ],
+  "reads": [
+    "threshold_lr=3 and lead=5 are IDENTICAL across all 3 seeds; healthy learns (final <=0.79x init) and the gate passes every seed -> the divergence fire is a property of the LR lever, not the batch size, and is seed-robust (n=1 -> n=3).",
+    "grad_norm_separation swings 1e6-4e7 across seeds but is always >> the 100x bar; the magnitude is truncation- and device-sensitive (A3) so only the >=100x verdict is portable."
+  ]
+}

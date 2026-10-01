@@ -46,8 +46,12 @@ Keep the two axes separate, and **establish the link between them** — that lin
 
 **Geometry / collapse (label-free):**
 
-- **Effective rank / RankMe** — # embedding dims actually in use; the core collapse readout. `[general]` (Roy & Vetterli
-    2007; Garrido et al. 2023)
+- **Effective rank / RankMe** — # embedding dims actually in use; the core collapse readout. Necessary-but-not-
+    sufficient for downstream quality (Garrido et al. 2023). `[general]` (Roy & Vetterli 2007; Garrido et al. 2023)
+- **Intrinsic dimension** — a geometry-based label-free proxy that, in a 260-model comparison, tracks downstream
+    performance **more reliably** than spectral rank metrics (still moderated by architecture/objective); a candidate
+    corroboration / monitor signal alongside RankMe, not a replacement. `[general]` (IdEst — Mordacq et al., ICML 2026;
+    260-model comparison — Arputharaj et al., TMLR 2026)
 - **Per-dimension variance** — flags dimensions collapsing to a constant. `[general]` (VICReg, Bardes et al. 2022)
 - **Off-diagonal covariance / decorrelation** — flags informational (redundancy) collapse. `[general]` (VICReg, Bardes
     et al. 2022)
@@ -59,7 +63,12 @@ Keep the two axes separate, and **establish the link between them** — that lin
 **Dynamics / stability (label-free):**
 
 - **Representation drift** — CKA / cosine churn of a *fixed* probe set's embeddings across checkpoints; how fast the
-    coordinate frame moves (ties to forgetting + the moving-reference problem). `[general]` (CKA, Kornblith et al. 2019)
+    coordinate frame moves (ties to forgetting + the moving-reference problem). Read with two caveats: **benign vs.
+    harmful** drift is distinguished by *non-mean-reverting change without performance loss* (benign) vs. change *with*
+    info loss (forgetting) — test via mean-reversion + probe-recovery; and **CKA is not fully reliable** (sensitive to
+    outliers / function-preserving shifts, biased in high-dim/low-sample), so use the **debiased** estimator + a
+    complementary metric (Procrustes/CCA). `[general]` (CKA, Kornblith et al. 2019; reliability — Davari et al. 2023;
+    drift formalism — representational-drift line)
 - **MAE reconstruction retention gap** — held-out *past-era* reconstruction loss, read as a positive-control-vs-replay
     *retention* gap; the MAE-native, label-free forgetting corroborator (recon on the era being overwritten degrades
     relative to a replay control). **Caveat (P0.3.8):** over-fires on a low-level *output*-distribution shift the

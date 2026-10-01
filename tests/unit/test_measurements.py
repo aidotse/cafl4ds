@@ -21,6 +21,7 @@ import torch
 from cafl4ds.measurements import (
     alignment,
     cka_drift,
+    clusterability,
     cosine_drift,
     effective_rank,
     feature_variance,
@@ -28,6 +29,7 @@ from cafl4ds.measurements import (
     knn_probe,
     linear_cka,
     linear_probe,
+    mean_attention_distance,
     offdiag_covariance,
     rankme,
     uniformity,
@@ -314,3 +316,65 @@ def test_measurements_do_not_import_numpy_random_state() -> None:
     assert effective_rank(z) == effective_rank(z.clone())
     assert offdiag_covariance(z) == offdiag_covariance(z.clone())
     assert np.isfinite(uniformity(z))
+
+
+# --------------------------------------------------------------------------------------
+# Quality readers on trial (P0.5.2): clusterability, mean attention distance
+# --------------------------------------------------------------------------------------
+
+
+def _blob_clusters(n_per: int, d: int, k: int, sep: float, g: torch.Generator) -> torch.Tensor:
+    """Return ``[k * n_per, d]`` embeddings drawn as ``k`` well-separated isotropic blobs."""
+    centers = sep * torch.eye(d)[:k]
+    return torch.cat([centers[i] + torch.randn(n_per, d, generator=g) for i in range(k)], dim=0)
+
+
+def test_clusterability_separates_structure_from_noise() -> None:
+    """Well-separated blobs score high silhouette; isotropic noise scores near zero."""
+    g = _gen()
+    structured = _blob_clusters(n_per=40, d=8, k=4, sep=8.0, g=g)
+    noise = torch.randn(160, 8, generator=g)
+    assert clusterability(structured, n_clusters=4) > 0.5
+    assert clusterability(noise, n_clusters=4) < 0.15
+    # A cratered rep (less separable) must read strictly lower — the direction the reader relies on.
+    assert clusterability(structured, n_clusters=4) > clusterability(noise, n_clusters=4)
+
+
+def test_clusterability_degenerate_returns_zero() -> None:
+    """Too few samples for the requested clusters returns the undefined-case floor (0.0)."""
+    g = _gen()
+    assert clusterability(torch.randn(2, 4, generator=g), n_clusters=4) == 0.0
+
+
+def _attn_with_grid(grid: int) -> int:
+    """Token count ``T = 1 + grid**2`` for a square patch grid."""
+    return grid * grid + 1
+
+
+def test_mean_attention_distance_uniform_equals_mean_pairwise() -> None:
+    """Uniform attention reduces to the mean pairwise patch distance (a closed-form check)."""
+    grid = 4
+    t = _attn_with_grid(grid)
+    uniform = torch.full((1, 1, t, t), 1.0 / t)
+    rows = torch.arange(grid).repeat_interleave(grid)
+    cols = torch.arange(grid).repeat(grid)
+    coords = torch.stack([rows, cols], dim=1).to(torch.float32)
+    expected = torch.cdist(coords, coords).mean().item()  # renormalized uniform over N keys = mean row
+    assert mean_attention_distance(uniform, grid) == pytest.approx(expected, abs=1e-5)
+
+
+def test_mean_attention_distance_local_is_smaller_than_global() -> None:
+    """Self-only (local) attention reads ~0; attend-to-farthest reads large — the reader's axis."""
+    grid = 4
+    t = _attn_with_grid(grid)
+    local = torch.eye(t).reshape(1, 1, t, t)  # each token attends only to itself -> distance 0
+    assert mean_attention_distance(local, grid) == pytest.approx(0.0, abs=1e-6)
+    # A shortcut (local) encoder must read strictly below a diffuse (uniform) one.
+    uniform = torch.full((1, 1, t, t), 1.0 / t)
+    assert mean_attention_distance(local, grid) < mean_attention_distance(uniform, grid)
+
+
+def test_mean_attention_distance_rejects_wrong_shape() -> None:
+    """The token axes must match ``1 + grid**2`` or the call errors (guards a wiring bug)."""
+    with pytest.raises(ValueError, match="last two dims"):
+        mean_attention_distance(torch.rand(1, 1, 10, 10), grid_size=4)  # 4x4 -> expects 17, not 10

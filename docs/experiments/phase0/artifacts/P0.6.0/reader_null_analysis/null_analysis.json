@@ -1,0 +1,185 @@
+{
+  "note": "n=5 Spearman rho is coarse/not significant; directional only. effect_ratio is mean|PC-healthy margin| / mean(healthy-vs-healthy pairwise |diff|).",
+  "eb40": {
+    "cka_drift": {
+      "fires_matched_positive": 5,
+      "matched_margins": [
+        0.4887,
+        0.545,
+        0.2074,
+        0.6739,
+        0.153
+      ],
+      "min_matched_margin": 0.153,
+      "null_mean": 0.1919,
+      "null_max": 0.4393,
+      "effect_ratio_over_null": 2.15,
+      "clears_null_mean": 4,
+      "clears_null_max": 3,
+      "crater_depth_spearman": -0.1
+    },
+    "cosine_drift": {
+      "fires_matched_positive": 5,
+      "matched_margins": [
+        0.2768,
+        0.1417,
+        0.0759,
+        0.3076,
+        0.0265
+      ],
+      "min_matched_margin": 0.0265,
+      "null_mean": 0.031,
+      "null_max": 0.0584,
+      "effect_ratio_over_null": 5.34,
+      "clears_null_mean": 4,
+      "clears_null_max": 4,
+      "crater_depth_spearman": -0.3
+    },
+    "alignment_proj": {
+      "fires_matched_positive": 5,
+      "matched_margins": [
+        0.0135,
+        0.0603,
+        0.1377,
+        0.1425,
+        0.1048
+      ],
+      "min_matched_margin": 0.0135,
+      "null_mean": 0.0711,
+      "null_max": 0.135,
+      "effect_ratio_over_null": 1.29,
+      "clears_null_mean": 3,
+      "clears_null_max": 2,
+      "crater_depth_spearman": -0.1
+    },
+    "uniformity_proj": {
+      "fires_matched_positive": 3,
+      "matched_margins": [
+        1.0299,
+        1.1735,
+        -0.2173,
+        -0.1836,
+        0.5114
+      ],
+      "min_matched_margin": -0.2173,
+      "null_mean": 0.297,
+      "null_max": 0.6241,
+      "effect_ratio_over_null": 2.1,
+      "clears_null_mean": 3,
+      "clears_null_max": 2,
+      "crater_depth_spearman": 0.5
+    }
+  },
+  "eb60": {
+    "cka_drift": {
+      "fires_matched_positive": 4,
+      "matched_margins": [
+        0.4904,
+        0.4723,
+        0.315,
+        -0.0032,
+        0.3537
+      ],
+      "min_matched_margin": -0.0032,
+      "null_mean": 0.1781,
+      "null_max": 0.3527,
+      "effect_ratio_over_null": 1.84,
+      "clears_null_mean": 4,
+      "clears_null_max": 3,
+      "crater_depth_spearman": 0.9
+    },
+    "cosine_drift": {
+      "fires_matched_positive": 5,
+      "matched_margins": [
+        0.0598,
+        0.2818,
+        0.2343,
+        0.1942,
+        0.0867
+      ],
+      "min_matched_margin": 0.0598,
+      "null_mean": 0.0981,
+      "null_max": 0.1924,
+      "effect_ratio_over_null": 1.75,
+      "clears_null_mean": 3,
+      "clears_null_max": 3,
+      "crater_depth_spearman": -0.1
+    },
+    "alignment_proj": {
+      "fires_matched_positive": 5,
+      "matched_margins": [
+        0.0468,
+        0.0419,
+        0.0272,
+        0.1457,
+        0.1814
+      ],
+      "min_matched_margin": 0.0272,
+      "null_mean": 0.0236,
+      "null_max": 0.0469,
+      "effect_ratio_over_null": 3.76,
+      "clears_null_mean": 5,
+      "clears_null_max": 2,
+      "crater_depth_spearman": -0.5
+    },
+    "uniformity_proj": {
+      "fires_matched_positive": 4,
+      "matched_margins": [
+        1.1082,
+        0.7328,
+        -0.2068,
+        1.3324,
+        0.4699
+      ],
+      "min_matched_margin": -0.2068,
+      "null_mean": 0.3529,
+      "null_max": 0.6939,
+      "effect_ratio_over_null": 2.18,
+      "clears_null_mean": 4,
+      "clears_null_max": 3,
+      "crater_depth_spearman": -0.1
+    }
+  },
+  "eb60_per_seed_complementarity": [
+    {
+      "seed": 0,
+      "two_sided_bwt_diff": -0.1483,
+      "cka_margin": 0.4904,
+      "cka_separates": true,
+      "align_margin": 0.0468,
+      "align_separates": true
+    },
+    {
+      "seed": 1,
+      "two_sided_bwt_diff": -0.1183,
+      "cka_margin": 0.4723,
+      "cka_separates": true,
+      "align_margin": 0.0419,
+      "align_separates": true
+    },
+    {
+      "seed": 2,
+      "two_sided_bwt_diff": -0.0683,
+      "cka_margin": 0.315,
+      "cka_separates": true,
+      "align_margin": 0.0272,
+      "align_separates": true
+    },
+    {
+      "seed": 3,
+      "two_sided_bwt_diff": -0.075,
+      "cka_margin": -0.0032,
+      "cka_separates": false,
+      "align_margin": 0.1457,
+      "align_separates": true
+    },
+    {
+      "seed": 4,
+      "two_sided_bwt_diff": -0.0733,
+      "cka_margin": 0.3537,
+      "cka_separates": true,
+      "align_margin": 0.1814,
+      "align_separates": true
+    }
+  ]
+}

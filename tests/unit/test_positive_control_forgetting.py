@@ -23,6 +23,11 @@ HPU regime). The load-bearing invariants checked here:
 
 E4: the ``_guard_from_scratch_encoder`` footgun guard raises when a checkpoint-loading encoder would be
 silently kept under a from-scratch arm, and is inert otherwise.
+
+P0.6 audit (``docs/experiments/audits/P0.6.md`` §E1) adds the A1 ``_projector_gate`` guard the earlier pass
+missed: the ``proj_{align,uniformity}_separates`` sign (``pc_rise > healthy_rise``, per reader), the
+``rankme_proj_holds`` collapse-specificity precondition at the ``frac`` boundary, and the JE-only vehicle
+routing (a SimSiam arm carries the ``proj`` block and the gate surfaces it; an MAE arm carries neither).
 """
 
 from __future__ import annotations
@@ -54,6 +59,34 @@ _BASE = [
     "ssl.decoder_dim=16",
     "ssl.decoder_depth=1",
     "ssl.decoder_heads=2",
+    "epochs_a=2",
+    "epochs_b=2",
+    "batch_size=8",
+    "seed=0",
+    "task_a_classes=[0,1]",
+    "task_b_classes=[2,3]",
+    "support_per_class=4",
+    "query_per_class=4",
+    "probe=knn",
+    "knn_k=3",
+    "recon_masks=2",
+]
+
+
+# SimSiam (joint-embedding) variant of the base: the P0.6 vehicle, which exposes a projector surface
+# (so the current-stream drift reader can read ``_proj`` too). Drops the MAE-decoder overrides and
+# scales the projector/predictor heads down for speed.
+_SIMSIAM_BASE = [
+    "data=synthetic",
+    "data.per_class=16",
+    "img_size=16",
+    "encoder.embed_dim=32",
+    "encoder.depth=1",
+    "encoder.num_heads=2",
+    "ssl=simsiam",
+    "ssl.proj_hidden=32",
+    "ssl.proj_dim=16",
+    "ssl.pred_hidden=16",
     "epochs_a=2",
     "epochs_b=2",
     "batch_size=8",
@@ -130,6 +163,41 @@ def test_gate_structure_and_recon_gap_sign(mae_arms: dict[str, Any]) -> None:
     assert gate["reported"]["recon_forget_gap"] == pytest.approx(expected_gap, abs=1e-9)
 
 
+def _synth_arm(bwt: float) -> dict[str, Any]:
+    """A minimal arm record carrying just the fields ``_evaluate_forgetting_gate`` reads."""
+    return {
+        "task_a_learned": 0.5,
+        "backward_transfer": bwt,
+        "forgetting_measure": -bwt,  # FM = −BWT
+        "cka_drift": 0.5,
+        "cosine_drift": 0.3,
+        "recon_a_rise": 0.0,
+    }
+
+
+@pytest.mark.parametrize(
+    ("h_bwt", "holds"),
+    [(-0.20, False), (-0.05, False), (-0.02, True), (0.0, True), (0.05, True), (0.20, True)],
+)
+def test_healthy_holds_is_one_sided(harness: ModuleType, h_bwt: float, holds: bool) -> None:
+    """``healthy_holds`` flags forgetting only (BWT < −bwt_quiet); an *improving* healthy arm still holds.
+
+    Regression for the P0.6.0 A-only vehicle, where phase B = task A: a shallow-well seed can *over-improve*
+    task A (BWT up to +0.05), which a symmetric ``|BWT| ≤ bwt_quiet`` would spuriously fail. The check is
+    one-sided (``bwt_quiet`` default 0.03), so only a genuine crater trips it.
+    """
+    config = _compose(_BASE)
+    gate = harness._evaluate_forgetting_gate(config, _synth_arm(-0.10), _synth_arm(h_bwt))
+    assert gate["checks"]["healthy_holds"] is holds
+
+
+def test_phase_b_grad_norm_is_captured(mae_arms: dict[str, Any]) -> None:
+    """The pre-clip phase-B grad norm is captured (the P0.4 divergence instrument, cross-mode specificity, audit C3)."""
+    for arm in (mae_arms["pc"], mae_arms["healthy"]):
+        assert arm["phase_b_grad_finite"] is True, "phase-B grad went non-finite on a sane-LR forgetting run"
+        assert arm["phase_b_max_grad_norm"] > 0.0, "phase-B grad norm not captured"
+
+
 def test_supervised_vehicle_runs_with_paired_seed(harness: ModuleType) -> None:
     """The supervised vehicle drives ``_run_arm_supervised``/``SupervisedMethod`` with the same wiring."""
     config = _compose([*_BASE, "training_mode=supervised", "supervised_augment=false"])
@@ -141,6 +209,134 @@ def test_supervised_vehicle_runs_with_paired_seed(harness: ModuleType) -> None:
     assert pc["backward_transfer"] is not None and healthy["backward_transfer"] is not None
     # The MAE-native recon readouts do not apply to the supervised vehicle → reported as NaN.
     assert math.isnan(pc["recon_a_rise"]) and math.isnan(pc["recon_a_after_a"])
+
+
+def test_current_stream_drift_is_past_data_free_and_two_sided(harness: ModuleType) -> None:
+    """P0.6.1/C3: ``current_stream_drift`` adds a past-data-free drift readout, reported two-sided.
+
+    Enabling the flag pins a *second* drift reference to a phase-B (current-stream) batch — not the
+    task-A canary — and records it at both surfaces (backbone + ``_proj`` for the JE vehicle). The
+    gate then reports the PC-vs-healthy separation on that shared reference. This is a wiring guard
+    (toy SimSiam need not fire): the ``cs_drift`` block is present and finite on both arms, and the
+    gate carries the two-sided ``cs_*_separates`` reads. Off by default, the block is absent.
+    """
+    config = _compose([*_SIMSIAM_BASE, "current_stream_drift=true"])
+    split = harness._task_split(config)
+    healthy, _ = harness._run_arm(config, split, replay=True, run_name="simsiam_healthy")
+    pc, _ = harness._run_arm(config, split, replay=False, run_name="simsiam_pc")
+    # Each arm carries the current-stream drift block at both surfaces, all finite (proj present for JE).
+    for arm in (pc, healthy):
+        cs = arm["cs_drift"]
+        for key in ("cka_drift", "cosine_drift", "cka_drift_proj", "cosine_drift_proj"):
+            assert cs[key] is not None and math.isfinite(cs[key]), f"cs_drift[{key}] missing/non-finite"
+    # The gate reports the two-sided separation on the shared phase-B reference, at both surfaces.
+    r = harness._evaluate_forgetting_gate(config, pc, healthy)["reported"]
+    for key in ("cs_cka_drift_separates", "cs_cka_drift_proj_separates", "cs_cosine_drift_separates"):
+        assert isinstance(r[key], bool)
+    assert r["cs_cka_drift_pc"] == pytest.approx(pc["cs_drift"]["cka_drift"])
+    # Off by default: no current-stream block, and the gate does not report it.
+    off_config = _compose(_SIMSIAM_BASE)
+    off_split = harness._task_split(off_config)
+    off_pc, _ = harness._run_arm(off_config, off_split, replay=False, run_name="simsiam_off")
+    assert "cs_drift" not in off_pc
+    off_gate = harness._evaluate_forgetting_gate(off_config, off_pc, off_pc)
+    assert "cs_cka_drift_separates" not in off_gate["reported"]
+
+
+def _proj_block(
+    *,
+    align_rise: float | None,
+    uniformity_rise: float | None,
+    rankme_after_a: float | None,
+    rankme_after_b: float | None,
+) -> dict[str, float | None]:
+    """A minimal ``proj`` reader block carrying just the fields ``_projector_gate`` reads."""
+    return {
+        "align_rise": align_rise,
+        "uniformity_rise": uniformity_rise,
+        "rankme_after_a": rankme_after_a,
+        "rankme_after_b": rankme_after_b,
+    }
+
+
+@pytest.mark.parametrize(
+    ("pc_rise", "healthy_rise", "separates"),
+    [(0.20, 0.10, True), (0.10, 0.20, False), (0.05, 0.05, False), (-0.02, -0.09, True), (None, 0.1, None)],
+)
+def test_projector_gate_separates_is_sign_correct(
+    harness: ModuleType, pc_rise: float | None, healthy_rise: float | None, separates: bool | None
+) -> None:
+    """P0.6.0/A1: ``proj_{align,uniformity}_separates`` is ``pc_rise > healthy_rise`` (zero-margin, per reader).
+
+    A forgetting fire is the PC arm's task-A projector geometry drifting *more* than the replay-protected
+    healthy arm's — a two-sided differential, the same rule drift uses. A flipped comparator would invert
+    every projector reader's fire (the audit-flagged mis-wire); ``None`` in propagates to ``None`` (a
+    surface the vehicle does not expose), never a spurious ``True``.
+    """
+    config = _compose(_SIMSIAM_BASE)
+    pc = _proj_block(align_rise=pc_rise, uniformity_rise=pc_rise, rankme_after_a=10.0, rankme_after_b=9.0)
+    healthy = _proj_block(
+        align_rise=healthy_rise, uniformity_rise=healthy_rise, rankme_after_a=10.0, rankme_after_b=9.0
+    )
+    out = harness._projector_gate(config, pc, healthy)
+    assert out["proj_align_separates"] is separates
+    assert out["proj_uniformity_separates"] is separates
+
+
+@pytest.mark.parametrize(
+    ("r_a", "r_b", "holds"),
+    [
+        (10.0, 5.0, True),
+        (10.0, 5.001, True),
+        (10.0, 4.999, False),
+        (10.0, 10.0, True),
+        (0.0, 0.0, False),
+        (10.0, None, False),
+        (None, 5.0, False),
+    ],
+)
+def test_projector_gate_rankme_precondition_at_the_frac_boundary(
+    harness: ModuleType, r_a: float | None, r_b: float | None, holds: bool
+) -> None:
+    """P0.6.0/A1: ``rankme_proj_holds`` iff ``rankme_after_b >= frac * rankme_after_a`` (frac default 0.5).
+
+    The collapse-specificity precondition: a PC arm whose projector rank falls below the ``frac`` bar has
+    tipped into collapse (the P0.2 mode), so a fired quality reader would be reading collapse, not
+    forgetting — the run is out of scope for a forgetting verdict. A flipped/mis-scaled comparator would
+    silently let a collapse fire count as forgetting. ``rankme_after_a <= 0`` or a missing read never holds.
+    """
+    config = _compose(_SIMSIAM_BASE)  # gate.rankme_proj_hold_frac = 0.5
+    pc = _proj_block(align_rise=0.1, uniformity_rise=0.1, rankme_after_a=r_a, rankme_after_b=r_b)
+    out = harness._projector_gate(config, pc, pc)
+    assert out["proj_pc_rankme_holds"] is holds
+    # The absolute reads are passed through for the record.
+    assert out["proj_pc_rankme_after_a"] == r_a and out["proj_pc_rankme_after_b"] == r_b
+
+
+def test_projector_readers_wired_for_the_je_vehicle_only(harness: ModuleType, mae_arms: dict[str, Any]) -> None:
+    """P0.6.0/A1: a JE arm carries the ``proj`` readers and the gate surfaces them; an MAE arm does not.
+
+    End-to-end wiring guard: a real SimSiam arm through ``_run_arm`` populates ``record["proj"]`` with the
+    projector-surface readers (``alignment_proj`` / ``uniformity_proj`` / ``rankme_proj``, read on the
+    task-A canary), and ``_evaluate_forgetting_gate`` reports the two-sided ``proj_*_separates`` +
+    ``proj_pc_rankme_holds``. The MAE vehicle exposes no projector surface, so it carries no ``proj`` block
+    and the gate omits the projector reads — the vehicle-routing split the A1 deliverable rests on.
+    """
+    config = _compose(_SIMSIAM_BASE)
+    split = harness._task_split(config)
+    pc, _ = harness._run_arm(config, split, replay=False, run_name="je_pc")
+    healthy, _ = harness._run_arm(config, split, replay=True, run_name="je_healthy")
+    proj = pc["proj"]
+    for key in ("align_rise", "uniformity_rise", "rankme_after_a", "rankme_after_b"):
+        assert key in proj, f"proj block missing {key}"
+    assert proj["rankme_after_a"] is not None and math.isfinite(proj["rankme_after_a"])
+    r = harness._evaluate_forgetting_gate(config, pc, healthy)["reported"]
+    for key in ("proj_align_separates", "proj_uniformity_separates"):
+        assert isinstance(r[key], bool)
+    assert isinstance(r["proj_pc_rankme_holds"], bool)
+    # The MAE vehicle exposes no projector surface → no proj block, and the gate omits the projector reads.
+    assert "proj" not in mae_arms["pc"]
+    assert "proj_align_separates" not in mae_arms["gate"]["reported"]
 
 
 def test_from_scratch_guard_rejects_a_checkpoint_encoder(harness: ModuleType) -> None:

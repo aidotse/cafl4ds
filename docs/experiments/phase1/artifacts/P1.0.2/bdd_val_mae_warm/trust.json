@@ -1,0 +1,80 @@
+{
+  "alignment": [
+    {
+      "mode": "quality",
+      "status": "trap",
+      "caveat": "alignment(_strong) reads the shortcut-decoder regime, not quality \u2014 refuted as a quality reader",
+      "provenance": "P0.5.3"
+    }
+  ],
+  "cka_drift": [
+    {
+      "mode": "forgetting",
+      "status": "trap",
+      "caveat": "does not transfer as an MAE forgetting reader (demoted: drift ~ backbone movement, only loosely aligned with forgetting)",
+      "provenance": "P0.3.1"
+    }
+  ],
+  "cosine_drift": [
+    {
+      "mode": "forgetting",
+      "status": "needs-two-sided-control",
+      "caveat": "drift reads change, not forgetting; MAE resists, so the signal sits near the floor",
+      "provenance": "P0.3.1"
+    }
+  ],
+  "knn_acc": [
+    {
+      "mode": "quality",
+      "status": "needs-labels",
+      "caveat": "ground-truth canary \u2014 the only trustworthy MAE quality/forgetting read, but needs labels",
+      "provenance": "P0.5.2"
+    }
+  ],
+  "linear_acc": [
+    {
+      "mode": "quality",
+      "status": "needs-labels",
+      "caveat": "ground-truth canary \u2014 the only trustworthy MAE quality/forgetting read, but needs labels",
+      "provenance": "P0.5.2"
+    }
+  ],
+  "mean_feature_var": [
+    {
+      "mode": "quality",
+      "status": "trap",
+      "caveat": "the P0.2 collapse-geometry suite mis-signals for MAE quality",
+      "provenance": "P0.5.1"
+    }
+  ],
+  "offdiag_cov": [
+    {
+      "mode": "quality",
+      "status": "trap",
+      "caveat": "the P0.2 collapse-geometry suite mis-signals for MAE quality",
+      "provenance": "P0.5.1"
+    }
+  ],
+  "rankme": [
+    {
+      "mode": "collapse",
+      "status": "calibrated",
+      "caveat": "rank-collapse \u2014 a loud failure MAE internals do catch",
+      "provenance": "P0.5.0"
+    },
+    {
+      "mode": "quality",
+      "status": "needs-two-sided-control",
+      "caveat": "blind to quality by construction (full-rank-but-useless); kept only as the full-rank precondition / collapse guard",
+      "provenance": "P0.5.1"
+    }
+  ],
+  "uniformity": [
+    {
+      "mode": "quality",
+      "status": "trap",
+      "caveat": "mis-signals on MAE quality \u2014 the degraded rep looks *healthier*",
+      "provenance": "P0.5.1"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "study": "P1.0.1",
+  "config": {
+    "C": "simsiam",
+    "I": "pretrained",
+    "F": "class_blocked",
+    "seed": 0,
+    "alignment": "shared_iterator"
+  },
+  "data_identity": {
+    "num_steps": 30,
+    "era_step_aligned": true,
+    "max_abs_image_diff": 0.0,
+    "bit_identical": true
+  },
+  "trajectory": {
+    "matched_seed": {
+      "num_checkpoints": 7,
+      "step_grid_matched": true,
+      "max_abs_divergence": 0.0,
+      "per_surface_max": {
+        "loss": 0.0,
+        "rankme": 0.0,
+        "mean_feature_var": 0.0,
+        "offdiag_cov": 0.0,
+        "uniformity": 0.0,
+        "rankme_proj": 0.0,
+        "mean_feature_var_proj": 0.0,
+        "offdiag_cov_proj": 0.0,
+        "uniformity_proj": 0.0,
+        "cka_drift": 0.0,
+        "cosine_drift": 0.0,
+        "alignment": 0.0,
+        "alignment_proj": 0.0,
+        "knn_acc": 0.0,
+        "linear_acc": 0.0
+      },
+      "bit_identical": true
+    },
+    "inarm_rng_desynced": {
+      "num_checkpoints": 7,
+      "step_grid_matched": true,
+      "max_abs_divergence": 5.687458038330078,
+      "per_surface_max": {
+        "loss": 0.4096665382385254,
+        "rankme": 0.47705531120300293,
+        "mean_feature_var": 0.00014348146214615554,
+        "offdiag_cov": 5.387669034462306e-06,
+        "uniformity": 0.04762988165020943,
+        "rankme_proj": 5.687458038330078,
+        "mean_feature_var_proj": 0.0030929169151932,
+        "offdiag_cov_proj": 0.0015613120631314814,
+        "uniformity_proj": 0.6825151443481445,
+        "cka_drift": 0.05937647819519043,
+        "cosine_drift": 0.09002935886383057,
+        "alignment": 0.03328620828688145,
+        "alignment_proj": 1.3365004360675812,
+        "knn_acc": 0.04000000000000001,
+        "linear_acc": 0.065
+      },
+      "bit_identical": false
+    }
+  },
+  "attribution": {
+    "stream_construction": 0.0,
+    "in_arm_rng_matched": 0.0,
+    "in_arm_rng_desynced": 5.687458038330078
+  },
+  "verdict": {
+    "same_seed_certified": true,
+    "measurement_sensitive": true
+  }
+}

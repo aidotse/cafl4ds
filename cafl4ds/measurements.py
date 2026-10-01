@@ -47,7 +47,9 @@ from typing import TypeAlias, cast
 
 import numpy as np
 import torch
+from sklearn.cluster import KMeans
 from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import silhouette_score
 from sklearn.neighbors import KNeighborsClassifier
 
 # Anything we accept as an embedding matrix / label vector.
@@ -291,6 +293,87 @@ def uniformity(z: TensorLike, t: float = 2.0) -> float:
     # pdist gives the condensed vector of pairwise L2 distances (upper triangle, i < j).
     sq_dist = torch.pdist(zt).pow(2)
     return _to_float(torch.log(torch.exp(-t * sq_dist).mean()))
+
+
+# --------------------------------------------------------------------------------------
+# Quality readers on trial (label-free) — candidate MAE-native quality signals (P0.5.2)
+# --------------------------------------------------------------------------------------
+
+
+def clusterability(z: TensorLike, n_clusters: int, *, seed: int = 0, n_init: int = 10) -> float:
+    """Unsupervised clusterability: the silhouette of a k-means partition of the frozen rep.
+
+    A **label-free** proxy for the class separability the frozen probe measures *with* labels
+    (P0.5.2): partition the embeddings into ``n_clusters`` groups with k-means, then score how
+    well-separated that partition is via the mean silhouette coefficient. A representation that has
+    arranged samples into tight, well-separated clusters scores near ``+1``; a diffuse,
+    structure-free representation scores near ``0``. ``n_clusters`` is the *count* of classes
+    (dataset metadata), never the per-sample labels — nothing supervised enters here.
+
+    Embeddings are L2-normalized first (onto the unit hypersphere, matching the cosine geometry the
+    kNN probe and uniformity use), so the Euclidean silhouette on the normalized features tracks
+    cosine separability.
+
+    Args:
+        z: Embedding matrix ``[N, d]``.
+        n_clusters: Number of k-means clusters (the class *count* — metadata, not labels).
+        seed: Random seed for the k-means initialization (deterministic across checkpoints).
+        n_init: Number of k-means restarts (best inertia kept), as in scikit-learn.
+
+    Returns:
+        The mean silhouette coefficient in ``[-1, 1]`` (higher = more separable). Returns ``0.0``
+        for degenerate cases (too few samples, or k-means yields a single non-empty cluster) where
+        the silhouette is undefined.
+    """
+    zt = _check_matrix(_as_tensor(z))
+    z_unit = _l2_normalize(zt).numpy()
+    n = z_unit.shape[0]
+    k = max(2, min(int(n_clusters), n - 1))
+    if n <= k:
+        return 0.0
+    labels = KMeans(n_clusters=k, n_init=n_init, random_state=seed).fit_predict(z_unit)
+    if len(np.unique(labels)) < 2:  # pragma: no cover - degenerate single cluster; silhouette undefined.
+        return 0.0
+    return float(silhouette_score(z_unit, labels, metric="euclidean"))
+
+
+def mean_attention_distance(attn: TensorLike, grid_size: int) -> float:
+    """Attention-weighted mean spatial distance between patches (ViT locality readout, P0.5.2).
+
+    A **label-free**, MAE/ViT-native quality candidate. A *shortcut* encoder solves reconstruction
+    by copying neighbouring patches, so its heads attend **locally** (short mean distance); a
+    *semantic* encoder grows **long-range** heads (longer mean distance). Given the self-attention
+    probability matrix, this returns the mean — over samples, heads, and query patches — of the
+    attention-weighted distance from each query patch to the key patches it attends to, in patch
+    (grid-cell) units.
+
+    The class token (sequence index 0) is dropped from both the query and key axes and the
+    remaining patch-key attention is renormalized to sum to one, so the readout is a pure
+    patch-to-patch spatial statistic.
+
+    Args:
+        attn: Attention probabilities with the token axes last, ``[..., T, T]`` where
+            ``T = 1 + grid_size**2`` (class token first). Leading axes (batch, head) are averaged.
+        grid_size: Side length ``g`` of the square patch grid (``num_patches = g * g``).
+
+    Returns:
+        The mean attention distance in patch units, a non-negative float.
+
+    Raises:
+        ValueError: If ``attn``'s last two dims are not each ``1 + grid_size**2``.
+    """
+    a = _as_tensor(attn)
+    t = grid_size * grid_size + 1
+    if a.shape[-1] != t or a.shape[-2] != t:
+        raise ValueError(f"attn last two dims must each be {t} (1 + {grid_size}^2); got {tuple(a.shape[-2:])}.")
+    rows = torch.arange(grid_size).repeat_interleave(grid_size)
+    cols = torch.arange(grid_size).repeat(grid_size)
+    coords = torch.stack([rows, cols], dim=1).to(torch.float32)  # [N, 2] patch-grid centers
+    dist = torch.cdist(coords, coords)  # [N, N] patch-center distances
+    a_pp = a[..., 1:, 1:]  # drop the cls token from the query + key axes
+    a_pp = a_pp / a_pp.sum(dim=-1, keepdim=True).clamp_min(1e-12)  # renormalize over patch keys
+    weighted = (a_pp * dist).sum(dim=-1)  # [..., N] expected distance per query patch
+    return _to_float(weighted.mean())
 
 
 # --------------------------------------------------------------------------------------
