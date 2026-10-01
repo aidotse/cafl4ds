@@ -1,26 +1,15 @@
 """Per-client representation divergence — whether clients pull *apart* within a round.
 
-The global readout (the orchestrator's ``global_monitor``) measures the **aggregate**, which can
-hide the very mechanism it is meant to detect: two clients drifting hard in opposite directions
-average back to near where they started, so a flat global probe is perfectly consistent with
-large underlying divergence. F2 hit exactly this — the global probe moved less than its own noise
-across sharply skewed partitions, leaving "no heterogeneity effect" and "the readout cannot see
-one" indistinguishable. These measurements read the divergence directly instead.
+The global readout measures the aggregate, which can hide the mechanism under study: two clients
+drifting in opposite directions average back to near where they started (F2 hit exactly this).
+These metrics read the divergence directly, on the backbone embedding of the **global** held-out
+probe set, which is shared by all clients and disjoint from their training data:
 
-Both are computed on the **global** held-out probe set rather than per-client eval sets. A common
-probe is what makes client numbers comparable, and the global pool is disjoint from every client's
-training data by construction (:func:`~cafl4ds.federated.partition.holdout_split`) — whereas a
-client's own eval set is skewed by the partition under study and is sized 0 by default.
+* **anchor divergence** — each client's post-round representation against the broadcast weights.
+* **cross-client divergence** — every client pair against each other.
 
-Two quantities, each on the backbone embedding:
-
-* **anchor divergence** — a client's post-round representation against the weights broadcast at
-  the start of that round. How far local training pulled *this* client.
-* **cross-client divergence** — every client pair against each other. Whether they pulled in
-  *different* directions, which is what averaging then has to reconcile.
-
-Each is reported as a mean and a max. The max is usually the more informative: FedAvg is harmed
-by its worst-diverging participant, not by the typical one.
+Each is reported as a mean and a max; the max is usually more informative, since FedAvg is harmed
+by its worst-diverging participant.
 """
 
 from __future__ import annotations
@@ -35,11 +24,9 @@ from cafl4ds.ssl.base import SSLMethod
 
 
 def embed_probe(method: SSLMethod, images: torch.Tensor) -> torch.Tensor:
-    """Embed a fixed probe set in eval mode, leaving the method's training flag as found.
+    """Embed a fixed probe set in eval mode, restoring the method's training flag afterwards.
 
-    Mirrors :meth:`~cafl4ds.monitor.HealthMonitor.measure`: probes read the representation with
-    BatchNorm/dropout in eval mode, and the caller's mode is restored so the training loop is
-    unperturbed. ``encode`` moves the images to the backbone's device itself.
+    Mirrors :meth:`~cafl4ds.monitor.HealthMonitor.measure`.
 
     Args:
         method: The SSL method whose backbone embedding to read.

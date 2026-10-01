@@ -1,14 +1,12 @@
-"""Federated learning (the ``D`` factor): partition, per-client streaming, FedAvg aggregation.
-
-Wraps the centralized streaming loop in a synchronous FedAvg simulation. The pieces:
+"""Federated learning (the ``D`` factor): a synchronous FL simulation over per-client streams.
 
 * :mod:`~cafl4ds.federated.partition` — split one dataset into per-client (non-IID) shards.
 * :mod:`~cafl4ds.federated.client` — a resumable per-client :class:`~cafl4ds.loop.StreamingLoop`.
-* :mod:`~cafl4ds.federated.aggregate` — mix client ``state_dict``s into a weighted mean.
+* :mod:`~cafl4ds.federated.aggregate` — the weighted mean of client ``state_dict``s.
 * :mod:`~cafl4ds.federated.server_optim` — apply that mean (FedAvg, or the adaptive FedOpt family).
-* :mod:`~cafl4ds.federated.proximal` — constrain local training (FedProx).
-* :mod:`~cafl4ds.federated.strategy` — bundle a server rule + client constraint into one named
-  algorithm; this is the single ``strategy=`` choice a run makes.
+* :mod:`~cafl4ds.federated.proximal` — the client-side FedProx constraint.
+* :mod:`~cafl4ds.federated.strategy` — one named algorithm: a server rule plus a client constraint.
+* :mod:`~cafl4ds.federated.divergence` — per-client representation divergence.
 * :mod:`~cafl4ds.federated.orchestrator` — the round loop tying them together.
 """
 

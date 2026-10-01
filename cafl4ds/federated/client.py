@@ -1,24 +1,15 @@
 """The federated client — one local streaming learner, resumable across rounds.
 
-A client owns exactly what a centralized run owns — a model, optimizer, selection filter,
-monitor, and its *own* :class:`~cafl4ds.data.streams.EraStream` — bundled as a
-:class:`~cafl4ds.loop.StreamingLoop`. Federation adds three things on top:
+A client owns what a centralized run owns (model, optimizer, filter, monitor, and its own
+:class:`~cafl4ds.data.streams.EraStream`), bundled as a :class:`~cafl4ds.loop.StreamingLoop`.
+It holds one persistent iterator over its stream, so rounds slice a single true single-pass
+stream; once it is exhausted the client stops participating. :meth:`FederatedClient.set_weights`
+overwrites the model only — the optimizer and filter state (e.g. a reservoir buffer) are the
+client's private memory and are never synced.
 
-* **A persistent stream position.** The client holds one iterator over its stream and advances
-  it a fixed number of steps per round, *continuing where it left off* — a single true
-  single-pass stream sliced across rounds, never restarted. When the iterator is exhausted the
-  client stops participating.
-* **Weight exchange.** :meth:`set_weights` overwrites the *model only* with the broadcast global
-  weights; the optimizer state and the filter's local state (e.g. a reservoir buffer) persist
-  across rounds — they are the client's private streaming memory and are never synced.
-* **A round of local work.** :meth:`train_round` pulls ``steps_per_round`` batches and runs each
-  through :meth:`StreamingLoop.train_step` — the *same* selection + update path as centralized —
-  reporting how much it trained on (for FedAvg weighting).
-
-A "round" is measured in **stream steps** (batches pulled), not optimizer updates: every client
-advances the same distance through its stream each round, so selection-induced differences in
-*how much* each client trains surface as differences in the reported sample count rather than
-being normalized away.
+A round is measured in **stream steps** (batches pulled), not optimizer updates, so
+selection-induced differences in how much each client trains show up in the reported sample
+count rather than being normalized away.
 """
 
 from __future__ import annotations
@@ -86,12 +77,8 @@ class FederatedClient:
     def set_weights(self, state: StateDict) -> None:
         """Load broadcast global weights into the local model (model only).
 
-        The optimizer and the filter's local state are deliberately left untouched — under true
-        streaming the client resumes its own optimization/replay memory against the new weights.
-
-        If the loop carries a FedProx penalty, its anchor is re-tied here. The leash is therefore
-        measured against *this* round's consensus, which is what limits within-round drift
-        without ever pinning the model to its initialization.
+        Also re-ties the FedProx anchor, if any, so the leash is measured against this round's
+        consensus.
 
         Args:
             state: The global ``state_dict`` to load.
@@ -107,7 +94,7 @@ class FederatedClient:
             steps_per_round: Number of batches to pull from the (persistent) stream this round.
 
         Returns:
-            A :class:`RoundResult` summarizing the round (sample count drives FedAvg weighting).
+            A :class:`RoundResult` summarizing the round.
         """
         self.loop.method.to(self.loop.device)
         steps_pulled, num_trained = 0, 0

@@ -6,6 +6,7 @@ aggregation (including non-float buffer handling), and the synchronous round loo
 client exhaustion.
 """
 
+import json
 import math
 from pathlib import Path
 
@@ -717,3 +718,65 @@ def test_orchestrator_divergence_is_inert_without_a_global_monitor(tmp_path: Pat
     assert orch.track_divergence is False
     _, history = orch.run()
     assert history[0].health is None
+
+
+def _client_health(path: Path) -> list[dict[str, float]]:
+    """Read the health records of one client run log."""
+    records = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    return [r for r in records if r["series"] == "health"]
+
+
+def _run_client_health(tmp_path: Path, track: bool, num_rounds: int = 2) -> list[FederatedClient]:
+    """Run a tiny 2-client federation for ``num_rounds`` and return its (closed-over) clients."""
+    clients = _make_clients(tmp_path, num_clients=2)
+    global_stream = EraStream(
+        SyntheticSource(num_classes=4, per_class=40, img_size=16, seed=1),
+        batch_size=8,
+        order="iid",
+        seed=1,
+        support_per_class=3,
+        query_per_class=2,
+        era_eval_per_class=1,
+    )
+    orch = FederatedOrchestrator(
+        clients,
+        steps_per_round=2,
+        num_rounds=num_rounds,
+        global_monitor=HealthMonitor(global_stream.eval_sets, knn_k=3),
+        run_logger=RunLogger(tmp_path / "global.jsonl", run_name="global"),
+        track_client_health=track,
+    )
+    orch.run()
+    for client in clients:
+        client.loop.run_logger.close()
+    return clients
+
+
+def test_orchestrator_logs_per_client_health_each_round(tmp_path: Path) -> None:
+    """Each participant's post-round model is measured on the global set, one record per round."""
+    clients = _run_client_health(tmp_path, track=True, num_rounds=2)
+    for client in clients:
+        health = _client_health(client.loop.run_logger.path)
+        assert [r["step"] for r in health] == [0, 1]  # step is the round index
+        assert all("rankme" in r for r in health)
+
+
+def test_client_health_reads_the_client_model_not_the_aggregate(tmp_path: Path) -> None:
+    """The two clients trained on different shards, so their round-0 readings must differ."""
+    clients = _run_client_health(tmp_path, track=True, num_rounds=1)
+    first, second = (_client_health(c.loop.run_logger.path)[0] for c in clients)
+    assert first["rankme"] != second["rankme"]
+
+
+def test_client_health_is_opt_in(tmp_path: Path) -> None:
+    """By default the client logs carry only their loss series."""
+    clients = _run_client_health(tmp_path, track=False, num_rounds=1)
+    assert all(not _client_health(c.loop.run_logger.path) for c in clients)
+
+
+def test_client_health_is_inert_without_a_global_monitor(tmp_path: Path) -> None:
+    """No global monitor means no shared eval set, so client health tracking disables itself."""
+    orch = FederatedOrchestrator(
+        _make_clients(tmp_path, num_clients=2), steps_per_round=1, num_rounds=1, track_client_health=True
+    )
+    assert orch.track_client_health is False

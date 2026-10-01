@@ -84,6 +84,7 @@ num_rounds: null # null = run until every client's stream is exhausted
 # towards the start — F2), so this is the per-client half of the dependent variable. Costs one
 # extra probe-set encode per participant per round; set false to drop it.
 track_divergence: true
+track_client_health: false # per-client health on the global hold-out (one extra measure per client per round)
 partition:
   scheme: dirichlet # dirichlet (label-skewed non-IID) | iid (uniform control)
   alpha: 1.0 # Dirichlet concentration; smaller = sharper per-client class skew

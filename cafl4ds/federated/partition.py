@@ -1,28 +1,12 @@
 """Client partitioning — split one dataset into per-client shards (the FL ``D`` factor).
 
-Federated learning starts by handing each client its *own* slice of the data. This module
-turns a single :class:`~cafl4ds.data.sources.DataSource` into ``N`` per-client sources; each
-client then wraps its shard in its own :class:`~cafl4ds.data.streams.EraStream`, so a client
-sees its *local* correlated stream. The **partition scheme** is where non-IID structure is
-injected — the knob behind novelty claim **N-D** (selection × aggregation skew): independent
-clients each over-selecting their local tail may skew the aggregate.
+Each shard feeds its own client's :class:`~cafl4ds.data.streams.EraStream`. The partition scheme
+is where non-IID structure enters: ``"dirichlet"`` is label skew (Hsu et al. 2019; small ``α`` →
+clients specialize), ``"iid"`` is the uniform control. Partitions are over indices; pixels are
+sliced into :class:`_ShardSource` views.
 
-Two schemes:
-
-* ``"dirichlet"`` — label-skewed non-IID (Hsu et al. 2019). For each class, a ``Dirichlet(α)``
-  draw over clients splits that class's images. Small ``α`` → sharp skew (clients specialize);
-  large ``α`` → near-uniform. The headline heterogeneity knob.
-* ``"iid"`` — a uniform random split (the control): every client's shard is a fair sample of
-  the whole, so any aggregation effect is *not* attributable to data skew.
-
-A partition is over *indices only*; the pixels are sliced into per-client
-:class:`_ShardSource` views. Downstream, each client's :class:`EraStream` reserves its own
-held-out eval sets from its shard, so under sharp skew the per-class reservations must be sized
-to what the smallest shard can afford (see the note in :func:`partition_source`).
-
-:func:`holdout_split` is the step that must come *before* partitioning: it carves a
-class-balanced pool out of the dataset for the **global** health monitor, so no client can train
-on the images the aggregated model is scored on. Partition the remainder, never the original.
+Call :func:`holdout_split` first, so the global monitor's pool is disjoint from every client's
+data, then partition the remainder.
 """
 
 from __future__ import annotations
@@ -106,15 +90,9 @@ def iid_partition(labels: torch.Tensor, num_clients: int, seed: int) -> list[tor
 def holdout_split(source: DataSource, per_class: int, seed: int = 0) -> tuple[DataSource, DataSource]:
     """Carve a class-balanced hold-out pool out of ``source``, *before* any client sees it.
 
-    The global health monitor is the dependent variable of a federated run, so the aggregated
-    model must not be scored on images its clients trained on. Building the global eval sets from
-    the same source that was partitioned to clients does exactly that: each client's
-    :class:`~cafl4ds.data.streams.EraStream` reserves its *own* eval slice with its *own* RNG, so
-    whether a given global probe image is withheld anywhere is essentially chance. Splitting
-    first removes the question — the two pools are disjoint by construction.
-
-    The remainder keeps the source's original image order, so ``partition_source`` still
-    degenerates to that order at ``num_clients=1``.
+    The aggregated model must not be scored on images its clients trained on, so the global
+    pool is split off first and the two pools are disjoint by construction. Both keep the
+    source's original image order (so ``num_clients=1`` still matches a centralized run).
 
     Args:
         source: The full dataset.
@@ -182,10 +160,8 @@ def partition_source(
         ValueError: If ``num_clients < 1`` or ``scheme`` is unknown.
 
     Note:
-        Each client's stream later reserves ``support/query/era_eval`` images *per class from
-        its own shard*. Under sharp skew (small ``alpha``) a shard may hold too few images of a
-        class to satisfy those reservations — size the per-class reservations to the smallest
-        shard, or raise ``alpha``.
+        Any per-class eval reservations a client stream makes come from its own shard; under
+        sharp skew (small ``alpha``) a shard may not afford them.
     """
     if num_clients < 1:
         raise ValueError(f"num_clients must be >= 1; got {num_clients}.")

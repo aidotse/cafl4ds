@@ -57,12 +57,10 @@ class UpdateStats(NamedTuple):
 
 
 class StepResult(NamedTuple):
-    """The outcome of one public :meth:`StreamingLoop.train_step` — the selection + update record.
+    """The outcome of one :meth:`StreamingLoop.train_step`: :class:`UpdateStats` plus the image count.
 
-    Wraps the internal :class:`UpdateStats` with the count the *caller* needs to attribute the
-    step: how many images the filter admitted and the update actually trained on. Federated
-    aggregation reads this as the FedAvg sample weight (see
-    :mod:`cafl4ds.federated.aggregate`); the centralized loop ignores it.
+    Federated aggregation reads ``num_trained`` as the FedAvg sample weight; the centralized loop
+    ignores it.
 
     Attributes:
         loss: The scalar SSL loss for the step.
@@ -119,10 +117,8 @@ class StreamingLoop:
                 the current encoder is probed over all seen eras at each era boundary and at the
                 end, building the accuracy matrix behind Backward Transfer / Forgetting. ``None``
                 (default) runs no downstream probing — the loop is unchanged.
-            proximal: Optional FedProx penalty pulling the update back towards a broadcast
-                anchor (see :class:`~cafl4ds.federated.proximal.ProximalTerm`). Federated only — a
-                centralized run has nothing to anchor to and passes ``None`` (default), which
-                leaves the update path untouched.
+            proximal: Optional FedProx penalty (:class:`~cafl4ds.federated.proximal.ProximalTerm`);
+                federated only. ``None`` (default) leaves the update path untouched.
         """
         self.stream = stream
         self.method = method
@@ -179,19 +175,16 @@ class StreamingLoop:
     def train_step(self, batch: StreamBatch, step: int) -> StepResult | None:
         """Select on one batch and run its update, logging the per-step loss + grad-norm trace.
 
-        The single per-step primitive shared by the centralized :meth:`run` loop and the
-        federated client (which drives the stream one round at a time): selection + one SSL
-        update on the admitted images, along the *same* code path so the two settings cannot
-        diverge.
+        Shared by the centralized :meth:`run` loop and the federated client, so the two settings
+        cannot diverge.
 
         Args:
             batch: The incoming stream batch.
             step: The global step index for this batch.
 
         Returns:
-            The step's :class:`StepResult` (loss, grad-norm trace, and the admitted-image count
-            for FedAvg weighting), or ``None`` if the selected batch was sub-minimum (too few
-            samples to run an update — the step is skipped).
+            The step's :class:`StepResult`, or ``None`` if the selected batch was sub-minimum (the
+            step is skipped).
         """
         moved = StreamBatch(images=batch.images.to(self.device), era=batch.era, step=step)
         accepted = self.selection_filter.select(moved, FilterContext(method=self.method, step=step))
@@ -253,13 +246,9 @@ class StreamingLoop:
         instrument — a blow-up must be visible even when a clip would otherwise mask it) and
         flags the step non-finite if the loss or that norm is inf/NaN.
 
-        When a FedProx ``proximal`` term is set, its force is added to the gradient *before* the
-        norm is read, so the reported norm stays the norm of what is actually clipped and
-        stepped. The trade-off is deliberate: it means a FedProx run's ``grad_norm`` series is
-        not directly comparable to a ``mu=0`` run's, since the two optimize different objectives.
-        That confound is visible and honest, where measuring the SSL gradient alone would quietly
-        report a different number from the one being clipped. The logged **loss** is unaffected —
-        it remains the pure SSL loss, comparable across every run in the project.
+        A FedProx ``proximal`` force is added *before* the norm is read, so the norm is that of
+        what is actually clipped and stepped. A FedProx run's ``grad_norm`` is therefore not
+        directly comparable to a ``mu=0`` run's; the logged loss stays the pure SSL loss.
 
         Args:
             images: The accepted image batch ``[K, C, H, W]``.
