@@ -290,6 +290,56 @@ def test_client_is_true_single_pass_across_rounds(tmp_path: Path) -> None:
     assert pulled == total_batches
 
 
+def _pass_length(client: FederatedClient) -> int:
+    """Batches in one pass over the client's stream (iterates a fresh copy, not the client's)."""
+    return sum(1 for _ in client.loop.stream)
+
+
+def test_client_epochs_repeat_the_stream_in_the_same_order(tmp_path: Path) -> None:
+    """``epochs=2`` makes exactly two passes, the second replaying the first batch for batch."""
+    src = SyntheticSource(num_classes=3, per_class=40, img_size=16, seed=0)
+    client = FederatedClient(0, _make_loop(src, seed=0, log_path=tmp_path / "c.jsonl"), epochs=2)
+    batches = []
+    while (batch := client._next_batch()) is not None:
+        batches.append(batch.images)
+    one_pass = _pass_length(client)
+    assert len(batches) == 2 * one_pass
+    assert all(torch.equal(a, b) for a, b in zip(batches[:one_pass], batches[one_pass:], strict=True))
+
+
+def test_client_epochs_continue_across_round_boundaries(tmp_path: Path) -> None:
+    """A pass ending mid-round flows into the next; the client exhausts only after the last pass."""
+    src = SyntheticSource(num_classes=3, per_class=40, img_size=16, seed=0)
+    client = FederatedClient(0, _make_loop(src, seed=0, log_path=tmp_path / "c.jsonl"), epochs=3)
+    pulled = 0
+    while not client.exhausted:
+        pulled += client.train_round(steps_per_round=4).steps_pulled
+    assert _pass_length(client) % 4 != 0  # so at least one pass really ends mid-round
+    assert pulled == 3 * _pass_length(client)
+
+
+def test_client_rejects_non_positive_epochs(tmp_path: Path) -> None:
+    """Zero passes is not a client."""
+    src = SyntheticSource(num_classes=3, per_class=40, img_size=16, seed=0)
+    with pytest.raises(ValueError, match="epochs"):
+        FederatedClient(0, _make_loop(src, seed=0, log_path=tmp_path / "c.jsonl"), epochs=0)
+
+
+def test_single_client_multi_epoch_matches_the_centralized_multi_epoch_loop(tmp_path: Path) -> None:
+    """Parity: one client over N passes trains the exact model ``StreamingLoop(epochs=N)`` does."""
+    src = SyntheticSource(num_classes=3, per_class=40, img_size=16, seed=0)
+    central = _make_loop(src, seed=0, log_path=tmp_path / "central.jsonl")
+    central.epochs, central.eval_every = 2, 10**9  # no mid-run health reads (they would consume RNG)
+    federated = _make_loop(src, seed=0, log_path=tmp_path / "fed.jsonl")
+    client = FederatedClient(0, federated, epochs=2)
+    torch.manual_seed(1)
+    central.run()
+    torch.manual_seed(1)
+    final_state, _ = FederatedOrchestrator([client], steps_per_round=3).run()
+    for key, value in central.method.state_dict().items():
+        assert torch.allclose(final_state[key], value, atol=1e-6), key
+
+
 # --- strategies (the single user-facing FL choice) ----------------------------
 
 

@@ -136,7 +136,7 @@ def _build_client(
         # be shared. At the strategy's default mu=0 this is an exact no-op.
         proximal=strategy.make_proximal(),
     )
-    return FederatedClient(client_id, loop)
+    return FederatedClient(client_id, loop, epochs=config.client_epochs)
 
 
 def _build_final_eval(config: DictConfig, train: DataSource) -> FinalEvaluator | None:

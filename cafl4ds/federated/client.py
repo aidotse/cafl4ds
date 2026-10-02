@@ -3,7 +3,10 @@
 A client owns what a centralized run owns (model, optimizer, filter, monitor, and its own
 :class:`~cafl4ds.data.streams.EraStream`), bundled as a :class:`~cafl4ds.loop.StreamingLoop`.
 It holds one persistent iterator over its stream, so rounds slice a single true single-pass
-stream; once it is exhausted the client stops participating. :meth:`FederatedClient.set_weights`
+stream; once it is exhausted the client stops participating. With ``epochs > 1`` the client
+restarts the stream (same order) until it has made that many passes — the federated counterpart
+of :class:`~cafl4ds.loop.StreamingLoop`'s ``epochs``. A pass spans many rounds, so this adds
+rounds, not local steps between averages. :meth:`FederatedClient.set_weights`
 overwrites the model only — the optimizer and filter state (e.g. a reservoir buffer) are the
 client's private memory and are never synced.
 
@@ -46,17 +49,26 @@ class RoundResult:
 class FederatedClient:
     """One client: a resumable :class:`StreamingLoop` plus weight exchange."""
 
-    def __init__(self, client_id: int, loop: StreamingLoop) -> None:
+    def __init__(self, client_id: int, loop: StreamingLoop, epochs: int = 1) -> None:
         """Wrap a per-client streaming loop as a federated client.
 
         Args:
             client_id: Stable identifier for logging/aggregation bookkeeping.
             loop: The client's local loop (its own model, optimizer, filter, monitor, stream).
+            epochs: Passes over the stream before the client is exhausted. ``1`` (default) is the
+                single-pass stream.
+
+        Raises:
+            ValueError: If ``epochs < 1``.
         """
+        if epochs < 1:
+            raise ValueError(f"epochs must be >= 1; got {epochs}.")
         self.client_id = client_id
         self.loop = loop
+        self.epochs = epochs
         self.loop.method.to(self.loop.device)
         self._iterator: Iterator[StreamBatch] = iter(loop.stream)
+        self._passes_done = 0
         self._step = 0
         self._exhausted = False
 
@@ -100,7 +112,7 @@ class FederatedClient:
         steps_pulled, num_trained = 0, 0
         loss_sum, loss_count = 0.0, 0
         for _ in range(steps_per_round):
-            batch = next(self._iterator, None)
+            batch = self._next_batch()
             if batch is None:
                 self._exhausted = True
                 break
@@ -124,6 +136,22 @@ class FederatedClient:
             mean_loss=mean_loss,
             exhausted=self._exhausted,
         )
+
+    def _next_batch(self) -> StreamBatch | None:
+        """Pull the next batch, restarting the stream (same order) while passes remain.
+
+        A pass that ends mid-round continues seamlessly into the next one, as in the centralized
+        multi-epoch loop.
+
+        Returns:
+            The next batch, or ``None`` once the last pass is exhausted.
+        """
+        batch = next(self._iterator, None)
+        if batch is None and self._passes_done + 1 < self.epochs:
+            self._passes_done += 1
+            self._iterator = iter(self.loop.stream)
+            batch = next(self._iterator, None)
+        return batch
 
     def measure_health(self, step: int) -> dict[str, float]:
         """Read the client's local representation health (its on-device monitor).
