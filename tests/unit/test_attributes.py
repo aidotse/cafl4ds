@@ -238,6 +238,8 @@ def test_bdd_source_reads_per_image_label_directory(tmp_path: Path) -> None:
         {"name": "c", "attributes": {"timeofday": "daytime", "weather": "undefined", "scene": "highway"}},
     ]
     _write_per_image_bdd_fixture(tmp_path, records)
+    # a macOS AppleDouble stub (binary, not JSON) left by a tar copy must be ignored, not parsed
+    (tmp_path / "labels" / "train" / "._a.json").write_bytes(b"\x00\x05\x16\x07Mac OS X\xa2")
     a = BDD100KSource(str(tmp_path), img_size=16).load()
     assert a.images.shape == (2, 3, 16, 16)  # the undefined-weather record is skipped
     assert a.regime_names[0] == "daytime·clear"

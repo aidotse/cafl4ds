@@ -86,6 +86,10 @@ num_rounds: null # null = run until every client's stream is exhausted
 track_divergence: true
 client_epochs: 1 # passes over each client's stream (same order each pass); >1 adds rounds, not local steps
 track_client_health: false # per-client health on the global hold-out (one extra measure per client per round)
+# What is exchanged and averaged. false = the whole model. true = each client keeps its method's
+# private head (SimSiam: the predictor h; MAE: the decoder) and only the rest is averaged — for
+# SimSiam that is the paper's encoder f (backbone + projector here).
+keep_heads_local: false
 partition:
   scheme: dirichlet # dirichlet (label-skewed non-IID) | iid (uniform control)
   alpha: 1.0 # Dirichlet concentration; smaller = sharper per-client class skew

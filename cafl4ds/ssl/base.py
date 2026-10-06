@@ -19,6 +19,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import ClassVar
 
 import torch
 from loguru import logger
@@ -29,6 +30,9 @@ from cafl4ds.models.vit import TinyViTEncoder
 
 class SSLMethod(nn.Module, ABC):  # type: ignore[misc]  # nn.Module is Any without torch stubs (mypy hook env)
     """A self-supervised method: a shared encoder plus a training objective."""
+
+    local_heads: ClassVar[tuple[str, ...]] = ()
+    """Submodules a federated client may keep private (``keep_heads_local``); none by default."""
 
     def __init__(self, encoder: TinyViTEncoder) -> None:
         """Store the shared backbone encoder.

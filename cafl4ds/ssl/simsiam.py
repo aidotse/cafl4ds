@@ -65,6 +65,9 @@ class SimSiam(SSLMethod):
     regime suffices to calibrate the collapse instruments (RankMe, alignment/uniformity).
     """
 
+    # The paper's encoder f is `encoder` + `projector` here; only the predictor h is private.
+    local_heads = ("predictor",)
+
     def __init__(
         self,
         encoder: TinyViTEncoder,

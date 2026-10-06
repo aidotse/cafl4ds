@@ -24,6 +24,9 @@ from cafl4ds.ssl.base import SSLMethod
 class MAE(SSLMethod):
     """Masked Autoencoder over the shared :class:`~cafl4ds.models.vit.TinyViTEncoder`."""
 
+    # The decoder is discarded after pretraining, so it need not be a global consensus.
+    local_heads = ("decoder",)
+
     def __init__(
         self,
         encoder: TinyViTEncoder,

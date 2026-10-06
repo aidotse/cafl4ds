@@ -105,9 +105,15 @@ class FederatedOrchestrator:
         """Run the federated training loop to completion.
 
         Returns:
-            The final global ``state_dict`` and the per-round summaries.
+            The final global ``state_dict`` (the shared part only, under ``keep_heads_local``)
+            and the per-round summaries.
         """
-        global_state = self.clients[0].get_weights()  # a single, shared starting point for all
+        # A single starting point for all, private heads included, so local heads differ only by
+        # what each client learns, not by their random init.
+        initial = {k: v.detach().clone() for k, v in self.clients[0].method.state_dict().items()}
+        for client in self.clients[1:]:
+            client.load_weights(initial)
+        global_state = self.clients[0].get_weights()
         history: list[RoundSummary] = []
         round_index = 0
         logger.info(f"server optimizer: {self.server_optimizer.name}")
@@ -226,10 +232,10 @@ class FederatedOrchestrator:
             self.run_logger.log_loss(round_index, era=-1, loss=round_loss)
         health: dict[str, float] | None = None
         if self.global_monitor is not None:
-            # Client 0's model serves as the vessel; the next broadcast overwrites it anyway.
-            vessel = self.clients[0].method
-            vessel.load_state_dict(global_state)
-            health = {**self.global_monitor.measure(vessel, round_index), **divergence}
+            # Client 0's model serves as the vessel; the next broadcast overwrites it anyway (its
+            # private heads, if any, are kept).
+            self.clients[0].load_weights(global_state)
+            health = {**self.global_monitor.measure(self.clients[0].method, round_index), **divergence}
             if self.run_logger is not None:
                 self.run_logger.log_health(round_index, era=-1, metrics=health)
         logger.info(f"round {round_index}: {len(participants)} clients, {samples} imgs trained")

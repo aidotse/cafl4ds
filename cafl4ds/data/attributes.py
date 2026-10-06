@@ -334,13 +334,16 @@ def _iter_label_records(labels_path: Path) -> Iterator[dict[str, Any]]:
     Args:
         labels_path: Either one JSON file holding the list of records, or a directory of
             ``<name>.json`` files with one record each (read lazily in sorted order, so a
-            ``max_images`` cap stops early and the order is deterministic).
+            ``max_images`` cap stops early and the order is deterministic). Hidden files are
+            skipped — e.g. macOS ``._<name>.json`` metadata stubs left behind by a tar copy.
 
     Yields:
         One label record (a dict with ``name`` / ``attributes`` / boxes) at a time.
     """
     if labels_path.is_dir():
         for path in sorted(labels_path.glob("*.json")):
+            if path.name.startswith("."):
+                continue
             yield json.loads(path.read_text(encoding="utf-8"))
     else:
         yield from json.loads(labels_path.read_text(encoding="utf-8"))

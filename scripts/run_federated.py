@@ -26,6 +26,10 @@ Examples:
 
         uv run python scripts/run_federated.py strategy=fedadam strategy.server_optimizer.lr=1e-2
         uv run python scripts/run_federated.py strategy=fedprox strategy.proximal_mu=0.1
+
+    Keep SimSiam's predictor / MAE's decoder on each client (average only the rest)::
+
+        uv run python scripts/run_federated.py ssl=simsiam keep_heads_local=true
 """
 
 import sys
@@ -136,7 +140,7 @@ def _build_client(
         # be shared. At the strategy's default mu=0 this is an exact no-op.
         proximal=strategy.make_proximal(),
     )
-    return FederatedClient(client_id, loop, epochs=config.client_epochs)
+    return FederatedClient(client_id, loop, epochs=config.client_epochs, keep_heads_local=config.keep_heads_local)
 
 
 def _build_final_eval(config: DictConfig, train: DataSource) -> FinalEvaluator | None:
@@ -234,7 +238,7 @@ def main(config: DictConfig) -> None:
     logger.info(f"done: {len(history)} rounds; global health log at {global_logger.path}")
 
     if final_eval is not None and start is not None:
-        clients[0].method.load_state_dict(final_state)  # client 0's model as the vessel, as in the orchestrator
+        clients[0].load_weights(final_state)  # client 0's model as the vessel, as in the orchestrator
         final_eval.write_report(start, final_eval.evaluate(clients[0].method), out_dir / "final_eval.json")
 
 

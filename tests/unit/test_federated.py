@@ -8,6 +8,7 @@ client exhaustion.
 
 import json
 import math
+from collections.abc import Callable
 from pathlib import Path
 
 import pytest
@@ -35,16 +36,23 @@ from cafl4ds.loop import StreamingLoop
 from cafl4ds.models.vit import TinyViTEncoder
 from cafl4ds.monitor import HealthMonitor
 from cafl4ds.run_log import RunLogger
-from cafl4ds.ssl.factory import build_simsiam
+from cafl4ds.ssl.base import SSLMethod
+from cafl4ds.ssl.factory import build_mae, build_simsiam
 
 _RES = {"support_per_class": 3, "query_per_class": 2, "era_eval_per_class": 1}
 
 
-def _make_loop(source: DataSource, seed: int, log_path: Path, order: str = "class_blocked") -> StreamingLoop:
+def _make_loop(
+    source: DataSource,
+    seed: int,
+    log_path: Path,
+    order: str = "class_blocked",
+    build_method: Callable[[TinyViTEncoder], SSLMethod] = build_simsiam,
+) -> StreamingLoop:
     """Build a tiny synthetic streaming loop (one client's worth of machinery)."""
     torch.manual_seed(seed)
     encoder = TinyViTEncoder(img_size=16, patch_size=8, in_chans=3, embed_dim=32, depth=2, num_heads=2)
-    method = build_simsiam(encoder)
+    method = build_method(encoder)
     stream = EraStream(source, batch_size=8, order=order, seed=seed, **_RES)
     return StreamingLoop(
         stream=stream,
@@ -323,6 +331,70 @@ def test_client_rejects_non_positive_epochs(tmp_path: Path) -> None:
     src = SyntheticSource(num_classes=3, per_class=40, img_size=16, seed=0)
     with pytest.raises(ValueError, match="epochs"):
         FederatedClient(0, _make_loop(src, seed=0, log_path=tmp_path / "c.jsonl"), epochs=0)
+
+
+_BUILDERS = pytest.mark.parametrize(
+    ("build_method", "head"), [(build_simsiam, "predictor"), (build_mae, "decoder")], ids=["simsiam", "mae"]
+)
+
+
+@_BUILDERS
+def test_methods_declare_their_private_head(build_method: Callable[[TinyViTEncoder], SSLMethod], head: str) -> None:
+    """SimSiam keeps its predictor h private, MAE its decoder; both name a real submodule."""
+    encoder = TinyViTEncoder(img_size=16, patch_size=8, in_chans=3, embed_dim=32, depth=2, num_heads=2)
+    method = build_method(encoder)
+    assert method.local_heads == (head,)
+    assert isinstance(getattr(method, head), torch.nn.Module)
+
+
+@_BUILDERS
+def test_keep_heads_local_sends_everything_but_the_head(
+    tmp_path: Path, build_method: Callable[[TinyViTEncoder], SSLMethod], head: str
+) -> None:
+    """Only the private head is withheld; the encoder (and SimSiam's projector) are sent."""
+    src = SyntheticSource(num_classes=3, per_class=30, img_size=16, seed=0)
+    full = FederatedClient(0, _make_loop(src, 0, tmp_path / "a.jsonl", build_method=build_method))
+    local = FederatedClient(
+        1, _make_loop(src, 0, tmp_path / "b.jsonl", build_method=build_method), keep_heads_local=True
+    )
+    every_key = set(full.method.state_dict())
+    assert set(full.get_weights()) == every_key  # the default: the whole model
+    sent = set(local.get_weights())
+    assert sent == {k for k in every_key if not k.startswith(f"{head}.")}
+    assert any(k.startswith("encoder.") for k in sent)
+    if head == "predictor":
+        assert any(k.startswith("projector.") for k in sent)  # part of the paper's encoder f
+
+
+@_BUILDERS
+def test_set_weights_overwrites_shared_part_and_keeps_the_head(
+    tmp_path: Path, build_method: Callable[[TinyViTEncoder], SSLMethod], head: str
+) -> None:
+    """A broadcast overwrites the shared weights; the receiver's private head is untouched."""
+    src = SyntheticSource(num_classes=3, per_class=30, img_size=16, seed=0)
+    a = FederatedClient(0, _make_loop(src, 1, tmp_path / "a.jsonl", build_method=build_method), keep_heads_local=True)
+    b = FederatedClient(1, _make_loop(src, 2, tmp_path / "b.jsonl", build_method=build_method), keep_heads_local=True)
+    head_before = {k: v.clone() for k, v in a.method.state_dict().items() if k.startswith(f"{head}.")}
+    a.set_weights(b.get_weights())
+    after = a.method.state_dict()
+    for key, value in b.get_weights().items():
+        assert torch.equal(after[key], value)
+    for key, value in head_before.items():
+        assert torch.equal(after[key], value)
+    assert any(not torch.equal(v, b.method.state_dict()[k]) for k, v in head_before.items())  # still its own
+
+
+def test_load_weights_rejects_a_state_missing_a_shared_key(tmp_path: Path) -> None:
+    """A partial broadcast may omit only the private head, nothing shared."""
+    src = SyntheticSource(num_classes=3, per_class=30, img_size=16, seed=0)
+    client = FederatedClient(0, _make_loop(src, 0, tmp_path / "a.jsonl"), keep_heads_local=True)
+    state = client.get_weights()
+    dropped = next(k for k in state if k.startswith("projector."))
+    del state[dropped]
+    with pytest.raises(RuntimeError, match=dropped):
+        client.load_weights(state)
+    with pytest.raises(RuntimeError, match="unexpected"):
+        client.load_weights({**client.get_weights(), "bogus.weight": torch.zeros(1)})
 
 
 def test_single_client_multi_epoch_matches_the_centralized_multi_epoch_loop(tmp_path: Path) -> None:
@@ -660,6 +732,67 @@ def test_fedprox_composes_with_an_adaptive_server(tmp_path: Path) -> None:
     orch = FederatedOrchestrator(clients, steps_per_round=1, num_rounds=3, server_optimizer=FedAdamServer(lr=1e-3))
     final_state, history = orch.run()
     assert len(history) == 3
+    assert all(torch.isfinite(v).all() for v in final_state.values() if v.is_floating_point())
+
+
+def _make_local_head_clients(
+    tmp_path: Path, build_method: Callable[[TinyViTEncoder], SSLMethod]
+) -> list[FederatedClient]:
+    source = SyntheticSource(num_classes=4, per_class=60, img_size=16, seed=0)
+    shards = partition_source(source, num_clients=2, scheme="iid", seed=0)
+    return [
+        FederatedClient(
+            cid, _make_loop(shard, cid, tmp_path / f"c{cid}.jsonl", build_method=build_method), keep_heads_local=True
+        )
+        for cid, shard in enumerate(shards)
+    ]
+
+
+@_BUILDERS
+def test_local_heads_start_shared_and_then_diverge(
+    tmp_path: Path, build_method: Callable[[TinyViTEncoder], SSLMethod], head: str
+) -> None:
+    """Every client starts from one full model; afterwards the heads are never averaged."""
+    clients = _make_local_head_clients(tmp_path, build_method)
+    FederatedOrchestrator(clients, steps_per_round=1, num_rounds=0).run()
+    heads = [{k: v.clone() for k, v in c.method.state_dict().items() if k.startswith(f"{head}.")} for c in clients]
+    assert all(torch.equal(heads[0][k], heads[1][k]) for k in heads[0])  # common starting point
+
+    global_stream = EraStream(
+        SyntheticSource(num_classes=4, per_class=40, img_size=16, seed=1),
+        batch_size=8,
+        order="iid",
+        seed=1,
+        support_per_class=3,
+        query_per_class=2,
+        era_eval_per_class=1,
+    )
+    orch = FederatedOrchestrator(
+        clients, steps_per_round=2, num_rounds=2, global_monitor=HealthMonitor(global_stream.eval_sets, knn_k=3)
+    )
+    final_state, history = orch.run()
+    assert len(history) == 2
+    assert not any(k.startswith(f"{head}.") for k in final_state)  # the global model has no head
+    trained = [c.method.state_dict() for c in clients]
+    assert any(not torch.equal(trained[0][k], trained[1][k]) for k in heads[0])  # each learned its own
+    # The vessel (client 0) holds the global shared weights, next to its own head.
+    assert all(torch.equal(trained[0][k], v) for k, v in final_state.items())
+
+
+def test_local_heads_compose_with_an_adaptive_server_and_fedprox(tmp_path: Path) -> None:
+    """The server step and the FedProx leash both operate on the shared part only."""
+    strategy = FederatedStrategy(server_optimizer=FedAdamServer(lr=1e-2), proximal_mu=0.1)
+    source = SyntheticSource(num_classes=4, per_class=60, img_size=16, seed=0)
+    shards = partition_source(source, num_clients=2, scheme="iid", seed=0)
+    clients = []
+    for cid, shard in enumerate(shards):
+        loop = _make_loop(shard, cid, tmp_path / f"c{cid}.jsonl")
+        loop.proximal = strategy.make_proximal()
+        clients.append(FederatedClient(cid, loop, keep_heads_local=True))
+    orch = FederatedOrchestrator(clients, steps_per_round=2, num_rounds=2, server_optimizer=strategy.server_optimizer)
+    final_state, history = orch.run()
+    assert len(history) == 2
+    assert set(final_state) == set(clients[0].get_weights())
     assert all(torch.isfinite(v).all() for v in final_state.values() if v.is_floating_point())
 
 
