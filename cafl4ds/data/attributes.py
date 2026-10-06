@@ -19,8 +19,10 @@ from __future__ import annotations
 
 import json
 from abc import ABC, abstractmethod
+from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import torch
 import torch.nn.functional as F  # noqa: N812 - conventional alias
@@ -173,8 +175,10 @@ class BDD100KSource(AttributeSource):
     Images with an undefined attribute on either axis are skipped. Native BDD frames are 1280x720, so
     they are resized to ``img_size`` (also the low-memory portability lever). Video is *not* used.
 
-    Expected layout under ``bdd_root`` (the canonical BDD100K distribution):
-    ``images/100k/<split>/*.jpg`` and ``labels/bdd100k_labels_images_<split>.json`` — both overridable.
+    Expected layout under ``bdd_root`` (the canonical BDD100K distribution): ``images/100k/<split>/*.jpg``
+    plus labels as either one ``labels/bdd100k_labels_images_<split>.json`` list, or a per-image
+    ``labels/<split>/<name>.json`` directory (the newer Scalabel-style release, boxes under
+    ``frames[0].objects``). The directory wins when both exist; both paths are overridable.
     """
 
     def __init__(
@@ -195,7 +199,8 @@ class BDD100KSource(AttributeSource):
             img_size: Side length to resize the native 1280x720 frames to.
             max_images: If set, keep at most this many (attribute-valid) images.
             images_dir: Override for the image directory (default ``<root>/images/100k/<split>``).
-            labels_file: Override for the attributes JSON (default
+            labels_file: Override for the attributes — a single JSON list or a per-image JSON
+                directory (default ``<root>/labels/<split>/`` if present, else
                 ``<root>/labels/bdd100k_labels_images_<split>.json``).
             min_canary_count: Drop images whose **scene** (canary class) has fewer than this many
                 attribute-valid images. Real BDD has a long scene tail (e.g. ``tunnel`` ≈ a handful of
@@ -218,16 +223,16 @@ class BDD100KSource(AttributeSource):
         return self._num_canary
 
     def _paths(self) -> tuple[Path, Path]:
-        """Resolve the image directory and attributes JSON, honouring the overrides."""
+        """Resolve the image directory and labels (file or per-image directory), honouring the overrides."""
         images_dir = (
             Path(self._images_dir) if self._images_dir else Path(self.bdd_root) / "images" / "100k" / self.split
         )
-        labels_file = (
-            Path(self._labels_file)
-            if self._labels_file
-            else Path(self.bdd_root) / "labels" / f"bdd100k_labels_images_{self.split}.json"
-        )
-        return images_dir, labels_file
+        if self._labels_file:
+            return images_dir, Path(self._labels_file)
+        per_image_dir = Path(self.bdd_root) / "labels" / self.split
+        if per_image_dir.is_dir():
+            return images_dir, per_image_dir
+        return images_dir, Path(self.bdd_root) / "labels" / f"bdd100k_labels_images_{self.split}.json"
 
     def load(self) -> AttributedImages:
         """Parse the attribute records, decode the referenced images, and build both axes.
@@ -254,20 +259,21 @@ class BDD100KSource(AttributeSource):
                 f"BDD100K images not found at {images_dir}. Download the 100k images and arrange them "
                 "under <bdd_root>/images/100k/<split>/ (see docs/experiments/phase1/P1.0.2.md)."
             )
-        if not labels_file.is_file():
+        if not (labels_file.is_file() or labels_file.is_dir()):
             raise FileNotFoundError(
                 f"BDD100K attributes JSON not found at {labels_file}. Download the labels and place them "
                 "under <bdd_root>/labels/ (or pass labels_file=)."
             )
-        records = json.loads(labels_file.read_text(encoding="utf-8"))
         # Collect (path, regime-tuple, scene, category-counts) for every attribute-valid, present image.
         valid: list[tuple[Path, tuple[str, str], str, dict[str, int]]] = []
-        for rec in records:
+        for rec in _iter_label_records(labels_file):
             attrs = rec.get("attributes", {})
             timeofday, weather, scene = attrs.get("timeofday"), attrs.get("weather"), attrs.get("scene")
             if timeofday in _UNKNOWN_ATTRS or weather in _UNKNOWN_ATTRS or scene in _UNKNOWN_ATTRS:
                 continue
-            path = images_dir / rec["name"]
+            name = rec["name"]
+            # Per-image records name the frame without its extension (``"3649af95-2ee578d7"``).
+            path = images_dir / (name if Path(name).suffix else f"{name}.jpg")
             if not path.is_file():
                 continue
             valid.append((path, (timeofday, weather), scene, _count_categories(rec)))
@@ -322,18 +328,40 @@ def _rank_regimes(regimes: set[tuple[str, str]]) -> tuple[list[int], dict[tuple[
     return list(range(len(ordered))), regime_id, regime_names
 
 
+def _iter_label_records(labels_path: Path) -> Iterator[dict[str, Any]]:
+    """Yield BDD label records from a single JSON list or a per-image JSON directory.
+
+    Args:
+        labels_path: Either one JSON file holding the list of records, or a directory of
+            ``<name>.json`` files with one record each (read lazily in sorted order, so a
+            ``max_images`` cap stops early and the order is deterministic).
+
+    Yields:
+        One label record (a dict with ``name`` / ``attributes`` / boxes) at a time.
+    """
+    if labels_path.is_dir():
+        for path in sorted(labels_path.glob("*.json")):
+            yield json.loads(path.read_text(encoding="utf-8"))
+    else:
+        yield from json.loads(labels_path.read_text(encoding="utf-8"))
+
+
 def _count_categories(record: dict[str, object]) -> dict[str, int]:
     """Count detection-box categories in a BDD label record (the free per-image object aggregate).
 
     Args:
-        record: One BDD100K label record (its ``labels`` list holds the detection boxes, each with a
-            ``category``); a record with no boxes yields an empty count.
+        record: One BDD100K label record. The boxes (each with a ``category``) sit in a top-level
+            ``labels`` list (single-file release) or in ``frames[0].objects`` (per-image release);
+            a record with no boxes yields an empty count.
 
     Returns:
         A ``category -> count`` map over the record's boxes.
     """
     counts: dict[str, int] = {}
     labels = record.get("labels")
+    frames = record.get("frames")
+    if labels is None and isinstance(frames, list) and frames and isinstance(frames[0], dict):
+        labels = frames[0].get("objects")
     if isinstance(labels, list):
         for box in labels:
             category = box.get("category") if isinstance(box, dict) else None

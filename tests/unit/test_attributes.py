@@ -217,6 +217,48 @@ def test_bdd_source_drops_rare_canary_scenes_below_min_count(tmp_path: Path) -> 
     assert filtered.images.shape[0] == 5
 
 
+def _write_per_image_bdd_fixture(root: Path, records: list[dict[str, object]], split: str = "train") -> None:
+    """Write a per-image-labels BDD100K fixture: ``labels/<split>/<stem>.json``, extension-less names."""
+    images_dir = root / "images" / "100k" / split
+    labels_dir = root / "labels" / split
+    images_dir.mkdir(parents=True)
+    labels_dir.mkdir(parents=True)
+    for rec in records:
+        stem = rec["name"]
+        assert isinstance(stem, str)
+        Image.new("RGB", (32, 24), color=(100, 50, 50)).save(images_dir / f"{stem}.jpg")
+        (labels_dir / f"{stem}.json").write_text(json.dumps(rec), encoding="utf-8")
+
+
+def test_bdd_source_reads_per_image_label_directory(tmp_path: Path) -> None:
+    """A labels/<split>/ directory of per-image records parses like the single-file layout."""
+    records: list[dict[str, object]] = [
+        {"name": "a", "attributes": {"timeofday": "daytime", "weather": "clear", "scene": "highway"}},
+        {"name": "b", "attributes": {"timeofday": "night", "weather": "rainy", "scene": "city street"}},
+        {"name": "c", "attributes": {"timeofday": "daytime", "weather": "undefined", "scene": "highway"}},
+    ]
+    _write_per_image_bdd_fixture(tmp_path, records)
+    a = BDD100KSource(str(tmp_path), img_size=16).load()
+    assert a.images.shape == (2, 3, 16, 16)  # the undefined-weather record is skipped
+    assert a.regime_names[0] == "daytime·clear"
+    assert set(a.canary_names.values()) == {"city street", "highway"}
+
+
+def test_bdd_source_counts_categories_from_per_image_frames(tmp_path: Path) -> None:
+    """Per-image records keep their boxes under frames[0].objects; those are what get counted."""
+    records: list[dict[str, object]] = [
+        {
+            "name": "a",
+            "attributes": {"timeofday": "daytime", "weather": "clear", "scene": "highway"},
+            "frames": [{"timestamp": 10000, "objects": [{"category": "car"}, {"category": "car"}]}],
+        },
+        {"name": "b", "attributes": {"timeofday": "night", "weather": "rainy", "scene": "city street"}},
+    ]
+    _write_per_image_bdd_fixture(tmp_path, records)
+    a = BDD100KSource(str(tmp_path), img_size=16).load()
+    assert a.object_categories == [{"car": 2}, {}]
+
+
 def test_bdd_source_raises_on_missing_root(tmp_path: Path) -> None:
     """A missing image directory is a clear FileNotFoundError, not an opaque crash."""
     with pytest.raises(FileNotFoundError, match="BDD100K images not found"):

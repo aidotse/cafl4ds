@@ -24,6 +24,12 @@ FedAvg simulation layered on the Phase-0 streaming loop:
     every other participant on that same shared probe set (`track_divergence`, on by default). The aggregate can average
     away drift the clients plainly exhibit, so this is the per-client half of the dependent variable; [F2](F2.md) is
     where that ambiguity bit.
+- **Per-client health** — optionally, each participant's post-round model is also measured on the global hold-out and
+    logged to its own run log (`track_client_health`); `scripts/plot_federated_health.py` plots it per run.
+- **Repeated passes** — `client_epochs` lets each client stream its shard several times (same order), adding rounds, not
+    local steps between averages; the federated counterpart of the centralized loop's `epochs`.
+- **Final evaluation** — `final_eval.enabled` scores the starting and the final model with kNN and linear probes fitted
+    on the training split and tested on the dataset's test split (`final_eval.json`); also in `run_loop.py`.
 
 ## Sub-studies
 
@@ -31,6 +37,7 @@ FedAvg simulation layered on the Phase-0 streaming loop:
 | -- | -- | -- | -- |
 | F1 | [Federated harness parity](F1.md) | Confirms the FedAvg harness reproduces the centralized [P0.1](../phase0/P0.1.md) reference under a degenerate/IID partition, before any non-IID skew is introduced — the FL analogue of P0.1's "does the loop run end-to-end" check. | ✅ **Complete** — exact reproduction at `num_clients=1`; multi-client FedAvg adapts sensibly under the IID control, both backbones |
 | F2 | [Non-IID label skew on a warm-started MAE](F2.md) | The first *scientific* FL question: does `Dirichlet(α)` label skew degrade global representation health over a single federated pass, with no selection filter? MAE has no classifier head, so supervised FL's dominant non-IID penalty should not apply — the question is whether the remaining client-drift mechanism is large enough to read. | 🟡 **Inconclusive — underpowered by design.** Clients train on images the warm start already saw, so the federated pass is worth ~the noise floor and skew has nothing to degrade. Two warm-start strengths × four arms each **disagree on the sign of every apparent effect**, so no non-IID claim survives; only RankMe moves reproducibly (expands in all eight arms, without reaching the probe). Two solid by-products: the encoder-only warm start's head warm-up confound found and **fixed** in the harness, and MAE recon loss shown to be anti-correlated with skew. Blocked on disjoint pretrain/federated data |
+| F3 | [Does from-scratch federated MAE learn on CIFAR-100?](F3.md) | Motivation: F2 could not see a non-IID effect because its federated phase re-trained on data the warm start knew. F3 asks the prior question — does federated MAE learn at all, scored on the official test split — and then whether FedAdam / FedProx improve on FedAvg under Dirichlet label skew. | 🟡 **Runs complete** (seed 0 only): one pass is too little (an early dip leaves one federated pass *below* the random start); five passes (`client_epochs=5`) learn steadily. No non-IID penalty at α=0.1 — the skew is too weak to cause drift — and plain FedAvg beats FedProx and FedAdam (collapses at the default server lr). Summary: [latest-results/F3](../latest-results/F3.md) |
 
 ## Open questions (not yet scoped into a sub-study)
 
