@@ -30,6 +30,11 @@ Examples:
     Keep SimSiam's predictor / MAE's decoder on each client (average only the rest)::
 
         uv run python scripts/run_federated.py ssl=simsiam keep_heads_local=true
+
+    BDD100K, clients split by driving condition (weather first, then time of day)::
+
+        uv run python scripts/run_federated.py data=bdd_fl data.source.bdd_root=/abs/path/to/bdd100k \
+            partition.scheme=condition num_clients=6
 """
 
 import sys
@@ -185,8 +190,13 @@ def main(config: DictConfig) -> None:
     need = config.support_per_class + config.query_per_class + config.era_eval_per_class
     holdout_per_class = config.global_holdout_per_class
     holdout_per_class = need + 1 if holdout_per_class is None else holdout_per_class
+    # Under a condition partition, balance the hold-out per (primary condition, class) cell, so the
+    # global readout sees every condition rather than mostly the common ones.
+    strata = config.global_holdout_strata
+    if strata == "auto":
+        strata = config.partition.order[0] if config.partition.scheme == "condition" else None
     if holdout_per_class > 0:
-        global_pool, client_pool = holdout_split(source, per_class=holdout_per_class, seed=config.seed)
+        global_pool, client_pool = holdout_split(source, per_class=holdout_per_class, seed=config.seed, strata=strata)
     else:
         logger.warning("global_holdout_per_class=0: the global eval set is NOT held out from client training.")
         global_pool, client_pool = source, source
@@ -197,6 +207,9 @@ def main(config: DictConfig) -> None:
         scheme=config.partition.scheme,
         alpha=config.partition.alpha,
         seed=config.seed,
+        order=config.partition.order,
+        sizes=config.partition.sizes,
+        mix=config.partition.mix,
     )
     clients = [_build_client(config, shard, cid, out_dir, strategy) for cid, shard in enumerate(shards)]
 
@@ -216,7 +229,7 @@ def main(config: DictConfig) -> None:
 
     logger.info(
         f"federated run: strategy={strategy.name}, {config.num_clients} clients, "
-        f"{config.partition.scheme} partition (alpha={config.partition.alpha}), "
+        f"{config.partition.scheme} partition, "
         f"{config.steps_per_round} steps/round, device={config.device}"
     )
     orchestrator = FederatedOrchestrator(

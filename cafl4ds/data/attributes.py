@@ -13,6 +13,10 @@ the default regime shift-walk order). Two concrete sources exist: :class:`BDD100
 BDD100K *images* + attributes, and :class:`SyntheticAttributeSource`, a network-free stand-in that
 lets the whole rig — and its Tier-A wiring check — run from a fresh clone with no dataset. Images are
 ``float32`` ``[N, C, H, W]`` in ``[0, 1]``; both axes are integer ``[N]``.
+
+:class:`AttributeDataSource` adapts an attribute source to the single-axis
+:class:`~cafl4ds.data.sources.DataSource` contract (labels = the canary), keeping each image's driving
+conditions alongside so the federated partition can split clients by condition.
 """
 
 from __future__ import annotations
@@ -30,6 +34,8 @@ from loguru import logger
 from PIL import Image
 from torchvision import transforms
 
+from cafl4ds.data.sources import DataSource
+
 # Priority ranks that define the default BDD shift-walk: daytime before dusk before night, and clear
 # before progressively adverse weather. A regime's walk position is (timeofday_rank, weather_rank), so
 # the default stream visits `daytime·clear → … → night·foggy` — a nonstationary drive. Unknown values
@@ -37,6 +43,8 @@ from torchvision import transforms
 _TIMEOFDAY_RANK = {"daytime": 0, "dawn/dusk": 1, "night": 2}
 _WEATHER_RANK = {"clear": 0, "partly cloudy": 1, "overcast": 2, "rainy": 3, "snowy": 4, "foggy": 5}
 _UNKNOWN_ATTRS = frozenset({"undefined", "", None})
+# The same ranks, keyed by attribute name — the sort order a condition-based client partition walks.
+CONDITION_RANKS: dict[str, dict[str, int]] = {"timeofday": _TIMEOFDAY_RANK, "weather": _WEATHER_RANK}
 
 
 @dataclass(frozen=True)
@@ -53,6 +61,9 @@ class AttributedImages:
         object_categories: Optional per-image detection-category counts (e.g. ``{"car": 4,
             "person": 1}``) aligned to ``images`` — the free label aggregate BDD's boxes give, used
             to tag each corpus leg. ``None`` when the source carries no detection labels (synthetic).
+        conditions: Optional per-image condition names by attribute (e.g. ``{"timeofday": [...],
+            "weather": [...]}``), aligned to ``images`` — what a condition-based client partition
+            sorts on. ``None`` when the source has no named conditions (synthetic).
     """
 
     images: torch.Tensor
@@ -62,6 +73,7 @@ class AttributedImages:
     regime_names: dict[int, str]
     canary_names: dict[int, str]
     object_categories: list[dict[str, int]] | None = None
+    conditions: dict[str, list[str]] | None = None
 
 
 class AttributeSource(ABC):
@@ -309,7 +321,48 @@ class BDD100KSource(AttributeSource):
             regime_names=regime_names,
             canary_names=canary_names,
             object_categories=categories,
+            conditions={
+                "timeofday": [regime[0] for _, regime, _, _ in valid],
+                "weather": [regime[1] for _, regime, _, _ in valid],
+            },
         )
+
+
+class AttributeDataSource(DataSource):
+    """An :class:`AttributeSource` seen as a plain :class:`DataSource`: labels are the canary.
+
+    The federated loop consumes ``(images, labels)``; here the labels are the canary (BDD's
+    ``scene``), so the global probe reads an axis the partition does *not* split on. The per-image
+    driving conditions ride along in :attr:`conditions` for a condition-based client partition
+    (see :func:`cafl4ds.federated.partition.condition_partition`).
+    """
+
+    def __init__(self, source: AttributeSource) -> None:
+        """Wrap an attribute source.
+
+        Args:
+            source: The attributed source (e.g. :class:`BDD100KSource`).
+        """
+        self._source = source
+
+    @property
+    def num_classes(self) -> int:
+        """Number of canary classes (loads the source, since BDD only knows it after decoding)."""
+        self._source.load()
+        return self._source.num_canary_classes
+
+    @property
+    def conditions(self) -> dict[str, list[str]]:
+        """Per-image condition names by attribute; the regime name when the source has none."""
+        data = self._source.load()
+        if data.conditions is not None:
+            return data.conditions
+        return {"regime": [data.regime_names[int(r)] for r in data.era_key]}
+
+    def load(self) -> tuple[torch.Tensor, torch.Tensor]:
+        """Return ``(images, canary)``."""
+        data = self._source.load()
+        return data.images, data.canary
 
 
 def _rank_regimes(regimes: set[tuple[str, str]]) -> tuple[list[int], dict[tuple[str, str], int], dict[int, str]]:

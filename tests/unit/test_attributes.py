@@ -10,6 +10,7 @@ import torch
 from PIL import Image
 
 from cafl4ds.data.attributes import (
+    AttributeDataSource,
     BDD100KSource,
     SyntheticAttributeSource,
     _index_scenes,
@@ -145,6 +146,8 @@ def test_bdd_source_parses_layout_and_maps_both_axes(tmp_path: Path) -> None:
     assert a.regime_names[0] == "daytime·clear"
     assert set(a.canary.tolist()) == {0, 1}  # two scenes
     assert a.canary_names[0] == "city street"  # sorted
+    # Per-image condition names, aligned to the images (what a condition partition sorts on).
+    assert a.conditions == {"timeofday": ["daytime", "night", "daytime"], "weather": ["clear", "rainy", "clear"]}
 
 
 def test_bdd_source_counts_detection_categories_per_image(tmp_path: Path) -> None:
@@ -265,3 +268,15 @@ def test_bdd_source_raises_on_missing_root(tmp_path: Path) -> None:
     """A missing image directory is a clear FileNotFoundError, not an opaque crash."""
     with pytest.raises(FileNotFoundError, match="BDD100K images not found"):
         BDD100KSource(str(tmp_path / "nope")).load()
+
+
+def test_attribute_data_source_exposes_canary_labels_and_conditions() -> None:
+    """The adapter yields (images, canary) and per-image conditions aligned to the images."""
+    inner = SyntheticAttributeSource(num_regimes=2, num_canary_classes=3, per_cell=4, long_tail=False)
+    source = AttributeDataSource(inner)
+    images, labels = source.load()
+    data = inner.load()
+    assert torch.equal(images, data.images) and torch.equal(labels, data.canary)
+    assert source.num_classes == 3
+    # Synthetic carries no named conditions, so the regime name stands in.
+    assert source.conditions == {"regime": [data.regime_names[int(r)] for r in data.era_key]}

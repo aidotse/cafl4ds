@@ -64,6 +64,10 @@ era_eval_per_class: 2
 # and global streams coincide anyway, i.e. num_clients=1 with matching client reservations below
 # (the F1 exact-reproduction arm); any other run with 0 leaks client training data into the eval.
 global_holdout_per_class: null
+# Stratify that hold-out by a condition attribute too (per (condition, class) cell), so rare
+# conditions are visible to the global readout. `auto` = the partition's primary condition
+# (partition.order[0]) under scheme=condition, else class-only; `null` = always class-only.
+global_holdout_strata: auto
 #
 # Per-client reservations. Zero by default: a client's local eval sets are NEVER read in a
 # federated run (nothing calls `measure_health`, and the client drives `train_step` rather than
@@ -91,8 +95,14 @@ track_client_health: false # per-client health on the global hold-out (one extra
 # SimSiam that is the paper's encoder f (backbone + projector here).
 keep_heads_local: false
 partition:
-  scheme: dirichlet # dirichlet (label-skewed non-IID) | iid (uniform control)
+  scheme: dirichlet # dirichlet (label-skewed) | iid (uniform control) | condition (domain-skewed; data=bdd_fl)
   alpha: 1.0 # Dirichlet concentration; smaller = sharper per-client class skew
+  # scheme=condition only. Images are lined up by condition (similar conditions adjacent) and cut
+  # into num_clients contiguous blocks, so a client whose condition runs out is filled up with the
+  # next most similar one. Each client's mix is logged at startup.
+  order: [weather, timeofday] # sort attributes, primary first
+  sizes: equal # equal (fill-up, same size per client) | natural (cut at condition boundaries)
+  mix: 0.0 # fraction of each client's images re-dealt across clients (softens the split)
 
 # Warm-start checkpoints (I=pretrained). Resolved to an absolute path by the run script.
 pretrain_dir: outputs/pretrain

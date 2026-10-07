@@ -1,0 +1,19 @@
+# BDD100K for federated runs: the attribute source seen as a plain (images, labels) source, with
+# labels = scene and each image's (timeofday, weather) carried alongside for
+# `partition.scheme=condition`. Point `data.source.bdd_root` at the canonical download (see
+# docs/experiments/phase1/P1.0.2.md for the layout).
+#
+# Memory: every image is decoded into RAM — ~60k frames at img_size=32 is ~0.75 GB, ~3 GB at 64.
+# Final test-split eval: the default `split: test` override would land on the wrapper, so retarget it
+# at the inner source:
+#   final_eval.enabled=true '~final_eval.test_overrides.split' '+final_eval.test_overrides.source.split=test'
+_target_: cafl4ds.data.attributes.AttributeDataSource
+source:
+  _target_: cafl4ds.data.attributes.BDD100KSource
+  bdd_root: /mnt/bdd100k
+  split: train
+  img_size: ${img_size}
+  max_images: null
+  # Keep only the well-populated scenes (city street / highway / residential), so the scene probe
+  # stays balanced; the rare ones (tunnel, gas stations, parking lot) cannot fund a hold-out.
+  min_canary_count: 500

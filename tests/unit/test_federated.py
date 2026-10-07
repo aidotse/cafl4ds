@@ -8,6 +8,7 @@ client exhaustion.
 
 import json
 import math
+from collections import Counter
 from collections.abc import Callable
 from pathlib import Path
 
@@ -15,13 +16,20 @@ import pytest
 import torch
 from torch import optim
 
+from cafl4ds.data.attributes import AttributeDataSource, SyntheticAttributeSource
 from cafl4ds.data.sources import DataSource, SyntheticSource
 from cafl4ds.data.streams import EraStream
 from cafl4ds.federated.aggregate import federated_average, weights_from_samples
 from cafl4ds.federated.client import FederatedClient
 from cafl4ds.federated.divergence import divergence_metrics, embed_probe
 from cafl4ds.federated.orchestrator import FederatedOrchestrator
-from cafl4ds.federated.partition import dirichlet_partition, holdout_split, iid_partition, partition_source
+from cafl4ds.federated.partition import (
+    condition_partition,
+    dirichlet_partition,
+    holdout_split,
+    iid_partition,
+    partition_source,
+)
 from cafl4ds.federated.proximal import ProximalTerm
 from cafl4ds.federated.server_optim import (
     AdaptiveServerOptimizer,
@@ -138,6 +146,90 @@ def test_partition_source_rejects_bad_args() -> None:
         partition_source(source, num_clients=0)
     with pytest.raises(ValueError, match="unknown partition scheme"):
         partition_source(source, num_clients=2, scheme="nope")
+
+
+def _toy_conditions() -> dict[str, list[str]]:
+    """60 images over 4 weather values (deliberately unequal: 30 / 15 / 10 / 5), two times of day."""
+    weather = ["clear"] * 30 + ["rainy"] * 15 + ["snowy"] * 10 + ["foggy"] * 5
+    timeofday = ["daytime" if i % 2 == 0 else "night" for i in range(len(weather))]
+    return {"weather": weather, "timeofday": timeofday}
+
+
+def test_condition_partition_equal_fills_up_with_the_adjacent_condition() -> None:
+    """Equal sizes: a disjoint cover of equal blocks, each holding contiguous conditions of the walk."""
+    conds = _toy_conditions()
+    parts = condition_partition(conds, num_clients=4, order=["weather"], sizes="equal", seed=0)
+    assert [p.numel() for p in parts] == [15, 15, 15, 15]
+    assert torch.cat(parts).sort().values.tolist() == list(range(60))
+    weathers = [{conds["weather"][i] for i in p.tolist()} for p in parts]
+    # Walk is clear → rainy → snowy → foggy: clear spans two clients, the rare tail shares one.
+    assert weathers == [{"clear"}, {"clear"}, {"rainy"}, {"snowy", "foggy"}]
+
+
+def test_condition_partition_natural_cuts_on_condition_boundaries() -> None:
+    """Natural sizes: no condition is split, and the smallest adjacent conditions merge first."""
+    conds = _toy_conditions()
+    parts = condition_partition(conds, num_clients=3, order=["weather"], sizes="natural", seed=0)
+    assert [p.numel() for p in parts] == [30, 15, 15]
+    weathers = [{conds["weather"][i] for i in p.tolist()} for p in parts]
+    assert weathers == [{"clear"}, {"rainy"}, {"snowy", "foggy"}]
+    with pytest.raises(ValueError, match="at most one client per condition group"):
+        condition_partition(conds, num_clients=5, order=["weather"], sizes="natural")
+
+
+def test_condition_partition_mix_keeps_sizes_and_spreads_conditions() -> None:
+    """Mix re-deals a fraction across clients: sizes and the cover are unchanged, purity drops."""
+    conds = _toy_conditions()
+    pure = condition_partition(conds, num_clients=4, order=["weather"], mix=0.0, seed=0)
+    mixed = condition_partition(conds, num_clients=4, order=["weather"], mix=0.5, seed=0)
+    assert [p.numel() for p in mixed] == [p.numel() for p in pure]
+    assert torch.cat(mixed).sort().values.tolist() == list(range(60))
+    # The pure all-clear client now holds other conditions too.
+    assert {conds["weather"][i] for i in mixed[0].tolist()} != {"clear"}
+
+
+def test_condition_partition_sorts_by_the_secondary_attribute_within_the_primary() -> None:
+    """With two sort attributes, each primary condition is ordered by the secondary one."""
+    conds = _toy_conditions()
+    parts = condition_partition(conds, num_clients=4, order=["weather", "timeofday"], seed=0)
+    first = [conds["timeofday"][i] for i in parts[0].tolist()]
+    assert set(first) == {"daytime"}  # clear·daytime (15 images) fills the first client exactly
+
+
+def test_condition_partition_rejects_bad_args() -> None:
+    """Unknown sizes, out-of-range mix and missing attributes are hard errors."""
+    conds = _toy_conditions()
+    with pytest.raises(ValueError, match="unknown condition-partition sizes"):
+        condition_partition(conds, num_clients=2, sizes="nope")
+    with pytest.raises(ValueError, match="mix must be in"):
+        condition_partition(conds, num_clients=2, mix=1.5)
+    with pytest.raises(ValueError, match="not carried by the source"):
+        condition_partition(conds, num_clients=2, order=["scene"])
+
+
+def test_partition_source_condition_scheme_carries_conditions_into_shards() -> None:
+    """The condition scheme works end to end on an attributed source and needs conditions."""
+    source = AttributeDataSource(SyntheticAttributeSource(num_regimes=3, num_canary_classes=2, per_cell=8))
+    shards = partition_source(source, num_clients=3, scheme="condition", order=["regime"], sizes="natural")
+    regimes = [set(shard.conditions["regime"]) for shard in shards]  # type: ignore[attr-defined]
+    assert regimes == [{"regime0"}, {"regime1"}, {"regime2"}]
+    assert all(shard.num_classes == 2 for shard in shards)
+    with pytest.raises(ValueError, match="needs a source with per-image conditions"):
+        partition_source(SyntheticSource(num_classes=2, per_class=10), num_clients=2, scheme="condition")
+
+
+def test_holdout_split_stratified_balances_each_condition_and_skips_small_cells() -> None:
+    """With strata, every (condition, class) cell that can afford it gives the same count."""
+    source = AttributeDataSource(SyntheticAttributeSource(num_regimes=3, num_canary_classes=2, per_cell=8))
+    # Long-tailed: regime0/1/2 hold 8/4/2 images per class; a hold-out of 3 skips regime2.
+    held, rest = holdout_split(source, per_class=3, seed=0, strata="regime")
+    _, h_lbls = held.load()
+    h_regimes = held.conditions["regime"]  # type: ignore[attr-defined]
+    cells = Counter(zip(h_regimes, h_lbls.tolist(), strict=True))
+    assert cells == {("regime0", 0): 3, ("regime0", 1): 3, ("regime1", 0): 3, ("regime1", 1): 3}
+    assert held.load()[0].shape[0] + rest.load()[0].shape[0] == source.load()[0].shape[0]
+    with pytest.raises(ValueError, match="not a condition attribute"):
+        holdout_split(source, per_class=3, strata="weather")
 
 
 # --- aggregate ---------------------------------------------------------------
