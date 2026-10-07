@@ -74,6 +74,7 @@ class SimSiam(SSLMethod):
         anti_collapse: bool = True,
         collapse_alpha: float = 0.0,
         stopgrad_beta: float = 1.0,
+        aux_weight: float = 0.01,
     ) -> None:
         """Build the SimSiam method.
 
@@ -101,6 +102,7 @@ class SimSiam(SSLMethod):
                 single essential anti-collapse mechanism — a mechanistically distinct path to
                 collapse from ``collapse_alpha``. The two knobs are independent; P0.2.5 varies one
                 at a time.
+            aux_weight: Coefficient for the mean encoder balancing loss of both views.
 
         Raises:
             ValueError: If either knob is outside ``[0, 1]``.
@@ -109,7 +111,7 @@ class SimSiam(SSLMethod):
             raise ValueError(f"collapse_alpha must be in [0, 1]; got {collapse_alpha}.")
         if not 0.0 <= stopgrad_beta <= 1.0:
             raise ValueError(f"stopgrad_beta must be in [0, 1]; got {stopgrad_beta}.")
-        super().__init__(encoder)
+        super().__init__(encoder, aux_weight=aux_weight)
         self.projector = projector
         self.predictor = predictor
         self.anti_collapse = anti_collapse
@@ -175,20 +177,24 @@ class SimSiam(SSLMethod):
             imgs: A batch of raw images ``[B, C, H, W]``. Labels never enter this path.
 
         Returns:
-            The symmetrized SimSiam loss (scalar), in ``[-1, 1]`` (lower is better).
+            Symmetrized SimSiam loss plus weighted mean balancing loss of both views.
         """
         view_1, view_2 = self.two_view(imgs)
-        z1 = self.projector(self.encoder.embed(view_1))
-        z2 = self.projector(self.encoder.embed(view_2))
+        features1, aux1 = self._embed_with_aux(view_1)
+        features2, aux2 = self._embed_with_aux(view_2)
+        z1 = self.projector(features1)
+        z2 = self.projector(features2)
         if not self.anti_collapse:
             # Forced-collapse PC (P0.2): predictor bypassed (p = z), stop-gradient off.
-            return 0.5 * (_neg_cosine(z1, z2, stop_grad=False) + _neg_cosine(z2, z1, stop_grad=False))
+            loss = 0.5 * (_neg_cosine(z1, z2, stop_grad=False) + _neg_cosine(z2, z1, stop_grad=False))
+            return self._with_aux_loss(loss, aux1, aux2)
         loss_healthy = self._healthy_loss(z1, z2)
         if self.collapse_alpha <= 0.0:
-            return loss_healthy
+            return self._with_aux_loss(loss_healthy, aux1, aux2)
         # Loss-blend knob: mix in the forced-collapse objective (bypass + no stop-gradient).
         loss_collapse = 0.5 * (_neg_cosine(z1, z2, stop_grad=False) + _neg_cosine(z2, z1, stop_grad=False))
-        return (1.0 - self.collapse_alpha) * loss_healthy + self.collapse_alpha * loss_collapse
+        loss = (1.0 - self.collapse_alpha) * loss_healthy + self.collapse_alpha * loss_collapse
+        return self._with_aux_loss(loss, aux1, aux2)
 
     def _healthy_loss(self, z1: torch.Tensor, z2: torch.Tensor) -> torch.Tensor:
         """The healthy SimSiam loss on two projector outputs, with the soft-stop-gradient knob.

@@ -69,6 +69,7 @@ class BarlowTwins(SSLMethod):
         augment: v2.Transform | None = None,
         lambd: float = 5e-3,
         anti_collapse: bool = True,
+        aux_weight: float = 0.01,
     ) -> None:
         """Build the Barlow Twins method.
 
@@ -85,8 +86,9 @@ class BarlowTwins(SSLMethod):
             anti_collapse: When ``True`` (default) run Barlow Twins as published — invariance +
                 redundancy reduction. When ``False`` drop the redundancy-reduction term: the
                 forced redundancy-collapse positive control (P0.2.3).
+            aux_weight: Coefficient for the mean encoder balancing loss of both views.
         """
-        super().__init__(encoder)
+        super().__init__(encoder, aux_weight=aux_weight)
         self.projector = projector
         self.lambd = lambd
         self.anti_collapse = anti_collapse
@@ -139,12 +141,14 @@ class BarlowTwins(SSLMethod):
             The Barlow Twins loss (scalar), ready for ``.backward()``.
         """
         view_1, view_2 = self.two_view(imgs)
-        z1 = self.projector(self.encoder.embed(view_1))
-        z2 = self.projector(self.encoder.embed(view_2))
+        features1, aux1 = self._embed_with_aux(view_1)
+        features2, aux2 = self._embed_with_aux(view_2)
+        z1 = self.projector(features1)
+        z2 = self.projector(features2)
         batch_size = z1.shape[0]
         cross_corr = (z1.T @ z2) / batch_size  # [D, D]; BN'd inputs => cross-correlation
         invariance = (torch.diagonal(cross_corr) - 1).pow(2).sum()
         if not self.anti_collapse:
-            return invariance  # redundancy-reduction dropped => redundancy-collapse PC
+            return self._with_aux_loss(invariance, aux1, aux2)  # redundancy-collapse PC
         redundancy = _off_diagonal(cross_corr).pow(2).sum()
-        return invariance + self.lambd * redundancy
+        return self._with_aux_loss(invariance + self.lambd * redundancy, aux1, aux2)
