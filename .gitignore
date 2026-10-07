@@ -105,6 +105,7 @@ cafl4ds/configs/data/*_local.yaml
 combined_certificates.pem
 .prompts
 .scratchpad
+.tmp/
 
 # ── Editor / OS / Local Tooling cruft ──────────────────────────────────
 .notes/
