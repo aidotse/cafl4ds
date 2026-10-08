@@ -111,7 +111,12 @@ class FinalEvaluator:
         train_images, train_labels = train.load()
         test_images, test_labels = test.load()
         keep = subsample_per_class(train_labels, support_per_class, seed)
-        support = EvalSet(train_images[keep], train_labels[keep])
+        # Without a cap, use the training tensors as they are: indexing would copy the whole split.
+        support = (
+            EvalSet(train_images, train_labels)
+            if support_per_class is None
+            else EvalSet(train_images[keep], train_labels[keep])
+        )
         logger.info(f"final eval: {len(keep)} support images (train split), {len(test_labels)} test images")
         return cls(support, EvalSet(test_images, test_labels), knn_k=knn_k, batch_size=batch_size)
 

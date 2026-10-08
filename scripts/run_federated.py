@@ -211,6 +211,8 @@ def main(config: DictConfig) -> None:
         sizes=config.partition.sizes,
         mix=config.partition.mix,
     )
+    # The shards hold their own copies; drop the pre-partition pool so it doesn't stay resident.
+    del client_pool
     clients = [_build_client(config, shard, cid, out_dir, strategy) for cid, shard in enumerate(shards)]
 
     # Global readout: measure the aggregated model on a class-balanced pool that is disjoint from
