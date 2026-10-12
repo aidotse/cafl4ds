@@ -37,8 +37,10 @@ from omegaconf import DictConfig
 
 from cafl4ds import deploy, deploy_corpus, harness, warmup
 from cafl4ds.data.attributes import AttributeSource
+from cafl4ds.data.regime import RegimeStream
 from cafl4ds.health_trust import CANARY_SIGNALS, DEFAULT_LABEL_FREE_SIGNALS, Backbone, backbone_family
 from cafl4ds.leg_checkpoints import CheckpointingStream
+from cafl4ds.monitor import group_key
 from cafl4ds.ssl.base import SSLMethod, apply_encoder_init
 
 logger.remove()
@@ -64,20 +66,29 @@ def _live_method(config: DictConfig) -> SSLMethod:
 
 
 def _anchor_method(config: DictConfig) -> SSLMethod:
-    """Build the frozen drift-anchor model — the selected backbone resumed from the ``anchor`` well."""
+    """Build the frozen drift-anchor model — the selected backbone resumed from the ``anchor`` well.
+
+    It is placed on ``config.device``, the device the live model is read on, so drift measures the
+    model moving and carries no CPU-vs-accelerator numerical floor.
+    """
     anchor: SSLMethod = instantiate(config.ssl, encoder=instantiate(config.encoder))
     warmup.load_well(anchor, to_absolute_path(str(config.anchor)))
+    anchor.to(config.device)
     return anchor
 
 
 def _run_live(
     config: DictConfig, out_dir: Path, name: str, source: AttributeSource
-) -> tuple[harness.Arm, dict[int, str], dict[int, Any]]:
+) -> tuple[harness.Arm, RegimeStream]:
     """Run the live backbone over the regime diet, logging the full multivariate health vector.
 
-    Returns the completed arm, the stream's era→regime-name map, and its per-era label composition
-    (both for labelling the corpus legs). ``source`` is the one decoded attribute source threaded
-    through every arm, so the corpus is decoded once per drive (not re-decoded per arm).
+    Returns the completed arm and the stream it drove (its era names, leg composition, realized
+    familiarity and probe sizes describe the corpus). ``source`` is the one decoded attribute source
+    threaded through every arm, so the corpus is decoded once per drive (not re-decoded per arm).
+
+    Raises:
+        ValueError: If the ``well`` or ``anchor`` was reserved with a different split than this
+            drive (:func:`cafl4ds.warmup.check_split`).
     """
     torch.manual_seed(int(config.seed))
     method = _live_method(config)
@@ -87,6 +98,8 @@ def _run_live(
             f"{method.name!r} ({backbone_family(method.name).value}) — check the backbone override."
         )
     stream = instantiate(config.stream, source=source)
+    for path in {str(p) for p in (config.get("well"), config.get("anchor")) if p}:
+        warmup.check_split(to_absolute_path(path), stream.split_fingerprint())
     logger.info(
         f"deploy '{name}': backbone={method.name}, order={stream.order}, {stream.num_eras} eras, "
         f"{len(stream)} batches, dev={config.device}"
@@ -112,7 +125,18 @@ def _run_live(
         eval_every=config.eval_every,
         device=config.device,
     )
-    return arm, stream.era_names, stream.era_composition()
+    return arm, stream
+
+
+def _probe_query_counts(stream: RegimeStream) -> dict[str, int]:
+    """Query images behind each canary reading: ``pooled``, plus one per probe group (its metric suffix)."""
+    query = stream.eval_sets.probe_query
+    counts = {"pooled": int(query.labels.shape[0])}
+    if query.groups is not None:
+        for gid in sorted(set(query.groups.tolist())):
+            name = group_key(stream.eval_sets.group_names.get(gid, str(gid)))
+            counts[name] = int((query.groups == gid).sum().item())
+    return counts
 
 
 def _run_gate_arms(
@@ -192,7 +216,7 @@ def _build(config: DictConfig, out_dir: Path, seed: int) -> tuple[dict[str, Any]
     config.seed = seed  # drive per-seed determinism (the held-out reservation is fixed by canary_seed)
     name = f"{config.run_name or f'{config.family}_deploy'}_s{seed}"
     source = instantiate(config.data)  # decode once, thread through every arm (cached — see A2)
-    live, era_names, composition = _run_live(config, out_dir, name, source)
+    live, stream = _run_live(config, out_dir, name, source)
     family = Backbone(str(config.family))
 
     grid = harness.health_grid(live)
@@ -219,6 +243,8 @@ def _build(config: DictConfig, out_dir: Path, seed: int) -> tuple[dict[str, Any]
         "well_fraction": float(config.stream.get("well_fraction", 0.0)),
         "well_overlap": float(config.stream.get("well_overlap", 0.0)),
         "anchor": (str(config.anchor) if config.get("anchor") else None),
+        "familiarity": stream.familiarity,
+        "n_probe_query": _probe_query_counts(stream),
         "A": _target_leaf(config.filter),
         "seed": int(seed),
         "img_size": int(config.img_size),
@@ -236,9 +262,10 @@ def _build(config: DictConfig, out_dir: Path, seed: int) -> tuple[dict[str, Any]
         log_signals=log_signals,
         canary_chance=canary_chance,
         tier_b_thresholds=tier_b,
+        study=str(config.study),
     )
     _log_verdict(report)
-    return report, era_names, composition
+    return report, stream.era_names, stream.era_composition()
 
 
 def _git_sha() -> str | None:
@@ -259,7 +286,7 @@ def _log_verdict(report: dict[str, Any]) -> None:
     """Log the human-readable Tier-A wiring verdict and (when computed) the Tier-B sanity verdict."""
     val, chan = report["validation"], report["channels"]
     logger.info(
-        "P1.0.2 deploy corpus (Tier-A wiring):\n"
+        f"{report['study']} deploy corpus (Tier-A wiring):\n"
         f"  channels: label_free={len(chan['label_free'])} signals, canary={len(chan['canary'])} signals\n"
         f"  channel_complete={val['channel_complete']}  trust_complete={val['trust_complete']}  "
         f"finite={val['finite']}  memory_flat={val['memory_flat']}\n"
@@ -269,7 +296,7 @@ def _log_verdict(report: dict[str, Any]) -> None:
     if tier_b is not None:
         rep, checks = tier_b["reported"], tier_b["checks"]
         logger.info(
-            "P1.0.2 deploy corpus (Tier-B sanity-of-readings):\n"
+            f"{report['study']} deploy corpus (Tier-B sanity-of-readings):\n"
             f"  rankme in [{rep['rankme_min']}, {rep['rankme_max']}] -> in_range={checks['rankme_in_range']}\n"
             f"  final {rep['drift_key']}={rep['final_drift']} -> accumulated={checks['drift_accumulated']}\n"
             f"  canary({rep['canary_key']}) mean={rep['canary_mean']} vs chance {rep['canary_chance']} -> "

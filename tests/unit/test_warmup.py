@@ -13,7 +13,7 @@ from cafl4ds.data.regime import RegimeStream
 from cafl4ds.models.vit import TinyViTEncoder
 from cafl4ds.ssl.base import SSLMethod
 from cafl4ds.ssl.factory import build_simsiam
-from cafl4ds.warmup import PlateauCriterion, load_well, save_well, warm_until_settled
+from cafl4ds.warmup import PlateauCriterion, check_split, load_well, save_split, save_well, warm_until_settled
 
 
 def _stream(seed: int = 0) -> RegimeStream:
@@ -106,3 +106,30 @@ def test_load_well_missing_file_raises(tmp_path: Path) -> None:
     """Pointing a drive at a non-existent well is a hard error, not a silent from-scratch run."""
     with pytest.raises(FileNotFoundError, match="warm well not found"):
         load_well(_method(), tmp_path / "absent.pt")
+
+
+def test_check_split_accepts_a_well_reserved_like_the_drive(tmp_path: Path) -> None:
+    """A well saved with the drive's own fingerprint passes the check."""
+    well = tmp_path / "well.pt"
+    save_split(well, _stream().split_fingerprint())
+    check_split(well, _stream(seed=3).split_fingerprint())  # the drive seed does not enter the split
+
+
+def test_check_split_refuses_a_well_reserved_differently(tmp_path: Path) -> None:
+    """A mismatched reservation is refused, naming the setting that differs."""
+    well = tmp_path / "well.pt"
+    save_split(well, _stream().split_fingerprint())
+    other = RegimeStream(
+        SyntheticAttributeSource(num_regimes=2, num_canary_classes=2, per_cell=10, img_size=16, long_tail=False),
+        batch_size=4,
+        support_per_canary=2,
+        query_per_canary=2,
+        canary_seed=7,
+    )
+    with pytest.raises(ValueError, match="canary_seed"):
+        check_split(well, other.split_fingerprint())
+
+
+def test_check_split_only_warns_for_a_well_without_a_fingerprint(tmp_path: Path) -> None:
+    """A well saved before fingerprints existed is not refused (there is nothing to compare)."""
+    check_split(tmp_path / "legacy.pt", _stream().split_fingerprint())

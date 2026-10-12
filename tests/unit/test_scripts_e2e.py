@@ -14,6 +14,7 @@ import json
 from pathlib import Path
 from types import ModuleType
 
+import pytest
 from hydra import compose, initialize_config_dir
 from hydra.core.global_hydra import GlobalHydra
 from omegaconf import DictConfig
@@ -140,6 +141,9 @@ def test_p11_null_control_drives_walk_and_iid_from_a_disjoint_anchored_well(tmp_
         assert report["validation"]["passed"] is True
         assert report["config"]["order"] == order
         assert report["config"]["anchor"] == str(well_out)
+        assert report["config"]["familiarity"] == {"well_side": 0.0, "drive_side": 0.0}  # a disjoint well
+        counts = report["config"]["n_probe_query"]
+        assert counts["pooled"] == counts["early"] + counts["late"]
         live = report["arms"]["live"]["health"]
         # stratified canary slices + grad norm at every checkpoint
         assert {"knn_acc_early", "knn_acc_late", "linear_acc_early", "linear_acc_late"} <= set(live[0])
@@ -149,6 +153,19 @@ def test_p11_null_control_drives_walk_and_iid_from_a_disjoint_anchored_well(tmp_
         assert live[0]["cka_drift"] < 0.05
         index = json.loads((out / "checkpoints" / "s0" / "index.json").read_text())
         assert index[-1]["file"] == "final.pt" and len(index) >= 2
+
+
+def test_p11_drive_refuses_a_well_reserved_with_another_split(tmp_path: Path) -> None:
+    """A drive whose familiarity level differs from its well's is refused before it runs."""
+    well_out = tmp_path / "je_well.pt"
+    warm_cfg = _compose(
+        "warm_well",
+        [*_P11_DIET, "warmup.window=2", "warmup.min_steps=2", "warmup.max_steps=4", f"well_out={well_out}"],
+    )
+    _load_script("warm_well").warm(warm_cfg)
+    config = _compose("deploy", [*_P11_DIET, "stream.well_overlap=0.5", f"well={well_out}", "study=P1.1.0"])
+    with pytest.raises(ValueError, match="well_overlap"):
+        _load_script("run_deploy_harness").run_deploy(config, tmp_path / "drive")
 
 
 def test_measure_divergence_certifies_same_seed(tmp_path: Path) -> None:
@@ -175,9 +192,11 @@ def test_analyze_null_reads_a_walk_iid_pair_into_the_report(tmp_path: Path) -> N
     for order in ("walk", "iid"):
         config = _compose(
             "deploy",
-            [*_P11_DIET, "eval_every=2", f"stream.order={order}", "seeds=[0,1,2]"],
+            [*_P11_DIET, "eval_every=2", f"stream.order={order}", "seeds=[0,1,2]", "study=P1.1.0"],
         )
         deploy.run_deploy(config, tmp_path / "warm" / f"je_o0.0_{order}")
+        manifest = json.loads((tmp_path / "warm" / f"je_o0.0_{order}" / "corpus" / "manifest.json").read_text())
+        assert manifest["study"] == "P1.1.0"
     config = _compose(
         "null_envelope",
         [
@@ -185,8 +204,6 @@ def test_analyze_null_reads_a_walk_iid_pair_into_the_report(tmp_path: Path) -> N
             "backbones=[je]",
             "overlaps=[0.0]",
             "cold_backbones=[]",
-            "n_query_pooled=18",
-            "n_query_stratum=9",
         ],
     )
     report = _load_script("analyze_null").analyze(config)
@@ -195,6 +212,21 @@ def test_analyze_null_reads_a_walk_iid_pair_into_the_report(tmp_path: Path) -> N
     assert {"rankme", "grad_norm", "knn_acc_late"} <= set(pair["signals"])
     assert set(pair["signals"]["rankme"]) == {"iid_movement", "walk_movement", "gap"}
     assert {"knn_acc", "knn_acc_early", "linear_acc"} <= set(pair["canary_power"])
-    assert pair["canary_power"]["knn_acc"]["n_query"] == 18.0
-    assert pair["canary_power"]["knn_acc_early"]["n_query"] == 9.0
+    # the query counts come from the run itself, not the config
+    counts = json.loads((tmp_path / "warm" / "je_o0.0_iid" / "corpus" / "manifest.json").read_text())["config"][
+        "n_probe_query"
+    ]
+    assert pair["canary_power"]["knn_acc"]["n_query"] == counts["pooled"]
+    assert pair["canary_power"]["knn_acc_early"]["n_query"] == counts["early"]
     assert (tmp_path / "null_report.json").is_file()
+
+
+def test_analyze_null_falls_back_to_configured_counts_for_a_legacy_manifest(tmp_path: Path) -> None:
+    """A corpus written before ``n_probe_query`` existed reads its counts from the config instead."""
+    script = _load_script("analyze_null")
+    (tmp_path / "run" / "corpus").mkdir(parents=True)
+    (tmp_path / "run" / "corpus" / "manifest.json").write_text(json.dumps({"config": {}}))
+    config = _compose("null_envelope", [f"root={tmp_path}"])
+    counts = script._query_counts(tmp_path, "run", config)
+    assert script._n_query("knn_acc", counts) == config.n_query_pooled
+    assert script._n_query("linear_acc_night", counts) == config.n_query_stratum

@@ -16,10 +16,15 @@ drives (identical start state → drive-to-drive comparisons carry no per-run wa
 Compute-agnostic: a single ``device`` string, no hardware branching. The stationary diet comes from
 :meth:`cafl4ds.data.regime.RegimeStream.stationary_batches` (the reserved training pool, reshuffled
 regime-agnostic), so the well is competent on the same probe set the drive reads.
+
+That last guarantee holds only if the well and the drive reserve the probe set (and the well slice)
+identically. :func:`save_split` writes the stream's split fingerprint beside the well, and
+:func:`check_split` lets a drive refuse a well reserved differently.
 """
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from pathlib import Path
 from statistics import fmean
@@ -175,3 +180,47 @@ def load_well(method: SSLMethod, path: str | Path) -> None:
         raise FileNotFoundError(f"warm well not found: {source}")
     method.load_state_dict(torch.load(source, map_location="cpu"))
     logger.info(f"resumed warm well (full method) from {source}")
+
+
+def split_path(well_path: str | Path) -> Path:
+    """The split-fingerprint file that sits beside a well (``je.pt`` → ``je.split.json``)."""
+    return Path(well_path).with_suffix(".split.json")
+
+
+def save_split(well_path: str | Path, fingerprint: dict[str, Any]) -> Path:
+    """Save the well's split fingerprint (:meth:`RegimeStream.split_fingerprint`) beside it.
+
+    Args:
+        well_path: The well checkpoint the fingerprint describes.
+        fingerprint: The split fingerprint of the stream the well was warmed on.
+
+    Returns:
+        The path written.
+    """
+    destination = split_path(well_path)
+    destination.write_text(json.dumps(fingerprint, indent=2, sort_keys=True), encoding="utf-8")
+    return destination
+
+
+def check_split(well_path: str | Path, fingerprint: dict[str, Any]) -> None:
+    """Refuse a well whose split fingerprint differs from the drive's.
+
+    A well saved before fingerprints existed has none; that is logged as a warning, not refused.
+
+    Args:
+        well_path: The well checkpoint the drive resumes (or anchors to).
+        fingerprint: The drive stream's split fingerprint.
+
+    Raises:
+        ValueError: If the saved fingerprint differs — the probes may not be disjoint from the
+            well's training, or the familiarity level is not the one the drive claims.
+    """
+    source = split_path(well_path)
+    if not source.is_file():
+        logger.warning(f"no split fingerprint beside {well_path} — cannot verify probe/well disjointness")
+        return
+    saved = json.loads(source.read_text(encoding="utf-8"))
+    differing = sorted(k for k in saved.keys() | fingerprint.keys() if saved.get(k) != fingerprint.get(k))
+    if differing:
+        detail = ", ".join(f"{k}: well={saved.get(k)!r} drive={fingerprint.get(k)!r}" for k in differing)
+        raise ValueError(f"well {well_path} was reserved with a different split ({detail}).")

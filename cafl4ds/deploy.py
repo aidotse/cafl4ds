@@ -166,16 +166,18 @@ def with_grad_norm(arm: Arm) -> list[dict[str, Any]]:
     Returns:
         New health records (the originals are not mutated).
     """
-    norms = {int(r["step"]): r["grad_norm"] for r in arm.loss_records if r.get("grad_norm") is not None}
+    norms = sorted((int(r["step"]), float(r["grad_norm"])) for r in arm.loss_records if r.get("grad_norm") is not None)
     if not norms:
         return arm.health
     out: list[dict[str, Any]] = []
-    prev = -1
+    i = 0  # one sweep over the sorted norms: checkpoint steps ascend, so each window starts where the last ended
     for record in arm.health:
         step = int(record["step"])
-        window = [float(v) for s, v in norms.items() if prev < s <= step]
-        out.append({**record, "grad_norm": max(window)} if window else dict(record))
-        prev = step
+        window_max: float | None = None
+        while i < len(norms) and norms[i][0] <= step:
+            window_max = norms[i][1] if window_max is None else max(window_max, norms[i][1])
+            i += 1
+        out.append({**record, "grad_norm": window_max} if window_max is not None else dict(record))
     return out
 
 
@@ -233,6 +235,7 @@ def build_deploy_report(
     log_signals: list[str] | None = None,
     canary_chance: float | None = None,
     tier_b_thresholds: dict[str, float] | None = None,
+    study: str = "P1.0.2",
 ) -> dict[str, Any]:
     """Assemble the deploy corpus — the config, the trust-annotated channels, the arms, the validation.
 
@@ -249,6 +252,7 @@ def build_deploy_report(
             given, the reproducible **Tier-B** sanity-of-readings verdict is computed and attached
             under ``tier_b`` — separate from the Tier-A ``validation.passed`` wiring gate.
         tier_b_thresholds: Optional overrides for the loose Tier-B plausibility floor.
+        study: The study the corpus is produced for (the harness serves P1.0.2 and P1.1).
 
     Returns:
         The deploy-corpus dict, ready to serialize.
@@ -280,7 +284,7 @@ def build_deploy_report(
 
     report: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
-        "study": "P1.0.2",
+        "study": study,
         "config": config_header,
         "backbone_family": family.value,
         "channels": channels,

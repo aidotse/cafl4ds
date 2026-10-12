@@ -15,6 +15,7 @@ Phase-0 stream is untouched.
 
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Iterator
 from typing import Any
 
@@ -314,6 +315,16 @@ class RegimeStream:
         support, query, train_mask = _reserve_probes(
             canary, stratum, support_per_canary, query_per_canary, reserve_generator
         )
+        self._split_params: dict[str, Any] = {
+            "n_images": int(canary.shape[0]),
+            "canary_seed": int(canary_seed),
+            "support_per_canary": int(support_per_canary),
+            "query_per_canary": int(query_per_canary),
+            "stratify_canary": bool(stratify_canary),
+            "well_fraction": float(well_fraction),
+            "well_overlap": float(well_overlap),
+        }
+        self._probe_indices = (support, query)
         self._eval_sets = EvalSets(
             probe_support=EvalSet(
                 self._images[support], canary[support], stratum[support] if stratum is not None else None
@@ -415,6 +426,44 @@ class RegimeStream:
         perm = torch.randperm(len(indices), generator=self._generator)
         order = [(0, indices[p]) for p in perm.tolist()]
         return iter_ordered_batches(order, self._images, self.batch_size, self.drop_last)
+
+    @property
+    def familiarity(self) -> dict[str, float] | None:
+        """The *realized* well/drive overlap — how familiar the drive is to the well, as measured.
+
+        ``well_overlap`` is a nominal per-regime fraction; rounding per regime makes the realized
+        share differ slightly. ``well_side`` is the share of the well's pool the drive also streams;
+        ``drive_side`` is the share of the drive's delivered frames the well trained on. ``None``
+        when no well slice is carved (``well_fraction=0``: the well and drive share the whole pool).
+        """
+        if self._well_indices is None:
+            return None
+        well = set(self._well_indices)
+        drive = {idx for _, idx in self._delivered}
+        shared = len(well & drive)
+        return {
+            "well_side": shared / len(well) if well else 0.0,
+            "drive_side": shared / len(drive) if drive else 0.0,
+        }
+
+    def split_fingerprint(self) -> dict[str, Any]:
+        """A fingerprint of the held-out split: the probe and well reservations, plus their settings.
+
+        The probes stay disjoint from a well's training only if the well and the drive reserve
+        identically, so :mod:`cafl4ds.warmup` stores this beside a well and the drive refuses a well
+        whose fingerprint differs. The ``digest`` hashes the reserved indices themselves (support,
+        query, well); the settings are kept beside it to make a mismatch readable.
+
+        Returns:
+            The split settings and a ``digest`` over the reserved indices.
+        """
+        support, query = self._probe_indices
+        well = self._well_indices if self._well_indices is not None else []
+        digest = hashlib.sha256()
+        for part in (support.tolist(), query.tolist(), well):
+            digest.update(",".join(map(str, part)).encode())
+            digest.update(b"|")
+        return {**self._split_params, "digest": digest.hexdigest()}
 
     @property
     def eval_sets(self) -> EvalSets:

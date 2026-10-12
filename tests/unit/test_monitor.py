@@ -9,6 +9,7 @@ import copy
 from dataclasses import replace
 
 import torch
+from loguru import logger
 
 from cafl4ds.data.sources import SyntheticSource
 from cafl4ds.data.streams import EraStream
@@ -221,6 +222,24 @@ def test_anchor_drift_restores_the_reference_training_mode() -> None:
     reference.train()  # type: ignore[attr-defined]
     monitor.anchor_drift(reference)  # type: ignore[arg-type]
     assert reference.training  # type: ignore[attr-defined]
+
+
+def test_anchor_without_a_drift_surface_warns_and_falls_back_to_the_first_checkpoint() -> None:
+    """An anchor lacking a surface the run tracks (a backbone-only MAE under a JE run) is flagged."""
+    _, mae_monitor = _method_and_monitor()
+    torch.manual_seed(0)
+    encoder = TinyViTEncoder(img_size=16, patch_size=8, embed_dim=32, depth=2, num_heads=2)
+    live = build_simsiam(encoder=encoder, proj_hidden=32, proj_dim=16, pred_hidden=16)
+    monitor = HealthMonitor(mae_monitor.eval_sets, knn_k=5, drift_surfaces=True)
+    monitor.anchor_drift(build_mae(TinyViTEncoder(img_size=16, patch_size=8, embed_dim=32, depth=2, num_heads=2)))
+    warnings: list[str] = []
+    sink = logger.add(warnings.append, level="WARNING")
+    try:
+        first = monitor.measure(live, step=0)
+    finally:
+        logger.remove(sink)
+    assert any("no 'proj' surface" in w for w in warnings)
+    assert first["cka_drift_proj"] == 0.0 and first["cka_drift"] > 1e-4
 
 
 def test_grouped_probe_query_reports_per_group_accuracies() -> None:

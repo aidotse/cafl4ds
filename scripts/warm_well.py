@@ -69,6 +69,9 @@ def warm(config: DictConfig) -> Path:
 
     well_path = Path(to_absolute_path(str(config.well_out)))
     warmup.save_well(method, well_path)
+    # The drive refuses this well unless it reserves the same probes and well slice.
+    warmup.save_split(well_path, stream.split_fingerprint())
+    logger.info(f"realized familiarity (shared share of well / drive): {stream.familiarity}")
     logger.info(f"warm well ready — drive it with `well={well_path}`")
     return well_path
 

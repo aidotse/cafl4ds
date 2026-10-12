@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
 import torch
 
 from cafl4ds.data.attributes import SyntheticAttributeSource
@@ -53,7 +54,7 @@ def test_a_boundary_checkpoint_captures_the_end_of_the_previous_leg(tmp_path: Pa
     final = torch.load(tmp_path / "final.pt")
     assert float(final["bias"]) == float(len(stream))
     index = json.loads((tmp_path / "index.json").read_text())
-    assert index[-1]["completed_steps"] == len(stream)
+    assert index[-1]["batches_seen"] == len(stream)
 
 
 def test_wrapping_does_not_change_the_delivered_batches(tmp_path: Path) -> None:
@@ -63,3 +64,24 @@ def test_wrapping_does_not_change_the_delivered_batches(tmp_path: Path) -> None:
     wrapped = list(CheckpointingStream(stream, torch.nn.Linear(1, 1), [], tmp_path))
     assert len(plain) == len(wrapped)
     assert all(torch.equal(a.images, b.images) and a.era == b.era for a, b in zip(plain, wrapped, strict=True))
+
+
+def test_an_early_stop_still_writes_the_index_without_a_final(tmp_path: Path) -> None:
+    """A loop that breaks mid-stream (divergence) still leaves an index of the checkpoints it saved."""
+    stream = _stream()
+    module = torch.nn.Linear(1, 1)
+    first = stream.leg_boundary_steps[0]
+    for batch in CheckpointingStream(stream, module, stream.leg_boundary_steps, tmp_path):
+        if batch.step == first:
+            break
+    index = json.loads((tmp_path / "index.json").read_text())
+    assert [e["file"] for e in index] == [f"step{first:05d}.pt"]
+    assert not (tmp_path / "final.pt").exists()
+
+
+def test_a_second_pass_is_rejected(tmp_path: Path) -> None:
+    """Re-iterating (multi-epoch use) raises rather than overwrite the first pass's checkpoints."""
+    wrapped = CheckpointingStream(_stream(), torch.nn.Linear(1, 1), [], tmp_path)
+    list(wrapped)
+    with pytest.raises(RuntimeError, match="single-pass"):
+        iter(wrapped)

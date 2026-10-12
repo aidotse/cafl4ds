@@ -45,8 +45,38 @@ def _corpus(root: Path, name: str) -> list[dict[str, Any]] | None:
     return read_corpus(path)
 
 
+def _query_counts(root: Path, name: str, config: DictConfig) -> dict[str, int]:
+    """Query images behind each canary reading, from the run's ``corpus/manifest.json``.
+
+    The drive records them in its report header (``n_probe_query``: ``pooled`` plus one per probe
+    group). Corpora written before that field existed fall back to the config's ``n_query_pooled`` /
+    ``n_query_stratum``, applied to every group.
+    """
+    path = root / name / "corpus" / "manifest.json"
+    counts = (
+        json.loads(path.read_text(encoding="utf-8")).get("config", {}).get("n_probe_query") if path.is_file() else None
+    )
+    if counts:
+        return {k: int(v) for k, v in counts.items()}
+    logger.warning(f"{name}: no n_probe_query in the manifest — using the configured query counts")
+    return {"pooled": int(config.n_query_pooled), "*": int(config.n_query_stratum)}
+
+
+def _n_query(signal: str, counts: dict[str, int]) -> int:
+    """The query count behind one canary signal (pooled, or its group's slice)."""
+    base = canary_base(signal)
+    if signal == base:
+        return counts["pooled"]
+    group = signal[len(f"{base}_") :]
+    if group in counts:
+        return counts[group]
+    if "*" in counts:
+        return counts["*"]
+    raise KeyError(f"no query count recorded for the '{group}' group of {signal}")
+
+
 def pair_report(
-    walk_rows: list[dict[str, Any]], iid_rows: list[dict[str, Any]], *, alpha: float, n_pooled: int, n_stratum: int
+    walk_rows: list[dict[str, Any]], iid_rows: list[dict[str, Any]], *, alpha: float, n_query: dict[str, int]
 ) -> dict[str, Any]:
     """Per-signal null movement + walk-vs-IID gap, and canary power, for one walk/IID pair.
 
@@ -54,8 +84,8 @@ def pair_report(
         walk_rows: The walk corpus rows.
         iid_rows: The matched IID corpus rows.
         alpha: Family-wise level for the per-checkpoint significance share.
-        n_pooled: Query images behind a pooled canary reading.
-        n_stratum: Query images behind a per-stratum canary reading.
+        n_query: Query images behind each canary reading — ``pooled``, plus one per group suffix
+            (``"*"`` stands for every group).
 
     Returns:
         ``{"n_seeds", "n_checkpoints", "signals": {...}, "canary_power": {...}}``.
@@ -75,7 +105,7 @@ def pair_report(
             "gap": gap(walk, iid, alpha=alpha),
         }
         if canary_base(signal) is not None:
-            power[signal] = canary_power(iid, n_pooled if signal == canary_base(signal) else n_stratum)
+            power[signal] = canary_power(iid, _n_query(signal, n_query))
     first = seed_matrix(iid_rows, "loss")
     return {"n_seeds": first.shape[0], "n_checkpoints": first.shape[1], "signals": signals, "canary_power": power}
 
@@ -97,14 +127,15 @@ def _table(title: str, reports: dict[str, dict[str, Any]], field: str, sub: str)
 def analyze(config: DictConfig) -> dict[str, Any]:
     """Build the full null report over the sweep (Hydra-free core, unit-testable)."""
     root = Path(to_absolute_path(str(config.root)))
-    alpha, n_pooled, n_stratum = float(config.alpha), int(config.n_query_pooled), int(config.n_query_stratum)
+    alpha = float(config.alpha)
     report: dict[str, Any] = {"warm": {}, "cold": {}}
     for bb in config.backbones:
         per_level: dict[str, Any] = {}
         for overlap in config.overlaps:
             walk, iid = _corpus(root, f"warm/{bb}_o{overlap}_walk"), _corpus(root, f"warm/{bb}_o{overlap}_iid")
             if walk is not None and iid is not None:
-                per_level[f"o={overlap}"] = pair_report(walk, iid, alpha=alpha, n_pooled=n_pooled, n_stratum=n_stratum)
+                counts = _query_counts(root, f"warm/{bb}_o{overlap}_iid", config)
+                per_level[f"o={overlap}"] = pair_report(walk, iid, alpha=alpha, n_query=counts)
         report["warm"][bb] = per_level
         if per_level:
             logger.info("\n" + _table(f"[{bb} warm] walk-vs-IID max |d|", per_level, "gap", "max_abs_d"))
@@ -116,7 +147,8 @@ def analyze(config: DictConfig) -> dict[str, Any]:
     for bb in config.cold_backbones:
         walk, iid = _corpus(root, f"cold/{bb}_walk"), _corpus(root, f"cold/{bb}_iid")
         if walk is not None and iid is not None:
-            report["cold"][bb] = pair_report(walk, iid, alpha=alpha, n_pooled=n_pooled, n_stratum=n_stratum)
+            counts = _query_counts(root, f"cold/{bb}_iid", config)
+            report["cold"][bb] = pair_report(walk, iid, alpha=alpha, n_query=counts)
     out = Path(to_absolute_path(str(config.out)))
     out.write_text(json.dumps(report, indent=2), encoding="utf-8")
     logger.info(f"wrote {out}")

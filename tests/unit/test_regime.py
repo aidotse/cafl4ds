@@ -415,3 +415,54 @@ def test_well_overlap_rejects_out_of_range(overlap: float) -> None:
     """``well_overlap`` must lie in [0, 1]."""
     with pytest.raises(ValueError, match="well_overlap"):
         RegimeStream(_source(), well_fraction=0.5, well_overlap=overlap)
+
+
+@pytest.mark.parametrize("overlap", [0.0, 0.5, 1.0])
+def test_familiarity_reports_the_realized_shared_shares(overlap: float) -> None:
+    """``familiarity`` measures the shared frames from both sides; it tracks the nominal overlap."""
+    stream = _overlap_stream(overlap)
+    well = _contents(list(stream.stationary_batches()))
+    drive = _contents(list(stream))
+    shared = len(set(well) & set(drive))
+    familiarity = stream.familiarity
+    assert familiarity is not None
+    assert familiarity["well_side"] == pytest.approx(shared / len(well))
+    assert familiarity["drive_side"] == pytest.approx(shared / len(drive))
+    assert abs(familiarity["well_side"] - overlap) <= 0.1
+
+
+def test_familiarity_is_undefined_without_a_well_slice() -> None:
+    """With no carved well (``well_fraction=0``) there is no well/drive split to measure."""
+    assert RegimeStream(_source(), batch_size=8).familiarity is None
+
+
+def test_split_fingerprint_is_shared_across_drive_seeds_and_orders() -> None:
+    """The fingerprint describes the reservation only, so the seed and the order leave it unchanged."""
+    reference = _overlap_stream(0.5, seed=0).split_fingerprint()
+    assert _overlap_stream(0.5, seed=4).split_fingerprint() == reference
+    iid = RegimeStream(
+        _source(),
+        batch_size=8,
+        support_per_canary=3,
+        query_per_canary=3,
+        well_fraction=0.5,
+        well_overlap=0.5,
+        order="iid",
+    )
+    assert iid.split_fingerprint() == reference
+
+
+def test_split_fingerprint_changes_with_the_reservation() -> None:
+    """A different familiarity level or probe draw gives a different digest."""
+    reference = _overlap_stream(0.5).split_fingerprint()["digest"]
+    assert _overlap_stream(0.25).split_fingerprint()["digest"] != reference
+    redrawn = RegimeStream(
+        _source(),
+        batch_size=8,
+        support_per_canary=3,
+        query_per_canary=3,
+        well_fraction=0.5,
+        well_overlap=0.5,
+        canary_seed=1,
+    )
+    assert redrawn.split_fingerprint()["digest"] != reference

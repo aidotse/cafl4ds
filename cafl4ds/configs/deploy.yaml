@@ -79,3 +79,4 @@ long_horizon_growth_frac_max: 0.10
 # The corpus (health.csv/parquet + segments/trust/manifest) and per-seed reports land in the Hydra
 # run dir under corpus/ and reports/ respectively.
 run_name: null # defaults to "<backbone>_deploy" in the run script
+study: P1.0.2 # the study label stamped on the report + corpus (P1.1 runs override, e.g. study=P1.1.0)

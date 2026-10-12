@@ -9,8 +9,9 @@ backbones: [je, mae]
 overlaps: [0.0, 0.25, 0.5, 0.75, 1.0]
 cold_backbones: [je]
 alpha: 0.05 # family-wise level for the per-checkpoint significance share (frac_sig)
-# Query images behind each canary reading: pooled = cells x per-cell; per stratum = scenes x per-cell.
-# Must match the drive's stream.query_per_canary (45 here) with stratify_canary=true.
+# Query images behind each canary reading. Read from each run's manifest (`n_probe_query`); these
+# are only the fallback for corpora written before that field existed (the shallow P1.1.0 sweep:
+# pooled = cells x per-cell, per stratum = scenes x per-cell, at query_per_canary=45, stratified).
 n_query_pooled: 405 # 45 per (timeofday, scene) cell x 3 x 3
 n_query_stratum: 135 # 45 x 3 scenes
 out: ${root}/null_report.json

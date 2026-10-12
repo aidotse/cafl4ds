@@ -39,6 +39,7 @@ from __future__ import annotations
 import re
 
 import torch
+from loguru import logger
 
 from cafl4ds import measurements
 from cafl4ds.data.streams import EvalSets
@@ -105,6 +106,7 @@ class HealthMonitor:
         self.run_alignment_strong = run_alignment_strong
         self.drift_surfaces = drift_surfaces
         self._z_ref0: dict[str, torch.Tensor] = {}
+        self._anchored = False
         self._views: tuple[torch.Tensor, torch.Tensor] | None = None
         self._views_cached = False
         self._views_strong: tuple[torch.Tensor, torch.Tensor] | None = None
@@ -177,6 +179,7 @@ class HealthMonitor:
             reference.train(was_training)
         names = surfaces if self.drift_surfaces else {"backbone": surfaces["backbone"]}
         self._z_ref0 = {name: z.detach().cpu().clone() for name, z in names.items()}
+        self._anchored = True
 
     def _accuracies(self, key: str, pred: object, truth: object) -> dict[str, float]:
         """Pooled probe accuracy under ``key``, plus one ``<key>_<group>`` per probe-query group."""
@@ -353,6 +356,8 @@ class HealthMonitor:
         s = _surface_suffix(name)
         ref = self._z_ref0.get(name)
         if ref is None:
+            if self._anchored:  # the anchor has no such surface: this one falls back to the run's own t0
+                logger.warning(f"drift anchor has no '{name}' surface — its drift reads from the first checkpoint")
             self._z_ref0[name] = z_query.clone()
             return {f"cka_drift{s}": 0.0, f"cosine_drift{s}": 0.0}
         return {
