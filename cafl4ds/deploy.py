@@ -20,7 +20,7 @@ import math
 from typing import Any
 
 from cafl4ds.harness import Arm, all_finite
-from cafl4ds.health_trust import CANARY_SIGNALS, Backbone, annotate
+from cafl4ds.health_trust import Backbone, annotate, canary_base
 
 # The deploy-corpus schema version (independent of the P1.0.0 comparison schema).
 SCHEMA_VERSION = 1
@@ -143,11 +143,40 @@ def split_channels(signals: list[str]) -> dict[str, list[str]]:
 
     Returns:
         ``{"label_free": [...], "canary": [...]}`` — the canary holds the labelled probes
-        (``knn_acc`` / ``linear_acc``), the label-free vector holds the rest.
+        (``knn_acc`` / ``linear_acc`` and their per-stratum slices), the label-free vector holds the
+        rest.
     """
-    canary = sorted(s for s in signals if s in CANARY_SIGNALS)
-    label_free = sorted(s for s in signals if s not in CANARY_SIGNALS)
+    canary = sorted(s for s in signals if canary_base(s) is not None)
+    label_free = sorted(s for s in signals if canary_base(s) is None)
     return {"label_free": label_free, "canary": canary}
+
+
+def with_grad_norm(arm: Arm) -> list[dict[str, Any]]:
+    """The arm's health records with the per-step ``grad_norm`` joined on (the instability reader).
+
+    The loop logs the pre-clip gradient norm on the *loss* series, one value per step; the monitor's
+    health dict does not carry it. Each checkpoint gets the **max** grad norm over the steps since the
+    previous checkpoint (inclusive of its own step) — so a spike between sparse checkpoints is not
+    lost; at ``eval_every=1`` this is simply that step's norm. Arms with no loss series (the frozen
+    B5) pass through unchanged.
+
+    Args:
+        arm: A completed harness arm.
+
+    Returns:
+        New health records (the originals are not mutated).
+    """
+    norms = {int(r["step"]): r["grad_norm"] for r in arm.loss_records if r.get("grad_norm") is not None}
+    if not norms:
+        return arm.health
+    out: list[dict[str, Any]] = []
+    prev = -1
+    for record in arm.health:
+        step = int(record["step"])
+        window = [float(v) for s, v in norms.items() if prev < s <= step]
+        out.append({**record, "grad_norm": max(window)} if window else dict(record))
+        prev = step
+    return out
 
 
 def project_health(health: list[dict[str, Any]], keep: list[str] | None) -> list[dict[str, Any]]:
@@ -225,7 +254,7 @@ def build_deploy_report(
         The deploy-corpus dict, ready to serialize.
     """
     arms = [a for a in (live, pc, b5) if a is not None]
-    projected = {a.role: project_health(a.health, log_signals) for a in arms}
+    projected = {a.role: project_health(with_grad_norm(a), log_signals) for a in arms}
     live_health = projected[live.role]
 
     signals = emitted_signals(live_health)

@@ -523,12 +523,38 @@ def knn_probe(
     Returns:
         Top-1 query accuracy in ``[0, 1]``.
     """
+    pred, yq = knn_predict(encoder, support, query, k=k, metric=metric, weights=weights)
+    return float((pred == yq).mean())
+
+
+def knn_predict(
+    encoder: Encoder,
+    support: Dataset,
+    query: Dataset,
+    k: int = 20,
+    *,
+    metric: str = "cosine",
+    weights: str = "distance",
+) -> tuple[np.ndarray, np.ndarray]:
+    """The k-NN probe's per-query predictions (see :func:`knn_probe`), for sliced accuracies.
+
+    Args:
+        encoder: Frozen encoder callable ``inputs -> embeddings``.
+        support: ``(inputs, labels)`` used as the neighbour database.
+        query: ``(inputs, labels)`` to classify.
+        k: Number of neighbours. Clamped to the support-set size if larger.
+        metric: Distance metric passed to scikit-learn.
+        weights: Neighbour weighting (``"distance"`` or ``"uniform"``).
+
+    Returns:
+        ``(predictions, query_labels)`` — two aligned 1-D arrays.
+    """
     xs, ys = _encode(encoder, support[0]), _labels(support[1])
     xq, yq = _encode(encoder, query[0]), _labels(query[1])
     n_neighbors = max(1, min(k, xs.shape[0]))
     clf = KNeighborsClassifier(n_neighbors=n_neighbors, metric=metric, weights=weights)
     clf.fit(xs, ys)
-    return float((clf.predict(xq) == yq).mean())
+    return clf.predict(xq), yq
 
 
 def linear_probe(
@@ -558,6 +584,32 @@ def linear_probe(
     Returns:
         Top-1 query accuracy in ``[0, 1]``.
     """
+    pred, yq = linear_predict(encoder, support, query, max_iter=max_iter, C=C, standardize=standardize)
+    return float((pred == yq).mean())
+
+
+def linear_predict(
+    encoder: Encoder,
+    support: Dataset,
+    query: Dataset,
+    *,
+    max_iter: int = 1000,
+    C: float = 1.0,
+    standardize: bool = True,
+) -> tuple[np.ndarray, np.ndarray]:
+    """The linear probe's per-query predictions (see :func:`linear_probe`), for sliced accuracies.
+
+    Args:
+        encoder: Frozen encoder callable ``inputs -> embeddings``.
+        support: ``(inputs, labels)`` used to fit the linear head.
+        query: ``(inputs, labels)`` to classify.
+        max_iter: Maximum solver iterations for the logistic-regression head.
+        C: Inverse L2-regularization strength for the linear head.
+        standardize: Whether to standardize the features (fit on support) before the head.
+
+    Returns:
+        ``(predictions, query_labels)`` — two aligned 1-D arrays.
+    """
     xs, ys = _encode(encoder, support[0]), _labels(support[1])
     xq, yq = _encode(encoder, query[0]), _labels(query[1])
     if standardize:
@@ -568,7 +620,7 @@ def linear_probe(
         xq = (xq - mean) / std
     clf = LogisticRegression(max_iter=max_iter, C=C)
     clf.fit(xs, ys)
-    return float((clf.predict(xq) == yq).mean())
+    return clf.predict(xq), yq
 
 
 def frozen_baseline(

@@ -106,6 +106,51 @@ def test_warm_well_saves_a_resumable_well(tmp_path: Path) -> None:
     assert well_out.is_file()
 
 
+# The P1.1.0 diet knobs, shared by the well and the drive so both reserve the same probes / well slice.
+_P11_DIET = [
+    "data=attr_synthetic",
+    "img_size=16",
+    "data.long_tail=false",
+    "stream.support_per_canary=3",
+    "stream.query_per_canary=3",
+    "stream.stratify_canary=true",
+    "stream.well_fraction=0.3",
+    "monitor.knn_k=3",
+]
+
+
+def test_p11_null_control_drives_walk_and_iid_from_a_disjoint_anchored_well(tmp_path: Path) -> None:
+    """P1.1.0 end to end: warm a disjoint well, then drive walk + IID anchored to it, stratified, checkpointed."""
+    well_out = tmp_path / "je_well.pt"
+    warm_cfg = _compose(
+        "warm_well",
+        [*_P11_DIET, "warmup.window=2", "warmup.min_steps=2", "warmup.max_steps=4", f"well_out={well_out}"],
+    )
+    _load_script("warm_well").warm(warm_cfg)
+
+    script = _load_script("run_deploy_harness")
+    for order in ("walk", "iid"):
+        out = tmp_path / order
+        config = _compose(
+            "deploy",
+            [*_P11_DIET, "eval_every=2", f"stream.order={order}", f"well={well_out}", "checkpoint_legs=true"],
+        )
+        script.run_deploy(config, out)
+        report = json.loads(next((out / "reports").glob("*.json")).read_text())
+        assert report["validation"]["passed"] is True
+        assert report["config"]["order"] == order
+        assert report["config"]["anchor"] == str(well_out)
+        live = report["arms"]["live"]["health"]
+        # stratified canary slices + grad norm at every checkpoint
+        assert {"knn_acc_early", "knn_acc_late", "linear_acc_early", "linear_acc_late"} <= set(live[0])
+        assert "knn_acc_late" in report["channels"]["canary"]
+        assert all("grad_norm" in h for h in live)
+        # anchored to the well the drive resumed: the first read sits at (near) zero drift
+        assert live[0]["cka_drift"] < 0.05
+        index = json.loads((out / "checkpoints" / "s0" / "index.json").read_text())
+        assert index[-1]["file"] == "final.pt" and len(index) >= 2
+
+
 def test_measure_divergence_certifies_same_seed(tmp_path: Path) -> None:
     """The divergence script runs its four arms and certifies the same-seed rebuild bit-identically."""
     script = _load_script("measure_divergence")
@@ -122,3 +167,34 @@ def test_run_harness_writes_the_canonical_comparison(tmp_path: Path) -> None:
     assert comparison["schema_version"] == 1
     assert set(comparison["arms"]) == {"live", "pc", "b5"}
     assert "gate" in comparison and "directional" in comparison
+
+
+def test_analyze_null_reads_a_walk_iid_pair_into_the_report(tmp_path: Path) -> None:
+    """The null analysis pairs a walk with its matched IID corpus and reports gaps, movement and power."""
+    deploy = _load_script("run_deploy_harness")
+    for order in ("walk", "iid"):
+        config = _compose(
+            "deploy",
+            [*_P11_DIET, "eval_every=2", f"stream.order={order}", "seeds=[0,1,2]"],
+        )
+        deploy.run_deploy(config, tmp_path / "warm" / f"je_o0.0_{order}")
+    config = _compose(
+        "null_envelope",
+        [
+            f"root={tmp_path}",
+            "backbones=[je]",
+            "overlaps=[0.0]",
+            "cold_backbones=[]",
+            "n_query_pooled=18",
+            "n_query_stratum=9",
+        ],
+    )
+    report = _load_script("analyze_null").analyze(config)
+    pair = report["warm"]["je"]["o=0.0"]
+    assert pair["n_seeds"] == 3
+    assert {"rankme", "grad_norm", "knn_acc_late"} <= set(pair["signals"])
+    assert set(pair["signals"]["rankme"]) == {"iid_movement", "walk_movement", "gap"}
+    assert {"knn_acc", "knn_acc_early", "linear_acc"} <= set(pair["canary_power"])
+    assert pair["canary_power"]["knn_acc"]["n_query"] == 18.0
+    assert pair["canary_power"]["knn_acc_early"]["n_query"] == 9.0
+    assert (tmp_path / "null_report.json").is_file()

@@ -222,3 +222,196 @@ def test_iter_and_count_helpers_agree_and_never_split_eras() -> None:
     # era 0 -> [2,1] (boundary flush), era 1 -> [2]  => eras 0,0,1
     assert [b.era for b in batches] == [0, 0, 1]
     assert [b.images.shape[0] for b in batches] == [2, 1, 2]
+
+
+def _contents(batches: list[StreamBatch]) -> list[tuple[float, ...]]:
+    """Every delivered image as hashable content, in delivery order."""
+    return [tuple(img.flatten().tolist()) for b in batches for img in b.images]
+
+
+def test_iid_order_is_the_walk_shuffled_with_matched_batch_sizes() -> None:
+    """The IID control delivers the walk's exact images, at the walk's per-step batch sizes, reshuffled.
+
+    Matching the step count and every batch size one-for-one is what makes a walk-vs-IID comparison
+    at a given step attributable to the ordering alone (not to a shorter run or a smaller batch).
+    """
+    walk = list(RegimeStream(_source(), batch_size=8, support_per_canary=5, query_per_canary=5, seed=2))
+    iid_stream = RegimeStream(_source(), batch_size=8, support_per_canary=5, query_per_canary=5, seed=2, order="iid")
+    iid = list(iid_stream)
+    assert len(iid) == len(walk) == len(iid_stream)
+    assert [b.images.shape[0] for b in iid] == [b.images.shape[0] for b in walk]
+    assert [b.step for b in iid] == list(range(len(iid)))
+    assert {b.era for b in iid} == {0}
+    assert sorted(_contents(iid)) == sorted(_contents(walk))  # the same images ...
+    assert _contents(iid) != _contents(walk)  # ... in a different order
+    assert iid_stream.num_eras == 1
+    assert iid_stream.era_names == {0: "iid"}
+
+
+def test_iid_order_mixes_regimes_within_batches() -> None:
+    """The IID shuffle crosses regime boundaries — some batch holds images from more than one regime."""
+    src = _source()
+    loaded = src.load()
+    regime_of = {tuple(img.flatten().tolist()): int(r) for img, r in zip(loaded.images, loaded.era_key, strict=True)}
+    iid = list(RegimeStream(src, batch_size=8, order="iid"))
+    assert any(len({regime_of[tuple(img.flatten().tolist())] for img in b.images}) > 1 for b in iid)
+
+
+def test_iid_order_is_deterministic_in_seed_and_varies_across_seeds() -> None:
+    """The IID shuffle reproduces at fixed seed and is redrawn by a different seed."""
+    a = _contents(list(RegimeStream(_source(), batch_size=8, order="iid", seed=1)))
+    b = _contents(list(RegimeStream(_source(), batch_size=8, order="iid", seed=1)))
+    c = _contents(list(RegimeStream(_source(), batch_size=8, order="iid", seed=2)))
+    assert a == b
+    assert a != c
+
+
+def test_leg_boundary_steps_mark_walk_era_changes_in_both_orders() -> None:
+    """Leg boundaries are the walk's era-change steps, and the IID control reports the same steps."""
+    walk_stream = RegimeStream(_source(), batch_size=8)
+    eras = [b.era for b in walk_stream]
+    expected = [s for s in range(1, len(eras)) if eras[s] != eras[s - 1]]
+    assert walk_stream.leg_boundary_steps == expected
+    assert len(expected) == walk_stream.num_eras - 1
+    assert RegimeStream(_source(), batch_size=8, order="iid").leg_boundary_steps == expected
+
+
+def test_rejects_an_unknown_order() -> None:
+    """``order`` must be walk or iid."""
+    with pytest.raises(ValueError, match="order"):
+        RegimeStream(_source(), order="sorted")
+
+
+def test_stratified_canary_balances_every_stratum_scene_cell() -> None:
+    """With ``stratify_canary`` each (stratum, canary) cell reserves the per-cell counts, tagged by stratum."""
+    stream = RegimeStream(_source(), batch_size=8, support_per_canary=3, query_per_canary=4, stratify_canary=True)
+    ev = stream.eval_sets
+    assert ev.group_names == {0: "early", 1: "late"}
+    for split, per_cell in ((ev.probe_support, 3), (ev.probe_query, 4)):
+        assert split.groups is not None
+        cells: dict[tuple[int, int], int] = {}
+        for g, y in zip(split.groups.tolist(), split.labels.tolist(), strict=True):
+            cells[(g, y)] = cells.get((g, y), 0) + 1
+        assert cells == {(g, y): per_cell for g in (0, 1) for y in range(3)}
+    # the probes stay disjoint from the training pool
+    sup, qry = _probe_images(stream)
+    train = set(_contents(list(stream)))
+    assert not (sup | qry) & train
+
+
+def test_stratified_canary_tags_probes_with_their_true_stratum() -> None:
+    """Every reserved probe image carries the stratum of the regime it was drawn from."""
+    src = _source()
+    loaded = src.load()
+    assert loaded.stratum is not None
+    stratum_of = {tuple(img.flatten().tolist()): int(s) for img, s in zip(loaded.images, loaded.stratum, strict=True)}
+    ev = RegimeStream(src, support_per_canary=3, query_per_canary=4, stratify_canary=True).eval_sets
+    assert ev.probe_query.groups is not None
+    for img, g in zip(ev.probe_query.images, ev.probe_query.groups.tolist(), strict=True):
+        assert stratum_of[tuple(img.flatten().tolist())] == g
+
+
+def test_unstratified_probes_carry_no_groups() -> None:
+    """The default reservation is ungrouped (the P1.0.2 behaviour)."""
+    ev = RegimeStream(_source(), support_per_canary=3, query_per_canary=3).eval_sets
+    assert ev.probe_query.groups is None
+    assert ev.group_names == {}
+
+
+def test_stratify_canary_needs_a_source_with_strata() -> None:
+    """Stratifying on a source that defines no strata is a clear error."""
+    with pytest.raises(ValueError, match="strata"):
+        RegimeStream(_CategorySource(), support_per_canary=2, query_per_canary=2, stratify_canary=True)
+
+
+def test_well_fraction_carves_a_disjoint_fixed_well_pool() -> None:
+    """``well_fraction`` gives the well its own slice: disjoint from drive and probes, fixed across seeds."""
+    a = RegimeStream(_source(), batch_size=8, support_per_canary=3, query_per_canary=3, well_fraction=0.5, seed=0)
+    b = RegimeStream(_source(), batch_size=8, support_per_canary=3, query_per_canary=3, well_fraction=0.5, seed=5)
+    well_a = set(_contents(list(a.stationary_batches())))
+    well_b = set(_contents(list(b.stationary_batches())))
+    drive = set(_contents(list(a)))
+    sup, qry = _probe_images(a)
+    assert well_a == well_b  # the well's slice does not depend on the drive seed
+    assert not well_a & drive
+    assert not well_a & (sup | qry)
+    full = set(_contents(list(RegimeStream(_source(), batch_size=8, support_per_canary=3, query_per_canary=3))))
+    assert well_a | drive == full  # well + drive partition the training pool
+    assert abs(len(well_a) - len(drive)) <= a.num_eras  # ~half each (per-regime rounding)
+
+
+def test_well_fraction_keeps_every_regime_in_the_drive() -> None:
+    """The well slice is taken per regime, so the drive still walks every regime."""
+    stream = RegimeStream(_source(), batch_size=8, well_fraction=0.5)
+    assert stream.num_eras == 3
+
+
+@pytest.mark.parametrize("fraction", [-0.1, 1.0])
+def test_well_fraction_rejects_out_of_range(fraction: float) -> None:
+    """``well_fraction`` must lie in [0, 1)."""
+    with pytest.raises(ValueError, match="well_fraction"):
+        RegimeStream(_source(), well_fraction=fraction)
+
+
+def _overlap_stream(overlap: float, seed: int = 0) -> RegimeStream:
+    """A well/drive split at ``well_fraction=0.5`` with the given familiarity overlap."""
+    return RegimeStream(
+        _source(),
+        batch_size=8,
+        support_per_canary=3,
+        query_per_canary=3,
+        well_fraction=0.5,
+        well_overlap=overlap,
+        seed=seed,
+    )
+
+
+@pytest.mark.parametrize("overlap", [0.0, 0.25, 0.5, 0.75, 1.0])
+def test_well_overlap_sets_the_familiar_share_at_a_fixed_well_size(overlap: float) -> None:
+    """The well pool keeps its size while ``overlap`` of it is drawn from the drive's frames."""
+    base = _overlap_stream(0.0)
+    stream = _overlap_stream(overlap)
+    well = _contents(list(stream.stationary_batches()))
+    drive = set(_contents(list(stream)))
+    assert len(well) == len(_contents(list(base.stationary_batches())))  # fixed well size
+    familiar = sum(img in drive for img in well) / len(well)
+    assert abs(familiar - overlap) <= 0.1  # per-regime rounding on a small pool
+    sup, qry = _probe_images(stream)
+    assert not set(well) & (sup | qry)  # the probes stay out of the well at every level
+
+
+def test_well_overlap_leaves_the_drive_identical() -> None:
+    """The drive — images, order and batching — is the same at every overlap level."""
+    reference = list(_overlap_stream(0.0, seed=3))
+    for overlap in (0.25, 0.5, 1.0):
+        drive = list(_overlap_stream(overlap, seed=3))
+        assert len(drive) == len(reference)
+        assert all(torch.equal(a.images, b.images) and a.era == b.era for a, b in zip(reference, drive, strict=True))
+
+
+def test_well_overlap_well_is_fixed_across_drive_seeds() -> None:
+    """The overlapped well pool is drawn from ``canary_seed``, so every drive seed shares it."""
+    a = set(_contents(list(_overlap_stream(0.5, seed=0).stationary_batches())))
+    b = set(_contents(list(_overlap_stream(0.5, seed=4).stationary_batches())))
+    assert a == b
+
+
+def test_well_overlap_levels_are_nested() -> None:
+    """A higher overlap swaps in a superset of the lower level's drive frames (one shared draw order)."""
+    drive = set(_contents(list(_overlap_stream(0.0))))
+    low = set(_contents(list(_overlap_stream(0.25).stationary_batches()))) & drive
+    high = set(_contents(list(_overlap_stream(0.75).stationary_batches()))) & drive
+    assert low <= high
+
+
+def test_well_overlap_needs_a_well_fraction() -> None:
+    """Overlap without a reserved slice is rejected."""
+    with pytest.raises(ValueError, match="well_fraction"):
+        RegimeStream(_source(), well_overlap=0.5)
+
+
+@pytest.mark.parametrize("overlap", [-0.1, 1.1])
+def test_well_overlap_rejects_out_of_range(overlap: float) -> None:
+    """``well_overlap`` must lie in [0, 1]."""
+    with pytest.raises(ValueError, match="well_overlap"):
+        RegimeStream(_source(), well_fraction=0.5, well_overlap=overlap)

@@ -38,6 +38,7 @@ from omegaconf import DictConfig
 from cafl4ds import deploy, deploy_corpus, harness, warmup
 from cafl4ds.data.attributes import AttributeSource
 from cafl4ds.health_trust import CANARY_SIGNALS, DEFAULT_LABEL_FREE_SIGNALS, Backbone, backbone_family
+from cafl4ds.leg_checkpoints import CheckpointingStream
 from cafl4ds.ssl.base import SSLMethod, apply_encoder_init
 
 logger.remove()
@@ -62,6 +63,13 @@ def _live_method(config: DictConfig) -> SSLMethod:
     return method
 
 
+def _anchor_method(config: DictConfig) -> SSLMethod:
+    """Build the frozen drift-anchor model — the selected backbone resumed from the ``anchor`` well."""
+    anchor: SSLMethod = instantiate(config.ssl, encoder=instantiate(config.encoder))
+    warmup.load_well(anchor, to_absolute_path(str(config.anchor)))
+    return anchor
+
+
 def _run_live(
     config: DictConfig, out_dir: Path, name: str, source: AttributeSource
 ) -> tuple[harness.Arm, dict[int, str], dict[int, Any]]:
@@ -80,16 +88,26 @@ def _run_live(
         )
     stream = instantiate(config.stream, source=source)
     logger.info(
-        f"deploy '{name}': backbone={method.name}, {stream.num_eras} eras, {len(stream)} batches, dev={config.device}"
+        f"deploy '{name}': backbone={method.name}, order={stream.order}, {stream.num_eras} eras, "
+        f"{len(stream)} batches, dev={config.device}"
+    )
+    monitor = instantiate(config.monitor, eval_sets=stream.eval_sets)
+    if config.get("anchor"):
+        with torch.random.fork_rng():  # building the anchor must not shift the arm's RNG draws
+            monitor.anchor_drift(_anchor_method(config))
+    fed = (
+        CheckpointingStream(stream, method, stream.leg_boundary_steps, out_dir / "checkpoints" / f"s{config.seed}")
+        if config.get("checkpoint_legs")
+        else stream
     )
     arm = harness.run_stream_arm(
         name=f"{name}_live",
         role="live",
         method=method,
-        stream=stream,
+        stream=fed,
         optimizer=instantiate(config.optim, params=method.parameters()),
         selection_filter=instantiate(config.filter),
-        monitor=instantiate(config.monitor, eval_sets=stream.eval_sets),
+        monitor=monitor,
         out_dir=out_dir,
         eval_every=config.eval_every,
         device=config.device,
@@ -195,7 +213,12 @@ def _build(config: DictConfig, out_dir: Path, seed: int) -> tuple[dict[str, Any]
         "I": config.init.mode,
         "warm": bool(config.get("well")),
         "diet": "regime",
+        "order": str(config.stream.get("order", "walk")),
         "block_size": config.stream.block_size,
+        "stratified_canary": bool(config.stream.get("stratify_canary", False)),
+        "well_fraction": float(config.stream.get("well_fraction", 0.0)),
+        "well_overlap": float(config.stream.get("well_overlap", 0.0)),
+        "anchor": (str(config.anchor) if config.get("anchor") else None),
         "A": _target_leaf(config.filter),
         "seed": int(seed),
         "img_size": int(config.img_size),

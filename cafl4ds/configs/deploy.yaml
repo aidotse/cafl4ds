@@ -34,6 +34,16 @@ seeds: null
 # a path = warm drive resuming the competent well intact. The configurable warm-start pointer.
 well: null
 
+# The fixed drift reference (P1.1.0): a full-method well path the monitor anchors drift to, instead of
+# the run's own first checkpoint. Defaults to the drive's well; a cold drive may point it at a well to
+# read "distance from a competent reference" (cka_drift only — cosine_drift needs a shared frame).
+anchor: ${well}
+
+# Save the full method at every leg boundary of the walk (and at the end) under checkpoints/s<seed>/,
+# for post-hoc reads too costly to run inline (the P1.3 fine-tune probe). The IID control checkpoints
+# at the same (matched) steps.
+checkpoint_legs: false
+
 # BDD sizing (data=bdd). bdd_root points at the canonical download; max_images caps the load.
 bdd_root: /mnt/bdd100k
 max_images: null

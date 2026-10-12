@@ -11,3 +11,13 @@ max_train_per_regime: ${max_train_per_regime}
 seed: ${seed} # within-regime frame shuffle — varies per drive across the seed ensemble
 canary_seed: 0 # held-out probe reservation — FIXED (decoupled from ${seed}) so every drive and the
 # warm well hold out the identical probe set, disjoint from all SSL training (audit P1.0 A1)
+# P1.1.0 options. `order`: walk (the shift-walk) | iid (the matched IID control — the walk's images
+# and batch sizes, shuffled across regimes). `stratify_canary` reserves the probe set per
+# (timeofday, scene) cell (support/query counts are then per cell) so the canary reads per stratum.
+# `well_fraction` carves a fixed per-regime slice of the pool out for the warm well (disjoint from the
+# drive) — set it identically for scripts/warm_well.py and the drive. `well_overlap` swaps that
+# fraction of the well's pool for drive frames (the familiarity knob; the drive is unchanged).
+order: walk
+stratify_canary: false
+well_fraction: 0.0
+well_overlap: 0.0

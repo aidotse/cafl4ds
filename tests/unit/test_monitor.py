@@ -5,6 +5,9 @@ checkpoint and becomes positive once the representation moves, and that measurin
 leaves the method in eval mode (it must restore training).
 """
 
+import copy
+from dataclasses import replace
+
 import torch
 
 from cafl4ds.data.sources import SyntheticSource
@@ -181,3 +184,54 @@ def test_p052_readers_reported_when_enabled_for_mae() -> None:
     assert extra <= set(metrics)
     assert set(metrics) == _EXPECTED_KEYS | extra
     assert all(isinstance(metrics[k], float) and metrics[k] == metrics[k] for k in extra)
+
+
+def _perturb(method: object) -> None:
+    """Move the encoder's weights (a stand-in for training) so its representation changes."""
+    with torch.no_grad():
+        for p in method.encoder.parameters():  # type: ignore[attr-defined]
+            p.add_(0.05 * torch.randn_like(p))
+
+
+def test_anchor_drift_to_the_same_model_reads_zero_then_tracks_movement() -> None:
+    """Anchored to a frozen copy of itself, the first read is 0 — and drift grows once the model moves."""
+    method, monitor = _method_and_monitor()
+    monitor.anchor_drift(copy.deepcopy(method))  # type: ignore[arg-type]
+    first = monitor.measure(method, step=0)  # type: ignore[arg-type]
+    assert abs(first["cka_drift"]) < 1e-5 and abs(first["cosine_drift"]) < 1e-5
+    _perturb(method)
+    later = monitor.measure(method, step=1)  # type: ignore[arg-type]
+    assert later["cka_drift"] > 1e-4 and later["cosine_drift"] > 1e-4
+
+
+def test_anchor_drift_reads_nonzero_at_the_first_checkpoint_against_another_model() -> None:
+    """Anchored to a *different* model, drift is non-zero from the very first checkpoint (no self-reset)."""
+    method, monitor = _method_and_monitor()
+    reference = copy.deepcopy(method)
+    _perturb(reference)
+    monitor.anchor_drift(reference)  # type: ignore[arg-type]
+    first = monitor.measure(method, step=0)  # type: ignore[arg-type]
+    assert first["cka_drift"] > 1e-4 and first["cosine_drift"] > 1e-4
+
+
+def test_anchor_drift_restores_the_reference_training_mode() -> None:
+    """Anchoring reads the reference in eval mode and puts it back the way it was."""
+    method, monitor = _method_and_monitor()
+    reference = copy.deepcopy(method)
+    reference.train()  # type: ignore[attr-defined]
+    monitor.anchor_drift(reference)  # type: ignore[arg-type]
+    assert reference.training  # type: ignore[attr-defined]
+
+
+def test_grouped_probe_query_reports_per_group_accuracies() -> None:
+    """A grouped probe-query adds ``<probe>_<group>`` accuracies whose size-weighted mean is the pooled one."""
+    method, monitor = _method_and_monitor()
+    ev = monitor.eval_sets
+    groups = torch.arange(ev.probe_query.labels.numel()) % 2  # two arbitrary query groups
+    grouped = replace(ev, probe_query=replace(ev.probe_query, groups=groups), group_names={0: "dawn/dusk", 1: "night"})
+    metrics = HealthMonitor(grouped, knn_k=5).measure(method, step=0)  # type: ignore[arg-type]
+    n0, n1 = int((groups == 0).sum()), int((groups == 1).sum())
+    for probe in ("knn_acc", "linear_acc"):
+        assert {f"{probe}_dawn_dusk", f"{probe}_night"} <= set(metrics)
+        weighted = (n0 * metrics[f"{probe}_dawn_dusk"] + n1 * metrics[f"{probe}_night"]) / (n0 + n1)
+        assert abs(weighted - metrics[probe]) < 1e-9

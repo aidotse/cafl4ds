@@ -24,19 +24,30 @@ for joint-embedding methods; the projector-surface metrics carry a ``_proj`` suf
 * ``cka_drift`` / ``cosine_drift`` — representation drift of the fixed probe set vs. its
   first-checkpoint (backbone) embeddings (content drift and coordinate-frame churn).
 * ``knn_acc`` / ``linear_acc`` — downstream probe accuracy on frozen features (labels used
-  HERE ONLY).
+  HERE ONLY). When the probe-query set is grouped (``EvalSet.groups`` — e.g. the P1.1 time-of-day
+  strata), the accuracy is *also* reported per group as ``knn_acc_<group>`` / ``linear_acc_<group>``
+  (one probe fit on the pooled support, scored per query group).
 
 Drift is undefined at the first checkpoint (no reference yet), so it is reported as ``0.0``
-there and against the stored ``t0`` embeddings thereafter.
+there and against the stored ``t0`` embeddings thereafter — unless :meth:`HealthMonitor.anchor_drift`
+pinned the reference to a fixed model first (P1.1: the frozen warm well), in which case every
+checkpoint, the first included, reads drift against that anchor.
 """
 
 from __future__ import annotations
+
+import re
 
 import torch
 
 from cafl4ds import measurements
 from cafl4ds.data.streams import EvalSets
 from cafl4ds.ssl.base import SSLMethod
+
+
+def group_key(name: str) -> str:
+    """The metric-key suffix for a probe group name (``"dawn/dusk"`` → ``"dawn_dusk"``)."""
+    return re.sub(r"[^0-9a-zA-Z]+", "_", name).strip("_").lower()
 
 
 def _surface_suffix(name: str) -> str:
@@ -131,22 +142,52 @@ class HealthMonitor:
                 metrics.update(self._attn_distance(method))
             if self.run_alignment_strong:
                 metrics.update(self._alignment_strong(method))
+            support = (self.eval_sets.probe_support.images, self.eval_sets.probe_support.labels)
             if self.run_knn:
-                metrics["knn_acc"] = measurements.knn_probe(
-                    method.encode,
-                    (self.eval_sets.probe_support.images, self.eval_sets.probe_support.labels),
-                    (query.images, query.labels),
-                    k=self.knn_k,
+                pred, truth = measurements.knn_predict(
+                    method.encode, support, (query.images, query.labels), k=self.knn_k
                 )
+                metrics.update(self._accuracies("knn_acc", pred, truth))
             if self.run_linear:
-                metrics["linear_acc"] = measurements.linear_probe(
-                    method.encode,
-                    (self.eval_sets.probe_support.images, self.eval_sets.probe_support.labels),
-                    (query.images, query.labels),
-                )
+                pred, truth = measurements.linear_predict(method.encode, support, (query.images, query.labels))
+                metrics.update(self._accuracies("linear_acc", pred, truth))
             return metrics
         finally:
             method.train(was_training)
+
+    def anchor_drift(self, reference: SSLMethod) -> None:
+        """Pin the drift reference to a fixed model's embeddings of the probe set.
+
+        By default drift is read against the first checkpoint of the monitored run. Anchoring
+        replaces that with an independent, fixed reference — P1.1 anchors to the frozen warm well,
+        Phase 0's "fixed, independently-certified reference, not a co-trained arm" principle. For a
+        warm drive the well *is* the drive's starting state, so this measures drift from step 0
+        rather than from after the first update. ``cka_drift`` stays meaningful across different
+        models (it is rotation-invariant); ``cosine_drift`` is only meaningful when the reference
+        shares the monitored model's coordinate frame (i.e. the model started from it).
+
+        Args:
+            reference: The frozen reference model (read in eval mode; its training mode restored).
+        """
+        was_training = reference.training
+        reference.eval()
+        try:
+            surfaces = reference.embedding_surfaces(self.eval_sets.probe_query.images)
+        finally:
+            reference.train(was_training)
+        names = surfaces if self.drift_surfaces else {"backbone": surfaces["backbone"]}
+        self._z_ref0 = {name: z.detach().cpu().clone() for name, z in names.items()}
+
+    def _accuracies(self, key: str, pred: object, truth: object) -> dict[str, float]:
+        """Pooled probe accuracy under ``key``, plus one ``<key>_<group>`` per probe-query group."""
+        correct = torch.as_tensor(pred) == torch.as_tensor(truth)
+        out = {key: float(correct.float().mean().item())}
+        groups = self.eval_sets.probe_query.groups
+        if groups is not None:
+            for gid in sorted(set(groups.tolist())):
+                name = group_key(self.eval_sets.group_names.get(gid, str(gid)))
+                out[f"{key}_{name}"] = float(correct[groups == gid].float().mean().item())
+        return out
 
     def _geometry(self, name: str, z: torch.Tensor) -> dict[str, float]:
         """Collapse-geometry instruments for one embedding surface.
