@@ -117,6 +117,7 @@ def _reserve_probes(
     support_per_cell: int,
     query_per_cell: int,
     generator: torch.Generator,
+    available: torch.Tensor | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Reserve a balanced held-out probe support/query per canary class (or per ``(stratum, class)`` cell).
 
@@ -127,6 +128,8 @@ def _reserve_probes(
         support_per_cell: Support images per cell.
         query_per_cell: Query images per cell.
         generator: The fixed reservation generator (seeded by ``canary_seed``).
+        available: Optional mask of images still free to reserve (default: all) — a second
+            reservation draws from what the first left.
 
     Returns:
         ``(support_idx, query_idx, train_mask)`` — the reserved indices and the remaining training mask.
@@ -136,10 +139,11 @@ def _reserve_probes(
     """
     strata: list[int | None] = sorted(set(stratum.tolist())) if stratum is not None else [None]
     support_idx, query_idx = [], []
-    train_mask = torch.ones(canary.shape[0], dtype=torch.bool)
+    train_mask = torch.ones(canary.shape[0], dtype=torch.bool) if available is None else available.clone()
     for st in strata:
         for cls in sorted(set(canary.tolist())):
             in_cell = canary == cls if stratum is None else (canary == cls) & (stratum == st)
+            in_cell &= train_mask
             cls_idx = in_cell.nonzero(as_tuple=True)[0]
             perm = cls_idx[torch.randperm(cls_idx.numel(), generator=generator)]
             need = support_per_cell + query_per_cell
@@ -198,6 +202,29 @@ def _carve_well(
     return sorted(well)
 
 
+def _check_options(
+    block_size: int | None,
+    order: str,
+    well_fraction: float,
+    well_overlap: float,
+    select_support: int,
+    select_query: int,
+) -> None:
+    """Validate :class:`RegimeStream`'s scalar options (raises ``ValueError``; see its constructor)."""
+    if block_size is not None and block_size < 1:
+        raise ValueError(f"block_size must be a positive integer; got {block_size}.")
+    if order not in ("walk", "iid"):
+        raise ValueError(f"order must be 'walk' or 'iid'; got {order!r}.")
+    if not 0.0 <= well_fraction < 1.0:
+        raise ValueError(f"well_fraction must be in [0, 1); got {well_fraction}.")
+    if not 0.0 <= well_overlap <= 1.0:
+        raise ValueError(f"well_overlap must be in [0, 1]; got {well_overlap}.")
+    if well_overlap > 0.0 and well_fraction == 0.0:
+        raise ValueError("well_overlap needs well_fraction > 0 (with no reserved slice there is nothing to swap).")
+    if (select_support > 0) != (select_query > 0):
+        raise ValueError("the selection set needs both select_support_per_canary and select_query_per_canary > 0.")
+
+
 class RegimeStream:
     """A single-pass diet that orders images by driving regime and probes an orthogonal canary axis.
 
@@ -232,6 +259,8 @@ class RegimeStream:
         stratify_canary: bool = False,
         well_fraction: float = 0.0,
         well_overlap: float = 0.0,
+        select_support_per_canary: int = 0,
+        select_query_per_canary: int = 0,
     ) -> None:
         """Build the stream (loads the source and constructs the splits eagerly).
 
@@ -273,6 +302,13 @@ class RegimeStream:
                 size and the drive is unchanged, so only how much of the drive the well has already
                 seen varies (``0`` = disjoint, ``1`` = the well trains only on drive frames). Drawn
                 from ``canary_seed`` (fixed across drives). Needs ``well_fraction > 0``.
+            select_support_per_canary: Support images per canary class for the **selection set** — a
+                second labelled reservation, used only to decide when a warm well is competent
+                (:attr:`selection_sets`), so the measurement probes are never selected on. Pooled over
+                strata, drawn from ``canary_seed`` after the probes and before the well slice, so it is
+                disjoint from the probes, the well and the drive. ``0`` (default) reserves none and
+                leaves every other reservation unchanged.
+            select_query_per_canary: Query images per canary class for the selection set.
 
         Raises:
             ValueError: If ``block_size`` is non-positive, ``order``, ``well_fraction`` or
@@ -280,16 +316,9 @@ class RegimeStream:
                 ``stratify_canary`` is set on a source without strata, or a canary class (cell) has
                 too few images to satisfy the requested held-out reservations.
         """
-        if block_size is not None and block_size < 1:
-            raise ValueError(f"block_size must be a positive integer; got {block_size}.")
-        if order not in ("walk", "iid"):
-            raise ValueError(f"order must be 'walk' or 'iid'; got {order!r}.")
-        if not 0.0 <= well_fraction < 1.0:
-            raise ValueError(f"well_fraction must be in [0, 1); got {well_fraction}.")
-        if not 0.0 <= well_overlap <= 1.0:
-            raise ValueError(f"well_overlap must be in [0, 1]; got {well_overlap}.")
-        if well_overlap > 0.0 and well_fraction == 0.0:
-            raise ValueError("well_overlap needs well_fraction > 0 (with no reserved slice there is nothing to swap).")
+        _check_options(
+            block_size, order, well_fraction, well_overlap, select_support_per_canary, select_query_per_canary
+        )
         self.order = order
         self.batch_size = batch_size
         self.block_size = block_size
@@ -323,8 +352,25 @@ class RegimeStream:
             "stratify_canary": bool(stratify_canary),
             "well_fraction": float(well_fraction),
             "well_overlap": float(well_overlap),
+            "select_support_per_canary": int(select_support_per_canary),
+            "select_query_per_canary": int(select_query_per_canary),
         }
         self._probe_indices = (support, query)
+
+        # The selection set (the well's stopping signal), pooled over strata, carved before the well
+        # slice so it is disjoint from the well and the drive. Skipped entirely when off, so the
+        # generator — and every reservation after it — is unchanged.
+        self._selection_sets: EvalSets | None = None
+        self._selection_indices: list[int] = []
+        if select_support_per_canary > 0:
+            sel_support, sel_query, train_mask = _reserve_probes(
+                canary, None, select_support_per_canary, select_query_per_canary, reserve_generator, train_mask
+            )
+            self._selection_sets = EvalSets(
+                probe_support=EvalSet(self._images[sel_support], canary[sel_support]),
+                probe_query=EvalSet(self._images[sel_query], canary[sel_query]),
+            )
+            self._selection_indices = torch.cat([sel_support, sel_query]).tolist()
         self._eval_sets = EvalSets(
             probe_support=EvalSet(
                 self._images[support], canary[support], stratum[support] if stratum is not None else None
@@ -451,8 +497,8 @@ class RegimeStream:
 
         The probes stay disjoint from a well's training only if the well and the drive reserve
         identically, so :mod:`cafl4ds.warmup` stores this beside a well and the drive refuses a well
-        whose fingerprint differs. The ``digest`` hashes the reserved indices themselves (support,
-        query, well); the settings are kept beside it to make a mismatch readable.
+        whose fingerprint differs. The ``digest`` hashes the reserved indices themselves (probe support
+        and query, selection set, well); the settings are kept beside it to make a mismatch readable.
 
         Returns:
             The split settings and a ``digest`` over the reserved indices.
@@ -460,10 +506,20 @@ class RegimeStream:
         support, query = self._probe_indices
         well = self._well_indices if self._well_indices is not None else []
         digest = hashlib.sha256()
-        for part in (support.tolist(), query.tolist(), well):
+        for part in (support.tolist(), query.tolist(), self._selection_indices, well):
             digest.update(",".join(map(str, part)).encode())
             digest.update(b"|")
         return {**self._split_params, "digest": digest.hexdigest()}
+
+    @property
+    def selection_sets(self) -> EvalSets | None:
+        """The selection set — labelled support/query for the well's competence stop (``None`` if off).
+
+        Kept apart from :attr:`eval_sets` so the well is never stopped on the measurement probes:
+        selecting on them would pick a lucky high reading, and the drive's regression to the mean
+        would then look like degradation.
+        """
+        return self._selection_sets
 
     @property
     def eval_sets(self) -> EvalSets:

@@ -10,10 +10,19 @@ import torch
 
 from cafl4ds.data.attributes import SyntheticAttributeSource
 from cafl4ds.data.regime import RegimeStream
+from cafl4ds.data.streams import StreamBatch
 from cafl4ds.models.vit import TinyViTEncoder
 from cafl4ds.ssl.base import SSLMethod
 from cafl4ds.ssl.factory import build_simsiam
-from cafl4ds.warmup import PlateauCriterion, check_split, load_well, save_split, save_well, warm_until_settled
+from cafl4ds.warmup import (
+    CompetenceCriterion,
+    PlateauCriterion,
+    check_split,
+    load_well,
+    save_split,
+    save_well,
+    warm_until_settled,
+)
 
 
 def _stream(seed: int = 0) -> RegimeStream:
@@ -133,3 +142,108 @@ def test_check_split_refuses_a_well_reserved_differently(tmp_path: Path) -> None
 def test_check_split_only_warns_for_a_well_without_a_fingerprint(tmp_path: Path) -> None:
     """A well saved before fingerprints existed is not refused (there is nothing to compare)."""
     check_split(tmp_path / "legacy.pt", _stream().split_fingerprint())
+
+
+def _select_stream() -> RegimeStream:
+    """The small stream with a selection set reserved."""
+    source = SyntheticAttributeSource(num_regimes=3, num_canary_classes=3, per_cell=16, img_size=16, long_tail=False)
+    return RegimeStream(
+        source,
+        batch_size=8,
+        support_per_canary=6,
+        query_per_canary=6,
+        select_support_per_canary=3,
+        select_query_per_canary=3,
+    )
+
+
+def _trace(values: list[float], every: int = 100) -> list[dict[str, float]]:
+    """A competence trace read every ``every`` steps from step 0."""
+    return [{"step": float(i * every), "knn_acc": v} for i, v in enumerate(values)]
+
+
+def test_competence_criterion_waits_for_min_steps_and_two_windows() -> None:
+    """No plateau is declared before ``min_steps`` or two full windows of readings."""
+    rule = CompetenceCriterion(window=200, min_gain=0.01, min_steps=300)
+    flat = _trace([0.5] * 10)
+    assert not rule.settled(flat, 200)
+    assert rule.settled(flat, 400)
+
+
+def test_competence_criterion_keeps_going_while_accuracy_climbs() -> None:
+    """A window that still gains ``min_gain`` is not a plateau; a flat one is."""
+    rule = CompetenceCriterion(window=200, min_gain=0.01, min_steps=0)
+    climbing = _trace([0.40, 0.42, 0.44, 0.46, 0.48])
+    assert not rule.settled(climbing, 400)
+    assert rule.settled(_trace([0.40, 0.42, 0.44, 0.44, 0.44, 0.44, 0.44]), 600)
+
+
+def test_budget_stop_runs_to_max_steps_and_logs_the_selection_trace() -> None:
+    """``stop="budget"`` ignores the plateaus; the trace reads at step 0, every N steps, and the end."""
+    torch.manual_seed(0)
+    method = _method()
+    summary = warm_until_settled(
+        method=method,
+        stream=_select_stream(),
+        optimizer=torch.optim.AdamW(method.parameters(), lr=1e-3),
+        max_steps=7,
+        stop="budget",
+        select_every=3,
+        knn_k=3,
+    )
+    assert summary["steps"] == 7 and not summary["plateaued"]
+    assert [r["step"] for r in summary["competence_trace"]] == [0.0, 3.0, 6.0, 7.0]
+    assert all(0.0 <= r["knn_acc"] <= 1.0 and 0.0 <= r["linear_acc"] <= 1.0 for r in summary["competence_trace"])
+
+
+def test_competence_stop_fires_on_a_selection_plateau() -> None:
+    """``stop="competence"`` ends the warm-up once the selection accuracy stops gaining."""
+    torch.manual_seed(0)
+    method = _method()
+    summary = warm_until_settled(
+        method=method,
+        stream=_select_stream(),
+        optimizer=torch.optim.AdamW(method.parameters(), lr=1e-3),
+        competence_rule=CompetenceCriterion(window=2, min_gain=1.0, min_steps=0),  # any gain < 1 settles
+        max_steps=50,
+        stop="competence",
+        select_every=1,
+        knn_k=3,
+    )
+    assert summary["plateaued"] and summary["steps"] == 4
+
+
+def test_competence_reads_need_a_selection_set() -> None:
+    """A selection read on a stream without a selection set, or a competence stop without reads, is refused."""
+    method = _method()
+    optimizer = torch.optim.AdamW(method.parameters(), lr=1e-3)
+    with pytest.raises(ValueError, match="selection set"):
+        warm_until_settled(method=method, stream=_stream(), optimizer=optimizer, select_every=2)
+    with pytest.raises(ValueError, match="select_every"):
+        warm_until_settled(method=method, stream=_select_stream(), optimizer=optimizer, stop="competence")
+
+
+class _TailStream:
+    """A stationary diet whose every pass ends on a 1-image batch (an awkward pool size)."""
+
+    selection_sets = None
+
+    def stationary_batches(self) -> list[StreamBatch]:
+        return [
+            StreamBatch(images=torch.rand(4, 3, 16, 16), era=0, step=0),
+            StreamBatch(torch.rand(1, 3, 16, 16), 0, 1),
+        ]
+
+
+def test_a_one_image_tail_batch_is_skipped_not_trained_on() -> None:
+    """A 1-image batch cannot pass the projector BatchNorm; the warm-up skips it as the loop does."""
+    method = _method()
+    summary = warm_until_settled(
+        method=method,
+        stream=_TailStream(),  # type: ignore[arg-type]
+        optimizer=torch.optim.AdamW(method.parameters(), lr=1e-3),
+        max_steps=3,
+        max_passes=5,
+        stop="budget",
+    )
+    assert summary["steps"] == 3

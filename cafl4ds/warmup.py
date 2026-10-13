@@ -33,11 +33,81 @@ from typing import Any
 import torch
 from loguru import logger
 
+from cafl4ds import measurements
 from cafl4ds.data.regime import RegimeStream
+from cafl4ds.data.streams import EvalSets
 from cafl4ds.ssl.base import SSLMethod
 
 # Numerical floor so the plateau ratio is well-defined even at a near-zero loss.
 _EPS = 1e-8
+# The smallest batch an update runs on (the streaming loop's floor, cafl4ds.loop).
+_MIN_BATCH = 2
+
+
+def competence(method: SSLMethod, sets: EvalSets, knn_k: int = 20) -> dict[str, float]:
+    """The method's kNN and linear probe accuracy on a labelled support/query pair (eval mode).
+
+    Args:
+        method: The method to read (its training mode is restored).
+        sets: The labelled sets — for the well's stop, the stream's selection set.
+        knn_k: Neighbours for the kNN probe.
+
+    Returns:
+        ``{"knn_acc": ..., "linear_acc": ...}``.
+    """
+    was_training = method.training
+    method.eval()
+    try:
+        support = (sets.probe_support.images, sets.probe_support.labels)
+        query = (sets.probe_query.images, sets.probe_query.labels)
+        return {
+            "knn_acc": measurements.knn_probe(method.encode, support, query, k=knn_k),
+            "linear_acc": measurements.linear_probe(method.encode, support, query),
+        }
+    finally:
+        method.train(was_training)
+
+
+@dataclass(frozen=True)
+class CompetenceCriterion:
+    """A competence-plateau stopping rule — stop when the selection accuracy stops improving.
+
+    The SSL loss is not a competence signal for every backbone (MAE's loss keeps falling while its
+    features stall — "the loss lies", P0.5), so a deep well stops on labelled accuracy instead, read on
+    the *selection* set, never the measurement probes. Compares the mean of ``key`` over the readings in
+    the most recent ``window`` steps against the ``window`` before it; when it gained less than
+    ``min_gain`` (absolute accuracy), the well is on its plateau.
+
+    Attributes:
+        key: The accuracy to watch (``"knn_acc"`` / ``"linear_acc"``).
+        window: Steps per comparison window.
+        min_gain: The absolute accuracy gain below which the well has settled.
+        min_steps: Minimum steps before a plateau may be declared.
+    """
+
+    key: str = "knn_acc"
+    window: int = 500
+    min_gain: float = 0.01
+    min_steps: int = 1000
+
+    def settled(self, trace: list[dict[str, Any]], step: int) -> bool:
+        """Whether the competence trace has plateaued by ``step``.
+
+        Args:
+            trace: The competence readings so far, each with a ``step`` and the watched ``key``.
+            step: The current step count.
+
+        Returns:
+            ``True`` once ``min_steps`` and two full windows have passed and the recent window's mean
+            gained less than ``min_gain`` on the previous one's.
+        """
+        if step < max(self.min_steps, 2 * self.window):
+            return False
+        recent = [r[self.key] for r in trace if step - self.window < r["step"] <= step]
+        previous = [r[self.key] for r in trace if step - 2 * self.window < r["step"] <= step - self.window]
+        if not recent or not previous:
+            return False
+        return fmean(recent) - fmean(previous) < self.min_gain
 
 
 @dataclass(frozen=True)
@@ -78,61 +148,124 @@ class PlateauCriterion:
         return relative_improvement < self.tol
 
 
+def _check_stop(stop: str, select_every: int, selection: EvalSets | None) -> None:
+    """Validate the warm-up's stopping mode against its selection reads (see :func:`warm_until_settled`)."""
+    if stop not in ("loss", "competence", "budget"):
+        raise ValueError(f"stop must be 'loss', 'competence' or 'budget'; got {stop!r}.")
+    if stop == "competence" and select_every <= 0:
+        raise ValueError("stop='competence' needs select_every > 0.")
+    if select_every > 0 and selection is None:
+        raise ValueError("a competence read needs a selection set (select_support/query_per_canary > 0).")
+
+
+def _update(
+    method: SSLMethod, optimizer: torch.optim.Optimizer, images: torch.Tensor, grad_clip: float | None
+) -> float:
+    """One optimizer step on a batch; returns its loss."""
+    optimizer.zero_grad()
+    loss = method.training_step(images)
+    loss.backward()
+    if grad_clip is not None:
+        torch.nn.utils.clip_grad_norm_(method.parameters(), grad_clip)
+    optimizer.step()
+    return float(loss.detach().cpu())
+
+
+class _SelectionLog:
+    """The warm-up's selection-competence trace: one reading per call, with the mean loss since the last."""
+
+    def __init__(self, method: SSLMethod, sets: EvalSets | None, *, every: int, knn_k: int) -> None:
+        self.method, self.sets, self.every, self.knn_k = method, sets, every, knn_k
+        self.trace: list[dict[str, Any]] = []
+
+    def read(self, losses: list[float]) -> None:
+        """Append a reading at the current step (off when ``every`` is 0; never twice at one step)."""
+        if self.every <= 0 or self.sets is None or (self.trace and self.trace[-1]["step"] == len(losses)):
+            return
+        row = {"step": float(len(losses)), "loss": fmean(losses[-self.every :]) if losses else None}
+        self.trace.append({**row, **competence(self.method, self.sets, self.knn_k)})
+        logger.info(f"warm step {len(losses)}: selection {self.trace[-1]}")
+
+
 def warm_until_settled(
     *,
     method: SSLMethod,
     stream: RegimeStream,
     optimizer: torch.optim.Optimizer,
     plateau: PlateauCriterion | None = None,
+    competence_rule: CompetenceCriterion | None = None,
     max_steps: int = 2000,
     max_passes: int = 50,
     grad_clip: float | None = 1.0,
     device: str = "cpu",
+    stop: str = "loss",
+    select_every: int = 0,
+    knn_k: int = 20,
 ) -> dict[str, Any]:
-    """Train ``method`` on the stream's stationary diet until the loss plateaus (or a cap is hit).
+    """Train ``method`` on the stream's stationary diet until it settles (or a cap is hit).
 
     Args:
         method: The SSL method to warm (updated in place).
         stream: The regime stream whose reserved training pool supplies the stationary diet.
         optimizer: Optimizer over ``method.parameters()``.
-        plateau: The plateau stopping rule; defaults to :class:`PlateauCriterion`.
+        plateau: The loss-plateau rule (``stop="loss"``); defaults to :class:`PlateauCriterion`. Its
+            ``window`` also smooths the summary's initial/final loss.
+        competence_rule: The competence-plateau rule (``stop="competence"``); defaults to
+            :class:`CompetenceCriterion`.
         max_steps: Hard cap on optimizer steps (the plateau usually stops first).
         max_passes: Cap on passes over the stationary pool (each pass is freshly reshuffled).
         grad_clip: Global grad-norm clip, or ``None`` to disable.
         device: Torch device (``cpu`` / ``cuda`` / ``hpu``).
+        stop: ``"loss"`` (loss plateau), ``"competence"`` (selection-accuracy plateau) or ``"budget"``
+            (run to ``max_steps`` / ``max_passes`` — the competence-ceiling scout).
+        select_every: Read the selection-set competence every this many steps (and at step 0 and
+            the end); ``0`` reads none. ``stop="competence"`` needs it.
+        knn_k: Neighbours for the selection kNN probe.
 
     Returns:
-        A warm-up summary: the step count, whether it plateaued, the initial/final smoothed loss, and
-        the (possibly truncated) loss trace.
+        A warm-up summary: the step count, whether it plateaued, the initial/final smoothed loss, the
+        (possibly truncated) loss trace, and the selection ``competence_trace``.
+
+    Raises:
+        ValueError: If ``stop`` is unknown, or a competence read is asked of a stream with no
+            selection set.
     """
-    criterion = plateau or PlateauCriterion()
+    selection = stream.selection_sets
+    _check_stop(stop, select_every, selection)
+    loss_rule = plateau or PlateauCriterion()
+    competence_stop = competence_rule or CompetenceCriterion()
     method.to(torch.device(device))
     method.train()
     losses: list[float] = []
+    log = _SelectionLog(method, selection, every=select_every, knn_k=knn_k)
+    log.read(losses)
     settled = False
     for _pass in range(max_passes):
         for batch in stream.stationary_batches():
-            optimizer.zero_grad()
-            loss = method.training_step(batch.images.to(torch.device(device)))
-            loss.backward()
-            if grad_clip is not None:
-                torch.nn.utils.clip_grad_norm_(method.parameters(), grad_clip)
-            optimizer.step()
-            losses.append(float(loss.detach().cpu()))
+            if batch.images.shape[0] < _MIN_BATCH:  # a 1-image tail cannot update (BatchNorm) — as in the loop
+                continue
+            losses.append(_update(method, optimizer, batch.images.to(torch.device(device)), grad_clip))
+            if len(losses) % max(select_every, 1) == 0:
+                log.read(losses)
             if len(losses) >= max_steps:
                 break
-            if criterion.settled(losses):
+            if (stop == "loss" and loss_rule.settled(losses)) or (
+                stop == "competence" and competence_stop.settled(log.trace, len(losses))
+            ):
                 settled = True
                 break
         if settled or len(losses) >= max_steps:
             break
-    window = min(criterion.window, len(losses))
+    log.read(losses)  # the final state (a no-op if the last step was just read)
+    trace = log.trace
+    window = min(loss_rule.window, len(losses))
     summary = {
         "steps": len(losses),
         "plateaued": settled,
         "init_loss": fmean(losses[:window]) if losses else None,
         "final_loss": fmean(losses[-window:]) if losses else None,
         "loss_trace": losses,
+        "competence_trace": trace,
     }
     logger.info(
         f"warm well: {summary['steps']} steps, plateaued={settled}, "

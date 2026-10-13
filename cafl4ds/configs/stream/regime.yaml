@@ -21,3 +21,8 @@ order: walk
 stratify_canary: false
 well_fraction: 0.0
 well_overlap: 0.0
+# The selection set (P1.1.0): a second labelled reservation per scene, pooled over strata, used only to
+# stop a deep well on competence (warm_well.py warmup.stop=competence) — never the measurement probes.
+# Disjoint from probes, well and drive; 0/0 reserves none. Set identically for the well and the drive.
+select_support_per_canary: 0
+select_query_per_canary: 0

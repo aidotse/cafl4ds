@@ -466,3 +466,60 @@ def test_split_fingerprint_changes_with_the_reservation() -> None:
         canary_seed=1,
     )
     assert redrawn.split_fingerprint()["digest"] != reference
+
+
+def _select_stream(seed: int = 0, overlap: float = 0.5) -> RegimeStream:
+    """A well/drive split with stratified probes and a selection set."""
+    return RegimeStream(
+        _source(),
+        batch_size=8,
+        support_per_canary=3,
+        query_per_canary=3,
+        well_fraction=0.5,
+        well_overlap=overlap,
+        select_support_per_canary=2,
+        select_query_per_canary=2,
+        seed=seed,
+    )
+
+
+def test_selection_set_is_balanced_and_disjoint_from_probes_well_and_drive() -> None:
+    """The selection set holds its per-scene counts and shares no image with the probes, well or drive."""
+    stream = _select_stream(overlap=1.0)  # a fully familiar well spans the most drive frames
+    sets = stream.selection_sets
+    assert sets is not None
+    for ev, n in ((sets.probe_support, 2), (sets.probe_query, 2)):
+        assert torch.bincount(ev.labels).tolist() == [n] * 3
+    selection = {tuple(img.flatten().tolist()) for ev in (sets.probe_support, sets.probe_query) for img in ev.images}
+    sup, qry = _probe_images(stream)
+    well = set(_contents(list(stream.stationary_batches())))
+    drive = set(_contents(list(stream)))
+    assert not selection & (sup | qry | well | drive)
+
+
+def test_selection_set_is_fixed_across_drive_seeds() -> None:
+    """Drawn from ``canary_seed``, the selection set is the same for every drive seed."""
+    a, b = _select_stream(seed=0).selection_sets, _select_stream(seed=5).selection_sets
+    assert a is not None and b is not None
+    assert torch.equal(a.probe_query.images, b.probe_query.images)
+
+
+def test_no_selection_set_leaves_every_reservation_unchanged() -> None:
+    """Off by default, and turning it off reproduces the stream bit for bit (no extra generator draw)."""
+    off = _overlap_stream(0.5)
+    assert off.selection_sets is None
+    reference = RegimeStream(
+        _source(), batch_size=8, support_per_canary=3, query_per_canary=3, well_fraction=0.5, well_overlap=0.5
+    )
+    assert off.split_fingerprint() == reference.split_fingerprint()
+
+
+def test_selection_set_enters_the_split_fingerprint() -> None:
+    """A well warmed with a selection set and a drive without one reserve differently."""
+    assert _select_stream().split_fingerprint()["digest"] != _overlap_stream(0.5).split_fingerprint()["digest"]
+
+
+def test_selection_set_needs_both_support_and_query() -> None:
+    """A half-specified selection set is rejected."""
+    with pytest.raises(ValueError, match="selection set"):
+        RegimeStream(_source(), select_support_per_canary=2)

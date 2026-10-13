@@ -155,6 +155,31 @@ def test_p11_null_control_drives_walk_and_iid_from_a_disjoint_anchored_well(tmp_
         assert index[-1]["file"] == "final.pt" and len(index) >= 2
 
 
+def test_p11_scout_warms_a_budgeted_well_with_a_selection_trace(tmp_path: Path) -> None:
+    """The competence scout: a fixed budget, a selection read every N steps, the trace beside the well."""
+    well_out = tmp_path / "je_well.pt"
+    select = ["stream.select_support_per_canary=2", "stream.select_query_per_canary=2"]
+    warm_cfg = _compose(
+        "warm_well",
+        [
+            *_P11_DIET,
+            *select,
+            "warmup.stop=budget",
+            "warmup.max_steps=5",
+            "warmup.select_every=2",
+            f"well_out={well_out}",
+        ],
+    )
+    _load_script("warm_well").warm(warm_cfg)
+    trace = json.loads(well_out.with_suffix(".trace.json").read_text())
+    assert trace["steps"] == 5
+    assert [r["step"] for r in trace["competence_trace"]] == [0.0, 2.0, 4.0, 5.0]
+    assert set(trace["measurement"]) == {"knn_acc", "linear_acc"}
+    # the drive carries the same selection reservation, so it accepts the well
+    config = _compose("deploy", [*_P11_DIET, *select, "eval_every=4", f"well={well_out}"])
+    _load_script("run_deploy_harness").run_deploy(config, tmp_path / "drive")
+
+
 def test_p11_drive_refuses_a_well_reserved_with_another_split(tmp_path: Path) -> None:
     """A drive whose familiarity level differs from its well's is refused before it runs."""
     well_out = tmp_path / "je_well.pt"
