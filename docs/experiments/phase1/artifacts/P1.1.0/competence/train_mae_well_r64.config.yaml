@@ -1,0 +1,78 @@
+encoder:
+  _target_: cafl4ds.models.vit.TinyViTEncoder
+  img_size: ${img_size}
+  patch_size: 8
+  in_chans: 3
+  embed_dim: 96
+  depth: 4
+  num_heads: 3
+  mlp_ratio: 2.0
+family: mae
+ssl:
+  _target_: cafl4ds.ssl.factory.build_mae
+  mask_ratio: 0.75
+  decoder_dim: 64
+  decoder_depth: 2
+  decoder_heads: 4
+  decoder_mlp_ratio: 2.0
+  norm_pix_loss: true
+monitor:
+  _target_: cafl4ds.monitor.HealthMonitor
+  knn_k: 20
+  run_knn: true
+  run_linear: true
+  run_alignment: true
+  align_seed: 0
+  drift_surfaces: false
+data:
+  _target_: cafl4ds.data.attributes.BDD100KSource
+  bdd_root: ${bdd_root}
+  split: train
+  img_size: ${img_size}
+  max_images: ${max_images}
+  min_canary_count: 1000
+stream:
+  _target_: cafl4ds.data.regime.RegimeStream
+  source: ${data}
+  batch_size: ${batch_size}
+  block_size: null
+  support_per_canary: 10
+  query_per_canary: 10
+  max_train_per_regime: ${max_train_per_regime}
+  seed: ${seed}
+  canary_seed: 0
+  order: walk
+  stratify_canary: false
+  well_fraction: 0.0
+  well_overlap: 0.0
+  select_support_per_canary: 500
+  select_query_per_canary: 500
+optim:
+  _target_: torch.optim.AdamW
+  lr: 0.001
+  weight_decay: 0.05
+init:
+  mode: from_scratch
+  checkpoint: null
+img_size: 64
+batch_size: 32
+seed: 0
+device: hpu
+bdd_root: /home/mauricio/data/bdd100k
+max_images: null
+max_train_per_regime: null
+warmup:
+  window: 20
+  tol: 0.001
+  min_steps: 40
+  max_steps: 20000
+  max_passes: 50
+  grad_clip: 1.0
+  stop: budget
+  select_every: 500
+  competence:
+    key: knn_acc
+    window: 500
+    min_gain: 0.01
+    min_steps: 1000
+well_out: outputs/p110_opt3/wells/mae_train_r64.pt

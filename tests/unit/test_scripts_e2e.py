@@ -15,6 +15,7 @@ from pathlib import Path
 from types import ModuleType
 
 import pytest
+import torch
 from hydra import compose, initialize_config_dir
 from hydra.core.global_hydra import GlobalHydra
 from omegaconf import DictConfig
@@ -255,3 +256,59 @@ def test_analyze_null_falls_back_to_configured_counts_for_a_legacy_manifest(tmp_
     counts = script._query_counts(tmp_path, "run", config)
     assert script._n_query("knn_acc", counts) == config.n_query_pooled
     assert script._n_query("linear_acc_night", counts) == config.n_query_stratum
+
+
+def test_supervised_ceiling_trains_and_reports_against_its_references(tmp_path: Path) -> None:
+    """The supervised ceiling trains on the well pool and scores the drive pool beside its references."""
+    script = _load_script("supervised_ceiling")
+    config = _compose(
+        "supervised_ceiling",
+        [
+            "data=attr_synthetic",
+            "img_size=16",
+            "data.long_tail=false",
+            "stream.support_per_canary=2",
+            "stream.query_per_canary=2",
+            "stream.select_support_per_canary=2",
+            "stream.select_query_per_canary=2",
+            "epochs=2",
+            "batch_size=16",
+            "probe_per_class=8",
+            "knn_k=3",
+            "pixel_grid=4",
+        ],
+    )
+    report = script.run(config, tmp_path)
+    assert [r["epoch"] for r in report["trace"]] == [1.0, 2.0]
+    assert {"train_bacc", "drive_bacc", "selection_bacc"} <= set(report["final"])
+    assert set(report["references"]) == {"encoder_at_init", "pixels"}
+    assert 0.0 <= report["best_drive_bacc"] <= 1.0
+    assert (tmp_path / "supervised_ceiling.json").is_file()
+    # epochs=0 is the probe-only read of the encoder as built
+    config.epochs = 0
+    probe_only = script.run(config, tmp_path)
+    assert probe_only["trace"] == [] and probe_only["best_drive_bacc"] is None
+
+
+def test_supervised_ceiling_reads_a_saved_ssl_well(tmp_path: Path) -> None:
+    """With ``well=<path>`` the read loads the SSL well's encoder weights, not a fresh encoder."""
+    well_out = tmp_path / "je_well.pt"
+    warm = _compose("warm_well", [*_P11_DIET, "warmup.max_steps=2", f"well_out={well_out}"])
+    _load_script("warm_well").warm(warm)
+    script = _load_script("supervised_ceiling")
+    overrides = [*_P11_DIET, "stream.select_support_per_canary=0", "stream.select_query_per_canary=0", "epochs=0"]
+    encoder = script._encoder(_compose("supervised_ceiling", [*overrides, f"well={well_out}"]))
+    saved = torch.load(well_out)
+    assert all(torch.equal(v, saved[f"encoder.{k}"]) for k, v in encoder.state_dict().items())
+    report = script.run(
+        _compose("supervised_ceiling", [*overrides, f"well={well_out}", "probe_per_class=8", "pixel_grid=4"]), tmp_path
+    )
+    assert report["config"]["well"] == str(well_out)
+
+
+def test_balanced_accuracy_is_mean_per_class_recall() -> None:
+    """A majority-class guess scores chance under balanced accuracy, however imbalanced the labels."""
+    script = _load_script("supervised_ceiling")
+    truth = [0] * 8 + [1] * 2
+    assert script.balanced_accuracy([0] * 10, truth) == 0.5
+    assert script.balanced_accuracy(truth, truth) == 1.0

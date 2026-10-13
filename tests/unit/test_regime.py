@@ -523,3 +523,14 @@ def test_selection_set_needs_both_support_and_query() -> None:
     """A half-specified selection set is rejected."""
     with pytest.raises(ValueError, match="selection set"):
         RegimeStream(_source(), select_support_per_canary=2)
+
+
+def test_labelled_pool_returns_the_well_and_drive_frames_with_their_labels() -> None:
+    """The labelled pools hold exactly the well's and the drive's frames, labelled on the canary axis."""
+    stream = _select_stream(overlap=0.0)
+    well, drive = stream.labelled_pool("well"), stream.labelled_pool("drive")
+    assert {tuple(img.flatten().tolist()) for img in well.images} == set(_contents(list(stream.stationary_batches())))
+    assert {tuple(img.flatten().tolist()) for img in drive.images} == set(_contents(list(stream)))
+    assert well.labels.shape[0] == well.images.shape[0] and set(drive.labels.tolist()) <= {0, 1, 2}
+    with pytest.raises(ValueError, match="which"):
+        stream.labelled_pool("probe")

@@ -511,6 +511,32 @@ class RegimeStream:
             digest.update(b"|")
         return {**self._split_params, "digest": digest.hexdigest()}
 
+    def labelled_pool(self, which: str) -> EvalSet:
+        """The well's or the drive's training frames with their canary labels — for supervised diagnostics.
+
+        The SSL runs never see these labels; this exists for label-using reference reads (the P1.1.0
+        supervised ceiling: can the canary task be learned from the well pool at all, scored on the
+        never-trained-on drive pool).
+
+        Args:
+            which: ``"well"`` (the well's pool — the drive pool when no well slice is carved) or
+                ``"drive"`` (the frames the drive delivers).
+
+        Returns:
+            The pool's images and canary labels (sorted image order).
+
+        Raises:
+            ValueError: If ``which`` is unknown.
+        """
+        if which == "drive" or (which == "well" and self._well_indices is None):
+            indices = sorted({idx for _, idx in self._delivered})
+        elif which == "well":
+            indices = sorted(self._well_indices or [])
+        else:
+            raise ValueError(f"which must be 'well' or 'drive'; got {which!r}.")
+        index = torch.tensor(indices, dtype=torch.long)
+        return EvalSet(self._images[index], self._canary[index])
+
     @property
     def selection_sets(self) -> EvalSets | None:
         """The selection set — labelled support/query for the well's competence stop (``None`` if off).
