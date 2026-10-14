@@ -1,0 +1,34 @@
+{
+  "study": "P1.1.0",
+  "segments": [
+    {
+      "era_index": 0,
+      "era_name": "iid",
+      "start_step": 0,
+      "end_step": 118,
+      "start_checkpoint": 0,
+      "end_checkpoint": 117,
+      "n_checkpoints": 118,
+      "n_images": 3522,
+      "scene_hist": {
+        "city street": 2340,
+        "highway": 920,
+        "residential": 262
+      },
+      "category_hist": {
+        "bicycle": 280,
+        "bus": 572,
+        "car": 35798,
+        "motorcycle": 160,
+        "other person": 1,
+        "other vehicle": 36,
+        "pedestrian": 4126,
+        "rider": 205,
+        "traffic light": 10121,
+        "traffic sign": 12572,
+        "train": 7,
+        "truck": 1395
+      }
+    }
+  ]
+}
