@@ -164,18 +164,25 @@ def _trace(values: list[float], every: int = 100) -> list[dict[str, float]]:
 
 def test_competence_criterion_waits_for_min_steps_and_two_windows() -> None:
     """No plateau is declared before ``min_steps`` or two full windows of readings."""
-    rule = CompetenceCriterion(window=200, min_gain=0.01, min_steps=300)
+    rule = CompetenceCriterion(window=200, tol=0.01, min_steps=300)
     flat = _trace([0.5] * 10)
     assert not rule.settled(flat, 200)
     assert rule.settled(flat, 400)
 
 
 def test_competence_criterion_keeps_going_while_accuracy_climbs() -> None:
-    """A window that still gains ``min_gain`` is not a plateau; a flat one is."""
-    rule = CompetenceCriterion(window=200, min_gain=0.01, min_steps=0)
+    """A window that still gains ``tol`` is not a plateau; a flat one is."""
+    rule = CompetenceCriterion(window=200, tol=0.01, min_steps=0)
     climbing = _trace([0.40, 0.42, 0.44, 0.46, 0.48])
     assert not rule.settled(climbing, 400)
     assert rule.settled(_trace([0.40, 0.42, 0.44, 0.44, 0.44, 0.44, 0.44]), 600)
+
+
+def test_competence_criterion_waits_out_a_slide_too() -> None:
+    """Two-sided: a pretrained well still sliding after its warm-up dip is not on its plateau yet."""
+    rule = CompetenceCriterion(window=200, tol=0.01, min_steps=0)
+    assert not rule.settled(_trace([0.60, 0.58, 0.56, 0.54, 0.52]), 400)
+    assert rule.settled(_trace([0.60, 0.58, 0.56, 0.54, 0.54, 0.54, 0.54]), 600)
 
 
 def test_budget_stop_runs_to_max_steps_and_logs_the_selection_trace() -> None:
@@ -196,6 +203,30 @@ def test_budget_stop_runs_to_max_steps_and_logs_the_selection_trace() -> None:
     assert all(0.0 <= r["knn_acc"] <= 1.0 and 0.0 <= r["linear_acc"] <= 1.0 for r in summary["competence_trace"])
 
 
+def test_an_extra_read_lands_in_every_selection_row_without_stopping_the_warm_up() -> None:
+    """``extra_read`` (the scout's drive-pool read) joins each trace row; it is logged, never a stop."""
+    torch.manual_seed(0)
+    method = _method()
+    calls: list[int] = []
+
+    def extra() -> dict[str, float]:
+        calls.append(1)
+        return {"drive_knn_bacc": 0.5}
+
+    summary = warm_until_settled(
+        method=method,
+        stream=_select_stream(),
+        optimizer=torch.optim.AdamW(method.parameters(), lr=1e-3),
+        max_steps=4,
+        stop="budget",
+        select_every=2,
+        knn_k=3,
+        extra_read=extra,
+    )
+    assert summary["steps"] == 4 and len(calls) == len(summary["competence_trace"]) == 3
+    assert all(r["drive_knn_bacc"] == 0.5 and "knn_acc" in r for r in summary["competence_trace"])
+
+
 def test_competence_stop_fires_on_a_selection_plateau() -> None:
     """``stop="competence"`` ends the warm-up once the selection accuracy stops gaining."""
     torch.manual_seed(0)
@@ -204,7 +235,7 @@ def test_competence_stop_fires_on_a_selection_plateau() -> None:
         method=method,
         stream=_select_stream(),
         optimizer=torch.optim.AdamW(method.parameters(), lr=1e-3),
-        competence_rule=CompetenceCriterion(window=2, min_gain=1.0, min_steps=0),  # any gain < 1 settles
+        competence_rule=CompetenceCriterion(window=2, tol=1.0, min_steps=0),  # any change < 1 settles
         max_steps=50,
         stop="competence",
         select_every=1,

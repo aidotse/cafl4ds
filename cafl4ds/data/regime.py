@@ -511,7 +511,7 @@ class RegimeStream:
             digest.update(b"|")
         return {**self._split_params, "digest": digest.hexdigest()}
 
-    def labelled_pool(self, which: str) -> EvalSet:
+    def labelled_pool(self, which: str, *, drive_disjoint: bool = False) -> EvalSet:
         """The well's or the drive's training frames with their canary labels — for supervised diagnostics.
 
         The SSL runs never see these labels; this exists for label-using reference reads (the P1.1.0
@@ -521,6 +521,9 @@ class RegimeStream:
         Args:
             which: ``"well"`` (the well's pool — the drive pool when no well slice is carved) or
                 ``"drive"`` (the frames the drive delivers).
+            drive_disjoint: Drop every frame the drive also delivers (``which="well"`` only). Above
+                ``well_overlap=0`` the well shares drive frames, so a probe fit on the raw well pool and
+                scored on the drive would partly score its own fit set; at overlap 1 nothing is left.
 
         Returns:
             The pool's images and canary labels (sorted image order).
@@ -534,6 +537,9 @@ class RegimeStream:
             indices = sorted(self._well_indices or [])
         else:
             raise ValueError(f"which must be 'well' or 'drive'; got {which!r}.")
+        if drive_disjoint:
+            delivered = {idx for _, idx in self._delivered}
+            indices = [idx for idx in indices if idx not in delivered]
         index = torch.tensor(indices, dtype=torch.long)
         return EvalSet(self._images[index], self._canary[index])
 

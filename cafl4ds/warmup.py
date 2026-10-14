@@ -25,6 +25,7 @@ identically. :func:`save_split` writes the stream's split fingerprint beside the
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from statistics import fmean
@@ -70,24 +71,29 @@ def competence(method: SSLMethod, sets: EvalSets, knn_k: int = 20) -> dict[str, 
 
 @dataclass(frozen=True)
 class CompetenceCriterion:
-    """A competence-plateau stopping rule — stop when the selection accuracy stops improving.
+    """A competence-plateau stopping rule — stop when the selection accuracy has stopped moving.
 
     The SSL loss is not a competence signal for every backbone (MAE's loss keeps falling while its
     features stall — "the loss lies", P0.5), so a deep well stops on labelled accuracy instead, read on
     the *selection* set, never the measurement probes. Compares the mean of ``key`` over the readings in
-    the most recent ``window`` steps against the ``window`` before it; when it gained less than
-    ``min_gain`` (absolute accuracy), the well is on its plateau.
+    the most recent ``window`` steps against the ``window`` before it; when the two differ by less than
+    ``tol`` (absolute accuracy) **in either direction**, the well is on its plateau.
+
+    Two-sided because a pretrained backbone's competence first *falls* under continued SSL — new heads,
+    a new learning rate, a new loss (P1.1.0's ViT-B scout) — and can keep sliding slowly. A rule that only
+    waits out gains would stop mid-slide, and the drive would inherit the rest of that slide as an
+    apparent loss.
 
     Attributes:
         key: The accuracy to watch (``"knn_acc"`` / ``"linear_acc"``).
         window: Steps per comparison window.
-        min_gain: The absolute accuracy gain below which the well has settled.
+        tol: The absolute change (up or down) between windows below which the well has settled.
         min_steps: Minimum steps before a plateau may be declared.
     """
 
     key: str = "knn_acc"
     window: int = 500
-    min_gain: float = 0.01
+    tol: float = 0.01
     min_steps: int = 1000
 
     def settled(self, trace: list[dict[str, Any]], step: int) -> bool:
@@ -99,7 +105,7 @@ class CompetenceCriterion:
 
         Returns:
             ``True`` once ``min_steps`` and two full windows have passed and the recent window's mean
-            gained less than ``min_gain`` on the previous one's.
+            moved less than ``tol`` from the previous one's, up or down.
         """
         if step < max(self.min_steps, 2 * self.window):
             return False
@@ -107,7 +113,7 @@ class CompetenceCriterion:
         previous = [r[self.key] for r in trace if step - 2 * self.window < r["step"] <= step - self.window]
         if not recent or not previous:
             return False
-        return fmean(recent) - fmean(previous) < self.min_gain
+        return abs(fmean(recent) - fmean(previous)) < self.tol
 
 
 @dataclass(frozen=True)
@@ -174,8 +180,16 @@ def _update(
 class _SelectionLog:
     """The warm-up's selection-competence trace: one reading per call, with the mean loss since the last."""
 
-    def __init__(self, method: SSLMethod, sets: EvalSets | None, *, every: int, knn_k: int) -> None:
-        self.method, self.sets, self.every, self.knn_k = method, sets, every, knn_k
+    def __init__(
+        self,
+        method: SSLMethod,
+        sets: EvalSets | None,
+        *,
+        every: int,
+        knn_k: int,
+        extra: Callable[[], dict[str, float]] | None = None,
+    ) -> None:
+        self.method, self.sets, self.every, self.knn_k, self.extra = method, sets, every, knn_k, extra
         self.trace: list[dict[str, Any]] = []
 
     def read(self, losses: list[float]) -> None:
@@ -183,7 +197,9 @@ class _SelectionLog:
         if self.every <= 0 or self.sets is None or (self.trace and self.trace[-1]["step"] == len(losses)):
             return
         row = {"step": float(len(losses)), "loss": fmean(losses[-self.every :]) if losses else None}
-        self.trace.append({**row, **competence(self.method, self.sets, self.knn_k)})
+        self.trace.append(
+            {**row, **competence(self.method, self.sets, self.knn_k), **(self.extra() if self.extra else {})}
+        )
         logger.info(f"warm step {len(losses)}: selection {self.trace[-1]}")
 
 
@@ -201,6 +217,7 @@ def warm_until_settled(
     stop: str = "loss",
     select_every: int = 0,
     knn_k: int = 20,
+    extra_read: Callable[[], dict[str, float]] | None = None,
 ) -> dict[str, Any]:
     """Train ``method`` on the stream's stationary diet until it settles (or a cap is hit).
 
@@ -221,6 +238,8 @@ def warm_until_settled(
         select_every: Read the selection-set competence every this many steps (and at step 0 and
             the end); ``0`` reads none. ``stop="competence"`` needs it.
         knn_k: Neighbours for the selection kNN probe.
+        extra_read: A further read merged into every selection-trace row (e.g. the scout's drive-pool
+            read, :mod:`cafl4ds.pool_read`); it is logged, never a stopping signal.
 
     Returns:
         A warm-up summary: the step count, whether it plateaued, the initial/final smoothed loss, the
@@ -237,7 +256,7 @@ def warm_until_settled(
     method.to(torch.device(device))
     method.train()
     losses: list[float] = []
-    log = _SelectionLog(method, selection, every=select_every, knn_k=knn_k)
+    log = _SelectionLog(method, selection, every=select_every, knn_k=knn_k, extra=extra_read)
     log.read(losses)
     settled = False
     for _pass in range(max_passes):

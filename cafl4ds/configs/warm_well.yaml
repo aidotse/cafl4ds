@@ -36,10 +36,13 @@ warmup:
   # plateau below — needs stream.select_*_per_canary > 0) | budget (run to max_steps: the scout).
   stop: loss
   select_every: 0 # read the selection-set kNN / linear accuracy every N steps (0 = off)
-  competence: # the competence plateau: stop when `key`'s mean over the last `window` steps gained < min_gain
+  # The scout's tight read (P1.1.0): balanced kNN / linear on the ~3,800-frame drive pool, probes fit on
+  # this many well-pool images per class, logged beside every selection reading. 0 = off. Diagnostic only.
+  drive_read_per_class: 0
+  competence: # the competence plateau: stop when `key`'s mean over the last `window` steps moved < tol (up or down)
     key: knn_acc
     window: 500
-    min_gain: 0.01
+    tol: 0.01
     min_steps: 1000
 
 # Where the well is written (resolved to an absolute path against the launch cwd, so it is reusable).

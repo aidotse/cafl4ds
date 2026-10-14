@@ -534,3 +534,17 @@ def test_labelled_pool_returns_the_well_and_drive_frames_with_their_labels() -> 
     assert well.labels.shape[0] == well.images.shape[0] and set(drive.labels.tolist()) <= {0, 1, 2}
     with pytest.raises(ValueError, match="which"):
         stream.labelled_pool("probe")
+
+
+@pytest.mark.parametrize("overlap", [0.0, 0.5, 1.0])
+def test_a_drive_disjoint_well_pool_never_shares_a_drive_frame(overlap: float) -> None:
+    """Above overlap 0 the raw well pool shares drive frames; the disjoint pool drops exactly those."""
+    stream = _select_stream(overlap=overlap)
+    raw = {tuple(img.flatten().tolist()) for img in stream.labelled_pool("well").images}
+    disjoint = {tuple(img.flatten().tolist()) for img in stream.labelled_pool("well", drive_disjoint=True).images}
+    drive = {tuple(img.flatten().tolist()) for img in stream.labelled_pool("drive").images}
+    assert disjoint == raw - drive
+    if overlap == 0.0:
+        assert disjoint == raw
+    if overlap == 1.0:
+        assert not disjoint

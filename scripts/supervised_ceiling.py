@@ -27,7 +27,6 @@ Example::
 
 import json
 import sys
-from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -37,17 +36,16 @@ import torch
 from hydra.core.hydra_config import HydraConfig
 from hydra.utils import instantiate, to_absolute_path
 from loguru import logger
-from numpy.typing import ArrayLike
 from omegaconf import DictConfig
 
 from cafl4ds import measurements, warmup
 from cafl4ds.data.streams import EvalSet
+from cafl4ds.pool_read import balanced_accuracy, balanced_subsample, frozen, probe_read
 
 logger.remove()
 logger.add(sys.stdout, level="INFO")
 
 _MIN_BATCH = 2
-_ENCODE_CHUNK = 256  # frozen-encode chunk (a ViT-B/16 at 224 px over ~4k images at once is heavy)
 
 
 class Classifier(torch.nn.Module):  # type: ignore[misc]  # nn.Module is Any without torch stubs (mypy hook env)
@@ -62,44 +60,6 @@ class Classifier(torch.nn.Module):  # type: ignore[misc]  # nn.Module is Any wit
     def forward(self, imgs: torch.Tensor) -> torch.Tensor:
         """Class logits ``[B, num_classes]``."""
         return self.head(self.encoder.embed(imgs))
-
-    def encode(self, imgs: torch.Tensor) -> torch.Tensor:
-        """The frozen pooled embedding (no gradient, eval mode, in chunks) — what the probes read."""
-        was_training = self.training
-        self.eval()
-        try:
-            with torch.no_grad():
-                return torch.cat([self.encoder.embed(chunk).cpu() for chunk in imgs.split(_ENCODE_CHUNK)])
-        finally:
-            self.train(was_training)
-
-
-def balanced_accuracy(pred: ArrayLike, truth: ArrayLike) -> float:
-    """Mean per-class recall — accuracy that a majority-class guess cannot inflate (chance = 1/#classes)."""
-    p, t = np.asarray(pred), np.asarray(truth)
-    return float(np.mean([np.mean(p[t == c] == c) for c in np.unique(t)]))
-
-
-def balanced_subsample(pool: EvalSet, per_class: int, seed: int) -> EvalSet:
-    """Up to ``per_class`` images of every class, drawn without replacement (for fitting the probes)."""
-    generator = torch.Generator().manual_seed(seed)
-    keep = []
-    for cls in sorted(set(pool.labels.tolist())):
-        idx = (pool.labels == cls).nonzero(as_tuple=True)[0]
-        keep.append(idx[torch.randperm(idx.numel(), generator=generator)[:per_class]])
-    index = torch.cat(keep)
-    return EvalSet(pool.images[index], pool.labels[index])
-
-
-def probe_read(
-    encode: Callable[[torch.Tensor], torch.Tensor], fit: EvalSet, test: EvalSet, knn_k: int
-) -> dict[str, float]:
-    """Balanced accuracy of frozen-feature kNN and linear probes fit on ``fit``, scored on ``test``."""
-    support, query = (fit.images, fit.labels), (test.images, test.labels)
-    return {
-        "knn_bacc": balanced_accuracy(*measurements.knn_predict(encode, support, query, k=knn_k)),
-        "linear_bacc": balanced_accuracy(*measurements.linear_predict(encode, support, query)),
-    }
 
 
 def head_read(model: Classifier, test: EvalSet, batch_size: int) -> float:
@@ -172,7 +132,7 @@ def run(config: DictConfig, out_dir: Path) -> dict[str, Any]:
     """Build the pools, read the references, train the ceiling, and write the report (Hydra-free core)."""
     torch.manual_seed(int(config.seed))
     stream = instantiate(config.stream)
-    well, drive = stream.labelled_pool("well"), stream.labelled_pool("drive")
+    well, drive = stream.labelled_pool("well", drive_disjoint=True), stream.labelled_pool("drive")
     selection = stream.selection_sets
     tests = {"drive": drive}
     if selection is not None:
@@ -191,7 +151,7 @@ def run(config: DictConfig, out_dir: Path) -> dict[str, Any]:
     knn_k = int(config.knn_k)
     pool = torch.nn.AdaptiveAvgPool2d(int(config.pixel_grid))
     references = {
-        "encoder_at_init": probe_read(model.encode, fit, drive, knn_k),
+        "encoder_at_init": probe_read(frozen(model.encoder), fit, drive, knn_k),
         "pixels": {
             "linear_bacc": balanced_accuracy(
                 *measurements.linear_predict(
@@ -217,7 +177,7 @@ def run(config: DictConfig, out_dir: Path) -> dict[str, Any]:
         },
         "chance": 1.0 / num_classes,
         "references": references,
-        "trained_encoder_probes": probe_read(model.encode, fit, drive, knn_k),
+        "trained_encoder_probes": probe_read(frozen(model.encoder), fit, drive, knn_k),
         "best_drive_bacc": max((r["drive_bacc"] for r in trace), default=None),
         "final": trace[-1] if trace else None,
         "trace": trace,

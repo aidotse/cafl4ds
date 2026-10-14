@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import zipfile
 from pathlib import Path
 from types import ModuleType
 
@@ -168,6 +169,7 @@ def test_p11_scout_warms_a_budgeted_well_with_a_selection_trace(tmp_path: Path) 
             "warmup.stop=budget",
             "warmup.max_steps=5",
             "warmup.select_every=2",
+            "warmup.drive_read_per_class=4",
             f"well_out={well_out}",
         ],
     )
@@ -175,10 +177,35 @@ def test_p11_scout_warms_a_budgeted_well_with_a_selection_trace(tmp_path: Path) 
     trace = json.loads(well_out.with_suffix(".trace.json").read_text())
     assert trace["steps"] == 5
     assert [r["step"] for r in trace["competence_trace"]] == [0.0, 2.0, 4.0, 5.0]
+    # the drive-pool read rides along every selection reading
+    assert all(
+        0.0 <= r["drive_knn_bacc"] <= 1.0 and 0.0 <= r["drive_linear_bacc"] <= 1.0 for r in trace["competence_trace"]
+    )
     assert set(trace["measurement"]) == {"knn_acc", "linear_acc"}
     # the drive carries the same selection reservation, so it accepts the well
     config = _compose("deploy", [*_P11_DIET, *select, "eval_every=4", f"well={well_out}"])
     _load_script("run_deploy_harness").run_deploy(config, tmp_path / "drive")
+
+
+def test_p11_drive_read_switches_off_when_the_well_shares_every_drive_frame(tmp_path: Path) -> None:
+    """At overlap 1 no well frame is held out from the drive, so the drive-pool read logs nothing."""
+    well_out = tmp_path / "je_well.pt"
+    overrides = ["stream.select_support_per_canary=2", "stream.select_query_per_canary=2", "stream.well_overlap=1.0"]
+    warm_cfg = _compose(
+        "warm_well",
+        [
+            *_P11_DIET,
+            *overrides,
+            "warmup.stop=budget",
+            "warmup.max_steps=2",
+            "warmup.select_every=2",
+            "warmup.drive_read_per_class=4",
+            f"well_out={well_out}",
+        ],
+    )
+    _load_script("warm_well").warm(warm_cfg)
+    trace = json.loads(well_out.with_suffix(".trace.json").read_text())
+    assert trace["competence_trace"] and not any("drive_knn_bacc" in r for r in trace["competence_trace"])
 
 
 def test_p11_drive_refuses_a_well_reserved_with_another_split(tmp_path: Path) -> None:
@@ -306,9 +333,20 @@ def test_supervised_ceiling_reads_a_saved_ssl_well(tmp_path: Path) -> None:
     assert report["config"]["well"] == str(well_out)
 
 
-def test_balanced_accuracy_is_mean_per_class_recall() -> None:
-    """A majority-class guess scores chance under balanced accuracy, however imbalanced the labels."""
-    script = _load_script("supervised_ceiling")
-    truth = [0] * 8 + [1] * 2
-    assert script.balanced_accuracy([0] * 10, truth) == 0.5
-    assert script.balanced_accuracy(truth, truth) == 1.0
+def test_bdd_legacy_labels_merges_per_image_jsons_into_the_legacy_format(tmp_path: Path) -> None:
+    """Per-image 2018 labels of one split become legacy records: boxes only, legacy category names."""
+    script = _load_script("bdd_legacy_labels")
+    attrs = {"weather": "clear", "scene": "highway", "timeofday": "daytime"}
+    image = {
+        "name": "a",
+        "attributes": attrs,
+        "frames": [{"objects": [{"category": "bike", "box2d": {}}, {"category": "lane", "poly2d": []}]}],
+    }
+    archive = tmp_path / "labels.zip"
+    with zipfile.ZipFile(archive, "w") as z:
+        z.writestr("100k/train/a.json", json.dumps(image))
+        z.writestr("100k/val/b.json", json.dumps({**image, "name": "b"}))
+    records = script.legacy_records(archive, "train")
+    assert records == [{"name": "a.jpg", "attributes": attrs, "labels": [{"category": "bicycle", "box2d": {}}]}]
+    check = script.compare(records, [{"name": "a.jpg", "attributes": attrs, "labels": [{"category": "bicycle"}]}])
+    assert check["missing"] == check["attribute_mismatches"] == check["box_count_mismatches"] == 0
