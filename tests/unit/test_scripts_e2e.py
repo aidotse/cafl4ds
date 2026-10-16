@@ -157,6 +157,54 @@ def test_p11_null_control_drives_walk_and_iid_from_a_disjoint_anchored_well(tmp_
         assert index[-1]["file"] == "final.pt" and len(index) >= 2
 
 
+def test_p111_branches_resume_damage_and_recover_from_a_leg_checkpoint(tmp_path: Path) -> None:
+    """P1.1.1 end to end: resume a drive from a leg checkpoint (dose 0 and damaged), then recover from its end."""
+    well_out = tmp_path / "je_well.pt"
+    warm_cfg = _compose(
+        "warm_well",
+        [*_P11_DIET, "warmup.window=2", "warmup.min_steps=2", "warmup.max_steps=4", f"well_out={well_out}"],
+    )
+    _load_script("warm_well").warm(warm_cfg)
+    script = _load_script("run_deploy_harness")
+    base = [*_P11_DIET, "eval_every=1", f"well={well_out}"]
+    script.run_deploy(_compose("deploy", [*base, "checkpoint_legs=true"]), tmp_path / "drive")
+    index = json.loads((tmp_path / "drive" / "checkpoints" / "s0" / "index.json").read_text())
+    start = index[1]["batches_seen"]
+    ckpt = tmp_path / "drive" / "checkpoints" / "s{seed}" / f"step{start:05d}.pt"
+
+    reports = {}
+    for name, damage in (("dose0", []), ("reinit", ["damage.mode=reinit", "damage.k=2"])):
+        out = tmp_path / name
+        overrides = [*base, f"resume.checkpoint='{ckpt}'", f"resume.step={start}", "checkpoint_legs=final", *damage]
+        script.run_deploy(_compose("deploy", overrides), out)
+        reports[name] = json.loads(next((out / "reports").glob("*.json")).read_text())
+        saved = json.loads((out / "checkpoints" / "s0" / "index.json").read_text())
+        assert [e["file"] for e in saved] == ["final.pt"]  # checkpoint_legs=final: the end state only
+    for name, report in reports.items():
+        assert report["validation"]["passed"] is True, name
+        branch = report["config"]["branch"]
+        assert branch["phase"] == "drive" and branch["start_step"] == start
+        assert report["arms"]["live"]["health"][0]["step"] == start  # the resumed arm sits on the drive's grid
+    dose0, reinit = reports["dose0"]["config"]["branch"], reports["reinit"]["config"]["branch"]
+    assert dose0["damage"]["rel_change"] == 0.0 and dose0["pre"]["rankme"] == dose0["post"]["rankme"]
+    assert reinit["damage"]["rel_change"] > 0.0 and reinit["pre"]["rankme"] == dose0["pre"]["rankme"]
+    assert reinit["post"]["rankme"] != reinit["pre"]["rankme"]  # the dent is on record
+
+    final = tmp_path / "reinit" / "checkpoints" / "s{seed}" / "final.pt"
+    out = tmp_path / "recover"
+    script.run_deploy(_compose("deploy", [*base, f"resume.checkpoint='{final}'", "recovery_steps=5"]), out)
+    report = json.loads(next((out / "reports").glob("*.json")).read_text())
+    assert report["config"]["branch"]["phase"] == "recover"
+    assert [h["step"] for h in report["arms"]["live"]["health"]] == list(range(5))
+
+
+def test_p111_recovery_needs_a_checkpoint_to_recover_from(tmp_path: Path) -> None:
+    """P111 recovery needs a checkpoint to recover from."""
+    config = _compose("deploy", [*_P11_DIET, "recovery_steps=3"])
+    with pytest.raises(ValueError, match="resume.checkpoint"):
+        _load_script("run_deploy_harness").run_deploy(config, tmp_path)
+
+
 def test_p11_scout_warms_a_budgeted_well_with_a_selection_trace(tmp_path: Path) -> None:
     """The competence scout: a fixed budget, a selection read every N steps, the trace beside the well."""
     well_out = tmp_path / "je_well.pt"

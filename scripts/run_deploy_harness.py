@@ -24,6 +24,7 @@ Examples:
 import copy
 import json
 import sys
+from collections.abc import Iterable
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any
@@ -33,14 +34,15 @@ import torch
 from hydra.core.hydra_config import HydraConfig
 from hydra.utils import instantiate, to_absolute_path
 from loguru import logger
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 
-from cafl4ds import deploy, deploy_corpus, harness, warmup
+from cafl4ds import branch, deploy, deploy_corpus, harness, warmup
 from cafl4ds.data.attributes import AttributeSource
 from cafl4ds.data.regime import RegimeStream
+from cafl4ds.data.streams import StreamBatch
 from cafl4ds.health_trust import CANARY_SIGNALS, DEFAULT_LABEL_FREE_SIGNALS, Backbone, backbone_family
 from cafl4ds.leg_checkpoints import CheckpointingStream
-from cafl4ds.monitor import group_key
+from cafl4ds.monitor import HealthMonitor, group_key
 from cafl4ds.ssl.base import SSLMethod, apply_encoder_init
 
 logger.remove()
@@ -77,14 +79,67 @@ def _anchor_method(config: DictConfig) -> SSLMethod:
     return anchor
 
 
+def _branch_stream(
+    config: DictConfig, stream: RegimeStream, method: SSLMethod, monitor: HealthMonitor, out_dir: Path
+) -> tuple[Iterable[StreamBatch], dict[str, Any] | None]:
+    """The stream the live arm drives, and the P1.1.1 branch record (``None`` on a plain drive).
+
+    A plain drive streams the walk (or its IID control). A **branch** (P1.1.1) starts from a saved
+    checkpoint instead of the well (``resume.checkpoint``): it either continues the drive from
+    ``resume.step`` — optionally after damaging the encoder (``damage.*``) — or, with
+    ``recovery_steps``, runs the recovery pass over the well's stationary pool. A branch reads the
+    canary just before and just after the damage (identical at dose 0), so the immediate dent is on
+    record and every dose consumes the same RNG. ``checkpoint_legs`` saves every remaining leg
+    boundary (``true``) or only the end state (``final``).
+    """
+    resume: DictConfig = config.get("resume") or OmegaConf.create({})
+    damage: DictConfig = config.get("damage") or OmegaConf.create({})
+    recovery = config.get("recovery_steps")
+    record: dict[str, Any] | None = None
+    fed: Iterable[StreamBatch] = stream
+    start = 0
+    if resume.get("checkpoint"):
+        path = to_absolute_path(str(resume.checkpoint).format(seed=int(config.seed)))
+        warmup.load_well(method, path)
+        start = 0 if recovery else int(resume.get("step") or 0)
+        method.to(config.device)
+        pre = monitor.measure(method, start - 1)
+        dent = branch.damage_top_blocks(
+            method.encoder,
+            str(damage.get("mode", "none")),
+            int(damage.get("k", 0)),
+            scale=float(damage.get("scale", 0.0)),
+            seed=int(damage.get("seed", 0)),
+        )
+        post = monitor.measure(method, start - 1)
+        record = {
+            "checkpoint": path,
+            "phase": "recover" if recovery else "drive",
+            "start_step": start,
+            "damage": {**{k: damage.get(k) for k in ("mode", "k", "scale", "seed")}, **dent},
+            "pre": pre,
+            "post": post,
+        }
+        logger.info(f"branch from {path}: {record['phase']} at step {start}, damage={record['damage']}")
+        fed = branch.recovery_batches(stream, int(recovery)) if recovery else branch.ResumedStream(stream, start)
+    elif recovery:
+        raise ValueError("recovery_steps needs resume.checkpoint (the state to recover from).")
+    legs = config.get("checkpoint_legs")
+    if legs:
+        steps = [] if str(legs) == "final" or recovery else [s for s in stream.leg_boundary_steps if s > start]
+        fed = CheckpointingStream(fed, method, steps, out_dir / "checkpoints" / f"s{config.seed}")
+    return fed, record
+
+
 def _run_live(
     config: DictConfig, out_dir: Path, name: str, source: AttributeSource
-) -> tuple[harness.Arm, RegimeStream]:
+) -> tuple[harness.Arm, RegimeStream, dict[str, Any] | None]:
     """Run the live backbone over the regime diet, logging the full multivariate health vector.
 
-    Returns the completed arm and the stream it drove (its era names, leg composition, realized
-    familiarity and probe sizes describe the corpus). ``source`` is the one decoded attribute source
-    threaded through every arm, so the corpus is decoded once per drive (not re-decoded per arm).
+    Returns the completed arm, the stream it drove (its era names, leg composition, realized
+    familiarity and probe sizes describe the corpus), and the branch record (P1.1.1; ``None`` on a
+    plain drive). ``source`` is the one decoded attribute source threaded through every arm, so the
+    corpus is decoded once per drive (not re-decoded per arm).
 
     Raises:
         ValueError: If the ``well`` or ``anchor`` was reserved with a different split than this
@@ -108,11 +163,7 @@ def _run_live(
     if config.get("anchor"):
         with torch.random.fork_rng():  # building the anchor must not shift the arm's RNG draws
             monitor.anchor_drift(_anchor_method(config))
-    fed = (
-        CheckpointingStream(stream, method, stream.leg_boundary_steps, out_dir / "checkpoints" / f"s{config.seed}")
-        if config.get("checkpoint_legs")
-        else stream
-    )
+    fed, branched = _branch_stream(config, stream, method, monitor, out_dir)
     arm = harness.run_stream_arm(
         name=f"{name}_live",
         role="live",
@@ -125,7 +176,7 @@ def _run_live(
         eval_every=config.eval_every,
         device=config.device,
     )
-    return arm, stream
+    return arm, stream, branched
 
 
 def _probe_query_counts(stream: RegimeStream) -> dict[str, int]:
@@ -211,12 +262,15 @@ def _run_leak_check(config: DictConfig, out_dir: Path, name: str, source: Attrib
     return harness.leak_report(rss_samples, growth_frac_max=float(config.long_horizon_growth_frac_max))
 
 
-def _build(config: DictConfig, out_dir: Path, seed: int) -> tuple[dict[str, Any], dict[int, str], dict[int, Any]]:
+def _build(
+    config: DictConfig, out_dir: Path, seed: int, source: AttributeSource | None = None
+) -> tuple[dict[str, Any], dict[int, str], dict[int, Any]]:
     """Run the arms for one seed, read the multivariate signal, and assemble the deploy report."""
     config.seed = seed  # drive per-seed determinism (the held-out reservation is fixed by canary_seed)
     name = f"{config.run_name or f'{config.family}_deploy'}_s{seed}"
-    source = instantiate(config.data)  # decode once, thread through every arm (cached — see A2)
-    live, stream = _run_live(config, out_dir, name, source)
+    if source is None:
+        source = instantiate(config.data)  # decode once, thread through every arm (cached — see A2)
+    live, stream, branched = _run_live(config, out_dir, name, source)
     family = Backbone(str(config.family))
 
     grid = harness.health_grid(live)
@@ -250,6 +304,7 @@ def _build(config: DictConfig, out_dir: Path, seed: int) -> tuple[dict[str, Any]
         "img_size": int(config.img_size),
         "device": str(config.device),
         "gate_arms": bool(config.gate_arms),
+        "branch": branched,
     }
     report = deploy.build_deploy_report(
         config_header=header,
@@ -325,8 +380,11 @@ def run_deploy(config: DictConfig, out_dir: Path) -> dict[str, Path]:
     reports: list[tuple[int, dict[str, Any]]] = []
     era_names: dict[int, str] = {}
     composition: dict[int, Any] = {}
+    # A source that does not draw from the seed (BDD — its reservation is fixed by canary_seed) is
+    # decoded once for the whole ensemble, not per seed; a seeded one (the synthetic sources) is rebuilt.
+    source = None if "seed" in config.data else instantiate(config.data)
     for seed in seeds:
-        report, era_names, composition = _build(config, out_dir, seed)
+        report, era_names, composition = _build(config, out_dir, seed, source)
         (reports_dir / f"{config.family}_deploy_s{seed}.json").write_text(
             json.dumps(report, indent=2), encoding="utf-8"
         )
