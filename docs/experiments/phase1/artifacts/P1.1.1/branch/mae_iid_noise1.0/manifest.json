@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "study": "P1.1.1",
+  "backbone_family": "mae",
+  "config": {
+    "backbone": "mae",
+    "I": "from_scratch",
+    "warm": true,
+    "diet": "regime",
+    "order": "iid",
+    "block_size": null,
+    "stratified_canary": true,
+    "well_fraction": 0.5,
+    "well_overlap": 0.0,
+    "anchor": "wells/p110_deep/mae_o0.0.pt",
+    "familiarity": {
+      "well_side": 0.0,
+      "drive_side": 0.0
+    },
+    "n_probe_query": {
+      "pooled": 405,
+      "daytime": 135,
+      "dawn_dusk": 135,
+      "night": 135
+    },
+    "A": "AcceptAll",
+    "seed": 0,
+    "img_size": 224,
+    "device": "hpu",
+    "gate_arms": false,
+    "branch": {
+      "checkpoint": "/workspace/outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00065.pt",
+      "phase": "drive",
+      "start_step": 65,
+      "damage": {
+        "mode": "noise",
+        "k": 12,
+        "scale": 1.0,
+        "seed": 0,
+        "rel_change": 1.000074174350045
+      },
+      "pre": {
+        "step": 64.0,
+        "rankme": 31.22829246520996,
+        "mean_feature_var": 0.0003022872260771692,
+        "offdiag_cov": 1.3447478522721212e-05,
+        "uniformity": -0.6847156286239624,
+        "cka_drift": 0.0028550028800964355,
+        "cosine_drift": 0.013613581657409668,
+        "alignment": 0.014432800002396107,
+        "knn_acc": 0.4493827223777771,
+        "knn_acc_daytime": 0.4444444477558136,
+        "knn_acc_dawn_dusk": 0.4888888895511627,
+        "knn_acc_night": 0.4148148000240326,
+        "linear_acc": 0.5308641791343689,
+        "linear_acc_daytime": 0.5703703761100769,
+        "linear_acc_dawn_dusk": 0.4962962865829468,
+        "linear_acc_night": 0.5259259343147278
+      },
+      "post": {
+        "step": 64.0,
+        "rankme": 76.21858215332031,
+        "mean_feature_var": 0.00016382685862481594,
+        "offdiag_cov": 6.574579401785741e-06,
+        "uniformity": -0.4519605040550232,
+        "cka_drift": 0.30184197425842285,
+        "cosine_drift": 0.6372872591018677,
+        "alignment": 0.030215265229344368,
+        "knn_acc": 0.4839506149291992,
+        "knn_acc_daytime": 0.5185185074806213,
+        "knn_acc_dawn_dusk": 0.46666666865348816,
+        "knn_acc_night": 0.46666666865348816,
+        "linear_acc": 0.42222222685813904,
+        "linear_acc_daytime": 0.42222222685813904,
+        "linear_acc_dawn_dusk": 0.39259257912635803,
+        "linear_acc_night": 0.45185184478759766
+      }
+    }
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "n_rows": 162,
+  "channels": {
+    "label_free": [
+      "alignment",
+      "cka_drift",
+      "cosine_drift",
+      "grad_norm",
+      "mean_feature_var",
+      "offdiag_cov",
+      "rankme",
+      "uniformity"
+    ],
+    "canary": [
+      "knn_acc",
+      "knn_acc_dawn_dusk",
+      "knn_acc_daytime",
+      "knn_acc_night",
+      "linear_acc",
+      "linear_acc_dawn_dusk",
+      "linear_acc_daytime",
+      "linear_acc_night"
+    ]
+  },
+  "tier_a_passed": {
+    "0": true,
+    "1": true,
+    "2": true
+  },
+  "tier_b_passed": {
+    "0": true,
+    "1": true,
+    "2": true
+  },
+  "git_sha": null,
+  "n_seeds": 3,
+  "warm": true,
+  "eval_every": 1
+}
