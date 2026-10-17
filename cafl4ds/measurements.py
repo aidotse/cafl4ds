@@ -19,12 +19,17 @@ Geometry / collapse (label-free):
       informational (redundancy) collapse (VICReg covariance term, Bardes et al. 2022).
     * :func:`alignment` / :func:`uniformity` — positive-pair closeness and spread on the
       hypersphere, for the joint-embedding collapse demo (Wang & Isola 2020).
+    * :func:`twonn_id` — intrinsic dimension of the embedding manifold (TwoNN, Facco et al.
+      2017); P1.1.2's candidate label-free downstream proxy.
 
 Dynamics / stability (label-free):
     * :func:`linear_cka` / :func:`cka_drift` — representation drift of a fixed probe set
       across checkpoints (CKA, Kornblith et al. 2019). Rotation/isotropic-scale invariant.
     * :func:`cosine_drift` — rotation-*sensitive* per-sample churn; the direct readout of
       "how fast the coordinate frame moves" (the moving-reference problem).
+    * :func:`debiased_linear_cka` / :func:`procrustes_distance` — representation similarity
+      between two checkpoints, for P1.1.2's per-block lenses: CKA with the unbiased HSIC (no
+      high-dimension floor), and its low-variance-sensitive complement (Ding et al. 2021).
 
 Downstream / forgetting (labels used HERE ONLY — never in any SSL/training path):
     * :func:`knn_probe` — nearest-neighbour accuracy on frozen features (Wu et al. 2018;
@@ -295,6 +300,47 @@ def uniformity(z: TensorLike, t: float = 2.0) -> float:
     return _to_float(torch.log(torch.exp(-t * sq_dist).mean()))
 
 
+def twonn_id(z: TensorLike, discard_fraction: float = 0.1) -> float:
+    """Intrinsic dimension by the TwoNN estimator (Facco et al. 2017).
+
+    For each sample, ``mu = r2 / r1`` is the ratio of its second- to first-nearest-neighbour
+    distance. On a locally uniform manifold of dimension ``m``, ``mu`` is Pareto-distributed with
+    ``-log(1 - F(mu)) = m * log(mu)``, so ``m`` is the slope of a line through the origin fitted to
+    the empirical CDF. The largest ``discard_fraction`` of ``mu`` (the noisy tail) is dropped
+    first, as in the paper. Unlike :func:`rankme`, which counts the *linear* directions in use, this
+    reads the dimension of a possibly curved manifold (P1.1.2's candidate downstream proxy).
+
+    Samples with a duplicate (``r1 = 0``) carry no ratio and are left out of the fit. The fit
+    matches ``skdim.id.TwoNN`` (scikit-dimension), the reference the unit tests check against.
+
+    Args:
+        z: Embedding matrix ``[N, d]`` with at least 3 distinct samples.
+        discard_fraction: Fraction of the largest ``mu`` dropped before the fit, in ``[0, 1)``.
+
+    Returns:
+        The estimated intrinsic dimension, a positive float.
+
+    Raises:
+        ValueError: If ``discard_fraction`` is outside ``[0, 1)`` or fewer than 3 distinct samples
+            remain.
+    """
+    if not 0.0 <= discard_fraction < 1.0:
+        raise ValueError(f"discard_fraction must be in [0, 1); got {discard_fraction}.")
+    zt = _check_matrix(_as_tensor(z)).to(torch.float64)
+    dist = torch.cdist(zt, zt)
+    dist.fill_diagonal_(float("inf"))
+    r = dist.topk(2, dim=1, largest=False).values  # [N, 2]: r1, r2 per sample
+    keep = r[:, 0] > 0
+    mu = (r[keep, 1] / r[keep, 0]).sort().values
+    n = mu.shape[0]
+    if n < 3:
+        raise ValueError(f"twonn_id needs >= 3 distinct samples; got {n}.")
+    n_fit = int(n * (1.0 - discard_fraction))
+    x = mu[:n_fit].log()
+    y = -torch.log(1.0 - torch.arange(1, n_fit + 1, dtype=torch.float64) / n)
+    return _to_float((x * y).sum() / (x * x).sum())
+
+
 # --------------------------------------------------------------------------------------
 # Quality readers on trial (label-free) — candidate MAE-native quality signals (P0.5.2)
 # --------------------------------------------------------------------------------------
@@ -433,6 +479,84 @@ def cka_drift(z_ref_t0: TensorLike, z_ref_t: TensorLike) -> float:
         The drift ``1 - linear_cka``, a float in ``[0, 1]``.
     """
     return 1.0 - linear_cka(z_ref_t0, z_ref_t)
+
+
+def _unbiased_hsic(kx: torch.Tensor, ky: torch.Tensor) -> torch.Tensor:
+    """Unbiased HSIC estimator of Song et al. (2012) for two ``[N, N]`` kernel matrices (``N >= 4``)."""
+    n = kx.shape[0]
+    kx = kx.clone().fill_diagonal_(0.0)
+    ky = ky.clone().fill_diagonal_(0.0)
+    ones = torch.ones(n, dtype=kx.dtype)
+    term = (kx * ky).sum() + (ones @ kx @ ones) * (ones @ ky @ ones) / ((n - 1) * (n - 2))
+    term = term - 2.0 / (n - 2) * (ones @ kx) @ (ky @ ones)
+    return term / (n * (n - 3))
+
+
+def debiased_linear_cka(x: TensorLike, y: TensorLike) -> float:
+    """Linear CKA with the unbiased HSIC estimator (Song et al. 2012; Kornblith et al. 2019).
+
+    The plain :func:`linear_cka` is biased upward when the feature dimension is large against the
+    sample count: two *unrelated* ``[N, d]`` matrices with ``d ≳ N`` read a CKA well above 0. That is
+    the regime of a ViT-B block (768 features) on a few hundred probe images. The unbiased HSIC
+    removes that floor, so unrelated representations read ~0 and the value is comparable across
+    feature widths. Same invariances as :func:`linear_cka` (orthogonal transforms, isotropic
+    scaling). Being an unbiased estimate of a ratio, it can stray slightly outside ``[0, 1]``.
+
+    Args:
+        x: First representation ``[N, d_x]``.
+        y: Second representation ``[N, d_y]`` (same ``N`` as ``x``, ``N >= 4``).
+
+    Returns:
+        The debiased linear CKA similarity (1.0 = identical up to rotation/scaling, ~0 = unrelated).
+
+    Raises:
+        ValueError: If the sample counts differ or ``N < 4``.
+    """
+    xt = _check_matrix(_as_tensor(x), "x").to(torch.float64)
+    yt = _check_matrix(_as_tensor(y), "y").to(torch.float64)
+    if xt.shape[0] != yt.shape[0]:
+        raise ValueError(f"CKA needs matching sample counts; got {xt.shape[0]} vs {yt.shape[0]}.")
+    if xt.shape[0] < 4:
+        raise ValueError(f"debiased CKA needs N >= 4 samples; got N={xt.shape[0]}.")
+    xt = xt - xt.mean(dim=0, keepdim=True)
+    yt = yt - yt.mean(dim=0, keepdim=True)
+    kx, ky = xt @ xt.T, yt @ yt.T
+    denom = torch.sqrt(_unbiased_hsic(kx, kx) * _unbiased_hsic(ky, ky))
+    if denom <= 0:  # pragma: no cover - a constant representation; similarity undefined.
+        return 0.0
+    return _to_float(_unbiased_hsic(kx, ky) / denom)
+
+
+def procrustes_distance(x: TensorLike, y: TensorLike) -> float:
+    """Orthogonal Procrustes distance between two representations of the same samples (Ding et al. 2021).
+
+    Each matrix is centered and scaled to unit Frobenius norm; the distance is what is left after
+    the best rotation of one onto the other, ``2 - 2 * ||X^T Y||_*`` (nuclear norm). It is the
+    complement to CKA the P1.1.2 brief asks for: CKA weights directions by their variance and can
+    miss a change confined to low-variance directions, which Procrustes still sees (Ding et al.
+    2021). Invariant to rotation and isotropic scaling; ``d_x`` and ``d_y`` may differ.
+
+    Args:
+        x: First representation ``[N, d_x]``.
+        y: Second representation ``[N, d_y]`` (same ``N`` as ``x``).
+
+    Returns:
+        The squared Procrustes distance in ``[0, 2]`` (0 = identical up to rotation/scaling).
+
+    Raises:
+        ValueError: If the sample counts differ.
+    """
+    xt = _check_matrix(_as_tensor(x), "x").to(torch.float64)
+    yt = _check_matrix(_as_tensor(y), "y").to(torch.float64)
+    if xt.shape[0] != yt.shape[0]:
+        raise ValueError(f"Procrustes needs matching sample counts; got {xt.shape[0]} vs {yt.shape[0]}.")
+    xt = xt - xt.mean(dim=0, keepdim=True)
+    yt = yt - yt.mean(dim=0, keepdim=True)
+    nx, ny = torch.linalg.norm(xt), torch.linalg.norm(yt)
+    if nx <= 0 or ny <= 0:  # pragma: no cover - a constant representation; distance undefined.
+        return 2.0
+    nuclear = torch.linalg.svdvals((xt / nx).T @ (yt / ny)).sum()
+    return _to_float((2.0 - 2.0 * nuclear).clamp_min(0.0))
 
 
 def cosine_drift(z_ref_t0: TensorLike, z_ref_t: TensorLike) -> float:

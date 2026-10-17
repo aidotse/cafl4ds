@@ -42,6 +42,8 @@ def test_direction_reads_harm_by_instrument() -> None:
     assert direction("cka_drift") == 1
     assert direction("linear_acc_night") == -1
     assert direction("uniformity") == 0
+    assert direction("dcka_drift@block07") == 1 and direction("rankme@block03") == -1  # per-layer reads
+    assert direction("twonn@backbone") == 0
 
 
 def test_drift_is_read_on_a_log_scale() -> None:

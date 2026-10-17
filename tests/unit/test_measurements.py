@@ -12,6 +12,9 @@ Reference answers used below:
     * separable clusters + identity enc -> knn / linear probe ~ 100%
     * identical vs. changed probe set   -> cka_drift 0 vs. > 0
     * identical vs. rotated probe set   -> cosine_drift 0 vs. > 0
+    * unrelated wide matrices (d > N)   -> debiased CKA ~0 where plain CKA is far above it
+    * 1-D vectors with correlation rho  -> procrustes_distance = 2 - 2|rho|
+    * uniform points on an m-dim subspace -> twonn_id ~ m (and matches scikit-dimension)
 """
 
 import numpy as np
@@ -23,6 +26,7 @@ from cafl4ds.measurements import (
     cka_drift,
     clusterability,
     cosine_drift,
+    debiased_linear_cka,
     effective_rank,
     feature_variance,
     frozen_baseline,
@@ -31,7 +35,9 @@ from cafl4ds.measurements import (
     linear_probe,
     mean_attention_distance,
     offdiag_covariance,
+    procrustes_distance,
     rankme,
+    twonn_id,
     uniformity,
 )
 
@@ -196,6 +202,40 @@ def test_uniformity_lower_when_spread_than_clumped() -> None:
     assert uniformity(spread) < uniformity(clumped)
 
 
+def test_twonn_recovers_subspace_dimension() -> None:
+    """Uniform points on a 5-dim linear subspace of R^60 read an intrinsic dimension of ~5."""
+    g = _gen()
+    z = torch.rand(2000, 5, generator=g) @ _orthonormal(60, 5, g).T
+    assert twonn_id(z) == pytest.approx(5.0, rel=0.15)
+
+
+def test_twonn_invariant_to_rotation_and_scale() -> None:
+    """TwoNN reads distance ratios only, so a rotation and a global rescale leave it unchanged."""
+    g = _gen()
+    z = torch.randn(400, 12, generator=g)
+    assert twonn_id(3.0 * z @ _orthonormal(12, 12, g)) == pytest.approx(twonn_id(z), rel=1e-4)
+
+
+def test_twonn_matches_scikit_dimension() -> None:
+    """The in-house fit agrees with the reference implementation (``skdim.id.TwoNN``)."""
+    skdim = pytest.importorskip("skdim")
+    rng = np.random.default_rng(SEED)
+    for z in (rng.normal(size=(500, 40)), rng.uniform(size=(300, 3)) @ rng.normal(size=(3, 30))):
+        reference = skdim.id.TwoNN(discard_fraction=0.1).fit(z).dimension_
+        assert twonn_id(z) == pytest.approx(reference, rel=1e-6)
+
+
+def test_twonn_skips_duplicates_and_rejects_bad_input() -> None:
+    """A duplicated sample carries no ratio and is left out; degenerate inputs raise."""
+    g = _gen()
+    z = torch.randn(300, 8, generator=g)
+    assert np.isfinite(twonn_id(torch.cat([z, z[:5]])))
+    with pytest.raises(ValueError):
+        twonn_id(z, discard_fraction=1.0)
+    with pytest.raises(ValueError):
+        twonn_id(torch.zeros(10, 4))
+
+
 # --- Dynamics / stability --------------------------------------------------------------
 
 
@@ -232,6 +272,64 @@ def test_cosine_drift_zero_for_identical_positive_for_rotated() -> None:
     z_rot = z @ q
     assert cosine_drift(z, z.clone()) == pytest.approx(0.0, abs=1e-6)
     assert cosine_drift(z, z_rot) > 0.1
+
+
+def _kornblith_debiased_cka(x: np.ndarray, y: np.ndarray) -> float:
+    """Reference: the feature-space debiased linear CKA of Kornblith et al.'s CKA notebook."""
+    x = x - x.mean(0, keepdims=True)
+    y = y - y.mean(0, keepdims=True)
+    n = x.shape[0]
+
+    def debias(xty: float, rows_x: np.ndarray, rows_y: np.ndarray, norm_x: float, norm_y: float) -> float:
+        return float(xty - n / (n - 2.0) * rows_x.dot(rows_y) + norm_x * norm_y / ((n - 1) * (n - 2)))
+
+    rows_x, rows_y = np.einsum("ij,ij->i", x, x), np.einsum("ij,ij->i", y, y)
+    nx, ny = rows_x.sum(), rows_y.sum()
+    xy = debias(np.linalg.norm(x.T @ y) ** 2, rows_x, rows_y, nx, ny)
+    xx = debias(np.linalg.norm(x.T @ x) ** 2, rows_x, rows_x, nx, nx)
+    yy = debias(np.linalg.norm(y.T @ y) ** 2, rows_y, rows_y, ny, ny)
+    return float(xy / np.sqrt(xx * yy))
+
+
+def test_debiased_cka_matches_reference_and_invariances() -> None:
+    """Debiased CKA matches the independent feature-space formula; 1 on itself and under rotation."""
+    rng = np.random.default_rng(SEED)
+    x = rng.normal(size=(120, 30))
+    y = x @ rng.normal(size=(30, 20)) + 0.5 * rng.normal(size=(120, 20))
+    assert debiased_linear_cka(x, y) == pytest.approx(_kornblith_debiased_cka(x, y), rel=1e-6)
+    g = _gen()
+    z = torch.randn(200, 24, generator=g)
+    assert debiased_linear_cka(z, z.clone()) == pytest.approx(1.0, abs=1e-5)
+    assert debiased_linear_cka(z, 2.0 * z @ _orthonormal(24, 24, g)) == pytest.approx(1.0, abs=1e-4)
+
+
+def test_debiased_cka_removes_high_dimension_floor() -> None:
+    """Two unrelated wide matrices (d > N): plain CKA reads far above 0, debiased CKA ~0."""
+    g = _gen()
+    x, y = torch.randn(100, 400, generator=g), torch.randn(100, 400, generator=g)
+    assert linear_cka(x, y) > 0.5
+    assert abs(debiased_linear_cka(x, y)) < 0.05
+
+
+def test_procrustes_known_answers() -> None:
+    """0 on itself and under rotation + rescale; ``2 - 2|rho|`` for two correlated 1-D vectors."""
+    g = _gen()
+    z = torch.randn(200, 24, generator=g)
+    assert procrustes_distance(z, z.clone()) == pytest.approx(0.0, abs=1e-6)
+    assert procrustes_distance(z, 3.0 * z @ _orthonormal(24, 24, g)) == pytest.approx(0.0, abs=1e-6)
+    a, b = torch.randn(500, 1, generator=g), torch.randn(500, 1, generator=g)
+    rho = float(np.corrcoef(a[:, 0], b[:, 0] + a[:, 0])[0, 1])
+    assert procrustes_distance(a, a + b) == pytest.approx(2.0 - 2.0 * abs(rho), abs=1e-5)
+
+
+def test_procrustes_sees_low_variance_change_cka_misses() -> None:
+    """Replacing a low-variance direction barely moves CKA but clearly moves Procrustes (Ding 2021)."""
+    g = _gen()
+    big = torch.randn(400, 10, generator=g) * 10.0
+    x = torch.cat([big, torch.randn(400, 10, generator=g)], dim=1)
+    y = torch.cat([big, torch.randn(400, 10, generator=g)], dim=1)  # only the small block changes
+    assert 1.0 - debiased_linear_cka(x, y) < 1e-3
+    assert procrustes_distance(x, y) > 10.0 * (1.0 - debiased_linear_cka(x, y))
 
 
 # --- Downstream probes (labels used HERE ONLY) -----------------------------------------

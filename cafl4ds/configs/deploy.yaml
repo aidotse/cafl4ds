@@ -60,6 +60,13 @@ damage:
   seed: ${seed} # the damage draw varies with the drive seed, so a dose is not one realization
 # scripts/dose_pilot.py only: the `mode:k[:scale]` damage ladder read on the well with no training.
 doses: []
+# scripts/extract_block_features.py only (P1.1.2): the run dirs whose saved checkpoints are read.
+# `drives` read every checkpoint in checkpoints/s<seed>/index.json; `branches` read final.pt and the
+# post-damage state, rebuilt from the run's own resume.checkpoint + damage config.
+lens:
+  drives: []
+  branches: []
+  batch_size: 135
 # The recovery pass: >0 runs this many stationary well-pool batches from `resume.checkpoint` instead
 # of the drive (the short IID pass after a drive, read as savings).
 recovery_steps: null

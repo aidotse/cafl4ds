@@ -19,7 +19,9 @@ import pytest
 import torch
 from hydra import compose, initialize_config_dir
 from hydra.core.global_hydra import GlobalHydra
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
+
+from cafl4ds.measurements import rankme
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _CONFIG_DIR = _REPO_ROOT / "cafl4ds" / "configs"
@@ -196,6 +198,47 @@ def test_p111_branches_resume_damage_and_recover_from_a_leg_checkpoint(tmp_path:
     report = json.loads(next((out / "reports").glob("*.json")).read_text())
     assert report["config"]["branch"]["phase"] == "recover"
     assert [h["step"] for h in report["arms"]["live"]["health"]] == list(range(5))
+
+
+def test_p112_extracts_block_features_that_reproduce_the_branch_record(tmp_path: Path) -> None:
+    """P1.1.2: the extracted leg checkpoint and rebuilt post-damage state read as the branch recorded them."""
+    well_out = tmp_path / "je_well.pt"
+    warm_cfg = _compose(
+        "warm_well",
+        [*_P11_DIET, "warmup.window=2", "warmup.min_steps=2", "warmup.max_steps=4", f"well_out={well_out}"],
+    )
+    _load_script("warm_well").warm(warm_cfg)
+    harness = _load_script("run_deploy_harness")
+    base = [*_P11_DIET, "eval_every=1", f"well={well_out}"]
+    harness.run_deploy(_compose("deploy", [*base, "checkpoint_legs=true"]), tmp_path / "drive")
+    index = json.loads((tmp_path / "drive" / "checkpoints" / "s0" / "index.json").read_text())
+    start = index[1]["batches_seen"]
+    ckpt = tmp_path / "drive" / "checkpoints" / "s{seed}" / f"step{start:05d}.pt"
+    branch_dir = tmp_path / "noise"
+    branch_cfg = _compose(
+        "deploy",
+        [*base, f"resume.checkpoint='{ckpt}'", f"resume.step={start}", "checkpoint_legs=final"]
+        + ["damage.mode=noise", "damage.k=2", "damage.scale=0.5"],
+    )
+    harness.run_deploy(branch_cfg, branch_dir)
+    (branch_dir / ".hydra").mkdir()
+    OmegaConf.save(branch_cfg, branch_dir / ".hydra" / "config.yaml")  # what a Hydra launch leaves behind
+    record = json.loads(next((branch_dir / "reports").glob("*.json")).read_text())["config"]["branch"]
+
+    out = tmp_path / "lens"
+    cfg = _compose("deploy", [*base, f"lens.drives=[{tmp_path / 'drive'}]", f"lens.branches=[{branch_dir}]"])
+    entries = _load_script("extract_block_features").extract(cfg, out)
+    assert len(entries) == 1 + len(index) + 2  # the well, every leg checkpoint, final + post-damage
+    probe = torch.load(out / "probe.pt")
+    query = probe["is_query"]
+    pre = torch.load(out / "features" / "drive" / "s0" / f"step{start:05d}.pt")
+    post = torch.load(out / "features" / "noise" / "s0" / "post_damage.pt")
+    assert list(post)[-2:] == ["backbone", "proj"] and post["block01"].shape[0] == query.shape[0]
+    assert rankme(pre["backbone"][query]) == pytest.approx(record["pre"]["rankme"], rel=1e-4)
+    assert rankme(post["backbone"][query]) == pytest.approx(record["post"]["rankme"], rel=1e-4)
+    assert [e for e in entries if "damage" in e][0]["damage"]["rel_change"] == pytest.approx(
+        record["damage"]["rel_change"]
+    )
 
 
 def test_p111_recovery_needs_a_checkpoint_to_recover_from(tmp_path: Path) -> None:

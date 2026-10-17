@@ -49,7 +49,8 @@ from typing import Any, TypedDict
 import numpy as np
 
 # The harmful direction of each instrument: -1 = a fall is harm, +1 = a rise is harm. Anything not
-# listed is read two-sided. Canary slices (``knn_acc_night``, …) inherit their base's direction.
+# listed is read two-sided. Canary slices (``knn_acc_night``, …) inherit their base's direction, and
+# so do per-layer reads (``<base>@<layer>``, P1.1.2's lenses: ``dcka_drift@block07``).
 _DIRECTION = {
     "rankme": -1,
     "rankme_proj": -1,
@@ -59,6 +60,8 @@ _DIRECTION = {
     "cka_drift_proj": 1,
     "cosine_drift": 1,
     "cosine_drift_proj": 1,
+    "dcka_drift": 1,
+    "procrustes_drift": 1,
 }
 
 # Euler's constant: a Gumbel law's mean sits this many scale units above its location.
@@ -89,6 +92,7 @@ def apply_transform(values: np.ndarray, transform: str) -> np.ndarray:
 
 def direction(signal: str) -> int:
     """The harmful sign of ``signal`` (``-1`` / ``+1``), or ``0`` for a two-sided read."""
+    signal = signal.split("@", 1)[0]
     if signal in _DIRECTION:
         return _DIRECTION[signal]
     for base in ("knn_acc", "linear_acc"):
