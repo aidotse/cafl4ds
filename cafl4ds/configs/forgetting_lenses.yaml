@@ -14,5 +14,7 @@ arms: {healthy: mae_healthy_replay_r1, pc: mae_pc_forget}
 # and a two-sided test over 5 seeds cannot reach p = 1/32, so it is reported, not tested.
 tested: [cka_drift, dcka_drift, procrustes_drift, rankme]
 device: cpu
+# CPU threads: the SVD lenses slow ~100x when oversubscribed (e.g. beside HPU runs sharing the cores).
+threads: 8
 batch_size: 100
 out: outputs/p113/forgetting_lenses.json

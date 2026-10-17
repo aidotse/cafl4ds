@@ -116,6 +116,7 @@ def read_seed(config: DictConfig, harness: ModuleType, seed: int) -> dict[str, A
 
 def analyze(config: DictConfig) -> dict[str, Any]:
     """Reproduce, read and test; write the report (Hydra-free core)."""
+    torch.set_num_threads(int(config.threads))
     seeds = [int(s) for s in config.seeds]
     report: dict[str, Any] = {"reproduction": {}}
     for seed in seeds:
