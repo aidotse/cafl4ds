@@ -1,0 +1,3167 @@
+{
+  "jolt": {
+    "mae": {
+      "threshold": 3.8307426793465793,
+      "orders": {
+        "iid": {
+          "0": {
+            "peak": 4.345397987819608,
+            "peak_step": 65,
+            "over_threshold": 1,
+            "over_2sd": 1,
+            "settled_abs_median": 1.4116705344413925,
+            "gap_first_steps": {
+              "65": 4.35,
+              "66": 1.46,
+              "67": 1.19,
+              "68": 1.87,
+              "69": 2.91,
+              "70": -0.03,
+              "71": 0.21,
+              "72": 2.34
+            },
+            "fired_steps": {
+              "twin": [
+                65
+              ],
+              "original": []
+            },
+            "canary_gap_mean": 0.0011135328049753227
+          },
+          "1": {
+            "peak": 4.413761973251228,
+            "peak_step": 65,
+            "over_threshold": 1,
+            "over_2sd": 5,
+            "settled_abs_median": 1.000517228553024,
+            "gap_first_steps": {
+              "65": 4.41,
+              "66": 3.63,
+              "67": 2.76,
+              "68": 2.48,
+              "69": 2.62,
+              "70": 1.21,
+              "71": 0.92,
+              "72": 0.29
+            },
+            "fired_steps": {
+              "twin": [
+                65
+              ],
+              "original": []
+            },
+            "canary_gap_mean": 0.0014040119507733513
+          },
+          "2": {
+            "peak": 7.461410748729152,
+            "peak_step": 65,
+            "over_threshold": 1,
+            "over_2sd": 2,
+            "settled_abs_median": 0.7844606866309893,
+            "gap_first_steps": {
+              "65": 7.46,
+              "66": 3.43,
+              "67": 0.52,
+              "68": 1.89,
+              "69": 2.43,
+              "70": 2.37,
+              "71": 2.4,
+              "72": 2.36
+            },
+            "fired_steps": {
+              "twin": [
+                65,
+                66
+              ],
+              "original": []
+            },
+            "canary_gap_mean": 0.0005325581513199152
+          }
+        },
+        "walk": {
+          "0": {
+            "peak": 6.480954731455474,
+            "peak_step": 65,
+            "over_threshold": 2,
+            "over_2sd": 4,
+            "settled_abs_median": 0.8380161530519618,
+            "gap_first_steps": {
+              "65": 6.48,
+              "66": 4.68,
+              "67": 2.91,
+              "68": 3.05,
+              "69": 1.07,
+              "70": 0.76,
+              "71": 1.93,
+              "72": 0.26
+            },
+            "fired_steps": {
+              "twin": [
+                65,
+                66,
+                67
+              ],
+              "original": []
+            },
+            "canary_gap_mean": 0.011571045015372481
+          },
+          "1": {
+            "peak": 6.383132450400826,
+            "peak_step": 65,
+            "over_threshold": 1,
+            "over_2sd": 4,
+            "settled_abs_median": 1.5001696148375872,
+            "gap_first_steps": {
+              "65": 6.38,
+              "66": 2.58,
+              "67": 3.02,
+              "68": 2.87,
+              "69": 0.56,
+              "70": 0.98,
+              "71": 0.49,
+              "72": -0.62
+            },
+            "fired_steps": {
+              "twin": [
+                65,
+                78
+              ],
+              "original": [
+                117
+              ]
+            },
+            "canary_gap_mean": -0.0140401820341746
+          },
+          "2": {
+            "peak": 7.033985840528525,
+            "peak_step": 65,
+            "over_threshold": 1,
+            "over_2sd": 4,
+            "settled_abs_median": 1.2204535605249387,
+            "gap_first_steps": {
+              "65": 7.03,
+              "66": 3.8,
+              "67": 2.64,
+              "68": 4.58,
+              "69": -0.11,
+              "70": -2.8,
+              "71": -2.05,
+              "72": -0.11
+            },
+            "fired_steps": {
+              "twin": [
+                65,
+                68,
+                91
+              ],
+              "original": []
+            },
+            "canary_gap_mean": 0.008617766931945202
+          }
+        }
+      }
+    },
+    "je": {
+      "threshold": 3.341555937177333,
+      "orders": {
+        "iid": {
+          "0": {
+            "peak": 2.6402024688327765,
+            "peak_step": 114,
+            "over_threshold": 0,
+            "over_2sd": 0,
+            "settled_abs_median": 1.341191000124705,
+            "gap_first_steps": {
+              "65": -0.05,
+              "66": -0.14,
+              "67": -0.22,
+              "68": -0.32,
+              "69": -0.45,
+              "70": -0.6,
+              "71": -0.69,
+              "72": -0.74
+            },
+            "fired_steps": {
+              "twin": [],
+              "original": []
+            },
+            "canary_gap_mean": -0.0109900808801838
+          },
+          "1": {
+            "peak": 1.6560540266278334,
+            "peak_step": 106,
+            "over_threshold": 0,
+            "over_2sd": 0,
+            "settled_abs_median": 0.6214117756932538,
+            "gap_first_steps": {
+              "65": -0.16,
+              "66": -0.01,
+              "67": -0.12,
+              "68": -0.27,
+              "69": -0.17,
+              "70": -0.13,
+              "71": -0.11,
+              "72": -0.11
+            },
+            "fired_steps": {
+              "twin": [],
+              "original": []
+            },
+            "canary_gap_mean": 0.01016702838972503
+          },
+          "2": {
+            "peak": 1.8394287146381914,
+            "peak_step": 96,
+            "over_threshold": 0,
+            "over_2sd": 0,
+            "settled_abs_median": 0.5526193226169793,
+            "gap_first_steps": {
+              "65": 0.13,
+              "66": 0.09,
+              "67": -0.06,
+              "68": -0.14,
+              "69": -0.2,
+              "70": -0.24,
+              "71": -0.34,
+              "72": -0.39
+            },
+            "fired_steps": {
+              "twin": [],
+              "original": []
+            },
+            "canary_gap_mean": -0.003389016085979985
+          }
+        },
+        "walk": {
+          "0": {
+            "peak": 1.2553074507892017,
+            "peak_step": 117,
+            "over_threshold": 0,
+            "over_2sd": 0,
+            "settled_abs_median": 0.9785579113226539,
+            "gap_first_steps": {
+              "65": -0.26,
+              "66": -0.55,
+              "67": -0.62,
+              "68": -0.67,
+              "69": -0.59,
+              "70": -0.56,
+              "71": -0.46,
+              "72": -0.38
+            },
+            "fired_steps": {
+              "twin": [
+                105,
+                106,
+                107,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ],
+              "original": [
+                80,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                115,
+                116,
+                117
+              ]
+            },
+            "canary_gap_mean": -0.009731306749231675
+          },
+          "1": {
+            "peak": 0.43572401652897974,
+            "peak_step": 73,
+            "over_threshold": 0,
+            "over_2sd": 0,
+            "settled_abs_median": 0.33381255621621064,
+            "gap_first_steps": {
+              "65": -0.07,
+              "66": -0.02,
+              "67": -0.02,
+              "68": 0.01,
+              "69": 0.09,
+              "70": 0.21,
+              "71": 0.28,
+              "72": 0.35
+            },
+            "fired_steps": {
+              "twin": [
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ],
+              "original": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ]
+            },
+            "canary_gap_mean": 0.00024207082449221145
+          },
+          "2": {
+            "peak": 2.1495906933500453,
+            "peak_step": 110,
+            "over_threshold": 0,
+            "over_2sd": 0,
+            "settled_abs_median": 0.9598054477328148,
+            "gap_first_steps": {
+              "65": 0.07,
+              "66": 0.5,
+              "67": 0.9,
+              "68": 1.17,
+              "69": 1.14,
+              "70": 0.97,
+              "71": 0.61,
+              "72": 0.28
+            },
+            "fired_steps": {
+              "twin": [
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                105,
+                106,
+                107,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ],
+              "original": []
+            },
+            "canary_gap_mean": -0.010554344046349619
+          }
+        }
+      }
+    }
+  },
+  "past": {
+    "grid": [
+      "step00065",
+      "step00108",
+      "step00109",
+      "step00110",
+      "step00114",
+      "step00118",
+      "final"
+    ],
+    "panels": {
+      "past_dcka": {
+        "threshold": 5.299442464456912,
+        "fpr_loo": 0.2,
+        "walk": [
+          {
+            "fired": false,
+            "max_z": 1.9696455866329623
+          },
+          {
+            "fired": true,
+            "max_z": 6.240006062768083
+          },
+          {
+            "fired": false,
+            "max_z": 4.956601383229851
+          },
+          {
+            "fired": false,
+            "max_z": 3.2140434279846826
+          },
+          {
+            "fired": false,
+            "max_z": 3.233446548967782
+          }
+        ],
+        "arms": {
+          "iid/noise0.3": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 2.5089579320409108,
+                "end": 2.03884493960118,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.009876549243927002,
+                  "linear_acc_daytime": -0.059259235858917236,
+                  "linear_acc_dawn_dusk": 0.03703707456588745,
+                  "linear_acc_night": -0.007407426834106445
+                }
+              },
+              "1": {
+                "immediate": 5.040128725603957,
+                "end": 3.7934882441996707,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.029629647731781006,
+                  "linear_acc_daytime": -0.02962958812713623,
+                  "linear_acc_dawn_dusk": 0.0,
+                  "linear_acc_night": -0.059259235858917236
+                }
+              },
+              "2": {
+                "immediate": 3.196317218926381,
+                "end": 2.0315281103005387,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.03456789255142212,
+                  "linear_acc_daytime": -0.02222222089767456,
+                  "linear_acc_dawn_dusk": -0.037037014961242676,
+                  "linear_acc_night": -0.04444444179534912
+                }
+              }
+            }
+          },
+          "iid/noise0.5": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 6.75502094822471,
+                "end": 5.677370312955718,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.032098740339279175,
+                  "linear_acc_daytime": -0.07407408952713013,
+                  "linear_acc_dawn_dusk": 0.05925929546356201,
+                  "linear_acc_night": -0.08148148655891418
+                }
+              },
+              "1": {
+                "immediate": 9.550674809516972,
+                "end": 4.225192681579368,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.04444444179534912,
+                  "linear_acc_daytime": -0.04444444179534912,
+                  "linear_acc_dawn_dusk": -0.04444444179534912,
+                  "linear_acc_night": -0.04444444179534912
+                }
+              },
+              "2": {
+                "immediate": 7.663557824423448,
+                "end": 4.147480478673728,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.07160496711730957,
+                  "linear_acc_daytime": -0.08148151636123657,
+                  "linear_acc_dawn_dusk": -0.10370367765426636,
+                  "linear_acc_night": -0.02962958812713623
+                }
+              }
+            }
+          },
+          "iid/noise0.75": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 12.019177595084221,
+                "end": 9.59876818612011,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.04197528958320618,
+                  "linear_acc_daytime": -0.09629631042480469,
+                  "linear_acc_dawn_dusk": 0.0,
+                  "linear_acc_night": -0.029629647731781006
+                }
+              },
+              "1": {
+                "immediate": 13.822148322832865,
+                "end": 8.1401697541328,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.10864198207855225,
+                  "linear_acc_daytime": -0.0962962806224823,
+                  "linear_acc_dawn_dusk": -0.09629631042480469,
+                  "linear_acc_night": -0.13333332538604736
+                }
+              },
+              "2": {
+                "immediate": 11.443415017805888,
+                "end": 6.901129859422601,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.05679011344909668,
+                  "linear_acc_daytime": -0.051851868629455566,
+                  "linear_acc_dawn_dusk": -0.05185180902481079,
+                  "linear_acc_night": -0.06666666269302368
+                }
+              }
+            }
+          },
+          "iid/noise1.0": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 14.1604301124571,
+                "end": 12.885109064926306,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.10864195227622986,
+                  "linear_acc_daytime": -0.14814814925193787,
+                  "linear_acc_dawn_dusk": -0.10370370745658875,
+                  "linear_acc_night": -0.07407408952713013
+                }
+              },
+              "1": {
+                "immediate": 16.28383362090886,
+                "end": 9.035474528567516,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.14320990443229675,
+                  "linear_acc_daytime": -0.17037037014961243,
+                  "linear_acc_dawn_dusk": -0.11851853132247925,
+                  "linear_acc_night": -0.14074072241783142
+                }
+              },
+              "2": {
+                "immediate": 13.761764066836237,
+                "end": 8.749304707332175,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.1506173014640808,
+                  "linear_acc_daytime": -0.1407407522201538,
+                  "linear_acc_dawn_dusk": -0.14074072241783142,
+                  "linear_acc_night": -0.17037037014961243
+                }
+              }
+            }
+          },
+          "iid/reinit12": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 11.917305604124877,
+                "end": 13.540002078741534,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.06419751048088074,
+                  "linear_acc_daytime": -0.1111111044883728,
+                  "linear_acc_dawn_dusk": 0.02222222089767456,
+                  "linear_acc_night": -0.10370370745658875
+                }
+              },
+              "1": {
+                "immediate": 15.103745671043228,
+                "end": 13.982683110529104,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.16296297311782837,
+                  "linear_acc_daytime": -0.16296294331550598,
+                  "linear_acc_dawn_dusk": -0.11851853132247925,
+                  "linear_acc_night": -0.2074073851108551
+                }
+              },
+              "2": {
+                "immediate": 14.032720697084459,
+                "end": 13.657630268021656,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.13827162981033325,
+                  "linear_acc_daytime": -0.14814817905426025,
+                  "linear_acc_dawn_dusk": -0.13333332538604736,
+                  "linear_acc_night": -0.13333332538604736
+                }
+              }
+            }
+          },
+          "iid/reinit4": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 3.6919524500535306,
+                "end": 5.382959091360278,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.024691402912139893,
+                  "linear_acc_daytime": 0.007407426834106445,
+                  "linear_acc_dawn_dusk": 0.007407426834106445,
+                  "linear_acc_night": 0.059259235858917236
+                }
+              },
+              "1": {
+                "immediate": 4.897083702834054,
+                "end": 4.039107528711736,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.02962958812713623,
+                  "linear_acc_daytime": 0.051851868629455566,
+                  "linear_acc_dawn_dusk": 0.0,
+                  "linear_acc_night": 0.03703707456588745
+                }
+              },
+              "2": {
+                "immediate": 4.5505899412494175,
+                "end": 4.264411825045911,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.0,
+                  "linear_acc_daytime": 0.00740736722946167,
+                  "linear_acc_dawn_dusk": -0.04444444179534912,
+                  "linear_acc_night": 0.03703707456588745
+                }
+              }
+            }
+          },
+          "walk/noise0.3": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 3.8045413759076934,
+                "end": 1.9361093049735574,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.03456789255142212,
+                  "linear_acc_daytime": -0.0962962806224823,
+                  "linear_acc_dawn_dusk": -0.02222222089767456,
+                  "linear_acc_night": 0.01481485366821289
+                }
+              },
+              "1": {
+                "immediate": 3.8909898960896396,
+                "end": 5.235502500170312,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.002469182014465332,
+                  "linear_acc_daytime": 0.0,
+                  "linear_acc_dawn_dusk": 0.029629647731781006,
+                  "linear_acc_night": -0.02222222089767456
+                }
+              },
+              "2": {
+                "immediate": 2.835207134380348,
+                "end": 2.787061002193127,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.0,
+                  "linear_acc_daytime": 0.05925929546356201,
+                  "linear_acc_dawn_dusk": -0.00740736722946167,
+                  "linear_acc_night": -0.051851868629455566
+                }
+              }
+            }
+          },
+          "walk/noise0.5": {
+            "category": "partial",
+            "seeds": {
+              "0": {
+                "immediate": 6.64549755743268,
+                "end": 5.452244418941883,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.059259235858917236,
+                  "linear_acc_daytime": -0.0814814567565918,
+                  "linear_acc_dawn_dusk": -0.02222222089767456,
+                  "linear_acc_night": -0.07407405972480774
+                }
+              },
+              "1": {
+                "immediate": 8.541096448123467,
+                "end": 10.123194067903992,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.02222222089767456,
+                  "linear_acc_daytime": 0.01481485366821289,
+                  "linear_acc_dawn_dusk": -0.059259235858917236,
+                  "linear_acc_night": -0.02222222089767456
+                }
+              },
+              "2": {
+                "immediate": 7.1960116255010025,
+                "end": 7.2613113495845125,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.037037014961242676,
+                  "linear_acc_daytime": 0.04444444179534912,
+                  "linear_acc_dawn_dusk": -0.059259235858917236,
+                  "linear_acc_night": -0.09629631042480469
+                }
+              }
+            }
+          },
+          "walk/noise0.75": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 12.486015526278367,
+                "end": 7.532433081267158,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.0765431821346283,
+                  "linear_acc_daytime": -0.04444444179534912,
+                  "linear_acc_dawn_dusk": -0.06666666269302368,
+                  "linear_acc_night": -0.11851850152015686
+                }
+              },
+              "1": {
+                "immediate": 13.26216757728536,
+                "end": 16.89077397293268,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.0716049075126648,
+                  "linear_acc_daytime": -0.014814794063568115,
+                  "linear_acc_dawn_dusk": -0.0962962806224823,
+                  "linear_acc_night": -0.10370370745658875
+                }
+              },
+              "2": {
+                "immediate": 11.956318301356509,
+                "end": 11.818157073700393,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.024691343307495117,
+                  "linear_acc_daytime": 0.051851868629455566,
+                  "linear_acc_dawn_dusk": -0.05185183882713318,
+                  "linear_acc_night": -0.07407408952713013
+                }
+              }
+            }
+          },
+          "walk/noise1.0": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 14.41517784015609,
+                "end": 16.327009413417034,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.1012345552444458,
+                  "linear_acc_daytime": -0.07407402992248535,
+                  "linear_acc_dawn_dusk": -0.1259259283542633,
+                  "linear_acc_night": -0.10370367765426636
+                }
+              },
+              "1": {
+                "immediate": 15.720043560132982,
+                "end": 19.941761054155887,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.10864195227622986,
+                  "linear_acc_daytime": -0.07407405972480774,
+                  "linear_acc_dawn_dusk": -0.14074072241783142,
+                  "linear_acc_night": -0.1111111044883728
+                }
+              },
+              "2": {
+                "immediate": 13.680938307097998,
+                "end": 13.882675312167201,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.14814811944961548,
+                  "linear_acc_daytime": -0.1111111044883728,
+                  "linear_acc_dawn_dusk": -0.14814814925193787,
+                  "linear_acc_night": -0.18518519401550293
+                }
+              }
+            }
+          },
+          "walk/reinit12": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 11.318993591689328,
+                "end": 15.612533758402014,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.10370367765426636,
+                  "linear_acc_daytime": -0.1111111044883728,
+                  "linear_acc_dawn_dusk": -0.051851868629455566,
+                  "linear_acc_night": -0.14814814925193787
+                }
+              },
+              "1": {
+                "immediate": 13.503026326430355,
+                "end": 22.23528360886029,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.11604934930801392,
+                  "linear_acc_daytime": -0.0814814567565918,
+                  "linear_acc_dawn_dusk": -0.05185183882713318,
+                  "linear_acc_night": -0.21481481194496155
+                }
+              },
+              "2": {
+                "immediate": 12.766750736504667,
+                "end": 17.96752508598762,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.12592589855194092,
+                  "linear_acc_daytime": -0.059259235858917236,
+                  "linear_acc_dawn_dusk": -0.14814814925193787,
+                  "linear_acc_night": -0.17037037014961243
+                }
+              }
+            }
+          },
+          "walk/reinit4": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 3.70679551591144,
+                "end": 1.593785144081513,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.017283976078033447,
+                  "linear_acc_daytime": -0.02962958812713623,
+                  "linear_acc_dawn_dusk": -0.007407426834106445,
+                  "linear_acc_night": 0.08888888359069824
+                }
+              },
+              "1": {
+                "immediate": 4.3180650756690895,
+                "end": 6.406253441725247,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.04691362380981445,
+                  "linear_acc_daytime": 0.07407408952713013,
+                  "linear_acc_dawn_dusk": 0.02222222089767456,
+                  "linear_acc_night": 0.04444444179534912
+                }
+              },
+              "2": {
+                "immediate": 4.129044817119658,
+                "end": 8.275206277065152,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.00740736722946167,
+                  "linear_acc_daytime": 0.0,
+                  "linear_acc_dawn_dusk": -0.059259235858917236,
+                  "linear_acc_night": 0.037037014961242676
+                }
+              }
+            }
+          }
+        },
+        "summary": {
+          "fires_on_called": "18/18",
+          "quiet_on_reinit4": "6/6",
+          "reinit4_max": 4.897083702834054,
+          "quiet_walks": "4/5",
+          "called_min": 11.318993591689328,
+          "called_median": 13.591982316764177,
+          "worst_walk_z": 6.240006062768083,
+          "margin_median": 2.178200178019497,
+          "margin_min": 1.8139395183004345
+        }
+      },
+      "past_cka": {
+        "threshold": 5.241057852513762,
+        "fpr_loo": 0.2,
+        "walk": [
+          {
+            "fired": false,
+            "max_z": 1.9602989170079113
+          },
+          {
+            "fired": true,
+            "max_z": 6.274640296287997
+          },
+          {
+            "fired": false,
+            "max_z": 4.9631832879454265
+          },
+          {
+            "fired": false,
+            "max_z": 3.1994171338217074
+          },
+          {
+            "fired": false,
+            "max_z": 3.2362468916326614
+          }
+        ],
+        "arms": {
+          "iid/noise0.3": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 2.4931591047955917,
+                "end": 2.0406346730662657,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.009876549243927002,
+                  "linear_acc_daytime": -0.059259235858917236,
+                  "linear_acc_dawn_dusk": 0.03703707456588745,
+                  "linear_acc_night": -0.007407426834106445
+                }
+              },
+              "1": {
+                "immediate": 5.022235334506879,
+                "end": 3.7963221635317748,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.029629647731781006,
+                  "linear_acc_daytime": -0.02962958812713623,
+                  "linear_acc_dawn_dusk": 0.0,
+                  "linear_acc_night": -0.059259235858917236
+                }
+              },
+              "2": {
+                "immediate": 3.189067294488806,
+                "end": 2.025266325390254,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.03456789255142212,
+                  "linear_acc_daytime": -0.02222222089767456,
+                  "linear_acc_dawn_dusk": -0.037037014961242676,
+                  "linear_acc_night": -0.04444444179534912
+                }
+              }
+            }
+          },
+          "iid/noise0.5": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 6.722889725645802,
+                "end": 5.687651134553175,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.032098740339279175,
+                  "linear_acc_daytime": -0.07407408952713013,
+                  "linear_acc_dawn_dusk": 0.05925929546356201,
+                  "linear_acc_night": -0.08148148655891418
+                }
+              },
+              "1": {
+                "immediate": 9.526824085131256,
+                "end": 4.233943636942516,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.04444444179534912,
+                  "linear_acc_daytime": -0.04444444179534912,
+                  "linear_acc_dawn_dusk": -0.04444444179534912,
+                  "linear_acc_night": -0.04444444179534912
+                }
+              },
+              "2": {
+                "immediate": 7.643004683488129,
+                "end": 4.148190932849817,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.07160496711730957,
+                  "linear_acc_daytime": -0.08148151636123657,
+                  "linear_acc_dawn_dusk": -0.10370367765426636,
+                  "linear_acc_night": -0.02962958812713623
+                }
+              }
+            }
+          },
+          "iid/noise0.75": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 11.980863573624951,
+                "end": 9.615075308480236,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.04197528958320618,
+                  "linear_acc_daytime": -0.09629631042480469,
+                  "linear_acc_dawn_dusk": 0.0,
+                  "linear_acc_night": -0.029629647731781006
+                }
+              },
+              "1": {
+                "immediate": 13.801573967297294,
+                "end": 8.161743992149319,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.10864198207855225,
+                  "linear_acc_daytime": -0.0962962806224823,
+                  "linear_acc_dawn_dusk": -0.09629631042480469,
+                  "linear_acc_night": -0.13333332538604736
+                }
+              },
+              "2": {
+                "immediate": 11.412998505321498,
+                "end": 6.916915937329941,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.05679011344909668,
+                  "linear_acc_daytime": -0.051851868629455566,
+                  "linear_acc_dawn_dusk": -0.05185180902481079,
+                  "linear_acc_night": -0.06666666269302368
+                }
+              }
+            }
+          },
+          "iid/noise1.0": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 14.100940190168874,
+                "end": 12.91042513453027,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.10864195227622986,
+                  "linear_acc_daytime": -0.14814814925193787,
+                  "linear_acc_dawn_dusk": -0.10370370745658875,
+                  "linear_acc_night": -0.07407408952713013
+                }
+              },
+              "1": {
+                "immediate": 16.23611921638934,
+                "end": 9.06370243737495,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.14320990443229675,
+                  "linear_acc_daytime": -0.17037037014961243,
+                  "linear_acc_dawn_dusk": -0.11851853132247925,
+                  "linear_acc_night": -0.14074072241783142
+                }
+              },
+              "2": {
+                "immediate": 13.72359766394243,
+                "end": 8.781122132060192,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.1506173014640808,
+                  "linear_acc_daytime": -0.1407407522201538,
+                  "linear_acc_dawn_dusk": -0.14074072241783142,
+                  "linear_acc_night": -0.17037037014961243
+                }
+              }
+            }
+          },
+          "iid/reinit12": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 11.880519521946677,
+                "end": 13.57548635832688,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.06419751048088074,
+                  "linear_acc_daytime": -0.1111111044883728,
+                  "linear_acc_dawn_dusk": 0.02222222089767456,
+                  "linear_acc_night": -0.10370370745658875
+                }
+              },
+              "1": {
+                "immediate": 15.05440968370142,
+                "end": 14.021648872701503,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.16296297311782837,
+                  "linear_acc_daytime": -0.16296294331550598,
+                  "linear_acc_dawn_dusk": -0.11851853132247925,
+                  "linear_acc_night": -0.2074073851108551
+                }
+              },
+              "2": {
+                "immediate": 13.984405713427444,
+                "end": 13.689707303584337,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.13827162981033325,
+                  "linear_acc_daytime": -0.14814817905426025,
+                  "linear_acc_dawn_dusk": -0.13333332538604736,
+                  "linear_acc_night": -0.13333332538604736
+                }
+              }
+            }
+          },
+          "iid/reinit4": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 3.699221538926614,
+                "end": 5.405656180681182,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.024691402912139893,
+                  "linear_acc_daytime": 0.007407426834106445,
+                  "linear_acc_dawn_dusk": 0.007407426834106445,
+                  "linear_acc_night": 0.059259235858917236
+                }
+              },
+              "1": {
+                "immediate": 4.914035864128986,
+                "end": 4.032763959771105,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.02962958812713623,
+                  "linear_acc_daytime": 0.051851868629455566,
+                  "linear_acc_dawn_dusk": 0.0,
+                  "linear_acc_night": 0.03703707456588745
+                }
+              },
+              "2": {
+                "immediate": 4.579978906889144,
+                "end": 4.274266582214808,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.0,
+                  "linear_acc_daytime": 0.00740736722946167,
+                  "linear_acc_dawn_dusk": -0.04444444179534912,
+                  "linear_acc_night": 0.03703707456588745
+                }
+              }
+            }
+          },
+          "walk/noise0.3": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 3.8021554704621545,
+                "end": 1.9424804292623854,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.03456789255142212,
+                  "linear_acc_daytime": -0.0962962806224823,
+                  "linear_acc_dawn_dusk": -0.02222222089767456,
+                  "linear_acc_night": 0.01481485366821289
+                }
+              },
+              "1": {
+                "immediate": 3.883630090905698,
+                "end": 5.2429022937183145,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.002469182014465332,
+                  "linear_acc_daytime": 0.0,
+                  "linear_acc_dawn_dusk": 0.029629647731781006,
+                  "linear_acc_night": -0.02222222089767456
+                }
+              },
+              "2": {
+                "immediate": 2.836707449190885,
+                "end": 2.7895148212898437,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.0,
+                  "linear_acc_daytime": 0.05925929546356201,
+                  "linear_acc_dawn_dusk": -0.00740736722946167,
+                  "linear_acc_night": -0.051851868629455566
+                }
+              }
+            }
+          },
+          "walk/noise0.5": {
+            "category": "partial",
+            "seeds": {
+              "0": {
+                "immediate": 6.657958166162688,
+                "end": 5.4530419910188686,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.059259235858917236,
+                  "linear_acc_daytime": -0.0814814567565918,
+                  "linear_acc_dawn_dusk": -0.02222222089767456,
+                  "linear_acc_night": -0.07407405972480774
+                }
+              },
+              "1": {
+                "immediate": 8.536160159703309,
+                "end": 10.128817531111036,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.02222222089767456,
+                  "linear_acc_daytime": 0.01481485366821289,
+                  "linear_acc_dawn_dusk": -0.059259235858917236,
+                  "linear_acc_night": -0.02222222089767456
+                }
+              },
+              "2": {
+                "immediate": 7.181463171736119,
+                "end": 7.260743318088381,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.037037014961242676,
+                  "linear_acc_daytime": 0.04444444179534912,
+                  "linear_acc_dawn_dusk": -0.059259235858917236,
+                  "linear_acc_night": -0.09629631042480469
+                }
+              }
+            }
+          },
+          "walk/noise0.75": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 12.4562730848372,
+                "end": 7.5381935947673515,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.0765431821346283,
+                  "linear_acc_daytime": -0.04444444179534912,
+                  "linear_acc_dawn_dusk": -0.06666666269302368,
+                  "linear_acc_night": -0.11851850152015686
+                }
+              },
+              "1": {
+                "immediate": 13.250764994229772,
+                "end": 16.89934886490906,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.0716049075126648,
+                  "linear_acc_daytime": -0.014814794063568115,
+                  "linear_acc_dawn_dusk": -0.0962962806224823,
+                  "linear_acc_night": -0.10370370745658875
+                }
+              },
+              "2": {
+                "immediate": 11.925295381468707,
+                "end": 11.819850487757067,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.024691343307495117,
+                  "linear_acc_daytime": 0.051851868629455566,
+                  "linear_acc_dawn_dusk": -0.05185183882713318,
+                  "linear_acc_night": -0.07407408952713013
+                }
+              }
+            }
+          },
+          "walk/noise1.0": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 14.361728238154914,
+                "end": 16.341183896241983,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.1012345552444458,
+                  "linear_acc_daytime": -0.07407402992248535,
+                  "linear_acc_dawn_dusk": -0.1259259283542633,
+                  "linear_acc_night": -0.10370367765426636
+                }
+              },
+              "1": {
+                "immediate": 15.678323282749343,
+                "end": 19.97397587527203,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.10864195227622986,
+                  "linear_acc_daytime": -0.07407405972480774,
+                  "linear_acc_dawn_dusk": -0.14074072241783142,
+                  "linear_acc_night": -0.1111111044883728
+                }
+              },
+              "2": {
+                "immediate": 13.643151989061737,
+                "end": 13.902091811866349,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.14814811944961548,
+                  "linear_acc_daytime": -0.1111111044883728,
+                  "linear_acc_dawn_dusk": -0.14814814925193787,
+                  "linear_acc_night": -0.18518519401550293
+                }
+              }
+            }
+          },
+          "walk/reinit12": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 11.299966222793989,
+                "end": 15.628282851874719,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.10370367765426636,
+                  "linear_acc_daytime": -0.1111111044883728,
+                  "linear_acc_dawn_dusk": -0.051851868629455566,
+                  "linear_acc_night": -0.14814814925193787
+                }
+              },
+              "1": {
+                "immediate": 13.468531964248,
+                "end": 22.329091618356365,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.11604934930801392,
+                  "linear_acc_daytime": -0.0814814567565918,
+                  "linear_acc_dawn_dusk": -0.05185183882713318,
+                  "linear_acc_night": -0.21481481194496155
+                }
+              },
+              "2": {
+                "immediate": 12.727604956926307,
+                "end": 17.992980713899126,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.12592589855194092,
+                  "linear_acc_daytime": -0.059259235858917236,
+                  "linear_acc_dawn_dusk": -0.14814814925193787,
+                  "linear_acc_night": -0.17037037014961243
+                }
+              }
+            }
+          },
+          "walk/reinit4": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 3.7386493482067276,
+                "end": 1.6024584998225808,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.017283976078033447,
+                  "linear_acc_daytime": -0.02962958812713623,
+                  "linear_acc_dawn_dusk": -0.007407426834106445,
+                  "linear_acc_night": 0.08888888359069824
+                }
+              },
+              "1": {
+                "immediate": 4.3358831049624005,
+                "end": 6.42125319671519,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.04691362380981445,
+                  "linear_acc_daytime": 0.07407408952713013,
+                  "linear_acc_dawn_dusk": 0.02222222089767456,
+                  "linear_acc_night": 0.04444444179534912
+                }
+              },
+              "2": {
+                "immediate": 4.136775648834217,
+                "end": 8.284916965595826,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.00740736722946167,
+                  "linear_acc_daytime": 0.0,
+                  "linear_acc_dawn_dusk": -0.059259235858917236,
+                  "linear_acc_night": 0.037037014961242676
+                }
+              }
+            }
+          }
+        },
+        "summary": {
+          "fires_on_called": "18/18",
+          "quiet_on_reinit4": "6/6",
+          "reinit4_max": 4.914035864128986,
+          "quiet_walks": "4/5",
+          "called_min": 11.299966222793989,
+          "called_median": 13.555841976654868,
+          "worst_walk_z": 6.274640296287997,
+          "margin_median": 2.1604173843517924,
+          "margin_min": 1.8008946631536658
+        }
+      },
+      "current_dcka": {
+        "threshold": 5.65278127360261,
+        "fpr_loo": 0.0,
+        "walk": [
+          {
+            "fired": false,
+            "max_z": 1.6463840416063455
+          },
+          {
+            "fired": true,
+            "max_z": 7.791839637291603
+          },
+          {
+            "fired": false,
+            "max_z": 4.3661246418964135
+          },
+          {
+            "fired": false,
+            "max_z": 2.8928872329857045
+          },
+          {
+            "fired": false,
+            "max_z": 4.156977995328702
+          }
+        ],
+        "arms": {
+          "iid/noise0.3": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 1.117144996216194,
+                "end": 0.9251671364471935,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.009876549243927002,
+                  "linear_acc_daytime": -0.059259235858917236,
+                  "linear_acc_dawn_dusk": 0.03703707456588745,
+                  "linear_acc_night": -0.007407426834106445
+                }
+              },
+              "1": {
+                "immediate": 7.934158327433067,
+                "end": 1.150718118299114,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.029629647731781006,
+                  "linear_acc_daytime": -0.02962958812713623,
+                  "linear_acc_dawn_dusk": 0.0,
+                  "linear_acc_night": -0.059259235858917236
+                }
+              },
+              "2": {
+                "immediate": 2.239082912672281,
+                "end": 0.22586577594352744,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.03456789255142212,
+                  "linear_acc_daytime": -0.02222222089767456,
+                  "linear_acc_dawn_dusk": -0.037037014961242676,
+                  "linear_acc_night": -0.04444444179534912
+                }
+              }
+            }
+          },
+          "iid/noise0.5": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 10.347487328614054,
+                "end": 2.110670477944238,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.032098740339279175,
+                  "linear_acc_daytime": -0.07407408952713013,
+                  "linear_acc_dawn_dusk": 0.05925929546356201,
+                  "linear_acc_night": -0.08148148655891418
+                }
+              },
+              "1": {
+                "immediate": 10.265571919521621,
+                "end": -0.5514567394292703,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.04444444179534912,
+                  "linear_acc_daytime": -0.04444444179534912,
+                  "linear_acc_dawn_dusk": -0.04444444179534912,
+                  "linear_acc_night": -0.04444444179534912
+                }
+              },
+              "2": {
+                "immediate": 4.921138346069526,
+                "end": 0.4709443288485723,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.07160496711730957,
+                  "linear_acc_daytime": -0.08148151636123657,
+                  "linear_acc_dawn_dusk": -0.10370367765426636,
+                  "linear_acc_night": -0.02962958812713623
+                }
+              }
+            }
+          },
+          "iid/noise0.75": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 13.584367894523494,
+                "end": 3.7148798235386726,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.04197528958320618,
+                  "linear_acc_daytime": -0.09629631042480469,
+                  "linear_acc_dawn_dusk": 0.0,
+                  "linear_acc_night": -0.029629647731781006
+                }
+              },
+              "1": {
+                "immediate": 14.298202145446647,
+                "end": 1.1981047255128547,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.10864198207855225,
+                  "linear_acc_daytime": -0.0962962806224823,
+                  "linear_acc_dawn_dusk": -0.09629631042480469,
+                  "linear_acc_night": -0.13333332538604736
+                }
+              },
+              "2": {
+                "immediate": 9.637360064003506,
+                "end": 2.219625989429693,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.05679011344909668,
+                  "linear_acc_daytime": -0.051851868629455566,
+                  "linear_acc_dawn_dusk": -0.05185180902481079,
+                  "linear_acc_night": -0.06666666269302368
+                }
+              }
+            }
+          },
+          "iid/noise1.0": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 14.172752870424496,
+                "end": 6.096527891967592,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.10864195227622986,
+                  "linear_acc_daytime": -0.14814814925193787,
+                  "linear_acc_dawn_dusk": -0.10370370745658875,
+                  "linear_acc_night": -0.07407408952713013
+                }
+              },
+              "1": {
+                "immediate": 14.993581154994148,
+                "end": 2.030359159967487,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.14320990443229675,
+                  "linear_acc_daytime": -0.17037037014961243,
+                  "linear_acc_dawn_dusk": -0.11851853132247925,
+                  "linear_acc_night": -0.14074072241783142
+                }
+              },
+              "2": {
+                "immediate": 11.177414052367022,
+                "end": 3.3811088816932187,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.1506173014640808,
+                  "linear_acc_daytime": -0.1407407522201538,
+                  "linear_acc_dawn_dusk": -0.14074072241783142,
+                  "linear_acc_night": -0.17037037014961243
+                }
+              }
+            }
+          },
+          "iid/reinit12": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 12.29925291785885,
+                "end": 5.9658232824709865,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.06419751048088074,
+                  "linear_acc_daytime": -0.1111111044883728,
+                  "linear_acc_dawn_dusk": 0.02222222089767456,
+                  "linear_acc_night": -0.10370370745658875
+                }
+              },
+              "1": {
+                "immediate": 13.87909998763183,
+                "end": 4.675117765850272,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.16296297311782837,
+                  "linear_acc_daytime": -0.16296294331550598,
+                  "linear_acc_dawn_dusk": -0.11851853132247925,
+                  "linear_acc_night": -0.2074073851108551
+                }
+              },
+              "2": {
+                "immediate": 10.95343802220605,
+                "end": 5.567987905771099,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.13827162981033325,
+                  "linear_acc_daytime": -0.14814817905426025,
+                  "linear_acc_dawn_dusk": -0.13333332538604736,
+                  "linear_acc_night": -0.13333332538604736
+                }
+              }
+            }
+          },
+          "iid/reinit4": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 3.3788193924016947,
+                "end": 1.0172339438326776,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.024691402912139893,
+                  "linear_acc_daytime": 0.007407426834106445,
+                  "linear_acc_dawn_dusk": 0.007407426834106445,
+                  "linear_acc_night": 0.059259235858917236
+                }
+              },
+              "1": {
+                "immediate": 2.469152129486051,
+                "end": -0.8452236798716568,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.02962958812713623,
+                  "linear_acc_daytime": 0.051851868629455566,
+                  "linear_acc_dawn_dusk": 0.0,
+                  "linear_acc_night": 0.03703707456588745
+                }
+              },
+              "2": {
+                "immediate": 0.7560726885235732,
+                "end": 1.4019179947504612,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.0,
+                  "linear_acc_daytime": 0.00740736722946167,
+                  "linear_acc_dawn_dusk": -0.04444444179534912,
+                  "linear_acc_night": 0.03703707456588745
+                }
+              }
+            }
+          },
+          "walk/noise0.3": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 3.150439149278938,
+                "end": -1.3337487367283234,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.03456789255142212,
+                  "linear_acc_daytime": -0.0962962806224823,
+                  "linear_acc_dawn_dusk": -0.02222222089767456,
+                  "linear_acc_night": 0.01481485366821289
+                }
+              },
+              "1": {
+                "immediate": 3.8781630648223584,
+                "end": 4.364871588820669,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.002469182014465332,
+                  "linear_acc_daytime": 0.0,
+                  "linear_acc_dawn_dusk": 0.029629647731781006,
+                  "linear_acc_night": -0.02222222089767456
+                }
+              },
+              "2": {
+                "immediate": -0.619753790838001,
+                "end": 1.1148538385314042,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.0,
+                  "linear_acc_daytime": 0.05925929546356201,
+                  "linear_acc_dawn_dusk": -0.00740736722946167,
+                  "linear_acc_night": -0.051851868629455566
+                }
+              }
+            }
+          },
+          "walk/noise0.5": {
+            "category": "partial",
+            "seeds": {
+              "0": {
+                "immediate": 10.153254913851988,
+                "end": 0.22500329561558938,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.059259235858917236,
+                  "linear_acc_daytime": -0.0814814567565918,
+                  "linear_acc_dawn_dusk": -0.02222222089767456,
+                  "linear_acc_night": -0.07407405972480774
+                }
+              },
+              "1": {
+                "immediate": 8.52296671346464,
+                "end": 4.63693550729332,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.02222222089767456,
+                  "linear_acc_daytime": 0.01481485366821289,
+                  "linear_acc_dawn_dusk": -0.059259235858917236,
+                  "linear_acc_night": -0.02222222089767456
+                }
+              },
+              "2": {
+                "immediate": 4.069768851286962,
+                "end": 1.9355428009594033,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.037037014961242676,
+                  "linear_acc_daytime": 0.04444444179534912,
+                  "linear_acc_dawn_dusk": -0.059259235858917236,
+                  "linear_acc_night": -0.09629631042480469
+                }
+              }
+            }
+          },
+          "walk/noise0.75": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 14.222244836696705,
+                "end": 1.725954851486781,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.0765431821346283,
+                  "linear_acc_daytime": -0.04444444179534912,
+                  "linear_acc_dawn_dusk": -0.06666666269302368,
+                  "linear_acc_night": -0.11851850152015686
+                }
+              },
+              "1": {
+                "immediate": 11.875150388734351,
+                "end": 5.623442127185923,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.0716049075126648,
+                  "linear_acc_daytime": -0.014814794063568115,
+                  "linear_acc_dawn_dusk": -0.0962962806224823,
+                  "linear_acc_night": -0.10370370745658875
+                }
+              },
+              "2": {
+                "immediate": 8.105879295470647,
+                "end": 2.255826798340745,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.024691343307495117,
+                  "linear_acc_daytime": 0.051851868629455566,
+                  "linear_acc_dawn_dusk": -0.05185183882713318,
+                  "linear_acc_night": -0.07407408952713013
+                }
+              }
+            }
+          },
+          "walk/noise1.0": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 14.717876456054862,
+                "end": 5.157777054545963,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.1012345552444458,
+                  "linear_acc_daytime": -0.07407402992248535,
+                  "linear_acc_dawn_dusk": -0.1259259283542633,
+                  "linear_acc_night": -0.10370367765426636
+                }
+              },
+              "1": {
+                "immediate": 12.93976066762531,
+                "end": 7.534955640000477,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.10864195227622986,
+                  "linear_acc_daytime": -0.07407405972480774,
+                  "linear_acc_dawn_dusk": -0.14074072241783142,
+                  "linear_acc_night": -0.1111111044883728
+                }
+              },
+              "2": {
+                "immediate": 9.427654377887663,
+                "end": 3.876955582188232,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.14814811944961548,
+                  "linear_acc_daytime": -0.1111111044883728,
+                  "linear_acc_dawn_dusk": -0.14814814925193787,
+                  "linear_acc_night": -0.18518519401550293
+                }
+              }
+            }
+          },
+          "walk/reinit12": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 12.83648549772118,
+                "end": 5.574243036981781,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.10370367765426636,
+                  "linear_acc_daytime": -0.1111111044883728,
+                  "linear_acc_dawn_dusk": -0.051851868629455566,
+                  "linear_acc_night": -0.14814814925193787
+                }
+              },
+              "1": {
+                "immediate": 11.586851722850845,
+                "end": 9.373736632235925,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.11604934930801392,
+                  "linear_acc_daytime": -0.0814814567565918,
+                  "linear_acc_dawn_dusk": -0.05185183882713318,
+                  "linear_acc_night": -0.21481481194496155
+                }
+              },
+              "2": {
+                "immediate": 8.292557884715013,
+                "end": 5.949647255319748,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.12592589855194092,
+                  "linear_acc_daytime": -0.059259235858917236,
+                  "linear_acc_dawn_dusk": -0.14814814925193787,
+                  "linear_acc_night": -0.17037037014961243
+                }
+              }
+            }
+          },
+          "walk/reinit4": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 1.8907072813450687,
+                "end": -0.8016994508264699,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.017283976078033447,
+                  "linear_acc_daytime": -0.02962958812713623,
+                  "linear_acc_dawn_dusk": -0.007407426834106445,
+                  "linear_acc_night": 0.08888888359069824
+                }
+              },
+              "1": {
+                "immediate": 2.112689459509124,
+                "end": 2.2739460809343255,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.04691362380981445,
+                  "linear_acc_daytime": 0.07407408952713013,
+                  "linear_acc_dawn_dusk": 0.02222222089767456,
+                  "linear_acc_night": 0.04444444179534912
+                }
+              },
+              "2": {
+                "immediate": -0.2523977856099907,
+                "end": -0.19066190402889738,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.00740736722946167,
+                  "linear_acc_daytime": 0.0,
+                  "linear_acc_dawn_dusk": -0.059259235858917236,
+                  "linear_acc_night": 0.037037014961242676
+                }
+              }
+            }
+          }
+        },
+        "summary": {
+          "fires_on_called": "18/18",
+          "quiet_on_reinit4": "6/6",
+          "reinit4_max": 3.3788193924016947,
+          "quiet_walks": "4/5",
+          "called_min": 8.105879295470647,
+          "called_median": 12.567869207790014,
+          "worst_walk_z": 7.791839637291603,
+          "margin_median": 1.6129527547821212,
+          "margin_min": 1.0403036603417832
+        }
+      },
+      "pooled_cka": {
+        "threshold": 5.925905775023088,
+        "fpr_loo": 0.2,
+        "walk": [
+          {
+            "fired": false,
+            "max_z": 0.9120969472817296
+          },
+          {
+            "fired": false,
+            "max_z": 3.5554410219490666
+          },
+          {
+            "fired": false,
+            "max_z": 2.96401685593226
+          },
+          {
+            "fired": false,
+            "max_z": 2.1612675815725333
+          },
+          {
+            "fired": false,
+            "max_z": 4.618009592700773
+          }
+        ],
+        "arms": {
+          "iid/noise0.3": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 1.231096123320936,
+                "end": -0.07457697807087542,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.009876549243927002,
+                  "linear_acc_daytime": -0.059259235858917236,
+                  "linear_acc_dawn_dusk": 0.03703707456588745,
+                  "linear_acc_night": -0.007407426834106445
+                }
+              },
+              "1": {
+                "immediate": 6.202905751741714,
+                "end": 1.1220456191799506,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.029629647731781006,
+                  "linear_acc_daytime": -0.02962958812713623,
+                  "linear_acc_dawn_dusk": 0.0,
+                  "linear_acc_night": -0.059259235858917236
+                }
+              },
+              "2": {
+                "immediate": 3.089442173913403,
+                "end": 0.18750550409176972,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.03456789255142212,
+                  "linear_acc_daytime": -0.02222222089767456,
+                  "linear_acc_dawn_dusk": -0.037037014961242676,
+                  "linear_acc_night": -0.04444444179534912
+                }
+              }
+            }
+          },
+          "iid/noise0.5": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 6.587198398414888,
+                "end": 1.3148892538680044,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.032098740339279175,
+                  "linear_acc_daytime": -0.07407408952713013,
+                  "linear_acc_dawn_dusk": 0.05925929546356201,
+                  "linear_acc_night": -0.08148148655891418
+                }
+              },
+              "1": {
+                "immediate": 8.940419638217946,
+                "end": 0.40966671313117764,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.04444444179534912,
+                  "linear_acc_daytime": -0.04444444179534912,
+                  "linear_acc_dawn_dusk": -0.04444444179534912,
+                  "linear_acc_night": -0.04444444179534912
+                }
+              },
+              "2": {
+                "immediate": 6.212027748097535,
+                "end": 1.123596575609288,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.07160496711730957,
+                  "linear_acc_daytime": -0.08148151636123657,
+                  "linear_acc_dawn_dusk": -0.10370367765426636,
+                  "linear_acc_night": -0.02962958812713623
+                }
+              }
+            }
+          },
+          "iid/noise0.75": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 11.53614797281417,
+                "end": 2.460359600180662,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.04197528958320618,
+                  "linear_acc_daytime": -0.09629631042480469,
+                  "linear_acc_dawn_dusk": 0.0,
+                  "linear_acc_night": -0.029629647731781006
+                }
+              },
+              "1": {
+                "immediate": 11.57160039801618,
+                "end": 1.8905681537231591,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.10864198207855225,
+                  "linear_acc_daytime": -0.0962962806224823,
+                  "linear_acc_dawn_dusk": -0.09629631042480469,
+                  "linear_acc_night": -0.13333332538604736
+                }
+              },
+              "2": {
+                "immediate": 8.997648058698188,
+                "end": 2.2170970913265298,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.05679011344909668,
+                  "linear_acc_daytime": -0.051851868629455566,
+                  "linear_acc_dawn_dusk": -0.05185180902481079,
+                  "linear_acc_night": -0.06666666269302368
+                }
+              }
+            }
+          },
+          "iid/noise1.0": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 11.884706170858669,
+                "end": 4.029490469622198,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.10864195227622986,
+                  "linear_acc_daytime": -0.14814814925193787,
+                  "linear_acc_dawn_dusk": -0.10370370745658875,
+                  "linear_acc_night": -0.07407408952713013
+                }
+              },
+              "1": {
+                "immediate": 13.012628259843172,
+                "end": 2.4089844000824856,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.14320990443229675,
+                  "linear_acc_daytime": -0.17037037014961243,
+                  "linear_acc_dawn_dusk": -0.11851853132247925,
+                  "linear_acc_night": -0.14074072241783142
+                }
+              },
+              "2": {
+                "immediate": 11.14327530487866,
+                "end": 3.0055115475295007,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.1506173014640808,
+                  "linear_acc_daytime": -0.1407407522201538,
+                  "linear_acc_dawn_dusk": -0.14074072241783142,
+                  "linear_acc_night": -0.17037037014961243
+                }
+              }
+            }
+          },
+          "iid/reinit12": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 9.805586039413821,
+                "end": 4.34002197132955,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.06419751048088074,
+                  "linear_acc_daytime": -0.1111111044883728,
+                  "linear_acc_dawn_dusk": 0.02222222089767456,
+                  "linear_acc_night": -0.10370370745658875
+                }
+              },
+              "1": {
+                "immediate": 11.997618991905727,
+                "end": 3.936667376139324,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.16296297311782837,
+                  "linear_acc_daytime": -0.16296294331550598,
+                  "linear_acc_dawn_dusk": -0.11851853132247925,
+                  "linear_acc_night": -0.2074073851108551
+                }
+              },
+              "2": {
+                "immediate": 10.934323299706357,
+                "end": 4.40618872670273,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.13827162981033325,
+                  "linear_acc_daytime": -0.14814817905426025,
+                  "linear_acc_dawn_dusk": -0.13333332538604736,
+                  "linear_acc_night": -0.13333332538604736
+                }
+              }
+            }
+          },
+          "iid/reinit4": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 2.6578821348031236,
+                "end": 1.2651821605048266,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.024691402912139893,
+                  "linear_acc_daytime": 0.007407426834106445,
+                  "linear_acc_dawn_dusk": 0.007407426834106445,
+                  "linear_acc_night": 0.059259235858917236
+                }
+              },
+              "1": {
+                "immediate": 3.3643381942960797,
+                "end": 0.3359138789783499,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.02962958812713623,
+                  "linear_acc_daytime": 0.051851868629455566,
+                  "linear_acc_dawn_dusk": 0.0,
+                  "linear_acc_night": 0.03703707456588745
+                }
+              },
+              "2": {
+                "immediate": 2.2625517138746467,
+                "end": 1.352994333772683,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.0,
+                  "linear_acc_daytime": 0.00740736722946167,
+                  "linear_acc_dawn_dusk": -0.04444444179534912,
+                  "linear_acc_night": 0.03703707456588745
+                }
+              }
+            }
+          },
+          "walk/noise0.3": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 3.009867076010613,
+                "end": -0.10734159349598481,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.03456789255142212,
+                  "linear_acc_daytime": -0.0962962806224823,
+                  "linear_acc_dawn_dusk": -0.02222222089767456,
+                  "linear_acc_night": 0.01481485366821289
+                }
+              },
+              "1": {
+                "immediate": 3.690846707257925,
+                "end": 2.709808512900596,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.002469182014465332,
+                  "linear_acc_daytime": 0.0,
+                  "linear_acc_dawn_dusk": 0.029629647731781006,
+                  "linear_acc_night": -0.02222222089767456
+                }
+              },
+              "2": {
+                "immediate": 0.36780042975437954,
+                "end": 1.2683708898989927,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.0,
+                  "linear_acc_daytime": 0.05925929546356201,
+                  "linear_acc_dawn_dusk": -0.00740736722946167,
+                  "linear_acc_night": -0.051851868629455566
+                }
+              }
+            }
+          },
+          "walk/noise0.5": {
+            "category": "partial",
+            "seeds": {
+              "0": {
+                "immediate": 7.035601949372795,
+                "end": 0.9667497383428095,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.059259235858917236,
+                  "linear_acc_daytime": -0.0814814567565918,
+                  "linear_acc_dawn_dusk": -0.02222222089767456,
+                  "linear_acc_night": -0.07407405972480774
+                }
+              },
+              "1": {
+                "immediate": 6.936160225373948,
+                "end": 3.6859687730376023,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.02222222089767456,
+                  "linear_acc_daytime": 0.01481485366821289,
+                  "linear_acc_dawn_dusk": -0.059259235858917236,
+                  "linear_acc_night": -0.02222222089767456
+                }
+              },
+              "2": {
+                "immediate": 3.4768283457816893,
+                "end": 2.1506760088201267,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.037037014961242676,
+                  "linear_acc_daytime": 0.04444444179534912,
+                  "linear_acc_dawn_dusk": -0.059259235858917236,
+                  "linear_acc_night": -0.09629631042480469
+                }
+              }
+            }
+          },
+          "walk/noise0.75": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 11.58439783432297,
+                "end": 2.0278035446144065,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.0765431821346283,
+                  "linear_acc_daytime": -0.04444444179534912,
+                  "linear_acc_dawn_dusk": -0.06666666269302368,
+                  "linear_acc_night": -0.11851850152015686
+                }
+              },
+              "1": {
+                "immediate": 9.902749683519097,
+                "end": 6.4745425901364015,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.0716049075126648,
+                  "linear_acc_daytime": -0.014814794063568115,
+                  "linear_acc_dawn_dusk": -0.0962962806224823,
+                  "linear_acc_night": -0.10370370745658875
+                }
+              },
+              "2": {
+                "immediate": 7.455738505891439,
+                "end": 3.524409082484415,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.024691343307495117,
+                  "linear_acc_daytime": 0.051851868629455566,
+                  "linear_acc_dawn_dusk": -0.05185183882713318,
+                  "linear_acc_night": -0.07407408952713013
+                }
+              }
+            }
+          },
+          "walk/noise1.0": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 11.944944898740603,
+                "end": 4.843062217982351,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.1012345552444458,
+                  "linear_acc_daytime": -0.07407402992248535,
+                  "linear_acc_dawn_dusk": -0.1259259283542633,
+                  "linear_acc_night": -0.10370367765426636
+                }
+              },
+              "1": {
+                "immediate": 11.284353031767319,
+                "end": 6.634577794993085,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.10864195227622986,
+                  "linear_acc_daytime": -0.07407405972480774,
+                  "linear_acc_dawn_dusk": -0.14074072241783142,
+                  "linear_acc_night": -0.1111111044883728
+                }
+              },
+              "2": {
+                "immediate": 8.706574569660638,
+                "end": 4.143465614552876,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.14814811944961548,
+                  "linear_acc_daytime": -0.1111111044883728,
+                  "linear_acc_dawn_dusk": -0.14814814925193787,
+                  "linear_acc_night": -0.18518519401550293
+                }
+              }
+            }
+          },
+          "walk/reinit12": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 9.934811993775835,
+                "end": 4.681195581097777,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.10370367765426636,
+                  "linear_acc_daytime": -0.1111111044883728,
+                  "linear_acc_dawn_dusk": -0.051851868629455566,
+                  "linear_acc_night": -0.14814814925193787
+                }
+              },
+              "1": {
+                "immediate": 9.970089804190502,
+                "end": 7.728809951192424,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.11604934930801392,
+                  "linear_acc_daytime": -0.0814814567565918,
+                  "linear_acc_dawn_dusk": -0.05185183882713318,
+                  "linear_acc_night": -0.21481481194496155
+                }
+              },
+              "2": {
+                "immediate": 7.812362847363865,
+                "end": 5.482040794079179,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.12592589855194092,
+                  "linear_acc_daytime": -0.059259235858917236,
+                  "linear_acc_dawn_dusk": -0.14814814925193787,
+                  "linear_acc_night": -0.17037037014961243
+                }
+              }
+            }
+          },
+          "walk/reinit4": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 2.5567529319116535,
+                "end": -0.04806358441294448,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.017283976078033447,
+                  "linear_acc_daytime": -0.02962958812713623,
+                  "linear_acc_dawn_dusk": -0.007407426834106445,
+                  "linear_acc_night": 0.08888888359069824
+                }
+              },
+              "1": {
+                "immediate": 2.349246518979365,
+                "end": 2.09146446136097,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.04691362380981445,
+                  "linear_acc_daytime": 0.07407408952713013,
+                  "linear_acc_dawn_dusk": 0.02222222089767456,
+                  "linear_acc_night": 0.04444444179534912
+                }
+              },
+              "2": {
+                "immediate": 0.369447723352451,
+                "end": 2.1118181231313073,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.00740736722946167,
+                  "linear_acc_daytime": 0.0,
+                  "linear_acc_dawn_dusk": -0.059259235858917236,
+                  "linear_acc_night": 0.037037014961242676
+                }
+              }
+            }
+          }
+        },
+        "summary": {
+          "fires_on_called": "18/18",
+          "quiet_on_reinit4": "6/6",
+          "reinit4_max": 3.3643381942960797,
+          "quiet_walks": "5/5",
+          "called_min": 7.455738505891439,
+          "called_median": 11.038799302292508,
+          "worst_walk_z": 4.618009592700773,
+          "margin_median": 2.3903803317646712,
+          "margin_min": 1.6144917753475396
+        }
+      },
+      "pooled_dcka": {
+        "threshold": 5.9307676266725,
+        "fpr_loo": 0.2,
+        "walk": [
+          {
+            "fired": false,
+            "max_z": 0.9130555628206506
+          },
+          {
+            "fired": false,
+            "max_z": 3.552310697750947
+          },
+          {
+            "fired": false,
+            "max_z": 2.962765393047378
+          },
+          {
+            "fired": false,
+            "max_z": 2.160928704736821
+          },
+          {
+            "fired": false,
+            "max_z": 4.6184810955549915
+          }
+        ],
+        "arms": {
+          "iid/noise0.3": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 1.2346492404927039,
+                "end": -0.07596888867918104,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.009876549243927002,
+                  "linear_acc_daytime": -0.059259235858917236,
+                  "linear_acc_dawn_dusk": 0.03703707456588745,
+                  "linear_acc_night": -0.007407426834106445
+                }
+              },
+              "1": {
+                "immediate": 6.2025783634275005,
+                "end": 1.1184237819733949,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.029629647731781006,
+                  "linear_acc_daytime": -0.02962958812713623,
+                  "linear_acc_dawn_dusk": 0.0,
+                  "linear_acc_night": -0.059259235858917236
+                }
+              },
+              "2": {
+                "immediate": 3.0880884224225302,
+                "end": 0.18649841048472957,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.03456789255142212,
+                  "linear_acc_daytime": -0.02222222089767456,
+                  "linear_acc_dawn_dusk": -0.037037014961242676,
+                  "linear_acc_night": -0.04444444179534912
+                }
+              }
+            }
+          },
+          "iid/noise0.5": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 6.590136602012959,
+                "end": 1.31148268381844,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.032098740339279175,
+                  "linear_acc_daytime": -0.07407408952713013,
+                  "linear_acc_dawn_dusk": 0.05925929546356201,
+                  "linear_acc_night": -0.08148148655891418
+                }
+              },
+              "1": {
+                "immediate": 8.938082769539115,
+                "end": 0.4068760728997419,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.04444444179534912,
+                  "linear_acc_daytime": -0.04444444179534912,
+                  "linear_acc_dawn_dusk": -0.04444444179534912,
+                  "linear_acc_night": -0.04444444179534912
+                }
+              },
+              "2": {
+                "immediate": 6.211126452334839,
+                "end": 1.1214437099900663,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.07160496711730957,
+                  "linear_acc_daytime": -0.08148151636123657,
+                  "linear_acc_dawn_dusk": -0.10370367765426636,
+                  "linear_acc_night": -0.02962958812713623
+                }
+              }
+            }
+          },
+          "iid/noise0.75": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 11.54001848467022,
+                "end": 2.4560889842445848,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.04197528958320618,
+                  "linear_acc_daytime": -0.09629631042480469,
+                  "linear_acc_dawn_dusk": 0.0,
+                  "linear_acc_night": -0.029629647731781006
+                }
+              },
+              "1": {
+                "immediate": 11.569749264672506,
+                "end": 1.8867627021844866,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.10864198207855225,
+                  "linear_acc_daytime": -0.0962962806224823,
+                  "linear_acc_dawn_dusk": -0.09629631042480469,
+                  "linear_acc_night": -0.13333332538604736
+                }
+              },
+              "2": {
+                "immediate": 8.993550925366536,
+                "end": 2.211377686379634,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.05679011344909668,
+                  "linear_acc_daytime": -0.051851868629455566,
+                  "linear_acc_dawn_dusk": -0.05185180902481079,
+                  "linear_acc_night": -0.06666666269302368
+                }
+              }
+            }
+          },
+          "iid/noise1.0": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 11.887635963830656,
+                "end": 4.023488294012537,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.10864195227622986,
+                  "linear_acc_daytime": -0.14814814925193787,
+                  "linear_acc_dawn_dusk": -0.10370370745658875,
+                  "linear_acc_night": -0.07407408952713013
+                }
+              },
+              "1": {
+                "immediate": 13.010746350082284,
+                "end": 2.402823292800462,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.14320990443229675,
+                  "linear_acc_daytime": -0.17037037014961243,
+                  "linear_acc_dawn_dusk": -0.11851853132247925,
+                  "linear_acc_night": -0.14074072241783142
+                }
+              },
+              "2": {
+                "immediate": 11.141810272941168,
+                "end": 3.000946106431244,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.1506173014640808,
+                  "linear_acc_daytime": -0.1407407522201538,
+                  "linear_acc_dawn_dusk": -0.14074072241783142,
+                  "linear_acc_night": -0.17037037014961243
+                }
+              }
+            }
+          },
+          "iid/reinit12": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 9.807866000336979,
+                "end": 4.3341186464009605,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.06419751048088074,
+                  "linear_acc_daytime": -0.1111111044883728,
+                  "linear_acc_dawn_dusk": 0.02222222089767456,
+                  "linear_acc_night": -0.10370370745658875
+                }
+              },
+              "1": {
+                "immediate": 11.993741734146488,
+                "end": 3.929106823442727,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.16296297311782837,
+                  "linear_acc_daytime": -0.16296294331550598,
+                  "linear_acc_dawn_dusk": -0.11851853132247925,
+                  "linear_acc_night": -0.2074073851108551
+                }
+              },
+              "2": {
+                "immediate": 10.93126395437995,
+                "end": 4.398324377754161,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.13827162981033325,
+                  "linear_acc_daytime": -0.14814817905426025,
+                  "linear_acc_dawn_dusk": -0.13333332538604736,
+                  "linear_acc_night": -0.13333332538604736
+                }
+              }
+            }
+          },
+          "iid/reinit4": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 2.6571470728004507,
+                "end": 1.2613587213907365,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.024691402912139893,
+                  "linear_acc_daytime": 0.007407426834106445,
+                  "linear_acc_dawn_dusk": 0.007407426834106445,
+                  "linear_acc_night": 0.059259235858917236
+                }
+              },
+              "1": {
+                "immediate": 3.3574752771749004,
+                "end": 0.33260315155137893,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.02962958812713623,
+                  "linear_acc_daytime": 0.051851868629455566,
+                  "linear_acc_dawn_dusk": 0.0,
+                  "linear_acc_night": 0.03703707456588745
+                }
+              },
+              "2": {
+                "immediate": 2.2544493127120506,
+                "end": 1.3499582509940622,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.0,
+                  "linear_acc_daytime": 0.00740736722946167,
+                  "linear_acc_dawn_dusk": -0.04444444179534912,
+                  "linear_acc_night": 0.03703707456588745
+                }
+              }
+            }
+          },
+          "walk/noise0.3": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 3.0084292335011997,
+                "end": -0.10929747356597407,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.03456789255142212,
+                  "linear_acc_daytime": -0.0962962806224823,
+                  "linear_acc_dawn_dusk": -0.02222222089767456,
+                  "linear_acc_night": 0.01481485366821289
+                }
+              },
+              "1": {
+                "immediate": 3.6906975774294146,
+                "end": 2.708725639078164,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.002469182014465332,
+                  "linear_acc_daytime": 0.0,
+                  "linear_acc_dawn_dusk": 0.029629647731781006,
+                  "linear_acc_night": -0.02222222089767456
+                }
+              },
+              "2": {
+                "immediate": 0.3674724654967855,
+                "end": 1.2668996568793152,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.0,
+                  "linear_acc_daytime": 0.05925929546356201,
+                  "linear_acc_dawn_dusk": -0.00740736722946167,
+                  "linear_acc_night": -0.051851868629455566
+                }
+              }
+            }
+          },
+          "walk/noise0.5": {
+            "category": "partial",
+            "seeds": {
+              "0": {
+                "immediate": 7.032594827158824,
+                "end": 0.9653528145984142,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.059259235858917236,
+                  "linear_acc_daytime": -0.0814814567565918,
+                  "linear_acc_dawn_dusk": -0.02222222089767456,
+                  "linear_acc_night": -0.07407405972480774
+                }
+              },
+              "1": {
+                "immediate": 6.93343690344527,
+                "end": 3.6830929176062486,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.02222222089767456,
+                  "linear_acc_daytime": 0.01481485366821289,
+                  "linear_acc_dawn_dusk": -0.059259235858917236,
+                  "linear_acc_night": -0.02222222089767456
+                }
+              },
+              "2": {
+                "immediate": 3.477823515309481,
+                "end": 2.147720249494791,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.037037014961242676,
+                  "linear_acc_daytime": 0.04444444179534912,
+                  "linear_acc_dawn_dusk": -0.059259235858917236,
+                  "linear_acc_night": -0.09629631042480469
+                }
+              }
+            }
+          },
+          "walk/noise0.75": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 11.582689364395332,
+                "end": 2.022978832295273,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.0765431821346283,
+                  "linear_acc_daytime": -0.04444444179534912,
+                  "linear_acc_dawn_dusk": -0.06666666269302368,
+                  "linear_acc_night": -0.11851850152015686
+                }
+              },
+              "1": {
+                "immediate": 9.901072429567874,
+                "end": 6.472406192587773,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.0716049075126648,
+                  "linear_acc_daytime": -0.014814794063568115,
+                  "linear_acc_dawn_dusk": -0.0962962806224823,
+                  "linear_acc_night": -0.10370370745658875
+                }
+              },
+              "2": {
+                "immediate": 7.456594044049367,
+                "end": 3.5215317911793607,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.024691343307495117,
+                  "linear_acc_daytime": 0.051851868629455566,
+                  "linear_acc_dawn_dusk": -0.05185183882713318,
+                  "linear_acc_night": -0.07407408952713013
+                }
+              }
+            }
+          },
+          "walk/noise1.0": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 11.942963023707359,
+                "end": 4.838719251459982,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.1012345552444458,
+                  "linear_acc_daytime": -0.07407402992248535,
+                  "linear_acc_dawn_dusk": -0.1259259283542633,
+                  "linear_acc_night": -0.10370367765426636
+                }
+              },
+              "1": {
+                "immediate": 11.283258447694326,
+                "end": 6.628624787908621,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.10864195227622986,
+                  "linear_acc_daytime": -0.07407405972480774,
+                  "linear_acc_dawn_dusk": -0.14074072241783142,
+                  "linear_acc_night": -0.1111111044883728
+                }
+              },
+              "2": {
+                "immediate": 8.707244347599902,
+                "end": 4.138300733842243,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.14814811944961548,
+                  "linear_acc_daytime": -0.1111111044883728,
+                  "linear_acc_dawn_dusk": -0.14814814925193787,
+                  "linear_acc_night": -0.18518519401550293
+                }
+              }
+            }
+          },
+          "walk/reinit12": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": 9.931907194830153,
+                "end": 4.676099401119604,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.10370367765426636,
+                  "linear_acc_daytime": -0.1111111044883728,
+                  "linear_acc_dawn_dusk": -0.051851868629455566,
+                  "linear_acc_night": -0.14814814925193787
+                }
+              },
+              "1": {
+                "immediate": 9.967364483854587,
+                "end": 7.713518122514671,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.11604934930801392,
+                  "linear_acc_daytime": -0.0814814567565918,
+                  "linear_acc_dawn_dusk": -0.05185183882713318,
+                  "linear_acc_night": -0.21481481194496155
+                }
+              },
+              "2": {
+                "immediate": 7.811884570092011,
+                "end": 5.475712204223081,
+                "fired_immediate": true,
+                "canary_immediate": {
+                  "linear_acc": -0.12592589855194092,
+                  "linear_acc_daytime": -0.059259235858917236,
+                  "linear_acc_dawn_dusk": -0.14814814925193787,
+                  "linear_acc_night": -0.17037037014961243
+                }
+              }
+            }
+          },
+          "walk/reinit4": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": 2.5516147878688975,
+                "end": -0.050427384256289495,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.017283976078033447,
+                  "linear_acc_daytime": -0.02962958812713623,
+                  "linear_acc_dawn_dusk": -0.007407426834106445,
+                  "linear_acc_night": 0.08888888359069824
+                }
+              },
+              "1": {
+                "immediate": 2.344326165404504,
+                "end": 2.0888084607634827,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": 0.04691362380981445,
+                  "linear_acc_daytime": 0.07407408952713013,
+                  "linear_acc_dawn_dusk": 0.02222222089767456,
+                  "linear_acc_night": 0.04444444179534912
+                }
+              },
+              "2": {
+                "immediate": 0.3642897782743903,
+                "end": 2.108857021286098,
+                "fired_immediate": false,
+                "canary_immediate": {
+                  "linear_acc": -0.00740736722946167,
+                  "linear_acc_daytime": 0.0,
+                  "linear_acc_dawn_dusk": -0.059259235858917236,
+                  "linear_acc_night": 0.037037014961242676
+                }
+              }
+            }
+          }
+        },
+        "summary": {
+          "fires_on_called": "18/18",
+          "quiet_on_reinit4": "6/6",
+          "reinit4_max": 3.3574752771749004,
+          "quiet_walks": "5/5",
+          "called_min": 7.456594044049367,
+          "called_median": 11.03653711366056,
+          "worst_walk_z": 4.6184810955549915,
+          "margin_median": 2.3896464844865464,
+          "margin_min": 1.614512193462454
+        }
+      }
+    }
+  },
+  "walk_null": {
+    "threshold_all5": 4.891104643929248,
+    "fired_loo": [
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "arms": {
+      "walk/noise0.3": {
+        "category": "quiet",
+        "seeds": {
+          "0": {
+            "immediate": 1.646289614792212,
+            "fired": false,
+            "threshold": 4.232606800114163,
+            "immediate_vs_iid_null": 2.567690123772868,
+            "branch_fired": true,
+            "branch_first_step": 66,
+            "branch_max_z": 4.6659146969718766
+          },
+          "1": {
+            "immediate": 2.0275199948646345,
+            "fired": false,
+            "threshold": 5.482418670347221,
+            "immediate_vs_iid_null": 3.214686211176259,
+            "branch_fired": false,
+            "branch_first_step": null,
+            "branch_max_z": 5.090901299829295
+          },
+          "2": {
+            "immediate": 0.11015726115508644,
+            "fired": false,
+            "threshold": 6.3738209222545485,
+            "immediate_vs_iid_null": 0.1736820072738698,
+            "branch_fired": false,
+            "branch_first_step": null,
+            "branch_max_z": 6.099647078463135
+          }
+        }
+      },
+      "walk/noise0.5": {
+        "category": "partial",
+        "seeds": {
+          "0": {
+            "immediate": 3.841827025051328,
+            "fired": false,
+            "threshold": 4.232606800114163,
+            "immediate_vs_iid_null": 5.992032763149677,
+            "branch_fired": true,
+            "branch_first_step": 65,
+            "branch_max_z": 5.6588883815514786
+          },
+          "1": {
+            "immediate": 3.7049068508003344,
+            "fired": false,
+            "threshold": 5.482418670347221,
+            "immediate_vs_iid_null": 5.874227133210324,
+            "branch_fired": true,
+            "branch_first_step": 88,
+            "branch_max_z": 7.443909504142052
+          },
+          "2": {
+            "immediate": 1.731682384239662,
+            "fired": false,
+            "threshold": 6.3738209222545485,
+            "immediate_vs_iid_null": 2.730297297716154,
+            "branch_fired": false,
+            "branch_first_step": null,
+            "branch_max_z": 5.637424137942591
+          }
+        }
+      },
+      "walk/noise0.75": {
+        "category": "called",
+        "seeds": {
+          "0": {
+            "immediate": 6.377051138555754,
+            "fired": true,
+            "threshold": 4.232606800114163,
+            "immediate_vs_iid_null": 9.946179019862694,
+            "branch_fired": true,
+            "branch_first_step": 65,
+            "branch_max_z": 6.581780378626932
+          },
+          "1": {
+            "immediate": 5.299958855767258,
+            "fired": false,
+            "threshold": 5.482418670347221,
+            "immediate_vs_iid_null": 8.403223986244345,
+            "branch_fired": true,
+            "branch_first_step": 65,
+            "branch_max_z": 9.370359057350427
+          },
+          "2": {
+            "immediate": 3.9183601178489815,
+            "fired": false,
+            "threshold": 6.3738209222545485,
+            "immediate_vs_iid_null": 6.177973592968767,
+            "branch_fired": true,
+            "branch_first_step": 73,
+            "branch_max_z": 9.053026537785547
+          }
+        }
+      },
+      "walk/noise1.0": {
+        "category": "called",
+        "seeds": {
+          "0": {
+            "immediate": 6.559534409808794,
+            "fired": true,
+            "threshold": 4.232606800114163,
+            "immediate_vs_iid_null": 10.230795097823762,
+            "branch_fired": true,
+            "branch_first_step": 65,
+            "branch_max_z": 8.587465761721148
+          },
+          "1": {
+            "immediate": 6.07422762776426,
+            "fired": true,
+            "threshold": 5.482418670347221,
+            "immediate_vs_iid_null": 9.630847462899288,
+            "branch_fired": true,
+            "branch_first_step": 65,
+            "branch_max_z": 11.316694873891683
+          },
+          "2": {
+            "immediate": 4.650298714302427,
+            "fired": false,
+            "threshold": 6.3738209222545485,
+            "immediate_vs_iid_null": 7.332001600748294,
+            "branch_fired": true,
+            "branch_first_step": 73,
+            "branch_max_z": 7.781433494336307
+          }
+        }
+      },
+      "walk/none": {
+        "category": "dose0",
+        "seeds": {
+          "0": {
+            "immediate": 0.0,
+            "fired": false,
+            "threshold": 4.232606800114163,
+            "immediate_vs_iid_null": 0.0,
+            "branch_fired": false,
+            "branch_first_step": null,
+            "branch_max_z": 3.3698370903060946
+          },
+          "1": {
+            "immediate": 0.0,
+            "fired": false,
+            "threshold": 5.482418670347221,
+            "immediate_vs_iid_null": 0.0,
+            "branch_fired": false,
+            "branch_first_step": null,
+            "branch_max_z": 3.1171494692686283
+          },
+          "2": {
+            "immediate": 0.0,
+            "fired": false,
+            "threshold": 6.3738209222545485,
+            "immediate_vs_iid_null": 0.0,
+            "branch_fired": false,
+            "branch_first_step": null,
+            "branch_max_z": 4.455287274384749
+          }
+        }
+      },
+      "walk/reinit12": {
+        "category": "called",
+        "seeds": {
+          "0": {
+            "immediate": 5.438364243670623,
+            "fired": true,
+            "threshold": 4.232606800114163,
+            "immediate_vs_iid_null": 8.482124914403379,
+            "branch_fired": true,
+            "branch_first_step": 65,
+            "branch_max_z": 7.447945358382792
+          },
+          "1": {
+            "immediate": 5.320208619839483,
+            "fired": false,
+            "threshold": 5.482418670347221,
+            "immediate_vs_iid_null": 8.435330519105886,
+            "branch_fired": true,
+            "branch_first_step": 65,
+            "branch_max_z": 12.54157996056425
+          },
+          "2": {
+            "immediate": 4.121446694446229,
+            "fired": false,
+            "threshold": 6.3738209222545485,
+            "immediate_vs_iid_null": 6.498174766308849,
+            "branch_fired": true,
+            "branch_first_step": 75,
+            "branch_max_z": 9.46148355423512
+          }
+        }
+      },
+      "walk/reinit4": {
+        "category": "quiet",
+        "seeds": {
+          "0": {
+            "immediate": 1.4147211774599784,
+            "fired": false,
+            "threshold": 4.232606800114163,
+            "immediate_vs_iid_null": 2.2065167408073565,
+            "branch_fired": false,
+            "branch_first_step": null,
+            "branch_max_z": 3.9200492103470777
+          },
+          "1": {
+            "immediate": 1.2103609509679103,
+            "fired": false,
+            "threshold": 5.482418670347221,
+            "immediate_vs_iid_null": 1.9190590817736914,
+            "branch_fired": false,
+            "branch_first_step": null,
+            "branch_max_z": 4.255842743920646
+          },
+          "2": {
+            "immediate": 0.11814917728786543,
+            "fired": false,
+            "threshold": 6.3738209222545485,
+            "immediate_vs_iid_null": 0.1862826476796919,
+            "branch_fired": false,
+            "branch_first_step": null,
+            "branch_max_z": 4.676722914841676
+          }
+        }
+      }
+    },
+    "summary": {
+      "loo_false_alarms": "0/5",
+      "fires_on_called": "4/9",
+      "quiet_on_reinit4": "3/3",
+      "called_min_margin": 0.614758426012223,
+      "reinit4_max_ratio": 0.33424346845112574
+    }
+  },
+  "lr_walk": {
+    "threshold": 3.341555937177333,
+    "seeds": {
+      "0": {
+        "end_step": 117,
+        "gap_end": -0.4991201855589111,
+        "fired_end": false,
+        "gap_peak": 0.5968315309745018,
+        "gap_peak_step": 112,
+        "raw_end": {
+          "hi_walk": 0.16196221113204956,
+          "hi_iid": 0.05353349447250366,
+          "lo_walk": 0.11771261692047119,
+          "lo_iid": 0.03080594539642334
+        },
+        "canary_gap_end": -0.012345695495605468
+      },
+      "1": {
+        "end_step": 117,
+        "gap_end": -1.6346041096155268,
+        "fired_end": false,
+        "gap_peak": 0.0647426111103573,
+        "gap_peak_step": 70,
+        "raw_end": {
+          "hi_walk": 0.13284307718276978,
+          "hi_iid": 0.020026743412017822,
+          "lo_walk": 0.1101941466331482,
+          "lo_iid": 0.00770193338394165
+        },
+        "canary_gap_end": -0.07851849794387818
+      },
+      "2": {
+        "end_step": 117,
+        "gap_end": -0.893281316083129,
+        "fired_end": false,
+        "gap_peak": 1.4104878120867026,
+        "gap_peak_step": 97,
+        "raw_end": {
+          "hi_walk": 0.12272435426712036,
+          "hi_iid": 0.019114136695861816,
+          "lo_walk": 0.05930870771408081,
+          "lo_iid": 0.006031930446624756
+        },
+        "canary_gap_end": -0.0074074029922485355
+      }
+    },
+    "summary": "0/3"
+  }
+}
