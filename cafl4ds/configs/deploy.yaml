@@ -67,6 +67,7 @@ lens:
   drives: []
   branches: []
   batch_size: 135
+  probe_only: false # P1.1.3: rewrite probe.pt alone (the features need no re-extraction)
 # The recovery pass: >0 runs this many stationary well-pool batches from `resume.checkpoint` instead
 # of the drive (the short IID pass after a drive, read as savings).
 recovery_steps: null

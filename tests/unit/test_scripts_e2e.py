@@ -239,6 +239,11 @@ def test_p112_extracts_block_features_that_reproduce_the_branch_record(tmp_path:
     assert [e for e in entries if "damage" in e][0]["damage"]["rel_change"] == pytest.approx(
         record["damage"]["rel_change"]
     )
+    # P1.1.3: the probe record carries both halves' strata, and a rewrite must describe the same rows.
+    assert probe["support_groups"].shape[0] == int((~query).sum())
+    torch.save({**probe, "query_groups": probe["query_groups"].flip(0) + 1}, out / "probe.pt")
+    with pytest.raises(ValueError, match="query_groups"):
+        _load_script("extract_block_features")._save_probe(cfg, out)
 
 
 def test_p111_recovery_needs_a_checkpoint_to_recover_from(tmp_path: Path) -> None:

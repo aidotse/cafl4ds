@@ -18,7 +18,9 @@ Three sources, all from the run dirs' own records:
   the parent drive's ``step00065.pt``, read under ``drives``.
 
 ``probe.pt`` records which rows are query images (what the monitor reads) and the canary labels and
-strata, kept for analysis only — no lens reads them.
+strata, kept for analysis only — no lens reads them. ``lens.probe_only=true`` rewrites it alone, on
+the CPU: P1.1.3 added the support rows' strata after P1.1.2's features were extracted. A rewrite must
+reproduce the rows the existing record describes, so the features on disk stay indexed correctly.
 
 Example (Gaudi node; the drive's diet knobs, so the probes are the drive's)::
 
@@ -49,7 +51,11 @@ logger.add(sys.stdout, level="INFO")
 
 
 def _save_probe(config: DictConfig, out: Path) -> torch.Tensor:
-    """Write ``probe.pt`` (query mask, labels, strata) and return the probe images, support then query."""
+    """Write ``probe.pt`` (query mask, labels, strata) and return the probe images, support then query.
+
+    Raises:
+        ValueError: If an existing ``probe.pt`` describes different rows (its features would be misindexed).
+    """
     source = instantiate(config.data)
     sets = instantiate(config.stream, source=source).eval_sets
     support, query = sets.probe_support, sets.probe_query
@@ -59,10 +65,18 @@ def _save_probe(config: DictConfig, out: Path) -> torch.Tensor:
         "is_query": torch.cat([torch.zeros(n_s, dtype=torch.bool), torch.ones(n_q, dtype=torch.bool)]),
         "labels": torch.cat([support.labels, query.labels]),
         "query_groups": query.groups,
+        "support_groups": support.groups,
         "group_names": dict(sets.group_names),
     }
+    path = out / "probe.pt"
+    if path.is_file():
+        old = torch.load(path)
+        for key, value in old.items():
+            same = torch.equal(value, record[key]) if isinstance(value, torch.Tensor) else value == record[key]
+            if not same:
+                raise ValueError(f"{path} records different probe rows ({key!r}); refusing to overwrite it.")
     out.mkdir(parents=True, exist_ok=True)
-    torch.save(record, out / "probe.pt")
+    torch.save(record, path)
     logger.info(f"probe set: {n_s} support + {n_q} query images")
     return images
 
@@ -136,8 +150,12 @@ def extract(config: DictConfig, out: Path) -> list[dict[str, Any]]:
 
 @hydra.main(version_base=None, config_path="../cafl4ds/configs", config_name="deploy")  # type: ignore[misc]
 def main(config: DictConfig) -> None:
-    """Extract per-block features into the Hydra run dir."""
-    extract(config, Path(HydraConfig.get().runtime.output_dir))
+    """Extract per-block features into the Hydra run dir (or rewrite its ``probe.pt`` alone)."""
+    out = Path(HydraConfig.get().runtime.output_dir)
+    if config.lens.get("probe_only", False):
+        _save_probe(config, out)
+        return
+    extract(config, out)
 
 
 if __name__ == "__main__":
