@@ -1,4 +1,4 @@
-"""P1.1.3 items 1-4 — can CKA drift tell information loss from benign adaptation?
+"""P1.1.3 items 1-4 (+ follow-up) — can CKA drift tell information loss from benign adaptation?
 
 P1.1.2 left CKA drift against the well as MAE's one label-free damage reader, but it fires on healthy
 walks and on optimizer restarts. Four reads of the existing corpora, no new runs; the report (``out``)
@@ -16,7 +16,10 @@ holds one section per item:
   against bands that leave its parent seed out;
 * ``lr_walk`` (item 4) — JE's lr-1e-4 walk minus its IID control, against the same gap at lr 3e-5
   (:func:`cafl4ds.cka_reads.gap_of_gaps`) — all four branch at step 65 with a fresh optimizer, so the
-  restart cancels.
+  restart cancels;
+* ``middle`` (follow-up) — the middle-block panel item 5 points to, and the pooled backbone beside it,
+  calibrated on the IID drives' leg checkpoints; every state read alone against it
+  (:func:`cafl4ds.cka_reads.panel_read`): the healthy walks, each branch's post-damage and final state.
 
 Example::
 
@@ -35,7 +38,7 @@ from hydra.utils import to_absolute_path
 from loguru import logger
 from omegaconf import DictConfig
 
-from cafl4ds.cka_reads import gap_of_gaps, jolt, stratum_signal, stratum_values
+from cafl4ds.cka_reads import gap_of_gaps, jolt, panel_read, stratum_signal, stratum_values
 from cafl4ds.jsonio import dumps_valid
 from cafl4ds.lenses import fires, twin_effect
 from cafl4ds.null_envelope import checkpoint_steps, read_corpus, seed_matrix
@@ -360,13 +363,86 @@ def lr_walk(config: DictConfig) -> dict[str, Any]:
     }
 
 
+# --- follow-up: a middle-block single-drive alarm -----------------------------------------------
+
+
+def middle_block(config: DictConfig) -> dict[str, Any]:
+    """Each panel calibrated on the IID drives' leg checkpoints; every state read alone against it (no twin)."""
+    cfg = config.middle
+    bb = str(cfg.backbone)
+    fdir = _path(str(config.features), bb=bb)
+    table: dict[str, dict[str, float]] = json.loads((fdir / "lens_values.json").read_text(encoding="utf-8"))
+    index = json.loads(
+        (_path(str(config.null_root)) / "warm" / f"{bb}_o0.0_iid" / "checkpoints" / "s0" / "index.json").read_text()
+    )
+    stems = [Path(e["file"]).stem for e in index]
+    i_pre, i_end = stems.index("step00065"), len(stems) - 1
+    settings = {"span": int(cfg.span), "floor": float(config.floor)}
+    p111 = json.loads(_path(str(config.reading_report)).read_text(encoding="utf-8"))[bb]
+    root = _path(str(config.root))
+
+    def state(run: str, seed: int, stem: str) -> dict[str, float]:
+        return table[f"features/{run}/s{seed}/{stem}.pt"]
+
+    out: dict[str, Any] = {"grid": stems, "panels": {}}
+    for name, layers in cfg.panels.items():
+        panel = [f"cka_drift@{layer}" for layer in layers]
+        iid = {
+            sig: np.array([[state(f"{bb}_o0.0_iid", s, st)[sig] for st in stems] for s in range(5)]) for sig in panel
+        }
+        rules = calibrate_panel(iid, dict.fromkeys(panel, settings), float(config.alpha))
+        loo = leave_one_out_fired(iid, dict.fromkeys(panel, settings), float(config.alpha))
+        walks = [
+            max(
+                (call(np.array([state(f"{bb}_o0.0_walk", s, st)[sig] for st in stems]), rules[sig]) for sig in panel),
+                key=lambda c: c["max_z"],
+            )
+            for s in range(5)
+        ]
+        arms: dict[str, Any] = {}
+        for arm_dir in sorted((root / "branch").glob(f"{bb}_*")):
+            key = arm_dir.name[len(f"{bb}_") :].replace("_", "/", 1)
+            dose0 = key.endswith(f"/{config.dose0}")
+            seeds: dict[str, Any] = {}
+            for seed_dir in sorted((arm_dir / "checkpoints").glob("s*")):
+                seed = int(seed_dir.name[1:])
+                seeds[str(seed)] = {
+                    "immediate": None if dose0 else panel_read(state(arm_dir.name, seed, "post_damage"), rules, i_pre),
+                    "end": panel_read(state(arm_dir.name, seed, "final"), rules, i_end),
+                }
+            arms[key] = {"category": "dose0" if dose0 else _category(p111, key), "seeds": seeds}
+        called = [v for a in arms.values() if a["category"] == "called" for v in a["seeds"].values()]
+        reinit4 = [v for k, a in arms.items() if k.endswith("reinit4") for v in a["seeds"].values()]
+        dose0s = [v for a in arms.values() if a["category"] == "dose0" for v in a["seeds"].values()]
+        out["panels"][name] = {
+            "threshold": rules[panel[0]].threshold,
+            "fired_loo": [bool(f) for f in loo],
+            "walk": [{"fired": c["fired"], "max_z": c["max_z"]} for c in walks],
+            "arms": arms,
+            "summary": {
+                "loo_false_alarms": f"{sum(loo)}/{len(loo)}",
+                "quiet_walks": f"{sum(not c['fired'] for c in walks)}/{len(walks)}",
+                "worst_walk_z": max(c["max_z"] for c in walks),
+                "fires_on_called": f"{sum(v['immediate']['fired'] for v in called)}/{len(called)}",
+                "called_min_z": min(v["immediate"]["max_z"] for v in called),
+                "quiet_on_reinit4": f"{sum(not v['immediate']['fired'] for v in reinit4)}/{len(reinit4)}",
+                "reinit4_max_z": max(v["immediate"]["max_z"] for v in reinit4),
+                "quiet_dose0_end": f"{sum(not v['end']['fired'] for v in dose0s)}/{len(dose0s)}",
+                "fires_on_called_end": f"{sum(v['end']['fired'] for v in called)}/{len(called)}",
+                "quiet_on_reinit4_end": f"{sum(not v['end']['fired'] for v in reinit4)}/{len(reinit4)}",
+            },
+        }
+    return out
+
+
 def analyze(config: DictConfig) -> dict[str, Any]:
-    """Build the P1.1.3 items 1-4 report (Hydra-free core)."""
+    """Build the P1.1.3 items 1-4 and middle-block report (Hydra-free core)."""
     report = {
         "jolt": {bb: restart_jolt(config, bb) for bb in config.jolt.backbones},
         "past": past_regime(config),
         "walk_null": walk_null(config),
         "lr_walk": lr_walk(config),
+        "middle": middle_block(config),
     }
     out = _path(str(config.out))
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -389,11 +465,13 @@ def _log(report: dict[str, Any]) -> None:
         logger.info(f"past {name}: c={panel['threshold']:.2f} loo={panel['fpr_loo']:.1f} {panel['summary']}")
     logger.info(f"walk_null: {report['walk_null']['summary']}")
     logger.info(f"lr_walk: {report['lr_walk']['summary']} (c={report['lr_walk']['threshold']:.2f})")
+    for name, panel in report["middle"]["panels"].items():
+        logger.info(f"middle {name}: c={panel['threshold']:.2f} {panel['summary']}")
 
 
 @hydra.main(version_base=None, config_path="../cafl4ds/configs", config_name="cka_drift")  # type: ignore[misc]
 def main(config: DictConfig) -> None:
-    """Run the four reads and write the report."""
+    """Run the reads and write the report."""
     analyze(config)
 
 

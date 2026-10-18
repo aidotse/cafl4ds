@@ -13,6 +13,12 @@ arms: {healthy: mae_healthy_replay_r1, pc: mae_pc_forget}
 # The lenses the sign-flip test searches over (every layer each). TwoNN has no known harmful direction,
 # and a two-sided test over 5 seeds cannot reach p = 1/32, so it is reported, not tested.
 tested: [cka_drift, dcka_drift, procrustes_drift, rankme]
+# Follow-up: each PC arm read alone against the 5 healthy arms (one shared threshold per panel).
+single:
+  middle: [block04, block05, block06, block07, block08, block09, block10, block11]
+  pooled: [backbone]
+alpha: 0.05
+floor: 0.25
 device: cpu
 # CPU threads: the SVD lenses slow ~100x when oversubscribed (e.g. beside HPU runs sharing the cores).
 threads: 8

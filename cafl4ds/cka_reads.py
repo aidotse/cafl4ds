@@ -10,6 +10,7 @@ reading the lever, but it also fires on healthy walks and on optimizer restarts.
 * **the restart jolt** — how big and how long a fresh optimizer's kick to drift is (:func:`jolt`);
 * **a gap of gaps** — the walk's extra drift over IID at one learning rate against another, in null
   seed-spread units (:func:`gap_of_gaps`), for JE's naturally degrading lr-1e-4 walk;
+* **a single-drive panel read** — one state against healthy bands, no twin (:func:`panel_read`);
 * **a paired sign-flip test** — does any lens, at any layer, separate a forgetting arm from its
   healthy twin across seeds, with the search over lenses and layers paid for inside the test
   (:func:`sign_flip_max_t`).
@@ -26,7 +27,7 @@ import torch
 
 from cafl4ds import measurements
 from cafl4ds.lenses import signal_name
-from cafl4ds.reading_protocol import Bands, apply_transform
+from cafl4ds.reading_protocol import Bands, apply_transform, zscores
 
 
 def stratum_signal(lens: str, layer: str, stratum: str) -> str:
@@ -157,3 +158,19 @@ def sign_flip_max_t(diffs: np.ndarray, readers: list[str]) -> dict[str, Any]:
         "diffs": d[:, best].tolist(),
         "n_positive": int((d[:, best] > 0).sum()),
     }
+
+
+def panel_read(values: dict[str, float], rules: dict[str, Bands], checkpoint: int) -> dict[str, Any]:
+    """Read one state alone against a panel's bands at ``checkpoint`` — a single-drive read, no twin.
+
+    Args:
+        values: ``signal -> value`` for the state (every panel signal present).
+        rules: The panel's calibrated bands (one shared threshold).
+        checkpoint: Index of the state's checkpoint on the bands' grid.
+
+    Returns:
+        ``fired`` (any signal over the threshold), ``max_z`` and the ``signal`` attaining it.
+    """
+    z = {s: float(zscores(np.array([values[s]]), bands.restrict([checkpoint]))[0]) for s, bands in rules.items()}
+    top = max(z, key=lambda s: z[s] if np.isfinite(z[s]) else -math.inf)
+    return {"fired": any(v > rules[s].threshold for s, v in z.items()), "max_z": z[top], "signal": top}

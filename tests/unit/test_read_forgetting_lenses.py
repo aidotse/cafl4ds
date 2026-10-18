@@ -43,3 +43,13 @@ def test_paired_diffs_are_harm_signed_per_lens() -> None:
     healthy = [{"cka_drift@block01": 0.02, "rankme@block01": -1.0}]
     diffs = module.paired_diffs(pc, healthy, ["cka_drift@block01", "rankme@block01"])
     assert diffs[0] == pytest.approx(np.array([0.03, 4.0]))
+
+
+def test_unpaired_reads_each_forgetting_arm_alone_against_the_healthy_arms() -> None:
+    """PC arms far above the healthy arms' drift fire; the healthy arms' own leave-one-out calls stay quiet."""
+    rng = np.random.default_rng(3)
+    healthy = [{"cka_drift@block05": float(v)} for v in 0.01 * np.exp(rng.normal(size=6) * 0.1)]
+    pc = [{"cka_drift@block05": 0.05}, {"cka_drift@block05": 0.0101}]
+    out = _module().unpaired(pc, healthy, ["cka_drift@block05"], alpha=0.05, floor=0.25)
+    assert [r["fired"] for r in out["pc"]] == [True, False]
+    assert out["summary"]["loo_false_alarms"] == "0/6"

@@ -15,6 +15,8 @@ by seed. Three steps, in order:
 3. **Test.** Per seed, PC minus healthy, harm-signed, for every tested lens at every layer. One exact
    sign-flip test of the maximum paired t over all of them (:func:`cafl4ds.cka_reads.sign_flip_max_t`)
    — the search over lenses and layers paid for inside the test.
+4. **Single drive** (follow-up). Each PC arm read alone against the healthy arms' bands (:func:`unpaired`),
+   for the middle-block panel and the pooled backbone — no twin.
 
 Example::
 
@@ -37,10 +39,10 @@ from omegaconf import DictConfig, OmegaConf
 
 from cafl4ds import measurements, warmup
 from cafl4ds.block_features import block_features
-from cafl4ds.cka_reads import sign_flip_max_t
+from cafl4ds.cka_reads import panel_read, sign_flip_max_t
 from cafl4ds.jsonio import dumps_valid
 from cafl4ds.lenses import lens_values
-from cafl4ds.reading_protocol import direction, spearman
+from cafl4ds.reading_protocol import calibrate_panel, direction, leave_one_out_fired, spearman
 
 logger.remove()
 logger.add(sys.stdout, level="INFO")
@@ -77,6 +79,31 @@ def changes(post_b: dict[str, float], post_a: dict[str, float]) -> dict[str, flo
 def paired_diffs(pc: list[dict[str, float]], healthy: list[dict[str, float]], readers: list[str]) -> np.ndarray:
     """``[seeds, readers]`` — PC's change minus healthy's, harm-signed (positive = PC moved the harmful way)."""
     return np.array([[(p[r] - h[r]) * (direction(r) or 1) for r in readers] for p, h in zip(pc, healthy, strict=True)])
+
+
+def unpaired(
+    pc: list[dict[str, float]], healthy: list[dict[str, float]], panel: list[str], alpha: float, floor: float
+) -> dict[str, Any]:
+    """Each PC arm read alone against bands from the healthy arms (one reading per seed) — no twin.
+
+    The single-drive analogue of the paired test: a monitor holding a healthy null, but not this run's twin.
+    The panel's layers share one threshold (:func:`cafl4ds.reading_protocol.calibrate_panel`); the healthy
+    arms' leave-one-out calls are its false alarms.
+    """
+    nulls = {sig: np.array([[h[sig]] for h in healthy]) for sig in panel}
+    settings = dict.fromkeys(panel, {"span": 0, "floor": floor})
+    rules = calibrate_panel(nulls, settings, alpha)
+    loo = leave_one_out_fired(nulls, settings, alpha)
+    reads = [panel_read(p, rules, 0) for p in pc]
+    return {
+        "threshold": rules[panel[0]].threshold,
+        "fired_loo": [bool(f) for f in loo],
+        "pc": reads,
+        "summary": {
+            "loo_false_alarms": f"{sum(loo)}/{len(loo)}",
+            "fires_on_pc": f"{sum(r['fired'] for r in reads)}/{len(reads)}",
+        },
+    }
 
 
 def read_seed(config: DictConfig, harness: ModuleType, seed: int) -> dict[str, Any]:
@@ -142,6 +169,12 @@ def analyze(config: DictConfig) -> dict[str, Any]:
         )
         for lens in config.tested
     }
+    single = {
+        name: unpaired(
+            pc, healthy, [f"cka_drift@{layer}" for layer in layers], float(config.alpha), float(config.floor)
+        )
+        for name, layers in config.single.items()
+    }
     every = sorted(pc[0])
     all_diffs = paired_diffs(pc, healthy, every)
     bwt = np.array([per_seed[s]["pc_bwt"] for s in seeds])
@@ -150,6 +183,7 @@ def analyze(config: DictConfig) -> dict[str, Any]:
             "seeds": {str(s): dict(per_seed[s]) for s in seeds},
             "test": test,
             "per_lens": per_lens,
+            "single": single,
             "per_reader": {
                 r: {
                     "diffs": all_diffs[:, i].tolist(),
@@ -169,6 +203,8 @@ def analyze(config: DictConfig) -> dict[str, Any]:
     )
     for lens, t in per_lens.items():
         logger.info(f"  {lens:18s} t_max {t['t_max']:.2f} at {t['reader']}, p = {t['p']:.4f}")
+    for name, entry in single.items():
+        logger.info(f"single-drive {name}: c={entry['threshold']:.2f} {entry['summary']}")
     logger.info(f"wrote {out}")
     return report
 

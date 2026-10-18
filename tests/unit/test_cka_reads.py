@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 import torch
 
-from cafl4ds.cka_reads import gap_of_gaps, jolt, sign_flip_max_t, stratum_signal, stratum_values
+from cafl4ds.cka_reads import gap_of_gaps, jolt, panel_read, sign_flip_max_t, stratum_signal, stratum_values
 from cafl4ds.reading_protocol import direction, fit_bands
 
 
@@ -62,3 +62,15 @@ def test_sign_flip_max_t_reaches_its_floor_only_when_every_seed_agrees() -> None
     assert out["p"] == pytest.approx(1 / 32) and out["p_min"] == pytest.approx(1 / 32)
     mixed = sign_flip_max_t(np.column_stack([noise, clean * [1, 1, -1, 1, 1]]), ["noise", "mixed"])
     assert mixed["p"] > 1 / 32
+
+
+def test_panel_read_fires_on_any_member_and_names_the_largest() -> None:
+    """A state far above one layer's null fires the panel; at the null mean it stays quiet."""
+    rng = np.random.default_rng(2)
+    null = np.exp(rng.normal(size=(5, 3)) * 0.2) * 0.01
+    rules = {s: fit_bands(null, s, span=1, threshold=3.0) for s in ("cka_drift@block04", "cka_drift@block05")}
+    quiet = {s: float(np.exp(b.mean[1])) for s, b in rules.items()}
+    assert not panel_read(quiet, rules, 1)["fired"]
+    loud = {**quiet, "cka_drift@block05": 0.5}
+    out = panel_read(loud, rules, 1)
+    assert out["fired"] and out["signal"] == "cka_drift@block05" and out["max_z"] > 3.0
