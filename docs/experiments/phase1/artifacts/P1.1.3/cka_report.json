@@ -3163,5 +3163,1221 @@
       }
     },
     "summary": "0/3"
+  },
+  "middle": {
+    "grid": [
+      "step00022",
+      "step00031",
+      "step00044",
+      "step00049",
+      "step00055",
+      "step00056",
+      "step00059",
+      "step00060",
+      "step00062",
+      "step00063",
+      "step00064",
+      "step00065",
+      "step00108",
+      "step00109",
+      "step00110",
+      "step00114",
+      "step00118",
+      "final"
+    ],
+    "panels": {
+      "middle": {
+        "threshold": 4.631702047600953,
+        "fired_loo": [
+          false,
+          true,
+          false,
+          false,
+          false
+        ],
+        "walk": [
+          {
+            "fired": false,
+            "max_z": 3.4524719843566043
+          },
+          {
+            "fired": false,
+            "max_z": 3.6653134623069294
+          },
+          {
+            "fired": false,
+            "max_z": 1.539207986735585
+          },
+          {
+            "fired": false,
+            "max_z": 3.6543661983405737
+          },
+          {
+            "fired": true,
+            "max_z": 5.073252283393982
+          }
+        ],
+        "arms": {
+          "iid/noise0.3": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 0.7100983048289872,
+                  "signal": "cka_drift@block11"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 0.39939530245515187,
+                  "signal": "cka_drift@block05"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 3.455577030615542,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.101996281890021,
+                  "signal": "cka_drift@block10"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 2.27171975938881,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": -0.06485937630501297,
+                  "signal": "cka_drift@block07"
+                }
+              }
+            }
+          },
+          "iid/noise0.5": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 6.331589498390223,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.9039268266992126,
+                  "signal": "cka_drift@block11"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 6.7868042377982665,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.4132234206778478,
+                  "signal": "cka_drift@block11"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 6.151861460090198,
+                  "signal": "cka_drift@block06"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.4881267642263236,
+                  "signal": "cka_drift@block11"
+                }
+              }
+            }
+          },
+          "iid/noise0.75": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 10.902790330300453,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 2.76619815606229,
+                  "signal": "cka_drift@block11"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 9.880940557010783,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 3.615810839831261,
+                  "signal": "cka_drift@block11"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 9.728343796492801,
+                  "signal": "cka_drift@block06"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 2.6572866695055173,
+                  "signal": "cka_drift@block11"
+                }
+              }
+            }
+          },
+          "iid/noise1.0": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 11.939933906567866,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 4.495973368212075,
+                  "signal": "cka_drift@block11"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 11.354495665720144,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 4.245529922826241,
+                  "signal": "cka_drift@block11"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 11.721061100124649,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": true,
+                  "max_z": 4.9658712479365645,
+                  "signal": "cka_drift@block11"
+                }
+              }
+            }
+          },
+          "iid/none": {
+            "category": "dose0",
+            "seeds": {
+              "0": {
+                "immediate": null,
+                "end": {
+                  "fired": false,
+                  "max_z": 0.5329249336430841,
+                  "signal": "cka_drift@block08"
+                }
+              },
+              "1": {
+                "immediate": null,
+                "end": {
+                  "fired": false,
+                  "max_z": 0.7531910849986132,
+                  "signal": "cka_drift@block04"
+                }
+              },
+              "2": {
+                "immediate": null,
+                "end": {
+                  "fired": false,
+                  "max_z": -0.16692444358394085,
+                  "signal": "cka_drift@block11"
+                }
+              }
+            }
+          },
+          "iid/reinit12": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 12.090145503940281,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": true,
+                  "max_z": 6.119273496293973,
+                  "signal": "cka_drift@block11"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 12.327412400027187,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": true,
+                  "max_z": 5.4106314940050995,
+                  "signal": "cka_drift@block11"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 12.344154659511657,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": true,
+                  "max_z": 5.692825192751907,
+                  "signal": "cka_drift@block11"
+                }
+              }
+            }
+          },
+          "iid/reinit4": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 3.0833337573402844,
+                  "signal": "cka_drift@block11"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 0.6081478283611023,
+                  "signal": "cka_drift@block11"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 1.2380383569584994,
+                  "signal": "cka_drift@block11"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.054046059916953,
+                  "signal": "cka_drift@block11"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 1.9926994881575992,
+                  "signal": "cka_drift@block11"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.3144695472852668,
+                  "signal": "cka_drift@block11"
+                }
+              }
+            }
+          },
+          "walk/noise0.3": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 3.6775799451050832,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.425718882509221,
+                  "signal": "cka_drift@block11"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 3.0176726030754883,
+                  "signal": "cka_drift@block06"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.1572351722152268,
+                  "signal": "cka_drift@block11"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 2.5467728276581933,
+                  "signal": "cka_drift@block06"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.863579597786346,
+                  "signal": "cka_drift@block04"
+                }
+              }
+            }
+          },
+          "walk/noise0.5": {
+            "category": "partial",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 8.442414585628164,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.894470690846098,
+                  "signal": "cka_drift@block11"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 6.2314275872827904,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 2.2069342869219075,
+                  "signal": "cka_drift@block04"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 6.409301667181577,
+                  "signal": "cka_drift@block06"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 3.5216171939562098,
+                  "signal": "cka_drift@block11"
+                }
+              }
+            }
+          },
+          "walk/noise0.75": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 11.501620775798536,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 4.081737485839085,
+                  "signal": "cka_drift@block04"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 10.116332652390808,
+                  "signal": "cka_drift@block06"
+                },
+                "end": {
+                  "fired": true,
+                  "max_z": 5.19424654060856,
+                  "signal": "cka_drift@block11"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 10.962252728057084,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 4.111232179936661,
+                  "signal": "cka_drift@block04"
+                }
+              }
+            }
+          },
+          "walk/noise1.0": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 11.98989879217636,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": true,
+                  "max_z": 6.916864411252711,
+                  "signal": "cka_drift@block11"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 11.549842319623028,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": true,
+                  "max_z": 6.230213670018562,
+                  "signal": "cka_drift@block11"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 12.509638198142927,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": true,
+                  "max_z": 5.300586477475799,
+                  "signal": "cka_drift@block11"
+                }
+              }
+            }
+          },
+          "walk/none": {
+            "category": "dose0",
+            "seeds": {
+              "0": {
+                "immediate": null,
+                "end": {
+                  "fired": false,
+                  "max_z": 0.5041432511462479,
+                  "signal": "cka_drift@block04"
+                }
+              },
+              "1": {
+                "immediate": null,
+                "end": {
+                  "fired": false,
+                  "max_z": -0.20472035553080847,
+                  "signal": "cka_drift@block11"
+                }
+              },
+              "2": {
+                "immediate": null,
+                "end": {
+                  "fired": false,
+                  "max_z": 0.6751607189210053,
+                  "signal": "cka_drift@block04"
+                }
+              }
+            }
+          },
+          "walk/reinit12": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 12.372149998189462,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": true,
+                  "max_z": 6.5159890355538534,
+                  "signal": "cka_drift@block11"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 12.316258511375478,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": true,
+                  "max_z": 7.564300912693639,
+                  "signal": "cka_drift@block11"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 12.264756559276714,
+                  "signal": "cka_drift@block04"
+                },
+                "end": {
+                  "fired": true,
+                  "max_z": 7.307592200001176,
+                  "signal": "cka_drift@block11"
+                }
+              }
+            }
+          },
+          "walk/reinit4": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 1.6534430324445653,
+                  "signal": "cka_drift@block11"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.2673742471497056,
+                  "signal": "cka_drift@block11"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 1.6492064833461837,
+                  "signal": "cka_drift@block11"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.3040087693959779,
+                  "signal": "cka_drift@block11"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 1.8392594177448063,
+                  "signal": "cka_drift@block11"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.1723023914187929,
+                  "signal": "cka_drift@block11"
+                }
+              }
+            }
+          }
+        },
+        "summary": {
+          "loo_false_alarms": "1/5",
+          "quiet_walks": "4/5",
+          "worst_walk_z": 5.073252283393982,
+          "fires_on_called": "18/18",
+          "called_min_z": 9.728343796492801,
+          "quiet_on_reinit4": "6/6",
+          "reinit4_max_z": 3.0833337573402844,
+          "quiet_dose0_end": "6/6",
+          "fires_on_called_end": "11/18",
+          "quiet_on_reinit4_end": "6/6"
+        }
+      },
+      "pooled": {
+        "threshold": 5.568150903960228,
+        "fired_loo": [
+          false,
+          false,
+          false,
+          true,
+          false
+        ],
+        "walk": [
+          {
+            "fired": false,
+            "max_z": 2.5761862197158374
+          },
+          {
+            "fired": false,
+            "max_z": 4.746753758367368
+          },
+          {
+            "fired": false,
+            "max_z": 2.6392364342958765
+          },
+          {
+            "fired": false,
+            "max_z": 2.175764310317638
+          },
+          {
+            "fired": false,
+            "max_z": 4.498375026926787
+          }
+        ],
+        "arms": {
+          "iid/noise0.3": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 1.283974439024945,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": -0.09115587010328466,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 4.295261394027566,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 2.2762323444528048,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 2.885533590949226,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 0.6017949955220391,
+                  "signal": "cka_drift@backbone"
+                }
+              }
+            }
+          },
+          "iid/noise0.5": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 6.053184925109326,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.2983103618355951,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 6.73281378989832,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.563853438404032,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 5.665963668497279,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.5378860670395573,
+                  "signal": "cka_drift@backbone"
+                }
+              }
+            }
+          },
+          "iid/noise0.75": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 10.459856230674319,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 2.4437807081482528,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 9.07568444955037,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 3.0447548789960135,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 8.14635125507174,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 2.6313865827567993,
+                  "signal": "cka_drift@backbone"
+                }
+              }
+            }
+          },
+          "iid/noise1.0": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 10.770221367063604,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 4.012911577589788,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 10.358812522239102,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 3.56317112535534,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 10.05687264472029,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 3.41980103895977,
+                  "signal": "cka_drift@backbone"
+                }
+              }
+            }
+          },
+          "iid/none": {
+            "category": "dose0",
+            "seeds": {
+              "0": {
+                "immediate": null,
+                "end": {
+                  "fired": false,
+                  "max_z": -0.016578892032409243,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "1": {
+                "immediate": null,
+                "end": {
+                  "fired": false,
+                  "max_z": 1.1541867252728544,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "2": {
+                "immediate": null,
+                "end": {
+                  "fired": false,
+                  "max_z": 0.41428949143026933,
+                  "signal": "cka_drift@backbone"
+                }
+              }
+            }
+          },
+          "iid/reinit12": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 8.918919613767274,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 4.3234430792971414,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 9.455022303999632,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 5.090854101412178,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 9.870816433883908,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 4.820478218133,
+                  "signal": "cka_drift@backbone"
+                }
+              }
+            }
+          },
+          "iid/reinit4": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 2.554421203830234,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.2486032684724173,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 1.7677282243606038,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.4901006042512042,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 2.149249171736787,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.7672838252029524,
+                  "signal": "cka_drift@backbone"
+                }
+              }
+            }
+          },
+          "walk/noise0.3": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 3.0503838810732358,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.220009956116752,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 3.641131740081315,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.6392263099800637,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 2.9667353460563244,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.9587117196030488,
+                  "signal": "cka_drift@backbone"
+                }
+              }
+            }
+          },
+          "walk/noise0.5": {
+            "category": "partial",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 6.635001199064558,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 2.2941012879555465,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 6.530841918544783,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 2.61538657011707,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 5.735093337948184,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 2.8410168385241827,
+                  "signal": "cka_drift@backbone"
+                }
+              }
+            }
+          },
+          "walk/noise0.75": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 10.68536542277261,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 3.3551550942271433,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 9.172369063663583,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 5.40396038721587,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 9.278016733385073,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 4.214749912188471,
+                  "signal": "cka_drift@backbone"
+                }
+              }
+            }
+          },
+          "walk/noise1.0": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 11.006405752480907,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": true,
+                  "max_z": 6.170413767595088,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 10.402584029257966,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 5.563995592072553,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 10.391793163577667,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 4.833806444256933,
+                  "signal": "cka_drift@backbone"
+                }
+              }
+            }
+          },
+          "walk/none": {
+            "category": "dose0",
+            "seeds": {
+              "0": {
+                "immediate": null,
+                "end": {
+                  "fired": false,
+                  "max_z": 1.3273515496127368,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "1": {
+                "immediate": null,
+                "end": {
+                  "fired": false,
+                  "max_z": -1.0705822029205323,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "2": {
+                "immediate": null,
+                "end": {
+                  "fired": false,
+                  "max_z": 0.6903408297040562,
+                  "signal": "cka_drift@backbone"
+                }
+              }
+            }
+          },
+          "walk/reinit12": {
+            "category": "called",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 9.216531990480522,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": true,
+                  "max_z": 6.008547130710514,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 9.232330429811059,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": true,
+                  "max_z": 6.658227748271892,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": true,
+                  "max_z": 9.595564170231468,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": true,
+                  "max_z": 6.1723816237832345,
+                  "signal": "cka_drift@backbone"
+                }
+              }
+            }
+          },
+          "walk/reinit4": {
+            "category": "quiet",
+            "seeds": {
+              "0": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 2.646919455556454,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.2792879651997924,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "1": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 2.4465366114887317,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 1.020882258440438,
+                  "signal": "cka_drift@backbone"
+                }
+              },
+              "2": {
+                "immediate": {
+                  "fired": false,
+                  "max_z": 2.9682021384172756,
+                  "signal": "cka_drift@backbone"
+                },
+                "end": {
+                  "fired": false,
+                  "max_z": 2.8021589528353634,
+                  "signal": "cka_drift@backbone"
+                }
+              }
+            }
+          }
+        },
+        "summary": {
+          "loo_false_alarms": "1/5",
+          "quiet_walks": "5/5",
+          "worst_walk_z": 4.746753758367368,
+          "fires_on_called": "18/18",
+          "called_min_z": 8.14635125507174,
+          "quiet_on_reinit4": "6/6",
+          "reinit4_max_z": 2.9682021384172756,
+          "quiet_dose0_end": "6/6",
+          "fires_on_called_end": "4/18",
+          "quiet_on_reinit4_end": "6/6"
+        }
+      }
+    }
   }
 }

@@ -42,4 +42,12 @@ lr_walk:
   lo: {walk: "${root}/branch/je_walk_none", iid: "${root}/branch/je_iid_none"}
   canary: linear_acc
   canary_window: 5
+# Follow-up: the middle blocks item 5 found natural forgetting in (chosen on P0.3.9, not BDD), as a
+# single-drive alarm — one shared threshold, calibrated on the 5 IID drives at their 18 leg checkpoints.
+middle:
+  backbone: mae
+  span: 3
+  panels:
+    middle: [block04, block05, block06, block07, block08, block09, block10, block11]
+    pooled: [backbone]
 out: outputs/p113/cka_report.json

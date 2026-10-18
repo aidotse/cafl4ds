@@ -875,6 +875,90 @@
       "n_positive": 5
     }
   },
+  "single": {
+    "middle": {
+      "threshold": 3.070266674021819,
+      "fired_loo": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "pc": [
+        {
+          "fired": true,
+          "max_z": 3.79273366573534,
+          "signal": "cka_drift@block08"
+        },
+        {
+          "fired": true,
+          "max_z": 5.181504104040751,
+          "signal": "cka_drift@block08"
+        },
+        {
+          "fired": true,
+          "max_z": 3.4899495295922005,
+          "signal": "cka_drift@block08"
+        },
+        {
+          "fired": false,
+          "max_z": 2.9954736025112574,
+          "signal": "cka_drift@block09"
+        },
+        {
+          "fired": true,
+          "max_z": 4.318022279585065,
+          "signal": "cka_drift@block08"
+        }
+      ],
+      "summary": {
+        "loo_false_alarms": "0/5",
+        "fires_on_pc": "4/5"
+      }
+    },
+    "pooled": {
+      "threshold": 2.47416359906964,
+      "fired_loo": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "pc": [
+        {
+          "fired": false,
+          "max_z": -0.7970855155723283,
+          "signal": "cka_drift@backbone"
+        },
+        {
+          "fired": false,
+          "max_z": -0.7742032739868386,
+          "signal": "cka_drift@backbone"
+        },
+        {
+          "fired": false,
+          "max_z": 0.8570450489938439,
+          "signal": "cka_drift@backbone"
+        },
+        {
+          "fired": false,
+          "max_z": -0.07242725274724181,
+          "signal": "cka_drift@backbone"
+        },
+        {
+          "fired": false,
+          "max_z": 1.1371496136113657,
+          "signal": "cka_drift@backbone"
+        }
+      ],
+      "summary": {
+        "loo_false_alarms": "0/5",
+        "fires_on_pc": "0/5"
+      }
+    }
+  },
   "per_reader": {
     "cka_drift@backbone": {
       "diffs": [
