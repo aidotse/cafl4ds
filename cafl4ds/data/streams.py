@@ -46,12 +46,16 @@ class EvalSet:
     """Images ``[M, C, H, W]``."""
     labels: torch.Tensor
     """Integer labels ``[M]`` — used only by the probes, never by training."""
+    groups: torch.Tensor | None = None
+    """Optional integer group id per image ``[M]`` (e.g. the time-of-day stratum a probe image was
+    drawn from) — lets a probe report accuracy per group as well as pooled. ``None`` = ungrouped."""
 
 
 def _filter_eval(eval_set: EvalSet, keep: set[int]) -> EvalSet:
     """Return ``eval_set`` restricted to the labels in ``keep`` (order-preserving)."""
     mask = torch.isin(eval_set.labels, torch.tensor(sorted(keep), dtype=eval_set.labels.dtype))
-    return EvalSet(eval_set.images[mask], eval_set.labels[mask])
+    groups = eval_set.groups[mask] if eval_set.groups is not None else None
+    return EvalSet(eval_set.images[mask], eval_set.labels[mask], groups)
 
 
 @dataclass(frozen=True)
@@ -65,6 +69,8 @@ class EvalSets:
     the drift instruments track across checkpoints."""
     per_era: dict[int, EvalSet] = field(default_factory=dict)
     """Per-era (per-class) held-out sets, reserved for later per-era forgetting measures."""
+    group_names: dict[int, str] = field(default_factory=dict)
+    """Human name per probe ``groups`` id (empty when the probe sets are ungrouped)."""
 
     def restrict_to_classes(self, classes: Iterable[int]) -> EvalSets:
         """Return a copy with the probe support/query restricted to ``classes`` — *matched-class eval*.
@@ -89,6 +95,7 @@ class EvalSets:
             probe_support=_filter_eval(self.probe_support, keep),
             probe_query=_filter_eval(self.probe_query, keep),
             per_era=self.per_era,
+            group_names=self.group_names,
         )
 
 

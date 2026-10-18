@@ -16,10 +16,11 @@ from cafl4ds.deploy import (
     project_health,
     split_channels,
     tier_b_report,
+    with_grad_norm,
 )
 from cafl4ds.filters.accept_all import AcceptAll
 from cafl4ds.harness import Arm, run_stream_arm
-from cafl4ds.health_trust import CANARY_SIGNALS, DEFAULT_LABEL_FREE_SIGNALS, Backbone
+from cafl4ds.health_trust import CANARY_SIGNALS, DEFAULT_LABEL_FREE_SIGNALS, Backbone, trust_for
 from cafl4ds.models.vit import TinyViTEncoder
 from cafl4ds.monitor import HealthMonitor
 from cafl4ds.ssl.factory import build_simsiam
@@ -241,3 +242,59 @@ def test_end_to_end_regime_stream_feeds_the_monitor_and_validates(tmp_path: Path
     assert report["validation"]["passed"], report["completeness"]["missing"]
     assert report["channels"]["canary"] == ["knn_acc", "linear_acc"]
     assert "rankme_proj" in report["channels"]["label_free"]
+
+
+def test_split_channels_routes_per_stratum_canary_slices_to_the_canary() -> None:
+    """Per-stratum probe slices (``knn_acc_night`` …) are canary signals, not label-free ones."""
+    channels = split_channels(["rankme", "knn_acc", "knn_acc_night", "linear_acc_dawn_dusk", "cosine_drift"])
+    assert channels["canary"] == ["knn_acc", "knn_acc_night", "linear_acc_dawn_dusk"]
+    assert channels["label_free"] == ["cosine_drift", "rankme"]
+
+
+def test_per_stratum_canary_slices_inherit_the_probe_trust_verdict() -> None:
+    """A stratum slice carries its pooled probe's Phase-0 verdict rather than defaulting to uncalibrated."""
+    for family in Backbone:
+        assert trust_for(family, "knn_acc_night") == trust_for(family, "knn_acc")
+        assert trust_for(family, "linear_acc_daytime") == trust_for(family, "linear_acc")
+
+
+def _loss(step: int, grad_norm: float) -> dict[str, Any]:
+    """A synthetic loss-series record."""
+    return {"run": "x", "series": "loss", "step": step, "era": 0, "loss": 1.0, "grad_norm": grad_norm}
+
+
+def test_with_grad_norm_takes_the_window_max_since_the_previous_checkpoint() -> None:
+    """Each checkpoint carries the max pre-clip grad norm over the steps since the previous one."""
+    records = [_loss(0, 1.0), _health(0, 0, rankme=1.0)]
+    records += [_loss(1, 5.0), _loss(2, 2.0), _health(2, 0, rankme=1.0)]
+    records += [_loss(3, 0.5), _loss(4, 0.7), _health(4, 0, rankme=1.0)]
+    health = with_grad_norm(Arm(name="a", role="live", records=records))
+    assert [h["grad_norm"] for h in health] == [1.0, 5.0, 0.7]
+
+
+def test_with_grad_norm_passes_a_measured_only_arm_through() -> None:
+    """A frozen (B5-style) arm with no loss series is returned unchanged."""
+    arm = _je_arm(role="b5")
+    assert with_grad_norm(arm) == arm.health
+
+
+def test_build_report_logs_grad_norm_in_the_label_free_channel(tmp_path: Path) -> None:
+    """A stepped arm's grad norm reaches the corpus as a label-free signal at every checkpoint."""
+    source = SyntheticAttributeSource(num_regimes=2, num_canary_classes=2, per_cell=12, img_size=16, long_tail=False)
+    stream = RegimeStream(source, batch_size=8, support_per_canary=4, query_per_canary=4)
+    encoder = TinyViTEncoder(img_size=16, patch_size=8, in_chans=3, embed_dim=32, depth=2, num_heads=2, mlp_ratio=2.0)
+    method = build_simsiam(encoder=encoder, proj_hidden=32, proj_dim=16, pred_hidden=16)
+    live = run_stream_arm(
+        name="gn_live",
+        role="live",
+        method=method,
+        stream=stream,
+        optimizer=torch.optim.AdamW(method.parameters(), lr=1e-3),
+        selection_filter=AcceptAll(),
+        monitor=HealthMonitor(eval_sets=stream.eval_sets, knn_k=3),
+        out_dir=tmp_path,
+        eval_every=1,
+    )
+    report = build_deploy_report(config_header={}, family=Backbone.JE, live=live, expected_signals=["rankme"])
+    assert "grad_norm" in report["channels"]["label_free"]
+    assert all(h["grad_norm"] > 0 for h in report["arms"]["live"]["health"])

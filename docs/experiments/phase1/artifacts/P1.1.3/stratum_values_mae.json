@@ -1,0 +1,2074 @@
+{
+  "features/well.pt": {
+    "cka_drift@backbone:daytime": 0.0,
+    "dcka_drift@backbone:daytime": 0.0,
+    "cka_drift@backbone:dawn/dusk": 0.0,
+    "dcka_drift@backbone:dawn/dusk": 0.0,
+    "cka_drift@backbone:night": 0.0,
+    "dcka_drift@backbone:night": 0.0
+  },
+  "features/mae_o0.0_iid/s0/step00022.pt": {
+    "cka_drift@backbone:daytime": 0.0024117231369018555,
+    "dcka_drift@backbone:daytime": 0.002415327201676143,
+    "cka_drift@backbone:dawn/dusk": 0.0017685890197753906,
+    "dcka_drift@backbone:dawn/dusk": 0.0017772532321889134,
+    "cka_drift@backbone:night": 0.005961000919342041,
+    "dcka_drift@backbone:night": 0.00606250121471974
+  },
+  "features/mae_o0.0_iid/s0/step00031.pt": {
+    "cka_drift@backbone:daytime": 0.002212047576904297,
+    "dcka_drift@backbone:daytime": 0.0022079636007004133,
+    "cka_drift@backbone:dawn/dusk": 0.0018970370292663574,
+    "dcka_drift@backbone:dawn/dusk": 0.0019062655313157872,
+    "cka_drift@backbone:night": 0.010513007640838623,
+    "dcka_drift@backbone:night": 0.010644525733422339
+  },
+  "features/mae_o0.0_iid/s0/step00044.pt": {
+    "cka_drift@backbone:daytime": 0.0022392868995666504,
+    "dcka_drift@backbone:daytime": 0.002229208178855635,
+    "cka_drift@backbone:dawn/dusk": 0.0020409226417541504,
+    "dcka_drift@backbone:dawn/dusk": 0.0020476765484161996,
+    "cka_drift@backbone:night": 0.0060062408447265625,
+    "dcka_drift@backbone:night": 0.006070392614266784
+  },
+  "features/mae_o0.0_iid/s0/step00049.pt": {
+    "cka_drift@backbone:daytime": 0.0030522942543029785,
+    "dcka_drift@backbone:daytime": 0.0030454788485596573,
+    "cka_drift@backbone:dawn/dusk": 0.0025252699851989746,
+    "dcka_drift@backbone:dawn/dusk": 0.0025341898751984893,
+    "cka_drift@backbone:night": 0.00735318660736084,
+    "dcka_drift@backbone:night": 0.0074002595783617675
+  },
+  "features/mae_o0.0_iid/s0/step00055.pt": {
+    "cka_drift@backbone:daytime": 0.0025523900985717773,
+    "dcka_drift@backbone:daytime": 0.002560493561255983,
+    "cka_drift@backbone:dawn/dusk": 0.002220332622528076,
+    "dcka_drift@backbone:dawn/dusk": 0.002226802784936366,
+    "cka_drift@backbone:night": 0.005526363849639893,
+    "dcka_drift@backbone:night": 0.005600841639199272
+  },
+  "features/mae_o0.0_iid/s0/step00056.pt": {
+    "cka_drift@backbone:daytime": 0.002833068370819092,
+    "dcka_drift@backbone:daytime": 0.0028450368794138425,
+    "cka_drift@backbone:dawn/dusk": 0.0026634931564331055,
+    "dcka_drift@backbone:dawn/dusk": 0.0026691563247663863,
+    "cka_drift@backbone:night": 0.008746862411499023,
+    "dcka_drift@backbone:night": 0.008856036046275828
+  },
+  "features/mae_o0.0_iid/s0/step00059.pt": {
+    "cka_drift@backbone:daytime": 0.003061950206756592,
+    "dcka_drift@backbone:daytime": 0.003058055396649606,
+    "cka_drift@backbone:dawn/dusk": 0.0030982494354248047,
+    "dcka_drift@backbone:dawn/dusk": 0.003093295113668404,
+    "cka_drift@backbone:night": 0.004573702812194824,
+    "dcka_drift@backbone:night": 0.004610480125840977
+  },
+  "features/mae_o0.0_iid/s0/step00060.pt": {
+    "cka_drift@backbone:daytime": 0.0035158395767211914,
+    "dcka_drift@backbone:daytime": 0.003503888677879652,
+    "cka_drift@backbone:dawn/dusk": 0.0036244988441467285,
+    "dcka_drift@backbone:dawn/dusk": 0.003618731937700348,
+    "cka_drift@backbone:night": 0.0075034499168396,
+    "dcka_drift@backbone:night": 0.007579842695093375
+  },
+  "features/mae_o0.0_iid/s0/step00062.pt": {
+    "cka_drift@backbone:daytime": 0.0042105913162231445,
+    "dcka_drift@backbone:daytime": 0.004190611940272926,
+    "cka_drift@backbone:dawn/dusk": 0.0040517449378967285,
+    "dcka_drift@backbone:dawn/dusk": 0.0040417647607832174,
+    "cka_drift@backbone:night": 0.00506061315536499,
+    "dcka_drift@backbone:night": 0.0050720807360919995
+  },
+  "features/mae_o0.0_iid/s0/step00063.pt": {
+    "cka_drift@backbone:daytime": 0.004129469394683838,
+    "dcka_drift@backbone:daytime": 0.004111686137452608,
+    "cka_drift@backbone:dawn/dusk": 0.003738582134246826,
+    "dcka_drift@backbone:dawn/dusk": 0.0037294057923091817,
+    "cka_drift@backbone:night": 0.0049585700035095215,
+    "dcka_drift@backbone:night": 0.004951398838645926
+  },
+  "features/mae_o0.0_iid/s0/step00064.pt": {
+    "cka_drift@backbone:daytime": 0.0038589835166931152,
+    "dcka_drift@backbone:daytime": 0.0038408846970092725,
+    "cka_drift@backbone:dawn/dusk": 0.003221750259399414,
+    "dcka_drift@backbone:dawn/dusk": 0.0032132739291579338,
+    "cka_drift@backbone:night": 0.007343471050262451,
+    "dcka_drift@backbone:night": 0.007356921714758102
+  },
+  "features/mae_o0.0_iid/s0/step00065.pt": {
+    "cka_drift@backbone:daytime": 0.0038589835166931152,
+    "dcka_drift@backbone:daytime": 0.0038408846970092725,
+    "cka_drift@backbone:dawn/dusk": 0.003221750259399414,
+    "dcka_drift@backbone:dawn/dusk": 0.0032132739291579338,
+    "cka_drift@backbone:night": 0.007343471050262451,
+    "dcka_drift@backbone:night": 0.007356921714758102
+  },
+  "features/mae_o0.0_iid/s0/step00108.pt": {
+    "cka_drift@backbone:daytime": 0.002474367618560791,
+    "dcka_drift@backbone:daytime": 0.0024572777960231162,
+    "cka_drift@backbone:dawn/dusk": 0.0024555325508117676,
+    "dcka_drift@backbone:dawn/dusk": 0.0024550339192118686,
+    "cka_drift@backbone:night": 0.004647672176361084,
+    "dcka_drift@backbone:night": 0.0046834210329447234
+  },
+  "features/mae_o0.0_iid/s0/step00109.pt": {
+    "cka_drift@backbone:daytime": 0.002458930015563965,
+    "dcka_drift@backbone:daytime": 0.0024430547309660655,
+    "cka_drift@backbone:dawn/dusk": 0.002565324306488037,
+    "dcka_drift@backbone:dawn/dusk": 0.0025652012905953425,
+    "cka_drift@backbone:night": 0.004701673984527588,
+    "dcka_drift@backbone:night": 0.004775078788656462
+  },
+  "features/mae_o0.0_iid/s0/step00110.pt": {
+    "cka_drift@backbone:daytime": 0.002559065818786621,
+    "dcka_drift@backbone:daytime": 0.0025459373394970397,
+    "cka_drift@backbone:dawn/dusk": 0.002913832664489746,
+    "dcka_drift@backbone:dawn/dusk": 0.0029163758329263656,
+    "cka_drift@backbone:night": 0.009208500385284424,
+    "dcka_drift@backbone:night": 0.009424079380006334
+  },
+  "features/mae_o0.0_iid/s0/step00114.pt": {
+    "cka_drift@backbone:daytime": 0.0027217864990234375,
+    "dcka_drift@backbone:daytime": 0.0027095095050894136,
+    "cka_drift@backbone:dawn/dusk": 0.0025557279586791992,
+    "dcka_drift@backbone:dawn/dusk": 0.0025535835182438626,
+    "cka_drift@backbone:night": 0.005188405513763428,
+    "dcka_drift@backbone:night": 0.005239957229795311
+  },
+  "features/mae_o0.0_iid/s0/step00118.pt": {
+    "cka_drift@backbone:daytime": 0.0024497509002685547,
+    "dcka_drift@backbone:daytime": 0.0024434190679126777,
+    "cka_drift@backbone:dawn/dusk": 0.002307295799255371,
+    "dcka_drift@backbone:dawn/dusk": 0.002312312770749614,
+    "cka_drift@backbone:night": 0.005620002746582031,
+    "dcka_drift@backbone:night": 0.005695495870851497
+  },
+  "features/mae_o0.0_iid/s0/final.pt": {
+    "cka_drift@backbone:daytime": 0.0025218725204467773,
+    "dcka_drift@backbone:daytime": 0.002514528535385696,
+    "cka_drift@backbone:dawn/dusk": 0.002310037612915039,
+    "dcka_drift@backbone:dawn/dusk": 0.002317543717511472,
+    "cka_drift@backbone:night": 0.004855990409851074,
+    "dcka_drift@backbone:night": 0.004939095197173726
+  },
+  "features/mae_o0.0_iid/s1/step00022.pt": {
+    "cka_drift@backbone:daytime": 0.004839777946472168,
+    "dcka_drift@backbone:daytime": 0.00487950001471027,
+    "cka_drift@backbone:dawn/dusk": 0.004326224327087402,
+    "dcka_drift@backbone:dawn/dusk": 0.004340542277141868,
+    "cka_drift@backbone:night": 0.011539459228515625,
+    "dcka_drift@backbone:night": 0.011801632510790583
+  },
+  "features/mae_o0.0_iid/s1/step00031.pt": {
+    "cka_drift@backbone:daytime": 0.002249777317047119,
+    "dcka_drift@backbone:daytime": 0.002252668275059877,
+    "cka_drift@backbone:dawn/dusk": 0.002423405647277832,
+    "dcka_drift@backbone:dawn/dusk": 0.002436747924402738,
+    "cka_drift@backbone:night": 0.0033760666847229004,
+    "dcka_drift@backbone:night": 0.0034355168761289745
+  },
+  "features/mae_o0.0_iid/s1/step00044.pt": {
+    "cka_drift@backbone:daytime": 0.0025229454040527344,
+    "dcka_drift@backbone:daytime": 0.0025015686328756503,
+    "cka_drift@backbone:dawn/dusk": 0.002984166145324707,
+    "dcka_drift@backbone:dawn/dusk": 0.002989357131485737,
+    "cka_drift@backbone:night": 0.007047057151794434,
+    "dcka_drift@backbone:night": 0.007151720421296526
+  },
+  "features/mae_o0.0_iid/s1/step00049.pt": {
+    "cka_drift@backbone:daytime": 0.002222120761871338,
+    "dcka_drift@backbone:daytime": 0.0022257549971094193,
+    "cka_drift@backbone:dawn/dusk": 0.001963496208190918,
+    "dcka_drift@backbone:dawn/dusk": 0.001970345261216644,
+    "cka_drift@backbone:night": 0.005222141742706299,
+    "dcka_drift@backbone:night": 0.005265708923714252
+  },
+  "features/mae_o0.0_iid/s1/step00055.pt": {
+    "cka_drift@backbone:daytime": 0.0025177001953125,
+    "dcka_drift@backbone:daytime": 0.0025134866470859496,
+    "cka_drift@backbone:dawn/dusk": 0.0026983022689819336,
+    "dcka_drift@backbone:dawn/dusk": 0.0027029094716507496,
+    "cka_drift@backbone:night": 0.006611943244934082,
+    "dcka_drift@backbone:night": 0.006759925327062266
+  },
+  "features/mae_o0.0_iid/s1/step00056.pt": {
+    "cka_drift@backbone:daytime": 0.002993464469909668,
+    "dcka_drift@backbone:daytime": 0.0029946366674783453,
+    "cka_drift@backbone:dawn/dusk": 0.0031385421752929688,
+    "dcka_drift@backbone:dawn/dusk": 0.003146428700558479,
+    "cka_drift@backbone:night": 0.01100313663482666,
+    "dcka_drift@backbone:night": 0.01128605550575601
+  },
+  "features/mae_o0.0_iid/s1/step00059.pt": {
+    "cka_drift@backbone:daytime": 0.0020113587379455566,
+    "dcka_drift@backbone:daytime": 0.002001112033697572,
+    "cka_drift@backbone:dawn/dusk": 0.001986086368560791,
+    "dcka_drift@backbone:dawn/dusk": 0.001987241607137258,
+    "cka_drift@backbone:night": 0.00499194860458374,
+    "dcka_drift@backbone:night": 0.0050503286439835815
+  },
+  "features/mae_o0.0_iid/s1/step00060.pt": {
+    "cka_drift@backbone:daytime": 0.0023355484008789062,
+    "dcka_drift@backbone:daytime": 0.0023244249267031503,
+    "cka_drift@backbone:dawn/dusk": 0.0022904276847839355,
+    "dcka_drift@backbone:dawn/dusk": 0.0022932336713878954,
+    "cka_drift@backbone:night": 0.00558847188949585,
+    "dcka_drift@backbone:night": 0.0057096070430056045
+  },
+  "features/mae_o0.0_iid/s1/step00062.pt": {
+    "cka_drift@backbone:daytime": 0.0020942091941833496,
+    "dcka_drift@backbone:daytime": 0.0020811839916400343,
+    "cka_drift@backbone:dawn/dusk": 0.0019279718399047852,
+    "dcka_drift@backbone:dawn/dusk": 0.0019300112375164602,
+    "cka_drift@backbone:night": 0.005126357078552246,
+    "dcka_drift@backbone:night": 0.005181380713671135
+  },
+  "features/mae_o0.0_iid/s1/step00063.pt": {
+    "cka_drift@backbone:daytime": 0.0019771456718444824,
+    "dcka_drift@backbone:daytime": 0.0019676760051036135,
+    "cka_drift@backbone:dawn/dusk": 0.0016037821769714355,
+    "dcka_drift@backbone:dawn/dusk": 0.0016063409650471927,
+    "cka_drift@backbone:night": 0.003584742546081543,
+    "dcka_drift@backbone:night": 0.0036175244537903772
+  },
+  "features/mae_o0.0_iid/s1/step00064.pt": {
+    "cka_drift@backbone:daytime": 0.0020513534545898438,
+    "dcka_drift@backbone:daytime": 0.0020484031252984147,
+    "cka_drift@backbone:dawn/dusk": 0.0016730427742004395,
+    "dcka_drift@backbone:dawn/dusk": 0.0016790013396928982,
+    "cka_drift@backbone:night": 0.005149722099304199,
+    "dcka_drift@backbone:night": 0.005256252285732899
+  },
+  "features/mae_o0.0_iid/s1/step00065.pt": {
+    "cka_drift@backbone:daytime": 0.0020513534545898438,
+    "dcka_drift@backbone:daytime": 0.0020484031252984147,
+    "cka_drift@backbone:dawn/dusk": 0.0016730427742004395,
+    "dcka_drift@backbone:dawn/dusk": 0.0016790013396928982,
+    "cka_drift@backbone:night": 0.005149722099304199,
+    "dcka_drift@backbone:night": 0.005256252285732899
+  },
+  "features/mae_o0.0_iid/s1/step00108.pt": {
+    "cka_drift@backbone:daytime": 0.0014590024948120117,
+    "dcka_drift@backbone:daytime": 0.0014615981779184661,
+    "cka_drift@backbone:dawn/dusk": 0.001559436321258545,
+    "dcka_drift@backbone:dawn/dusk": 0.0015598022878902107,
+    "cka_drift@backbone:night": 0.0049288272857666016,
+    "dcka_drift@backbone:night": 0.00499486861909193
+  },
+  "features/mae_o0.0_iid/s1/step00109.pt": {
+    "cka_drift@backbone:daytime": 0.0015277862548828125,
+    "dcka_drift@backbone:daytime": 0.0015348671944985792,
+    "cka_drift@backbone:dawn/dusk": 0.0016327500343322754,
+    "dcka_drift@backbone:dawn/dusk": 0.0016367536484434009,
+    "cka_drift@backbone:night": 0.005691409111022949,
+    "dcka_drift@backbone:night": 0.0057803111009345765
+  },
+  "features/mae_o0.0_iid/s1/step00110.pt": {
+    "cka_drift@backbone:daytime": 0.0015703439712524414,
+    "dcka_drift@backbone:daytime": 0.001580401437991985,
+    "cka_drift@backbone:dawn/dusk": 0.001567244529724121,
+    "dcka_drift@backbone:dawn/dusk": 0.0015736368825443048,
+    "cka_drift@backbone:night": 0.005553543567657471,
+    "dcka_drift@backbone:night": 0.005672775437325028
+  },
+  "features/mae_o0.0_iid/s1/step00114.pt": {
+    "cka_drift@backbone:daytime": 0.0019483566284179688,
+    "dcka_drift@backbone:daytime": 0.001967139089197989,
+    "cka_drift@backbone:dawn/dusk": 0.0022584199905395508,
+    "dcka_drift@backbone:dawn/dusk": 0.0022708226698842093,
+    "cka_drift@backbone:night": 0.0029537081718444824,
+    "dcka_drift@backbone:night": 0.0030009979705933887
+  },
+  "features/mae_o0.0_iid/s1/step00118.pt": {
+    "cka_drift@backbone:daytime": 0.002035796642303467,
+    "dcka_drift@backbone:daytime": 0.002048366816069458,
+    "cka_drift@backbone:dawn/dusk": 0.0022956132888793945,
+    "dcka_drift@backbone:dawn/dusk": 0.0023024725370733856,
+    "cka_drift@backbone:night": 0.0040819644927978516,
+    "dcka_drift@backbone:night": 0.004134708246556484
+  },
+  "features/mae_o0.0_iid/s1/final.pt": {
+    "cka_drift@backbone:daytime": 0.002165079116821289,
+    "dcka_drift@backbone:daytime": 0.002176710952443761,
+    "cka_drift@backbone:dawn/dusk": 0.002240598201751709,
+    "dcka_drift@backbone:dawn/dusk": 0.0022476973435179293,
+    "cka_drift@backbone:night": 0.0030027031898498535,
+    "dcka_drift@backbone:night": 0.0030769436053756927
+  },
+  "features/mae_o0.0_iid/s2/step00022.pt": {
+    "cka_drift@backbone:daytime": 0.005891084671020508,
+    "dcka_drift@backbone:daytime": 0.0059071045500551644,
+    "cka_drift@backbone:dawn/dusk": 0.004695594310760498,
+    "dcka_drift@backbone:dawn/dusk": 0.004703959783953993,
+    "cka_drift@backbone:night": 0.01870429515838623,
+    "dcka_drift@backbone:night": 0.01914741752799154
+  },
+  "features/mae_o0.0_iid/s2/step00031.pt": {
+    "cka_drift@backbone:daytime": 0.0030315518379211426,
+    "dcka_drift@backbone:daytime": 0.003031253368841802,
+    "cka_drift@backbone:dawn/dusk": 0.002679288387298584,
+    "dcka_drift@backbone:dawn/dusk": 0.0026873976670362953,
+    "cka_drift@backbone:night": 0.015191376209259033,
+    "dcka_drift@backbone:night": 0.015499386418682204
+  },
+  "features/mae_o0.0_iid/s2/step00044.pt": {
+    "cka_drift@backbone:daytime": 0.0023566484451293945,
+    "dcka_drift@backbone:daytime": 0.0023703030090050925,
+    "cka_drift@backbone:dawn/dusk": 0.0020397305488586426,
+    "dcka_drift@backbone:dawn/dusk": 0.0020501443416579557,
+    "cka_drift@backbone:night": 0.0111503005027771,
+    "dcka_drift@backbone:night": 0.011376177136187327
+  },
+  "features/mae_o0.0_iid/s2/step00049.pt": {
+    "cka_drift@backbone:daytime": 0.001980125904083252,
+    "dcka_drift@backbone:daytime": 0.0019875554310477828,
+    "cka_drift@backbone:dawn/dusk": 0.001920163631439209,
+    "dcka_drift@backbone:dawn/dusk": 0.0019298048644842414,
+    "cka_drift@backbone:night": 0.010965943336486816,
+    "dcka_drift@backbone:night": 0.011228891816150943
+  },
+  "features/mae_o0.0_iid/s2/step00055.pt": {
+    "cka_drift@backbone:daytime": 0.0028551220893859863,
+    "dcka_drift@backbone:daytime": 0.00286186969292046,
+    "cka_drift@backbone:dawn/dusk": 0.00233536958694458,
+    "dcka_drift@backbone:dawn/dusk": 0.002344697074121549,
+    "cka_drift@backbone:night": 0.01802229881286621,
+    "dcka_drift@backbone:night": 0.018462936244211026
+  },
+  "features/mae_o0.0_iid/s2/step00056.pt": {
+    "cka_drift@backbone:daytime": 0.002020537853240967,
+    "dcka_drift@backbone:daytime": 0.0020272662727471857,
+    "cka_drift@backbone:dawn/dusk": 0.0016714930534362793,
+    "dcka_drift@backbone:dawn/dusk": 0.0016785874235920595,
+    "cka_drift@backbone:night": 0.006759822368621826,
+    "dcka_drift@backbone:night": 0.006893985535869174
+  },
+  "features/mae_o0.0_iid/s2/step00059.pt": {
+    "cka_drift@backbone:daytime": 0.001852869987487793,
+    "dcka_drift@backbone:daytime": 0.001851790861085667,
+    "cka_drift@backbone:dawn/dusk": 0.0017695426940917969,
+    "dcka_drift@backbone:dawn/dusk": 0.0017798921333844753,
+    "cka_drift@backbone:night": 0.004913389682769775,
+    "dcka_drift@backbone:night": 0.004932768755606665
+  },
+  "features/mae_o0.0_iid/s2/step00060.pt": {
+    "cka_drift@backbone:daytime": 0.0018202662467956543,
+    "dcka_drift@backbone:daytime": 0.0018266679578946565,
+    "cka_drift@backbone:dawn/dusk": 0.0018901228904724121,
+    "dcka_drift@backbone:dawn/dusk": 0.001900426761264229,
+    "cka_drift@backbone:night": 0.0037840604782104492,
+    "dcka_drift@backbone:night": 0.0038214246198104984
+  },
+  "features/mae_o0.0_iid/s2/step00062.pt": {
+    "cka_drift@backbone:daytime": 0.0027191638946533203,
+    "dcka_drift@backbone:daytime": 0.002734249434927394,
+    "cka_drift@backbone:dawn/dusk": 0.002919018268585205,
+    "dcka_drift@backbone:dawn/dusk": 0.002928412468752639,
+    "cka_drift@backbone:night": 0.028445720672607422,
+    "dcka_drift@backbone:night": 0.02911697671386715
+  },
+  "features/mae_o0.0_iid/s2/step00063.pt": {
+    "cka_drift@backbone:daytime": 0.002803623676300049,
+    "dcka_drift@backbone:daytime": 0.002820014888319733,
+    "cka_drift@backbone:dawn/dusk": 0.0031701326370239258,
+    "dcka_drift@backbone:dawn/dusk": 0.0031808702879194684,
+    "cka_drift@backbone:night": 0.03214085102081299,
+    "dcka_drift@backbone:night": 0.032911937135689406
+  },
+  "features/mae_o0.0_iid/s2/step00064.pt": {
+    "cka_drift@backbone:daytime": 0.002477288246154785,
+    "dcka_drift@backbone:daytime": 0.002494723474006144,
+    "cka_drift@backbone:dawn/dusk": 0.0027910470962524414,
+    "dcka_drift@backbone:dawn/dusk": 0.0028009018146680775,
+    "cka_drift@backbone:night": 0.01506417989730835,
+    "dcka_drift@backbone:night": 0.01540601826500787
+  },
+  "features/mae_o0.0_iid/s2/step00065.pt": {
+    "cka_drift@backbone:daytime": 0.002477288246154785,
+    "dcka_drift@backbone:daytime": 0.002494723474006144,
+    "cka_drift@backbone:dawn/dusk": 0.0027910470962524414,
+    "dcka_drift@backbone:dawn/dusk": 0.0028009018146680775,
+    "cka_drift@backbone:night": 0.01506417989730835,
+    "dcka_drift@backbone:night": 0.01540601826500787
+  },
+  "features/mae_o0.0_iid/s2/step00108.pt": {
+    "cka_drift@backbone:daytime": 0.0022307634353637695,
+    "dcka_drift@backbone:daytime": 0.0022381064777626802,
+    "cka_drift@backbone:dawn/dusk": 0.0018546581268310547,
+    "dcka_drift@backbone:dawn/dusk": 0.0018603622773492035,
+    "cka_drift@backbone:night": 0.00501406192779541,
+    "dcka_drift@backbone:night": 0.005096202861136212
+  },
+  "features/mae_o0.0_iid/s2/step00109.pt": {
+    "cka_drift@backbone:daytime": 0.0022544264793395996,
+    "dcka_drift@backbone:daytime": 0.0022575093862574613,
+    "cka_drift@backbone:dawn/dusk": 0.001943826675415039,
+    "dcka_drift@backbone:dawn/dusk": 0.0019506046471882144,
+    "cka_drift@backbone:night": 0.003745436668395996,
+    "dcka_drift@backbone:night": 0.0037856632852528715
+  },
+  "features/mae_o0.0_iid/s2/step00110.pt": {
+    "cka_drift@backbone:daytime": 0.00238800048828125,
+    "dcka_drift@backbone:daytime": 0.0023881662269301662,
+    "cka_drift@backbone:dawn/dusk": 0.002085745334625244,
+    "dcka_drift@backbone:dawn/dusk": 0.002094776351106331,
+    "cka_drift@backbone:night": 0.0038574934005737305,
+    "dcka_drift@backbone:night": 0.0039090112005661926
+  },
+  "features/mae_o0.0_iid/s2/step00114.pt": {
+    "cka_drift@backbone:daytime": 0.0028678178787231445,
+    "dcka_drift@backbone:daytime": 0.0028787800527717566,
+    "cka_drift@backbone:dawn/dusk": 0.0024753808975219727,
+    "dcka_drift@backbone:dawn/dusk": 0.0024818794074465966,
+    "cka_drift@backbone:night": 0.005580306053161621,
+    "dcka_drift@backbone:night": 0.005586470027141299
+  },
+  "features/mae_o0.0_iid/s2/step00118.pt": {
+    "cka_drift@backbone:daytime": 0.002588987350463867,
+    "dcka_drift@backbone:daytime": 0.002592801405548739,
+    "cka_drift@backbone:dawn/dusk": 0.002339780330657959,
+    "dcka_drift@backbone:dawn/dusk": 0.002345566003549515,
+    "cka_drift@backbone:night": 0.004653513431549072,
+    "dcka_drift@backbone:night": 0.004655569122597014
+  },
+  "features/mae_o0.0_iid/s2/final.pt": {
+    "cka_drift@backbone:daytime": 0.002659440040588379,
+    "dcka_drift@backbone:daytime": 0.002655307064002188,
+    "cka_drift@backbone:dawn/dusk": 0.0021409988403320312,
+    "dcka_drift@backbone:dawn/dusk": 0.0021464753988110763,
+    "cka_drift@backbone:night": 0.006872415542602539,
+    "dcka_drift@backbone:night": 0.006926304783448911
+  },
+  "features/mae_o0.0_iid/s3/step00022.pt": {
+    "cka_drift@backbone:daytime": 0.0035860538482666016,
+    "dcka_drift@backbone:daytime": 0.003605448610243145,
+    "cka_drift@backbone:dawn/dusk": 0.0030522942543029785,
+    "dcka_drift@backbone:dawn/dusk": 0.0030696082202883446,
+    "cka_drift@backbone:night": 0.00299227237701416,
+    "dcka_drift@backbone:night": 0.0030222366062482298
+  },
+  "features/mae_o0.0_iid/s3/step00031.pt": {
+    "cka_drift@backbone:daytime": 0.0029541850090026855,
+    "dcka_drift@backbone:daytime": 0.002971547608733305,
+    "cka_drift@backbone:dawn/dusk": 0.00254666805267334,
+    "dcka_drift@backbone:dawn/dusk": 0.002558039887237795,
+    "cka_drift@backbone:night": 0.013446152210235596,
+    "dcka_drift@backbone:night": 0.01379960480578446
+  },
+  "features/mae_o0.0_iid/s3/step00044.pt": {
+    "cka_drift@backbone:daytime": 0.0029135942459106445,
+    "dcka_drift@backbone:daytime": 0.0029331888085859514,
+    "cka_drift@backbone:dawn/dusk": 0.002897918224334717,
+    "dcka_drift@backbone:dawn/dusk": 0.002907125556990131,
+    "cka_drift@backbone:night": 0.015904009342193604,
+    "dcka_drift@backbone:night": 0.016277648770782194
+  },
+  "features/mae_o0.0_iid/s3/step00049.pt": {
+    "cka_drift@backbone:daytime": 0.0018553733825683594,
+    "dcka_drift@backbone:daytime": 0.0018719927807026027,
+    "cka_drift@backbone:dawn/dusk": 0.0019288063049316406,
+    "dcka_drift@backbone:dawn/dusk": 0.001937124877744667,
+    "cka_drift@backbone:night": 0.002548694610595703,
+    "dcka_drift@backbone:night": 0.0025729832298378996
+  },
+  "features/mae_o0.0_iid/s3/step00055.pt": {
+    "cka_drift@backbone:daytime": 0.0023856759071350098,
+    "dcka_drift@backbone:daytime": 0.0024042456265874756,
+    "cka_drift@backbone:dawn/dusk": 0.002195298671722412,
+    "dcka_drift@backbone:dawn/dusk": 0.002206603804888574,
+    "cka_drift@backbone:night": 0.005838990211486816,
+    "dcka_drift@backbone:night": 0.005945280566728495
+  },
+  "features/mae_o0.0_iid/s3/step00056.pt": {
+    "cka_drift@backbone:daytime": 0.0025176405906677246,
+    "dcka_drift@backbone:daytime": 0.002537368323737188,
+    "cka_drift@backbone:dawn/dusk": 0.002400040626525879,
+    "dcka_drift@backbone:dawn/dusk": 0.0024126921984287675,
+    "cka_drift@backbone:night": 0.013504445552825928,
+    "dcka_drift@backbone:night": 0.013835449847717785
+  },
+  "features/mae_o0.0_iid/s3/step00059.pt": {
+    "cka_drift@backbone:daytime": 0.0024482011795043945,
+    "dcka_drift@backbone:daytime": 0.002470774521341479,
+    "cka_drift@backbone:dawn/dusk": 0.0025284290313720703,
+    "dcka_drift@backbone:dawn/dusk": 0.0025416744901330945,
+    "cka_drift@backbone:night": 0.004090845584869385,
+    "dcka_drift@backbone:night": 0.004163703849987654
+  },
+  "features/mae_o0.0_iid/s3/step00060.pt": {
+    "cka_drift@backbone:daytime": 0.0025902986526489258,
+    "dcka_drift@backbone:daytime": 0.002613693282785823,
+    "cka_drift@backbone:dawn/dusk": 0.0028200745582580566,
+    "dcka_drift@backbone:dawn/dusk": 0.0028344704943799037,
+    "cka_drift@backbone:night": 0.007769346237182617,
+    "dcka_drift@backbone:night": 0.007940798399959315
+  },
+  "features/mae_o0.0_iid/s3/step00062.pt": {
+    "cka_drift@backbone:daytime": 0.0020296573638916016,
+    "dcka_drift@backbone:daytime": 0.002043441172870919,
+    "cka_drift@backbone:dawn/dusk": 0.0022353529930114746,
+    "dcka_drift@backbone:dawn/dusk": 0.0022468415184483392,
+    "cka_drift@backbone:night": 0.004548311233520508,
+    "dcka_drift@backbone:night": 0.004619023358131691
+  },
+  "features/mae_o0.0_iid/s3/step00063.pt": {
+    "cka_drift@backbone:daytime": 0.00206756591796875,
+    "dcka_drift@backbone:daytime": 0.002079054214860432,
+    "cka_drift@backbone:dawn/dusk": 0.002199113368988037,
+    "dcka_drift@backbone:dawn/dusk": 0.002210415207526739,
+    "cka_drift@backbone:night": 0.00872814655303955,
+    "dcka_drift@backbone:night": 0.00889177345956682
+  },
+  "features/mae_o0.0_iid/s3/step00064.pt": {
+    "cka_drift@backbone:daytime": 0.001867055892944336,
+    "dcka_drift@backbone:daytime": 0.0018775543540181516,
+    "cka_drift@backbone:dawn/dusk": 0.0021646618843078613,
+    "dcka_drift@backbone:dawn/dusk": 0.0021755138531910356,
+    "cka_drift@backbone:night": 0.005625426769256592,
+    "dcka_drift@backbone:night": 0.005722581123171144
+  },
+  "features/mae_o0.0_iid/s3/step00065.pt": {
+    "cka_drift@backbone:daytime": 0.001867055892944336,
+    "dcka_drift@backbone:daytime": 0.0018775543540181516,
+    "cka_drift@backbone:dawn/dusk": 0.0021646618843078613,
+    "dcka_drift@backbone:dawn/dusk": 0.0021755138531910356,
+    "cka_drift@backbone:night": 0.005625426769256592,
+    "dcka_drift@backbone:night": 0.005722581123171144
+  },
+  "features/mae_o0.0_iid/s3/step00108.pt": {
+    "cka_drift@backbone:daytime": 0.002419888973236084,
+    "dcka_drift@backbone:daytime": 0.0024367315407913814,
+    "cka_drift@backbone:dawn/dusk": 0.0026148557662963867,
+    "dcka_drift@backbone:dawn/dusk": 0.0026216545234917232,
+    "cka_drift@backbone:night": 0.0038513541221618652,
+    "dcka_drift@backbone:night": 0.003864656849349002
+  },
+  "features/mae_o0.0_iid/s3/step00109.pt": {
+    "cka_drift@backbone:daytime": 0.002507150173187256,
+    "dcka_drift@backbone:daytime": 0.0025276156200048083,
+    "cka_drift@backbone:dawn/dusk": 0.0024227499961853027,
+    "dcka_drift@backbone:dawn/dusk": 0.0024304171950207953,
+    "cka_drift@backbone:night": 0.004911482334136963,
+    "dcka_drift@backbone:night": 0.004936845029047676
+  },
+  "features/mae_o0.0_iid/s3/step00110.pt": {
+    "cka_drift@backbone:daytime": 0.0027891993522644043,
+    "dcka_drift@backbone:daytime": 0.0028105790852400725,
+    "cka_drift@backbone:dawn/dusk": 0.0023659467697143555,
+    "dcka_drift@backbone:dawn/dusk": 0.002373673825986522,
+    "cka_drift@backbone:night": 0.007429301738739014,
+    "dcka_drift@backbone:night": 0.007477990038691984
+  },
+  "features/mae_o0.0_iid/s3/step00114.pt": {
+    "cka_drift@backbone:daytime": 0.004641056060791016,
+    "dcka_drift@backbone:daytime": 0.004656326817873979,
+    "cka_drift@backbone:dawn/dusk": 0.0032279491424560547,
+    "dcka_drift@backbone:dawn/dusk": 0.003243761822735003,
+    "cka_drift@backbone:night": 0.010474562644958496,
+    "dcka_drift@backbone:night": 0.010597995890475831
+  },
+  "features/mae_o0.0_iid/s3/step00118.pt": {
+    "cka_drift@backbone:daytime": 0.004902958869934082,
+    "dcka_drift@backbone:daytime": 0.004908263923872003,
+    "cka_drift@backbone:dawn/dusk": 0.0032677054405212402,
+    "dcka_drift@backbone:dawn/dusk": 0.0032842840321996025,
+    "cka_drift@backbone:night": 0.0137825608253479,
+    "dcka_drift@backbone:night": 0.013946994827320647
+  },
+  "features/mae_o0.0_iid/s3/final.pt": {
+    "cka_drift@backbone:daytime": 0.0055141448974609375,
+    "dcka_drift@backbone:daytime": 0.005511571977164342,
+    "cka_drift@backbone:dawn/dusk": 0.003950893878936768,
+    "dcka_drift@backbone:dawn/dusk": 0.003972298739406521,
+    "cka_drift@backbone:night": 0.019391238689422607,
+    "dcka_drift@backbone:night": 0.019664125499200158
+  },
+  "features/mae_o0.0_iid/s4/step00022.pt": {
+    "cka_drift@backbone:daytime": 0.0031580328941345215,
+    "dcka_drift@backbone:daytime": 0.0031820592041473805,
+    "cka_drift@backbone:dawn/dusk": 0.0029487013816833496,
+    "dcka_drift@backbone:dawn/dusk": 0.0029609901776384007,
+    "cka_drift@backbone:night": 0.005883753299713135,
+    "dcka_drift@backbone:night": 0.005990817134006177
+  },
+  "features/mae_o0.0_iid/s4/step00031.pt": {
+    "cka_drift@backbone:daytime": 0.003266572952270508,
+    "dcka_drift@backbone:daytime": 0.003291771502024532,
+    "cka_drift@backbone:dawn/dusk": 0.0024082064628601074,
+    "dcka_drift@backbone:dawn/dusk": 0.002413284089515577,
+    "cka_drift@backbone:night": 0.006483852863311768,
+    "dcka_drift@backbone:night": 0.006601833894682829
+  },
+  "features/mae_o0.0_iid/s4/step00044.pt": {
+    "cka_drift@backbone:daytime": 0.0029180049896240234,
+    "dcka_drift@backbone:daytime": 0.002931572033980312,
+    "cka_drift@backbone:dawn/dusk": 0.0021319985389709473,
+    "dcka_drift@backbone:dawn/dusk": 0.002128537627544169,
+    "cka_drift@backbone:night": 0.005655467510223389,
+    "dcka_drift@backbone:night": 0.005756981004733874
+  },
+  "features/mae_o0.0_iid/s4/step00049.pt": {
+    "cka_drift@backbone:daytime": 0.0027931928634643555,
+    "dcka_drift@backbone:daytime": 0.0028045069413594748,
+    "cka_drift@backbone:dawn/dusk": 0.0025898218154907227,
+    "dcka_drift@backbone:dawn/dusk": 0.0025898942364414035,
+    "cka_drift@backbone:night": 0.006213128566741943,
+    "dcka_drift@backbone:night": 0.006293139692488792
+  },
+  "features/mae_o0.0_iid/s4/step00055.pt": {
+    "cka_drift@backbone:daytime": 0.004508554935455322,
+    "dcka_drift@backbone:daytime": 0.004539161286235771,
+    "cka_drift@backbone:dawn/dusk": 0.003850102424621582,
+    "dcka_drift@backbone:dawn/dusk": 0.003855024101257487,
+    "cka_drift@backbone:night": 0.008978307247161865,
+    "dcka_drift@backbone:night": 0.00917795505040575
+  },
+  "features/mae_o0.0_iid/s4/step00056.pt": {
+    "cka_drift@backbone:daytime": 0.006101727485656738,
+    "dcka_drift@backbone:daytime": 0.0061364820822289445,
+    "cka_drift@backbone:dawn/dusk": 0.0050841569900512695,
+    "dcka_drift@backbone:dawn/dusk": 0.005100592628049516,
+    "cka_drift@backbone:night": 0.026147902011871338,
+    "dcka_drift@backbone:night": 0.02677312102939433
+  },
+  "features/mae_o0.0_iid/s4/step00059.pt": {
+    "cka_drift@backbone:daytime": 0.007059752941131592,
+    "dcka_drift@backbone:daytime": 0.007117153946768706,
+    "cka_drift@backbone:dawn/dusk": 0.0056400299072265625,
+    "dcka_drift@backbone:dawn/dusk": 0.005661487719302749,
+    "cka_drift@backbone:night": 0.008465230464935303,
+    "dcka_drift@backbone:night": 0.008601712147578655
+  },
+  "features/mae_o0.0_iid/s4/step00060.pt": {
+    "cka_drift@backbone:daytime": 0.007169604301452637,
+    "dcka_drift@backbone:daytime": 0.007224021779033918,
+    "cka_drift@backbone:dawn/dusk": 0.0055741071701049805,
+    "dcka_drift@backbone:dawn/dusk": 0.005591741762270286,
+    "cka_drift@backbone:night": 0.0072866082191467285,
+    "dcka_drift@backbone:night": 0.0073954033251120155
+  },
+  "features/mae_o0.0_iid/s4/step00062.pt": {
+    "cka_drift@backbone:daytime": 0.006952166557312012,
+    "dcka_drift@backbone:daytime": 0.00699179481073664,
+    "cka_drift@backbone:dawn/dusk": 0.005379438400268555,
+    "dcka_drift@backbone:dawn/dusk": 0.005385823270659951,
+    "cka_drift@backbone:night": 0.0052947998046875,
+    "dcka_drift@backbone:night": 0.005333636807955622
+  },
+  "features/mae_o0.0_iid/s4/step00063.pt": {
+    "cka_drift@backbone:daytime": 0.006987869739532471,
+    "dcka_drift@backbone:daytime": 0.007026799711191245,
+    "cka_drift@backbone:dawn/dusk": 0.00543135404586792,
+    "dcka_drift@backbone:dawn/dusk": 0.005435476582563159,
+    "cka_drift@backbone:night": 0.004635035991668701,
+    "dcka_drift@backbone:night": 0.0046713665064243015
+  },
+  "features/mae_o0.0_iid/s4/step00064.pt": {
+    "cka_drift@backbone:daytime": 0.007180690765380859,
+    "dcka_drift@backbone:daytime": 0.007226260064820744,
+    "cka_drift@backbone:dawn/dusk": 0.005800783634185791,
+    "dcka_drift@backbone:dawn/dusk": 0.005811081902589277,
+    "cka_drift@backbone:night": 0.00845789909362793,
+    "dcka_drift@backbone:night": 0.008600997719588888
+  },
+  "features/mae_o0.0_iid/s4/step00065.pt": {
+    "cka_drift@backbone:daytime": 0.007180690765380859,
+    "dcka_drift@backbone:daytime": 0.007226260064820744,
+    "cka_drift@backbone:dawn/dusk": 0.005800783634185791,
+    "dcka_drift@backbone:dawn/dusk": 0.005811081902589277,
+    "cka_drift@backbone:night": 0.00845789909362793,
+    "dcka_drift@backbone:night": 0.008600997719588888
+  },
+  "features/mae_o0.0_iid/s4/step00108.pt": {
+    "cka_drift@backbone:daytime": 0.0027250051498413086,
+    "dcka_drift@backbone:daytime": 0.002747153384216827,
+    "cka_drift@backbone:dawn/dusk": 0.002248227596282959,
+    "dcka_drift@backbone:dawn/dusk": 0.002254592530539834,
+    "cka_drift@backbone:night": 0.003729522228240967,
+    "dcka_drift@backbone:night": 0.0037857873404698594
+  },
+  "features/mae_o0.0_iid/s4/step00109.pt": {
+    "cka_drift@backbone:daytime": 0.002507150173187256,
+    "dcka_drift@backbone:daytime": 0.0025283626180357954,
+    "cka_drift@backbone:dawn/dusk": 0.0021631717681884766,
+    "dcka_drift@backbone:dawn/dusk": 0.002172166202452086,
+    "cka_drift@backbone:night": 0.0049637556076049805,
+    "dcka_drift@backbone:night": 0.005070133813398492
+  },
+  "features/mae_o0.0_iid/s4/step00110.pt": {
+    "cka_drift@backbone:daytime": 0.002245664596557617,
+    "dcka_drift@backbone:daytime": 0.0022622459102216164,
+    "cka_drift@backbone:dawn/dusk": 0.0019053220748901367,
+    "dcka_drift@backbone:dawn/dusk": 0.0019121741282368543,
+    "cka_drift@backbone:night": 0.00701981782913208,
+    "dcka_drift@backbone:night": 0.007193840511850014
+  },
+  "features/mae_o0.0_iid/s4/step00114.pt": {
+    "cka_drift@backbone:daytime": 0.0016094446182250977,
+    "dcka_drift@backbone:daytime": 0.0016182988974058343,
+    "cka_drift@backbone:dawn/dusk": 0.0015301108360290527,
+    "dcka_drift@backbone:dawn/dusk": 0.001535509238554611,
+    "cka_drift@backbone:night": 0.00241929292678833,
+    "dcka_drift@backbone:night": 0.002430483848471332
+  },
+  "features/mae_o0.0_iid/s4/step00118.pt": {
+    "cka_drift@backbone:daytime": 0.0019809603691101074,
+    "dcka_drift@backbone:daytime": 0.001984716039838408,
+    "cka_drift@backbone:dawn/dusk": 0.0021726489067077637,
+    "dcka_drift@backbone:dawn/dusk": 0.0021762722866851547,
+    "cka_drift@backbone:night": 0.006895601749420166,
+    "dcka_drift@backbone:night": 0.00706765286111144
+  },
+  "features/mae_o0.0_iid/s4/final.pt": {
+    "cka_drift@backbone:daytime": 0.001563727855682373,
+    "dcka_drift@backbone:daytime": 0.001567800998198865,
+    "cka_drift@backbone:dawn/dusk": 0.0018090009689331055,
+    "dcka_drift@backbone:dawn/dusk": 0.001814140192253122,
+    "cka_drift@backbone:night": 0.0031967759132385254,
+    "dcka_drift@backbone:night": 0.0032614842450369164
+  },
+  "features/mae_o0.0_walk/s0/step00022.pt": {
+    "cka_drift@backbone:daytime": 0.0024313926696777344,
+    "dcka_drift@backbone:daytime": 0.002440654616458815,
+    "cka_drift@backbone:dawn/dusk": 0.0015652179718017578,
+    "dcka_drift@backbone:dawn/dusk": 0.0015741342444782758,
+    "cka_drift@backbone:night": 0.006944179534912109,
+    "dcka_drift@backbone:night": 0.0070430856356522575
+  },
+  "features/mae_o0.0_walk/s0/step00031.pt": {
+    "cka_drift@backbone:daytime": 0.0024423599243164062,
+    "dcka_drift@backbone:daytime": 0.0024585532422863876,
+    "cka_drift@backbone:dawn/dusk": 0.0016875267028808594,
+    "dcka_drift@backbone:dawn/dusk": 0.0016927653636988893,
+    "cka_drift@backbone:night": 0.0033197402954101562,
+    "dcka_drift@backbone:night": 0.00336253048171431
+  },
+  "features/mae_o0.0_walk/s0/step00044.pt": {
+    "cka_drift@backbone:daytime": 0.002460777759552002,
+    "dcka_drift@backbone:daytime": 0.00247620024528028,
+    "cka_drift@backbone:dawn/dusk": 0.0018109679222106934,
+    "dcka_drift@backbone:dawn/dusk": 0.0018194005857485873,
+    "cka_drift@backbone:night": 0.02001953125,
+    "dcka_drift@backbone:night": 0.02034449175607378
+  },
+  "features/mae_o0.0_walk/s0/step00049.pt": {
+    "cka_drift@backbone:daytime": 0.0024793148040771484,
+    "dcka_drift@backbone:daytime": 0.0024956361204342414,
+    "cka_drift@backbone:dawn/dusk": 0.0017353296279907227,
+    "dcka_drift@backbone:dawn/dusk": 0.0017445492936098983,
+    "cka_drift@backbone:night": 0.01576322317123413,
+    "dcka_drift@backbone:night": 0.015939057423570602
+  },
+  "features/mae_o0.0_walk/s0/step00055.pt": {
+    "cka_drift@backbone:daytime": 0.0050966739654541016,
+    "dcka_drift@backbone:daytime": 0.005123585035836875,
+    "cka_drift@backbone:dawn/dusk": 0.005185961723327637,
+    "dcka_drift@backbone:dawn/dusk": 0.005214822869706537,
+    "cka_drift@backbone:night": 0.03427308797836304,
+    "dcka_drift@backbone:night": 0.034914073983045246
+  },
+  "features/mae_o0.0_walk/s0/step00056.pt": {
+    "cka_drift@backbone:daytime": 0.003825247287750244,
+    "dcka_drift@backbone:daytime": 0.00385335944639853,
+    "cka_drift@backbone:dawn/dusk": 0.0035785436630249023,
+    "dcka_drift@backbone:dawn/dusk": 0.003599258752551293,
+    "cka_drift@backbone:night": 0.013619780540466309,
+    "dcka_drift@backbone:night": 0.013873392200617785
+  },
+  "features/mae_o0.0_walk/s0/step00059.pt": {
+    "cka_drift@backbone:daytime": 0.004413127899169922,
+    "dcka_drift@backbone:daytime": 0.004463050355708598,
+    "cka_drift@backbone:dawn/dusk": 0.004101574420928955,
+    "dcka_drift@backbone:dawn/dusk": 0.004126036167549141,
+    "cka_drift@backbone:night": 0.004925787448883057,
+    "dcka_drift@backbone:night": 0.005021931235179911
+  },
+  "features/mae_o0.0_walk/s0/step00060.pt": {
+    "cka_drift@backbone:daytime": 0.004292011260986328,
+    "dcka_drift@backbone:daytime": 0.004340434305272423,
+    "cka_drift@backbone:dawn/dusk": 0.004211544990539551,
+    "dcka_drift@backbone:dawn/dusk": 0.004235221185065141,
+    "cka_drift@backbone:night": 0.005011618137359619,
+    "dcka_drift@backbone:night": 0.00510926095381381
+  },
+  "features/mae_o0.0_walk/s0/step00062.pt": {
+    "cka_drift@backbone:daytime": 0.004473447799682617,
+    "dcka_drift@backbone:daytime": 0.004508093537757274,
+    "cka_drift@backbone:dawn/dusk": 0.004810333251953125,
+    "dcka_drift@backbone:dawn/dusk": 0.004829807188411861,
+    "cka_drift@backbone:night": 0.014601171016693115,
+    "dcka_drift@backbone:night": 0.014921293818845327
+  },
+  "features/mae_o0.0_walk/s0/step00063.pt": {
+    "cka_drift@backbone:daytime": 0.004344344139099121,
+    "dcka_drift@backbone:daytime": 0.004378145014842794,
+    "cka_drift@backbone:dawn/dusk": 0.004638671875,
+    "dcka_drift@backbone:dawn/dusk": 0.004654180073764724,
+    "cka_drift@backbone:night": 0.01109236478805542,
+    "dcka_drift@backbone:night": 0.011318161695343498
+  },
+  "features/mae_o0.0_walk/s0/step00064.pt": {
+    "cka_drift@backbone:daytime": 0.003932356834411621,
+    "dcka_drift@backbone:daytime": 0.003965743782873732,
+    "cka_drift@backbone:dawn/dusk": 0.0043024420738220215,
+    "dcka_drift@backbone:dawn/dusk": 0.004320014929836913,
+    "cka_drift@backbone:night": 0.006478786468505859,
+    "dcka_drift@backbone:night": 0.006587781766159595
+  },
+  "features/mae_o0.0_walk/s0/step00065.pt": {
+    "cka_drift@backbone:daytime": 0.003932356834411621,
+    "dcka_drift@backbone:daytime": 0.003965743782873732,
+    "cka_drift@backbone:dawn/dusk": 0.0043024420738220215,
+    "dcka_drift@backbone:dawn/dusk": 0.004320014929836913,
+    "cka_drift@backbone:night": 0.006478786468505859,
+    "dcka_drift@backbone:night": 0.006587781766159595
+  },
+  "features/mae_o0.0_walk/s0/step00108.pt": {
+    "cka_drift@backbone:daytime": 0.002750694751739502,
+    "dcka_drift@backbone:daytime": 0.002756715899465245,
+    "cka_drift@backbone:dawn/dusk": 0.003255128860473633,
+    "dcka_drift@backbone:dawn/dusk": 0.0032674947656903264,
+    "cka_drift@backbone:night": 0.0035760998725891113,
+    "dcka_drift@backbone:night": 0.0036056162523215862
+  },
+  "features/mae_o0.0_walk/s0/step00109.pt": {
+    "cka_drift@backbone:daytime": 0.0026594996452331543,
+    "dcka_drift@backbone:daytime": 0.002666379463641455,
+    "cka_drift@backbone:dawn/dusk": 0.0032787322998046875,
+    "dcka_drift@backbone:dawn/dusk": 0.0032900096967379833,
+    "cka_drift@backbone:night": 0.004182934761047363,
+    "dcka_drift@backbone:night": 0.004210419404843679
+  },
+  "features/mae_o0.0_walk/s0/step00110.pt": {
+    "cka_drift@backbone:daytime": 0.002482175827026367,
+    "dcka_drift@backbone:daytime": 0.002492094770775388,
+    "cka_drift@backbone:dawn/dusk": 0.003479480743408203,
+    "dcka_drift@backbone:dawn/dusk": 0.0034903075497800806,
+    "cka_drift@backbone:night": 0.014476358890533447,
+    "dcka_drift@backbone:night": 0.014715949849938958
+  },
+  "features/mae_o0.0_walk/s0/step00114.pt": {
+    "cka_drift@backbone:daytime": 0.0033324360847473145,
+    "dcka_drift@backbone:daytime": 0.003338952775184034,
+    "cka_drift@backbone:dawn/dusk": 0.003831803798675537,
+    "dcka_drift@backbone:dawn/dusk": 0.0038540579417680743,
+    "cka_drift@backbone:night": 0.007687091827392578,
+    "dcka_drift@backbone:night": 0.007768269818382523
+  },
+  "features/mae_o0.0_walk/s0/step00118.pt": {
+    "cka_drift@backbone:daytime": 0.002704918384552002,
+    "dcka_drift@backbone:daytime": 0.00271408303439169,
+    "cka_drift@backbone:dawn/dusk": 0.002988100051879883,
+    "dcka_drift@backbone:dawn/dusk": 0.0029986448013644695,
+    "cka_drift@backbone:night": 0.010171890258789062,
+    "dcka_drift@backbone:night": 0.010299273181698987
+  },
+  "features/mae_o0.0_walk/s0/final.pt": {
+    "cka_drift@backbone:daytime": 0.0027337074279785156,
+    "dcka_drift@backbone:daytime": 0.0027431600193431604,
+    "cka_drift@backbone:dawn/dusk": 0.0027902722358703613,
+    "dcka_drift@backbone:dawn/dusk": 0.0028027785935214045,
+    "cka_drift@backbone:night": 0.0050969719886779785,
+    "dcka_drift@backbone:night": 0.005136512220237255
+  },
+  "features/mae_o0.0_walk/s1/step00022.pt": {
+    "cka_drift@backbone:daytime": 0.0026420950889587402,
+    "dcka_drift@backbone:daytime": 0.0026550248923959963,
+    "cka_drift@backbone:dawn/dusk": 0.001869499683380127,
+    "dcka_drift@backbone:dawn/dusk": 0.0018713106501877519,
+    "cka_drift@backbone:night": 0.006054937839508057,
+    "dcka_drift@backbone:night": 0.006178816196497183
+  },
+  "features/mae_o0.0_walk/s1/step00031.pt": {
+    "cka_drift@backbone:daytime": 0.0016669631004333496,
+    "dcka_drift@backbone:daytime": 0.0016685553234838668,
+    "cka_drift@backbone:dawn/dusk": 0.0014597773551940918,
+    "dcka_drift@backbone:dawn/dusk": 0.0014614383122445451,
+    "cka_drift@backbone:night": 0.00796198844909668,
+    "dcka_drift@backbone:night": 0.008113492931110744
+  },
+  "features/mae_o0.0_walk/s1/step00044.pt": {
+    "cka_drift@backbone:daytime": 0.0015459060668945312,
+    "dcka_drift@backbone:daytime": 0.001553733357257614,
+    "cka_drift@backbone:dawn/dusk": 0.0015301704406738281,
+    "dcka_drift@backbone:dawn/dusk": 0.0015356039864021787,
+    "cka_drift@backbone:night": 0.00575566291809082,
+    "dcka_drift@backbone:night": 0.00588468280485821
+  },
+  "features/mae_o0.0_walk/s1/step00049.pt": {
+    "cka_drift@backbone:daytime": 0.0023476481437683105,
+    "dcka_drift@backbone:daytime": 0.002352563034830668,
+    "cka_drift@backbone:dawn/dusk": 0.002314627170562744,
+    "dcka_drift@backbone:dawn/dusk": 0.0023262935349749325,
+    "cka_drift@backbone:night": 0.0096549391746521,
+    "dcka_drift@backbone:night": 0.009849257841115566
+  },
+  "features/mae_o0.0_walk/s1/step00055.pt": {
+    "cka_drift@backbone:daytime": 0.004334568977355957,
+    "dcka_drift@backbone:daytime": 0.004315180943536223,
+    "cka_drift@backbone:dawn/dusk": 0.004686117172241211,
+    "dcka_drift@backbone:dawn/dusk": 0.004713613687164053,
+    "cka_drift@backbone:night": 0.021534323692321777,
+    "dcka_drift@backbone:night": 0.021853982126025517
+  },
+  "features/mae_o0.0_walk/s1/step00056.pt": {
+    "cka_drift@backbone:daytime": 0.008957266807556152,
+    "dcka_drift@backbone:daytime": 0.008920094393095934,
+    "cka_drift@backbone:dawn/dusk": 0.010410308837890625,
+    "dcka_drift@backbone:dawn/dusk": 0.010480162178415409,
+    "cka_drift@backbone:night": 0.09588932991027832,
+    "dcka_drift@backbone:night": 0.09775702200113656
+  },
+  "features/mae_o0.0_walk/s1/step00059.pt": {
+    "cka_drift@backbone:daytime": 0.004884243011474609,
+    "dcka_drift@backbone:daytime": 0.004912843431465697,
+    "cka_drift@backbone:dawn/dusk": 0.005159199237823486,
+    "dcka_drift@backbone:dawn/dusk": 0.005189511473711272,
+    "cka_drift@backbone:night": 0.005292952060699463,
+    "dcka_drift@backbone:night": 0.0053540125127368166
+  },
+  "features/mae_o0.0_walk/s1/step00060.pt": {
+    "cka_drift@backbone:daytime": 0.004285752773284912,
+    "dcka_drift@backbone:daytime": 0.00432509597386066,
+    "cka_drift@backbone:dawn/dusk": 0.004431545734405518,
+    "dcka_drift@backbone:dawn/dusk": 0.004457104477172957,
+    "cka_drift@backbone:night": 0.0050122737884521484,
+    "dcka_drift@backbone:night": 0.0051138891268242
+  },
+  "features/mae_o0.0_walk/s1/step00062.pt": {
+    "cka_drift@backbone:daytime": 0.004333972930908203,
+    "dcka_drift@backbone:daytime": 0.004366047263839712,
+    "cka_drift@backbone:dawn/dusk": 0.003921389579772949,
+    "dcka_drift@backbone:dawn/dusk": 0.003946412785242326,
+    "cka_drift@backbone:night": 0.0099143385887146,
+    "dcka_drift@backbone:night": 0.01004179693901286
+  },
+  "features/mae_o0.0_walk/s1/step00063.pt": {
+    "cka_drift@backbone:daytime": 0.003606438636779785,
+    "dcka_drift@backbone:daytime": 0.0036288994877623493,
+    "cka_drift@backbone:dawn/dusk": 0.003260314464569092,
+    "dcka_drift@backbone:dawn/dusk": 0.0032809693987420063,
+    "cka_drift@backbone:night": 0.012481868267059326,
+    "dcka_drift@backbone:night": 0.0126508378259782
+  },
+  "features/mae_o0.0_walk/s1/step00064.pt": {
+    "cka_drift@backbone:daytime": 0.0026923418045043945,
+    "dcka_drift@backbone:daytime": 0.002703219837764781,
+    "cka_drift@backbone:dawn/dusk": 0.0023192763328552246,
+    "dcka_drift@backbone:dawn/dusk": 0.00233165537012181,
+    "cka_drift@backbone:night": 0.010499179363250732,
+    "dcka_drift@backbone:night": 0.010645215851025291
+  },
+  "features/mae_o0.0_walk/s1/step00065.pt": {
+    "cka_drift@backbone:daytime": 0.0026923418045043945,
+    "dcka_drift@backbone:daytime": 0.002703219837764781,
+    "cka_drift@backbone:dawn/dusk": 0.0023192763328552246,
+    "dcka_drift@backbone:dawn/dusk": 0.00233165537012181,
+    "cka_drift@backbone:night": 0.010499179363250732,
+    "dcka_drift@backbone:night": 0.010645215851025291
+  },
+  "features/mae_o0.0_walk/s1/step00108.pt": {
+    "cka_drift@backbone:daytime": 0.006765425205230713,
+    "dcka_drift@backbone:daytime": 0.0067385688901840934,
+    "cka_drift@backbone:dawn/dusk": 0.007652640342712402,
+    "dcka_drift@backbone:dawn/dusk": 0.007620785008610964,
+    "cka_drift@backbone:night": 0.0569038987159729,
+    "dcka_drift@backbone:night": 0.05820544176796816
+  },
+  "features/mae_o0.0_walk/s1/step00109.pt": {
+    "cka_drift@backbone:daytime": 0.007630050182342529,
+    "dcka_drift@backbone:daytime": 0.007607934466127841,
+    "cka_drift@backbone:dawn/dusk": 0.008376896381378174,
+    "dcka_drift@backbone:dawn/dusk": 0.008348725710430771,
+    "cka_drift@backbone:night": 0.12455272674560547,
+    "dcka_drift@backbone:night": 0.12754793953958765
+  },
+  "features/mae_o0.0_walk/s1/step00110.pt": {
+    "cka_drift@backbone:daytime": 0.008071660995483398,
+    "dcka_drift@backbone:daytime": 0.00804525910887366,
+    "cka_drift@backbone:dawn/dusk": 0.00906461477279663,
+    "dcka_drift@backbone:dawn/dusk": 0.009031158487932567,
+    "cka_drift@backbone:night": 0.1172228455543518,
+    "dcka_drift@backbone:night": 0.12002821119080243
+  },
+  "features/mae_o0.0_walk/s1/step00114.pt": {
+    "cka_drift@backbone:daytime": 0.010816633701324463,
+    "dcka_drift@backbone:daytime": 0.010775394383332637,
+    "cka_drift@backbone:dawn/dusk": 0.011078238487243652,
+    "dcka_drift@backbone:dawn/dusk": 0.011031563150006973,
+    "cka_drift@backbone:night": 0.006677389144897461,
+    "dcka_drift@backbone:night": 0.006770702784030802
+  },
+  "features/mae_o0.0_walk/s1/step00118.pt": {
+    "cka_drift@backbone:daytime": 0.011048495769500732,
+    "dcka_drift@backbone:daytime": 0.011066452592646603,
+    "cka_drift@backbone:dawn/dusk": 0.009637057781219482,
+    "dcka_drift@backbone:dawn/dusk": 0.009625398754176562,
+    "cka_drift@backbone:night": 0.01670747995376587,
+    "dcka_drift@backbone:night": 0.016988829822486062
+  },
+  "features/mae_o0.0_walk/s1/final.pt": {
+    "cka_drift@backbone:daytime": 0.012110114097595215,
+    "dcka_drift@backbone:daytime": 0.012122427842535033,
+    "cka_drift@backbone:dawn/dusk": 0.010469675064086914,
+    "dcka_drift@backbone:dawn/dusk": 0.010458363847967833,
+    "cka_drift@backbone:night": 0.025382697582244873,
+    "dcka_drift@backbone:night": 0.025843275058796245
+  },
+  "features/mae_o0.0_walk/s2/step00022.pt": {
+    "cka_drift@backbone:daytime": 0.0024728775024414062,
+    "dcka_drift@backbone:daytime": 0.0024872763395609176,
+    "cka_drift@backbone:dawn/dusk": 0.003416001796722412,
+    "dcka_drift@backbone:dawn/dusk": 0.003427677009911978,
+    "cka_drift@backbone:night": 0.009822368621826172,
+    "dcka_drift@backbone:night": 0.009957912055823748
+  },
+  "features/mae_o0.0_walk/s2/step00031.pt": {
+    "cka_drift@backbone:daytime": 0.0017309784889221191,
+    "dcka_drift@backbone:daytime": 0.001740510582131205,
+    "cka_drift@backbone:dawn/dusk": 0.00244218111038208,
+    "dcka_drift@backbone:dawn/dusk": 0.002452366524397509,
+    "cka_drift@backbone:night": 0.013933539390563965,
+    "dcka_drift@backbone:night": 0.014235576513308201
+  },
+  "features/mae_o0.0_walk/s2/step00044.pt": {
+    "cka_drift@backbone:daytime": 0.0013669133186340332,
+    "dcka_drift@backbone:daytime": 0.0013722069605134335,
+    "cka_drift@backbone:dawn/dusk": 0.002018868923187256,
+    "dcka_drift@backbone:dawn/dusk": 0.0020292096636632673,
+    "cka_drift@backbone:night": 0.0038796067237854004,
+    "dcka_drift@backbone:night": 0.003954339931713791
+  },
+  "features/mae_o0.0_walk/s2/step00049.pt": {
+    "cka_drift@backbone:daytime": 0.0013750791549682617,
+    "dcka_drift@backbone:daytime": 0.0013827258701875067,
+    "cka_drift@backbone:dawn/dusk": 0.0016925334930419922,
+    "dcka_drift@backbone:dawn/dusk": 0.0016989643842280078,
+    "cka_drift@backbone:night": 0.0035184621810913086,
+    "dcka_drift@backbone:night": 0.0035920228704868773
+  },
+  "features/mae_o0.0_walk/s2/step00055.pt": {
+    "cka_drift@backbone:daytime": 0.0014340877532958984,
+    "dcka_drift@backbone:daytime": 0.001443765738795455,
+    "cka_drift@backbone:dawn/dusk": 0.0014583468437194824,
+    "dcka_drift@backbone:dawn/dusk": 0.0014637153022595273,
+    "cka_drift@backbone:night": 0.002665877342224121,
+    "dcka_drift@backbone:night": 0.002714169867428118
+  },
+  "features/mae_o0.0_walk/s2/step00056.pt": {
+    "cka_drift@backbone:daytime": 0.002106964588165283,
+    "dcka_drift@backbone:daytime": 0.0021166714273297416,
+    "cka_drift@backbone:dawn/dusk": 0.002270221710205078,
+    "dcka_drift@backbone:dawn/dusk": 0.0022774592202122745,
+    "cka_drift@backbone:night": 0.009235143661499023,
+    "dcka_drift@backbone:night": 0.0094286514984675
+  },
+  "features/mae_o0.0_walk/s2/step00059.pt": {
+    "cka_drift@backbone:daytime": 0.0018377900123596191,
+    "dcka_drift@backbone:daytime": 0.0018517749894187974,
+    "cka_drift@backbone:dawn/dusk": 0.0016384720802307129,
+    "dcka_drift@backbone:dawn/dusk": 0.001644615086657808,
+    "cka_drift@backbone:night": 0.002668619155883789,
+    "dcka_drift@backbone:night": 0.0027273630159982964
+  },
+  "features/mae_o0.0_walk/s2/step00060.pt": {
+    "cka_drift@backbone:daytime": 0.002072453498840332,
+    "dcka_drift@backbone:daytime": 0.002088029671059588,
+    "cka_drift@backbone:dawn/dusk": 0.0018610954284667969,
+    "dcka_drift@backbone:dawn/dusk": 0.0018689747073933338,
+    "cka_drift@backbone:night": 0.004182577133178711,
+    "dcka_drift@backbone:night": 0.00427144023383097
+  },
+  "features/mae_o0.0_walk/s2/step00062.pt": {
+    "cka_drift@backbone:daytime": 0.0020529627799987793,
+    "dcka_drift@backbone:daytime": 0.0020661382718581978,
+    "cka_drift@backbone:dawn/dusk": 0.002065896987915039,
+    "dcka_drift@backbone:dawn/dusk": 0.002074734512973575,
+    "cka_drift@backbone:night": 0.003612220287322998,
+    "dcka_drift@backbone:night": 0.003684712196538098
+  },
+  "features/mae_o0.0_walk/s2/step00063.pt": {
+    "cka_drift@backbone:daytime": 0.0025743842124938965,
+    "dcka_drift@backbone:daytime": 0.002583444576265692,
+    "cka_drift@backbone:dawn/dusk": 0.0028377175331115723,
+    "dcka_drift@backbone:dawn/dusk": 0.00285079086736717,
+    "cka_drift@backbone:night": 0.015156209468841553,
+    "dcka_drift@backbone:night": 0.015437807672688653
+  },
+  "features/mae_o0.0_walk/s2/step00064.pt": {
+    "cka_drift@backbone:daytime": 0.0030586719512939453,
+    "dcka_drift@backbone:daytime": 0.0030626294579142455,
+    "cka_drift@backbone:dawn/dusk": 0.003524303436279297,
+    "dcka_drift@backbone:dawn/dusk": 0.0035401370241117114,
+    "cka_drift@backbone:night": 0.03045201301574707,
+    "dcka_drift@backbone:night": 0.031045174254410557
+  },
+  "features/mae_o0.0_walk/s2/step00065.pt": {
+    "cka_drift@backbone:daytime": 0.0030586719512939453,
+    "dcka_drift@backbone:daytime": 0.0030626294579142455,
+    "cka_drift@backbone:dawn/dusk": 0.003524303436279297,
+    "dcka_drift@backbone:dawn/dusk": 0.0035401370241117114,
+    "cka_drift@backbone:night": 0.03045201301574707,
+    "dcka_drift@backbone:night": 0.031045174254410557
+  },
+  "features/mae_o0.0_walk/s2/step00108.pt": {
+    "cka_drift@backbone:daytime": 0.00230252742767334,
+    "dcka_drift@backbone:daytime": 0.0023158139657790677,
+    "cka_drift@backbone:dawn/dusk": 0.003287792205810547,
+    "dcka_drift@backbone:dawn/dusk": 0.0033025076908270723,
+    "cka_drift@backbone:night": 0.004192769527435303,
+    "dcka_drift@backbone:night": 0.004246835813973782
+  },
+  "features/mae_o0.0_walk/s2/step00109.pt": {
+    "cka_drift@backbone:daytime": 0.0027541518211364746,
+    "dcka_drift@backbone:daytime": 0.002770101354194754,
+    "cka_drift@backbone:dawn/dusk": 0.003741443157196045,
+    "dcka_drift@backbone:dawn/dusk": 0.0037569191059475537,
+    "cka_drift@backbone:night": 0.012224733829498291,
+    "dcka_drift@backbone:night": 0.012412694035840333
+  },
+  "features/mae_o0.0_walk/s2/step00110.pt": {
+    "cka_drift@backbone:daytime": 0.0030496716499328613,
+    "dcka_drift@backbone:daytime": 0.0030705901375247535,
+    "cka_drift@backbone:dawn/dusk": 0.004007816314697266,
+    "dcka_drift@backbone:dawn/dusk": 0.004022915295072038,
+    "cka_drift@backbone:night": 0.010168075561523438,
+    "dcka_drift@backbone:night": 0.010332983552535646
+  },
+  "features/mae_o0.0_walk/s2/step00114.pt": {
+    "cka_drift@backbone:daytime": 0.005186498165130615,
+    "dcka_drift@backbone:daytime": 0.005220019246825802,
+    "cka_drift@backbone:dawn/dusk": 0.006937384605407715,
+    "dcka_drift@backbone:dawn/dusk": 0.0069669110775946175,
+    "cka_drift@backbone:night": 0.013901889324188232,
+    "dcka_drift@backbone:night": 0.014195321227763125
+  },
+  "features/mae_o0.0_walk/s2/step00118.pt": {
+    "cka_drift@backbone:daytime": 0.006241202354431152,
+    "dcka_drift@backbone:daytime": 0.006267923186005997,
+    "cka_drift@backbone:dawn/dusk": 0.007419884204864502,
+    "dcka_drift@backbone:dawn/dusk": 0.007443382211408611,
+    "cka_drift@backbone:night": 0.013630270957946777,
+    "dcka_drift@backbone:night": 0.013903609975974063
+  },
+  "features/mae_o0.0_walk/s2/final.pt": {
+    "cka_drift@backbone:daytime": 0.00760883092880249,
+    "dcka_drift@backbone:daytime": 0.007634514742319798,
+    "cka_drift@backbone:dawn/dusk": 0.008916795253753662,
+    "dcka_drift@backbone:dawn/dusk": 0.008945424215327846,
+    "cka_drift@backbone:night": 0.029242515563964844,
+    "dcka_drift@backbone:night": 0.02989293518001135
+  },
+  "features/mae_o0.0_walk/s3/step00022.pt": {
+    "cka_drift@backbone:daytime": 0.0016837716102600098,
+    "dcka_drift@backbone:daytime": 0.0016976750088877335,
+    "cka_drift@backbone:dawn/dusk": 0.0016515851020812988,
+    "dcka_drift@backbone:dawn/dusk": 0.001651285466823027,
+    "cka_drift@backbone:night": 0.003082752227783203,
+    "dcka_drift@backbone:night": 0.003141533638370886
+  },
+  "features/mae_o0.0_walk/s3/step00031.pt": {
+    "cka_drift@backbone:daytime": 0.002589285373687744,
+    "dcka_drift@backbone:daytime": 0.0025995557633555766,
+    "cka_drift@backbone:dawn/dusk": 0.0029340386390686035,
+    "dcka_drift@backbone:dawn/dusk": 0.0029451335406672774,
+    "cka_drift@backbone:night": 0.01548546552658081,
+    "dcka_drift@backbone:night": 0.0157226955293972
+  },
+  "features/mae_o0.0_walk/s3/step00044.pt": {
+    "cka_drift@backbone:daytime": 0.0023020505905151367,
+    "dcka_drift@backbone:daytime": 0.0023187836074262114,
+    "cka_drift@backbone:dawn/dusk": 0.0020493268966674805,
+    "dcka_drift@backbone:dawn/dusk": 0.0020549713361435185,
+    "cka_drift@backbone:night": 0.0037291646003723145,
+    "dcka_drift@backbone:night": 0.0037994429384581307
+  },
+  "features/mae_o0.0_walk/s3/step00049.pt": {
+    "cka_drift@backbone:daytime": 0.0030483007431030273,
+    "dcka_drift@backbone:daytime": 0.003052384856535806,
+    "cka_drift@backbone:dawn/dusk": 0.0035715103149414062,
+    "dcka_drift@backbone:dawn/dusk": 0.0035753771849429405,
+    "cka_drift@backbone:night": 0.014550566673278809,
+    "dcka_drift@backbone:night": 0.014795315536841769
+  },
+  "features/mae_o0.0_walk/s3/step00055.pt": {
+    "cka_drift@backbone:daytime": 0.00224381685256958,
+    "dcka_drift@backbone:daytime": 0.0022575965864386482,
+    "cka_drift@backbone:dawn/dusk": 0.0026302337646484375,
+    "dcka_drift@backbone:dawn/dusk": 0.0026432179466350236,
+    "cka_drift@backbone:night": 0.010434627532958984,
+    "dcka_drift@backbone:night": 0.010539800702727642
+  },
+  "features/mae_o0.0_walk/s3/step00056.pt": {
+    "cka_drift@backbone:daytime": 0.0025434494018554688,
+    "dcka_drift@backbone:daytime": 0.0025548854744487093,
+    "cka_drift@backbone:dawn/dusk": 0.0025390982627868652,
+    "dcka_drift@backbone:dawn/dusk": 0.0025546039876559457,
+    "cka_drift@backbone:night": 0.014561712741851807,
+    "dcka_drift@backbone:night": 0.014752344989621857
+  },
+  "features/mae_o0.0_walk/s3/step00059.pt": {
+    "cka_drift@backbone:daytime": 0.00249481201171875,
+    "dcka_drift@backbone:daytime": 0.0025066174804372343,
+    "cka_drift@backbone:dawn/dusk": 0.0016202926635742188,
+    "dcka_drift@backbone:dawn/dusk": 0.0016288550122413037,
+    "cka_drift@backbone:night": 0.007322967052459717,
+    "dcka_drift@backbone:night": 0.007449185155720794
+  },
+  "features/mae_o0.0_walk/s3/step00060.pt": {
+    "cka_drift@backbone:daytime": 0.0024991631507873535,
+    "dcka_drift@backbone:daytime": 0.0025117750023921914,
+    "cka_drift@backbone:dawn/dusk": 0.0015425682067871094,
+    "dcka_drift@backbone:dawn/dusk": 0.0015503318311782532,
+    "cka_drift@backbone:night": 0.00840061902999878,
+    "dcka_drift@backbone:night": 0.008570065256901072
+  },
+  "features/mae_o0.0_walk/s3/step00062.pt": {
+    "cka_drift@backbone:daytime": 0.002170264720916748,
+    "dcka_drift@backbone:daytime": 0.002183997900158663,
+    "cka_drift@backbone:dawn/dusk": 0.0016123056411743164,
+    "dcka_drift@backbone:dawn/dusk": 0.0016189345318140536,
+    "cka_drift@backbone:night": 0.004009723663330078,
+    "dcka_drift@backbone:night": 0.0040922887967358434
+  },
+  "features/mae_o0.0_walk/s3/step00063.pt": {
+    "cka_drift@backbone:daytime": 0.002719700336456299,
+    "dcka_drift@backbone:daytime": 0.0027388622657336104,
+    "cka_drift@backbone:dawn/dusk": 0.00225752592086792,
+    "dcka_drift@backbone:dawn/dusk": 0.002267688344040897,
+    "cka_drift@backbone:night": 0.004537343978881836,
+    "dcka_drift@backbone:night": 0.004608529339182654
+  },
+  "features/mae_o0.0_walk/s3/step00064.pt": {
+    "cka_drift@backbone:daytime": 0.0045250654220581055,
+    "dcka_drift@backbone:daytime": 0.00455185836480132,
+    "cka_drift@backbone:dawn/dusk": 0.0039054155349731445,
+    "dcka_drift@backbone:dawn/dusk": 0.0039252899814631315,
+    "cka_drift@backbone:night": 0.01433497667312622,
+    "dcka_drift@backbone:night": 0.014589418093331474
+  },
+  "features/mae_o0.0_walk/s3/step00065.pt": {
+    "cka_drift@backbone:daytime": 0.0045250654220581055,
+    "dcka_drift@backbone:daytime": 0.00455185836480132,
+    "cka_drift@backbone:dawn/dusk": 0.0039054155349731445,
+    "dcka_drift@backbone:dawn/dusk": 0.0039252899814631315,
+    "cka_drift@backbone:night": 0.01433497667312622,
+    "dcka_drift@backbone:night": 0.014589418093331474
+  },
+  "features/mae_o0.0_walk/s3/step00108.pt": {
+    "cka_drift@backbone:daytime": 0.005412757396697998,
+    "dcka_drift@backbone:daytime": 0.005458986160156831,
+    "cka_drift@backbone:dawn/dusk": 0.0040694475173950195,
+    "dcka_drift@backbone:dawn/dusk": 0.004095686929633802,
+    "cka_drift@backbone:night": 0.005478858947753906,
+    "dcka_drift@backbone:night": 0.005574605289156431
+  },
+  "features/mae_o0.0_walk/s3/step00109.pt": {
+    "cka_drift@backbone:daytime": 0.0059209465980529785,
+    "dcka_drift@backbone:daytime": 0.00596540368006393,
+    "cka_drift@backbone:dawn/dusk": 0.0052298903465271,
+    "dcka_drift@backbone:dawn/dusk": 0.005265095524951358,
+    "cka_drift@backbone:night": 0.016125917434692383,
+    "dcka_drift@backbone:night": 0.016392944410986265
+  },
+  "features/mae_o0.0_walk/s3/step00110.pt": {
+    "cka_drift@backbone:daytime": 0.006108582019805908,
+    "dcka_drift@backbone:daytime": 0.006154282572970238,
+    "cka_drift@backbone:dawn/dusk": 0.005568861961364746,
+    "dcka_drift@backbone:dawn/dusk": 0.005607366606321329,
+    "cka_drift@backbone:night": 0.021468400955200195,
+    "dcka_drift@backbone:night": 0.021824969337243205
+  },
+  "features/mae_o0.0_walk/s3/step00114.pt": {
+    "cka_drift@backbone:daytime": 0.0032692551612854004,
+    "dcka_drift@backbone:daytime": 0.003289055390450768,
+    "cka_drift@backbone:dawn/dusk": 0.002098679542541504,
+    "dcka_drift@backbone:dawn/dusk": 0.0021088344728572572,
+    "cka_drift@backbone:night": 0.005065023899078369,
+    "dcka_drift@backbone:night": 0.005138876424251926
+  },
+  "features/mae_o0.0_walk/s3/step00118.pt": {
+    "cka_drift@backbone:daytime": 0.00380784273147583,
+    "dcka_drift@backbone:daytime": 0.003819778179742661,
+    "cka_drift@backbone:dawn/dusk": 0.002980828285217285,
+    "dcka_drift@backbone:dawn/dusk": 0.0029925128867961392,
+    "cka_drift@backbone:night": 0.005892515182495117,
+    "dcka_drift@backbone:night": 0.005975603875795099
+  },
+  "features/mae_o0.0_walk/s3/final.pt": {
+    "cka_drift@backbone:daytime": 0.0037505030632019043,
+    "dcka_drift@backbone:daytime": 0.0037618551089771968,
+    "cka_drift@backbone:dawn/dusk": 0.002714097499847412,
+    "dcka_drift@backbone:dawn/dusk": 0.002725946248397504,
+    "cka_drift@backbone:night": 0.0062525272369384766,
+    "dcka_drift@backbone:night": 0.006306093526510015
+  },
+  "features/mae_o0.0_walk/s4/step00022.pt": {
+    "cka_drift@backbone:daytime": 0.002766132354736328,
+    "dcka_drift@backbone:daytime": 0.0027961373462064287,
+    "cka_drift@backbone:dawn/dusk": 0.0026754140853881836,
+    "dcka_drift@backbone:dawn/dusk": 0.0026904915571946963,
+    "cka_drift@backbone:night": 0.009790658950805664,
+    "dcka_drift@backbone:night": 0.009975180046998045
+  },
+  "features/mae_o0.0_walk/s4/step00031.pt": {
+    "cka_drift@backbone:daytime": 0.003342747688293457,
+    "dcka_drift@backbone:daytime": 0.0033553942733793862,
+    "cka_drift@backbone:dawn/dusk": 0.003603994846343994,
+    "dcka_drift@backbone:dawn/dusk": 0.0036291714798786234,
+    "cka_drift@backbone:night": 0.029043734073638916,
+    "dcka_drift@backbone:night": 0.02958188834846598
+  },
+  "features/mae_o0.0_walk/s4/step00044.pt": {
+    "cka_drift@backbone:daytime": 0.0021927952766418457,
+    "dcka_drift@backbone:daytime": 0.0022057511149689013,
+    "cka_drift@backbone:dawn/dusk": 0.0016841888427734375,
+    "dcka_drift@backbone:dawn/dusk": 0.0016894725490890217,
+    "cka_drift@backbone:night": 0.005140483379364014,
+    "dcka_drift@backbone:night": 0.005244964538223762
+  },
+  "features/mae_o0.0_walk/s4/step00049.pt": {
+    "cka_drift@backbone:daytime": 0.0020180940628051758,
+    "dcka_drift@backbone:daytime": 0.0020290572907513127,
+    "cka_drift@backbone:dawn/dusk": 0.0017307400703430176,
+    "dcka_drift@backbone:dawn/dusk": 0.001736060816027618,
+    "cka_drift@backbone:night": 0.004543781280517578,
+    "dcka_drift@backbone:night": 0.004650315277131223
+  },
+  "features/mae_o0.0_walk/s4/step00055.pt": {
+    "cka_drift@backbone:daytime": 0.003493964672088623,
+    "dcka_drift@backbone:daytime": 0.003523337294635054,
+    "cka_drift@backbone:dawn/dusk": 0.0033401846885681152,
+    "dcka_drift@backbone:dawn/dusk": 0.0033561055526248884,
+    "cka_drift@backbone:night": 0.009637713432312012,
+    "dcka_drift@backbone:night": 0.009783077084123737
+  },
+  "features/mae_o0.0_walk/s4/step00056.pt": {
+    "cka_drift@backbone:daytime": 0.0045716166496276855,
+    "dcka_drift@backbone:daytime": 0.004603509399962125,
+    "cka_drift@backbone:dawn/dusk": 0.004874527454376221,
+    "dcka_drift@backbone:dawn/dusk": 0.004900588490124536,
+    "cka_drift@backbone:night": 0.021759748458862305,
+    "dcka_drift@backbone:night": 0.022109865862019795
+  },
+  "features/mae_o0.0_walk/s4/step00059.pt": {
+    "cka_drift@backbone:daytime": 0.004040718078613281,
+    "dcka_drift@backbone:daytime": 0.004071469004370276,
+    "cka_drift@backbone:dawn/dusk": 0.0037509799003601074,
+    "dcka_drift@backbone:dawn/dusk": 0.0037699057541670244,
+    "cka_drift@backbone:night": 0.017830193042755127,
+    "dcka_drift@backbone:night": 0.01812166886429445
+  },
+  "features/mae_o0.0_walk/s4/step00060.pt": {
+    "cka_drift@backbone:daytime": 0.004030823707580566,
+    "dcka_drift@backbone:daytime": 0.0040606251698336315,
+    "cka_drift@backbone:dawn/dusk": 0.003930330276489258,
+    "dcka_drift@backbone:dawn/dusk": 0.003946973630520434,
+    "cka_drift@backbone:night": 0.013670802116394043,
+    "dcka_drift@backbone:night": 0.013885646402123752
+  },
+  "features/mae_o0.0_walk/s4/step00062.pt": {
+    "cka_drift@backbone:daytime": 0.0033096671104431152,
+    "dcka_drift@backbone:daytime": 0.0033459509414535127,
+    "cka_drift@backbone:dawn/dusk": 0.0031502246856689453,
+    "dcka_drift@backbone:dawn/dusk": 0.0031637819674308343,
+    "cka_drift@backbone:night": 0.0032640695571899414,
+    "dcka_drift@backbone:night": 0.0033323398430123996
+  },
+  "features/mae_o0.0_walk/s4/step00063.pt": {
+    "cka_drift@backbone:daytime": 0.003351747989654541,
+    "dcka_drift@backbone:daytime": 0.003379503544861495,
+    "cka_drift@backbone:dawn/dusk": 0.0029774904251098633,
+    "dcka_drift@backbone:dawn/dusk": 0.0029949301798030126,
+    "cka_drift@backbone:night": 0.009514927864074707,
+    "dcka_drift@backbone:night": 0.00968506018915627
+  },
+  "features/mae_o0.0_walk/s4/step00064.pt": {
+    "cka_drift@backbone:daytime": 0.0048378705978393555,
+    "dcka_drift@backbone:daytime": 0.004855421308566199,
+    "cka_drift@backbone:dawn/dusk": 0.004716277122497559,
+    "dcka_drift@backbone:dawn/dusk": 0.004750776310871063,
+    "cka_drift@backbone:night": 0.02855825424194336,
+    "dcka_drift@backbone:night": 0.02906980769290557
+  },
+  "features/mae_o0.0_walk/s4/step00065.pt": {
+    "cka_drift@backbone:daytime": 0.0048378705978393555,
+    "dcka_drift@backbone:daytime": 0.004855421308566199,
+    "cka_drift@backbone:dawn/dusk": 0.004716277122497559,
+    "dcka_drift@backbone:dawn/dusk": 0.004750776310871063,
+    "cka_drift@backbone:night": 0.02855825424194336,
+    "dcka_drift@backbone:night": 0.02906980769290557
+  },
+  "features/mae_o0.0_walk/s4/step00108.pt": {
+    "cka_drift@backbone:daytime": 0.005311787128448486,
+    "dcka_drift@backbone:daytime": 0.005293590462647102,
+    "cka_drift@backbone:dawn/dusk": 0.00580984354019165,
+    "dcka_drift@backbone:dawn/dusk": 0.005808091778247926,
+    "cka_drift@backbone:night": 0.004214167594909668,
+    "dcka_drift@backbone:night": 0.004305999699937391
+  },
+  "features/mae_o0.0_walk/s4/step00109.pt": {
+    "cka_drift@backbone:daytime": 0.005042135715484619,
+    "dcka_drift@backbone:daytime": 0.005031641589946068,
+    "cka_drift@backbone:dawn/dusk": 0.005561232566833496,
+    "dcka_drift@backbone:dawn/dusk": 0.0055630905826468124,
+    "cka_drift@backbone:night": 0.00799703598022461,
+    "dcka_drift@backbone:night": 0.008168747489574857
+  },
+  "features/mae_o0.0_walk/s4/step00110.pt": {
+    "cka_drift@backbone:daytime": 0.004875600337982178,
+    "dcka_drift@backbone:daytime": 0.004866584749861902,
+    "cka_drift@backbone:dawn/dusk": 0.005230724811553955,
+    "dcka_drift@backbone:dawn/dusk": 0.005230906735902985,
+    "cka_drift@backbone:night": 0.009295225143432617,
+    "dcka_drift@backbone:night": 0.009487255409792894
+  },
+  "features/mae_o0.0_walk/s4/step00114.pt": {
+    "cka_drift@backbone:daytime": 0.004807710647583008,
+    "dcka_drift@backbone:daytime": 0.004802196708161399,
+    "cka_drift@backbone:dawn/dusk": 0.003607332706451416,
+    "dcka_drift@backbone:dawn/dusk": 0.0036089826618296295,
+    "cka_drift@backbone:night": 0.004361569881439209,
+    "dcka_drift@backbone:night": 0.004446046439563478
+  },
+  "features/mae_o0.0_walk/s4/step00118.pt": {
+    "cka_drift@backbone:daytime": 0.00399249792098999,
+    "dcka_drift@backbone:daytime": 0.004001908658922915,
+    "cka_drift@backbone:dawn/dusk": 0.003123164176940918,
+    "dcka_drift@backbone:dawn/dusk": 0.003124969611814632,
+    "cka_drift@backbone:night": 0.010111689567565918,
+    "dcka_drift@backbone:night": 0.010336480301411544
+  },
+  "features/mae_o0.0_walk/s4/final.pt": {
+    "cka_drift@backbone:daytime": 0.00393986701965332,
+    "dcka_drift@backbone:daytime": 0.003951392496162165,
+    "cka_drift@backbone:dawn/dusk": 0.0032706856727600098,
+    "dcka_drift@backbone:dawn/dusk": 0.0032729270508711217,
+    "cka_drift@backbone:night": 0.02035057544708252,
+    "dcka_drift@backbone:night": 0.020811779715463663
+  },
+  "features/mae_iid_noise0.3/s0/final.pt": {
+    "cka_drift@backbone:daytime": 0.004633307456970215,
+    "dcka_drift@backbone:daytime": 0.004656661498152581,
+    "cka_drift@backbone:dawn/dusk": 0.003399670124053955,
+    "dcka_drift@backbone:dawn/dusk": 0.0034077132087753093,
+    "cka_drift@backbone:night": 0.008619248867034912,
+    "dcka_drift@backbone:night": 0.00869334187400661
+  },
+  "features/mae_iid_noise0.3/s0/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.008839070796966553,
+    "dcka_drift@backbone:daytime": 0.008873803684487092,
+    "cka_drift@backbone:dawn/dusk": 0.007143735885620117,
+    "dcka_drift@backbone:dawn/dusk": 0.007146830745329735,
+    "cka_drift@backbone:night": 0.010268449783325195,
+    "dcka_drift@backbone:night": 0.010481862276951137
+  },
+  "features/mae_iid_noise0.3/s1/final.pt": {
+    "cka_drift@backbone:daytime": 0.0077204108238220215,
+    "dcka_drift@backbone:daytime": 0.007767220370934247,
+    "cka_drift@backbone:dawn/dusk": 0.009846270084381104,
+    "dcka_drift@backbone:dawn/dusk": 0.0098924336736822,
+    "cka_drift@backbone:night": 0.07241863012313843,
+    "dcka_drift@backbone:night": 0.07367992979617166
+  },
+  "features/mae_iid_noise0.3/s1/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.010916471481323242,
+    "dcka_drift@backbone:daytime": 0.010977704230990426,
+    "cka_drift@backbone:dawn/dusk": 0.008426845073699951,
+    "dcka_drift@backbone:dawn/dusk": 0.008469727674517147,
+    "cka_drift@backbone:night": 0.06296789646148682,
+    "dcka_drift@backbone:night": 0.06422938549065305
+  },
+  "features/mae_iid_noise0.3/s2/final.pt": {
+    "cka_drift@backbone:daytime": 0.005068063735961914,
+    "dcka_drift@backbone:daytime": 0.0051159080496688825,
+    "cka_drift@backbone:dawn/dusk": 0.00578761100769043,
+    "dcka_drift@backbone:dawn/dusk": 0.005811042213722084,
+    "cka_drift@backbone:night": 0.013682186603546143,
+    "dcka_drift@backbone:night": 0.013930681158844771
+  },
+  "features/mae_iid_noise0.3/s2/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.007351338863372803,
+    "dcka_drift@backbone:daytime": 0.00741137921070445,
+    "cka_drift@backbone:dawn/dusk": 0.007737219333648682,
+    "dcka_drift@backbone:dawn/dusk": 0.0077621437845939445,
+    "cka_drift@backbone:night": 0.03078228235244751,
+    "dcka_drift@backbone:night": 0.031172130833872935
+  },
+  "features/mae_iid_noise0.5/s0/final.pt": {
+    "cka_drift@backbone:daytime": 0.009676814079284668,
+    "dcka_drift@backbone:daytime": 0.00963064178125661,
+    "cka_drift@backbone:dawn/dusk": 0.008881211280822754,
+    "dcka_drift@backbone:dawn/dusk": 0.008892435942922994,
+    "cka_drift@backbone:night": 0.017838239669799805,
+    "dcka_drift@backbone:night": 0.01784466501775961
+  },
+  "features/mae_iid_noise0.5/s0/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.03405129909515381,
+    "dcka_drift@backbone:daytime": 0.03418717365650392,
+    "cka_drift@backbone:dawn/dusk": 0.02708953619003296,
+    "dcka_drift@backbone:dawn/dusk": 0.02714997276277975,
+    "cka_drift@backbone:night": 0.18564385175704956,
+    "dcka_drift@backbone:night": 0.19065400123255227
+  },
+  "features/mae_iid_noise0.5/s1/final.pt": {
+    "cka_drift@backbone:daytime": 0.012663841247558594,
+    "dcka_drift@backbone:daytime": 0.012729555183239594,
+    "cka_drift@backbone:dawn/dusk": 0.011037170886993408,
+    "dcka_drift@backbone:dawn/dusk": 0.011073287503007179,
+    "cka_drift@backbone:night": 0.02621668577194214,
+    "dcka_drift@backbone:night": 0.026393936297142373
+  },
+  "features/mae_iid_noise0.5/s1/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.04414522647857666,
+    "dcka_drift@backbone:daytime": 0.044550417853396085,
+    "cka_drift@backbone:dawn/dusk": 0.03477835655212402,
+    "dcka_drift@backbone:dawn/dusk": 0.03489570390538044,
+    "cka_drift@backbone:night": 0.13295769691467285,
+    "dcka_drift@backbone:night": 0.13344554662155184
+  },
+  "features/mae_iid_noise0.5/s2/final.pt": {
+    "cka_drift@backbone:daytime": 0.0101432204246521,
+    "dcka_drift@backbone:daytime": 0.010144389668313991,
+    "cka_drift@backbone:dawn/dusk": 0.010090529918670654,
+    "dcka_drift@backbone:dawn/dusk": 0.010119486633619168,
+    "cka_drift@backbone:night": 0.015947937965393066,
+    "dcka_drift@backbone:night": 0.016159969228337623
+  },
+  "features/mae_iid_noise0.5/s2/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.03393113613128662,
+    "dcka_drift@backbone:daytime": 0.03419435434169593,
+    "cka_drift@backbone:dawn/dusk": 0.031453728675842285,
+    "dcka_drift@backbone:dawn/dusk": 0.03157539666626996,
+    "cka_drift@backbone:night": 0.07183408737182617,
+    "dcka_drift@backbone:night": 0.07235810885267957
+  },
+  "features/mae_iid_noise0.75/s0/final.pt": {
+    "cka_drift@backbone:daytime": 0.025668025016784668,
+    "dcka_drift@backbone:daytime": 0.025563089604759615,
+    "cka_drift@backbone:dawn/dusk": 0.024680674076080322,
+    "dcka_drift@backbone:dawn/dusk": 0.02470369613390022,
+    "cka_drift@backbone:night": 0.04627394676208496,
+    "dcka_drift@backbone:night": 0.04701160960319384
+  },
+  "features/mae_iid_noise0.75/s0/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.14744162559509277,
+    "dcka_drift@backbone:daytime": 0.14825328360023715,
+    "cka_drift@backbone:dawn/dusk": 0.14066237211227417,
+    "dcka_drift@backbone:dawn/dusk": 0.14066869404484184,
+    "cka_drift@backbone:night": 0.5140510499477386,
+    "dcka_drift@backbone:night": 0.5257895708381248
+  },
+  "features/mae_iid_noise0.75/s1/final.pt": {
+    "cka_drift@backbone:daytime": 0.03173702955245972,
+    "dcka_drift@backbone:daytime": 0.03192887375770803,
+    "cka_drift@backbone:dawn/dusk": 0.030632317066192627,
+    "dcka_drift@backbone:dawn/dusk": 0.03066794791491556,
+    "cka_drift@backbone:night": 0.07534348964691162,
+    "dcka_drift@backbone:night": 0.07581380025518003
+  },
+  "features/mae_iid_noise0.75/s1/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.13889086246490479,
+    "dcka_drift@backbone:daytime": 0.13967830607180975,
+    "cka_drift@backbone:dawn/dusk": 0.13267284631729126,
+    "dcka_drift@backbone:dawn/dusk": 0.13254017019369535,
+    "cka_drift@backbone:night": 0.45766568183898926,
+    "dcka_drift@backbone:night": 0.47231393323257587
+  },
+  "features/mae_iid_noise0.75/s2/final.pt": {
+    "cka_drift@backbone:daytime": 0.02239614725112915,
+    "dcka_drift@backbone:daytime": 0.022436834985413268,
+    "cka_drift@backbone:dawn/dusk": 0.020741701126098633,
+    "dcka_drift@backbone:dawn/dusk": 0.020737746076394226,
+    "cka_drift@backbone:night": 0.04698103666305542,
+    "dcka_drift@backbone:night": 0.0464654779137853
+  },
+  "features/mae_iid_noise0.75/s2/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.12941402196884155,
+    "dcka_drift@backbone:daytime": 0.13004645372168433,
+    "cka_drift@backbone:dawn/dusk": 0.10247772932052612,
+    "dcka_drift@backbone:dawn/dusk": 0.10288706862047847,
+    "cka_drift@backbone:night": 0.31027281284332275,
+    "dcka_drift@backbone:night": 0.31743532753104986
+  },
+  "features/mae_iid_noise1.0/s0/final.pt": {
+    "cka_drift@backbone:daytime": 0.061171770095825195,
+    "dcka_drift@backbone:daytime": 0.06116935139822266,
+    "cka_drift@backbone:dawn/dusk": 0.05797016620635986,
+    "dcka_drift@backbone:dawn/dusk": 0.057949096197938754,
+    "cka_drift@backbone:night": 0.19703519344329834,
+    "dcka_drift@backbone:night": 0.19735649110425302
+  },
+  "features/mae_iid_noise1.0/s0/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.32611173391342163,
+    "dcka_drift@backbone:daytime": 0.3298089949125519,
+    "cka_drift@backbone:dawn/dusk": 0.2730579972267151,
+    "dcka_drift@backbone:dawn/dusk": 0.2744259955327848,
+    "cka_drift@backbone:night": 0.6175697445869446,
+    "dcka_drift@backbone:night": 0.6322422572532027
+  },
+  "features/mae_iid_noise1.0/s1/final.pt": {
+    "cka_drift@backbone:daytime": 0.046936869621276855,
+    "dcka_drift@backbone:daytime": 0.046964894859426565,
+    "cka_drift@backbone:dawn/dusk": 0.038699209690093994,
+    "dcka_drift@backbone:dawn/dusk": 0.03868841242004639,
+    "cka_drift@backbone:night": 0.12484294176101685,
+    "dcka_drift@backbone:night": 0.1251550940521704
+  },
+  "features/mae_iid_noise1.0/s1/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.3260427713394165,
+    "dcka_drift@backbone:daytime": 0.3298088842686412,
+    "cka_drift@backbone:dawn/dusk": 0.28417885303497314,
+    "dcka_drift@backbone:dawn/dusk": 0.28576552253219745,
+    "cka_drift@backbone:night": 0.5692987442016602,
+    "dcka_drift@backbone:night": 0.5873059139333721
+  },
+  "features/mae_iid_noise1.0/s2/final.pt": {
+    "cka_drift@backbone:daytime": 0.04719573259353638,
+    "dcka_drift@backbone:daytime": 0.04667780454986936,
+    "cka_drift@backbone:dawn/dusk": 0.03364074230194092,
+    "dcka_drift@backbone:dawn/dusk": 0.033514462890894325,
+    "cka_drift@backbone:night": 0.09211772680282593,
+    "dcka_drift@backbone:night": 0.0935631433134011
+  },
+  "features/mae_iid_noise1.0/s2/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.24802875518798828,
+    "dcka_drift@backbone:daytime": 0.2500057362886028,
+    "cka_drift@backbone:dawn/dusk": 0.2111784815788269,
+    "dcka_drift@backbone:dawn/dusk": 0.21215186544431908,
+    "cka_drift@backbone:night": 0.4983409643173218,
+    "dcka_drift@backbone:night": 0.5143426857042013
+  },
+  "features/mae_iid_none/s0/final.pt": {
+    "cka_drift@backbone:daytime": 0.002643764019012451,
+    "dcka_drift@backbone:daytime": 0.002657222473698595,
+    "cka_drift@backbone:dawn/dusk": 0.0019654035568237305,
+    "dcka_drift@backbone:dawn/dusk": 0.001969776516061783,
+    "cka_drift@backbone:night": 0.004900455474853516,
+    "dcka_drift@backbone:night": 0.004939651090063335
+  },
+  "features/mae_iid_none/s1/final.pt": {
+    "cka_drift@backbone:daytime": 0.003113865852355957,
+    "dcka_drift@backbone:daytime": 0.0031085265801006345,
+    "cka_drift@backbone:dawn/dusk": 0.003629028797149658,
+    "dcka_drift@backbone:dawn/dusk": 0.003644597602347477,
+    "cka_drift@backbone:night": 0.035907208919525146,
+    "dcka_drift@backbone:night": 0.036818708012730794
+  },
+  "features/mae_iid_none/s2/final.pt": {
+    "cka_drift@backbone:daytime": 0.0032845139503479004,
+    "dcka_drift@backbone:daytime": 0.0033014779623257162,
+    "cka_drift@backbone:dawn/dusk": 0.003388524055480957,
+    "dcka_drift@backbone:dawn/dusk": 0.003394504581368918,
+    "cka_drift@backbone:night": 0.011830925941467285,
+    "dcka_drift@backbone:night": 0.012147804410608809
+  },
+  "features/mae_iid_reinit12/s0/final.pt": {
+    "cka_drift@backbone:daytime": 0.07751888036727905,
+    "dcka_drift@backbone:daytime": 0.07713263882146149,
+    "cka_drift@backbone:dawn/dusk": 0.06885939836502075,
+    "dcka_drift@backbone:dawn/dusk": 0.06866768152228198,
+    "cka_drift@backbone:night": 0.18138742446899414,
+    "dcka_drift@backbone:night": 0.1824228608052737
+  },
+  "features/mae_iid_reinit12/s0/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.138297438621521,
+    "dcka_drift@backbone:daytime": 0.13921694330384338,
+    "cka_drift@backbone:dawn/dusk": 0.13631397485733032,
+    "dcka_drift@backbone:dawn/dusk": 0.13626577713170573,
+    "cka_drift@backbone:night": 0.34632283449172974,
+    "dcka_drift@backbone:night": 0.3514907771493687
+  },
+  "features/mae_iid_reinit12/s1/final.pt": {
+    "cka_drift@backbone:daytime": 0.10155230760574341,
+    "dcka_drift@backbone:daytime": 0.10132957257281294,
+    "cka_drift@backbone:dawn/dusk": 0.1396196484565735,
+    "dcka_drift@backbone:dawn/dusk": 0.13941123981807801,
+    "cka_drift@backbone:night": 0.614849179983139,
+    "dcka_drift@backbone:night": 0.6149235333075169
+  },
+  "features/mae_iid_reinit12/s1/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.20462477207183838,
+    "dcka_drift@backbone:daytime": 0.2066851368046373,
+    "cka_drift@backbone:dawn/dusk": 0.19635212421417236,
+    "dcka_drift@backbone:dawn/dusk": 0.19773093766442995,
+    "cka_drift@backbone:night": 0.41220158338546753,
+    "dcka_drift@backbone:night": 0.41418407845614535
+  },
+  "features/mae_iid_reinit12/s2/final.pt": {
+    "cka_drift@backbone:daytime": 0.10419100522994995,
+    "dcka_drift@backbone:daytime": 0.10354784324870514,
+    "cka_drift@backbone:dawn/dusk": 0.11986356973648071,
+    "dcka_drift@backbone:dawn/dusk": 0.11959173665514333,
+    "cka_drift@backbone:night": 0.36933964490890503,
+    "dcka_drift@backbone:night": 0.3490543923105509
+  },
+  "features/mae_iid_reinit12/s2/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.22647452354431152,
+    "dcka_drift@backbone:daytime": 0.22895546964974023,
+    "cka_drift@backbone:dawn/dusk": 0.22913217544555664,
+    "dcka_drift@backbone:dawn/dusk": 0.2308714245354624,
+    "cka_drift@backbone:night": 0.47079676389694214,
+    "dcka_drift@backbone:night": 0.4794811024976896
+  },
+  "features/mae_iid_reinit4/s0/final.pt": {
+    "cka_drift@backbone:daytime": 0.013967454433441162,
+    "dcka_drift@backbone:daytime": 0.013895143327851467,
+    "cka_drift@backbone:dawn/dusk": 0.008249998092651367,
+    "dcka_drift@backbone:dawn/dusk": 0.00823287748742485,
+    "cka_drift@backbone:night": 0.009089529514312744,
+    "dcka_drift@backbone:night": 0.00919419420761114
+  },
+  "features/mae_iid_reinit4/s0/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.01482534408569336,
+    "dcka_drift@backbone:daytime": 0.014721837007390937,
+    "cka_drift@backbone:dawn/dusk": 0.009164512157440186,
+    "dcka_drift@backbone:dawn/dusk": 0.009128103983726987,
+    "cka_drift@backbone:night": 0.02109503746032715,
+    "dcka_drift@backbone:night": 0.021392808126982188
+  },
+  "features/mae_iid_reinit4/s1/final.pt": {
+    "cka_drift@backbone:daytime": 0.01581031084060669,
+    "dcka_drift@backbone:daytime": 0.01573382307977922,
+    "cka_drift@backbone:dawn/dusk": 0.01047295331954956,
+    "dcka_drift@backbone:dawn/dusk": 0.010485111618368292,
+    "cka_drift@backbone:night": 0.021748363971710205,
+    "dcka_drift@backbone:night": 0.022101527893117257
+  },
+  "features/mae_iid_reinit4/s1/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.012440681457519531,
+    "dcka_drift@backbone:daytime": 0.012351362046081338,
+    "cka_drift@backbone:dawn/dusk": 0.007718503475189209,
+    "dcka_drift@backbone:dawn/dusk": 0.007713271837882174,
+    "cka_drift@backbone:night": 0.011415243148803711,
+    "dcka_drift@backbone:night": 0.011509732210722157
+  },
+  "features/mae_iid_reinit4/s2/final.pt": {
+    "cka_drift@backbone:daytime": 0.01449352502822876,
+    "dcka_drift@backbone:daytime": 0.014483806626927498,
+    "cka_drift@backbone:dawn/dusk": 0.010428011417388916,
+    "dcka_drift@backbone:dawn/dusk": 0.010433395814002044,
+    "cka_drift@backbone:night": 0.027993619441986084,
+    "dcka_drift@backbone:night": 0.028370198800847457
+  },
+  "features/mae_iid_reinit4/s2/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.013226807117462158,
+    "dcka_drift@backbone:daytime": 0.01318002385304684,
+    "cka_drift@backbone:dawn/dusk": 0.008036434650421143,
+    "dcka_drift@backbone:dawn/dusk": 0.007998111630156846,
+    "cka_drift@backbone:night": 0.019289255142211914,
+    "dcka_drift@backbone:night": 0.019550522142944504
+  },
+  "features/mae_walk_noise0.3/s0/final.pt": {
+    "cka_drift@backbone:daytime": 0.014462172985076904,
+    "dcka_drift@backbone:daytime": 0.014454097111383568,
+    "cka_drift@backbone:dawn/dusk": 0.011148631572723389,
+    "dcka_drift@backbone:dawn/dusk": 0.011169618644349844,
+    "cka_drift@backbone:night": 0.008456230163574219,
+    "dcka_drift@backbone:night": 0.008534999962563572
+  },
+  "features/mae_walk_noise0.3/s0/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.015673816204071045,
+    "dcka_drift@backbone:daytime": 0.015821822571440047,
+    "cka_drift@backbone:dawn/dusk": 0.011996924877166748,
+    "dcka_drift@backbone:dawn/dusk": 0.012028395633047584,
+    "cka_drift@backbone:night": 0.01749885082244873,
+    "dcka_drift@backbone:night": 0.017844918224019235
+  },
+  "features/mae_walk_noise0.3/s1/final.pt": {
+    "cka_drift@backbone:daytime": 0.007418334484100342,
+    "dcka_drift@backbone:daytime": 0.007481435438774109,
+    "cka_drift@backbone:dawn/dusk": 0.006460905075073242,
+    "dcka_drift@backbone:dawn/dusk": 0.006487986386436884,
+    "cka_drift@backbone:night": 0.04010021686553955,
+    "dcka_drift@backbone:night": 0.040891501210431946
+  },
+  "features/mae_walk_noise0.3/s1/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.010039925575256348,
+    "dcka_drift@backbone:daytime": 0.010111086277904135,
+    "cka_drift@backbone:dawn/dusk": 0.008049309253692627,
+    "dcka_drift@backbone:dawn/dusk": 0.008084985325711336,
+    "cka_drift@backbone:night": 0.036045193672180176,
+    "dcka_drift@backbone:night": 0.03611521838747955
+  },
+  "features/mae_walk_noise0.3/s2/final.pt": {
+    "cka_drift@backbone:daytime": 0.00890582799911499,
+    "dcka_drift@backbone:daytime": 0.008847811741421685,
+    "cka_drift@backbone:dawn/dusk": 0.008219480514526367,
+    "dcka_drift@backbone:dawn/dusk": 0.008247530389282831,
+    "cka_drift@backbone:night": 0.04087191820144653,
+    "dcka_drift@backbone:night": 0.041484910536962905
+  },
+  "features/mae_walk_noise0.3/s2/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.006507158279418945,
+    "dcka_drift@backbone:daytime": 0.00656460330047981,
+    "cka_drift@backbone:dawn/dusk": 0.008699893951416016,
+    "dcka_drift@backbone:dawn/dusk": 0.008714664319366405,
+    "cka_drift@backbone:night": 0.025425970554351807,
+    "dcka_drift@backbone:night": 0.02554867716242326
+  },
+  "features/mae_walk_noise0.5/s0/final.pt": {
+    "cka_drift@backbone:daytime": 0.028635919094085693,
+    "dcka_drift@backbone:daytime": 0.028656571527471253,
+    "cka_drift@backbone:dawn/dusk": 0.027767181396484375,
+    "dcka_drift@backbone:dawn/dusk": 0.02789044250922168,
+    "cka_drift@backbone:night": 0.021700561046600342,
+    "dcka_drift@backbone:night": 0.021958530216551808
+  },
+  "features/mae_walk_noise0.5/s0/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.04384124279022217,
+    "dcka_drift@backbone:daytime": 0.044025773250504385,
+    "cka_drift@backbone:dawn/dusk": 0.034235239028930664,
+    "dcka_drift@backbone:dawn/dusk": 0.034271230047817514,
+    "cka_drift@backbone:night": 0.1567886471748352,
+    "dcka_drift@backbone:night": 0.16087863748748354
+  },
+  "features/mae_walk_noise0.5/s1/final.pt": {
+    "cka_drift@backbone:daytime": 0.028603434562683105,
+    "dcka_drift@backbone:daytime": 0.028713856691810702,
+    "cka_drift@backbone:dawn/dusk": 0.023090720176696777,
+    "dcka_drift@backbone:dawn/dusk": 0.02323308094926546,
+    "cka_drift@backbone:night": 0.04783254861831665,
+    "dcka_drift@backbone:night": 0.04818211395520744
+  },
+  "features/mae_walk_noise0.5/s1/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.04538172483444214,
+    "dcka_drift@backbone:daytime": 0.04569336028419124,
+    "cka_drift@backbone:dawn/dusk": 0.03481245040893555,
+    "dcka_drift@backbone:dawn/dusk": 0.034811780519046986,
+    "cka_drift@backbone:night": 0.15302962064743042,
+    "dcka_drift@backbone:night": 0.15509537686783825
+  },
+  "features/mae_walk_noise0.5/s2/final.pt": {
+    "cka_drift@backbone:daytime": 0.02163916826248169,
+    "dcka_drift@backbone:daytime": 0.021543830964762534,
+    "cka_drift@backbone:dawn/dusk": 0.026318371295928955,
+    "dcka_drift@backbone:dawn/dusk": 0.026465616706887185,
+    "cka_drift@backbone:night": 0.0673256516456604,
+    "dcka_drift@backbone:night": 0.06803782818404391
+  },
+  "features/mae_walk_noise0.5/s2/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.03484731912612915,
+    "dcka_drift@backbone:daytime": 0.035097021478752266,
+    "cka_drift@backbone:dawn/dusk": 0.03414034843444824,
+    "dcka_drift@backbone:dawn/dusk": 0.034253252592363115,
+    "cka_drift@backbone:night": 0.10915786027908325,
+    "dcka_drift@backbone:night": 0.11136467648410753
+  },
+  "features/mae_walk_noise0.75/s0/final.pt": {
+    "cka_drift@backbone:daytime": 0.053929924964904785,
+    "dcka_drift@backbone:daytime": 0.053506587003799844,
+    "cka_drift@backbone:dawn/dusk": 0.047665178775787354,
+    "dcka_drift@backbone:dawn/dusk": 0.047846409770787024,
+    "cka_drift@backbone:night": 0.05389690399169922,
+    "dcka_drift@backbone:night": 0.05432357688571765
+  },
+  "features/mae_walk_noise0.75/s0/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.20017379522323608,
+    "dcka_drift@backbone:daytime": 0.2013879821498924,
+    "cka_drift@backbone:dawn/dusk": 0.2163604497909546,
+    "dcka_drift@backbone:dawn/dusk": 0.21712781142253956,
+    "cka_drift@backbone:night": 0.5633803009986877,
+    "dcka_drift@backbone:night": 0.5758817969473427
+  },
+  "features/mae_walk_noise0.75/s1/final.pt": {
+    "cka_drift@backbone:daytime": 0.17475295066833496,
+    "dcka_drift@backbone:daytime": 0.17686807416589911,
+    "cka_drift@backbone:dawn/dusk": 0.13330644369125366,
+    "dcka_drift@backbone:dawn/dusk": 0.13430966349107554,
+    "cka_drift@backbone:night": 0.08591562509536743,
+    "dcka_drift@backbone:night": 0.08731143643992212
+  },
+  "features/mae_walk_noise0.75/s1/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.14245843887329102,
+    "dcka_drift@backbone:daytime": 0.1430099660993288,
+    "cka_drift@backbone:dawn/dusk": 0.15240013599395752,
+    "dcka_drift@backbone:dawn/dusk": 0.1521438390723463,
+    "cka_drift@backbone:night": 0.4304336905479431,
+    "dcka_drift@backbone:night": 0.4434966033994394
+  },
+  "features/mae_walk_noise0.75/s2/final.pt": {
+    "cka_drift@backbone:daytime": 0.13825398683547974,
+    "dcka_drift@backbone:daytime": 0.139539554145101,
+    "cka_drift@backbone:dawn/dusk": 0.08571803569793701,
+    "dcka_drift@backbone:dawn/dusk": 0.08626998828919541,
+    "cka_drift@backbone:night": 0.08167511224746704,
+    "dcka_drift@backbone:night": 0.08251920808577806
+  },
+  "features/mae_walk_noise0.75/s2/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.14175474643707275,
+    "dcka_drift@backbone:daytime": 0.14209838269720754,
+    "cka_drift@backbone:dawn/dusk": 0.15083760023117065,
+    "dcka_drift@backbone:dawn/dusk": 0.15155295095809918,
+    "cka_drift@backbone:night": 0.38328903913497925,
+    "dcka_drift@backbone:night": 0.3946335842827887
+  },
+  "features/mae_walk_noise1.0/s0/final.pt": {
+    "cka_drift@backbone:daytime": 0.501808375120163,
+    "dcka_drift@backbone:daytime": 0.5069047972183236,
+    "cka_drift@backbone:dawn/dusk": 0.4644993543624878,
+    "dcka_drift@backbone:dawn/dusk": 0.4665418981373797,
+    "cka_drift@backbone:night": 0.42438381910324097,
+    "dcka_drift@backbone:night": 0.42899095466239645
+  },
+  "features/mae_walk_noise1.0/s0/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.35468590259552,
+    "dcka_drift@backbone:daytime": 0.35878975368266963,
+    "cka_drift@backbone:dawn/dusk": 0.39268797636032104,
+    "dcka_drift@backbone:dawn/dusk": 0.3964160495775594,
+    "cka_drift@backbone:night": 0.6563558578491211,
+    "dcka_drift@backbone:night": 0.6726381714580361
+  },
+  "features/mae_walk_noise1.0/s1/final.pt": {
+    "cka_drift@backbone:daytime": 0.3403664231300354,
+    "dcka_drift@backbone:daytime": 0.3402381677987323,
+    "cka_drift@backbone:dawn/dusk": 0.2951873540878296,
+    "dcka_drift@backbone:dawn/dusk": 0.2958806731592494,
+    "cka_drift@backbone:night": 0.2751486897468567,
+    "dcka_drift@backbone:night": 0.2759971049834544
+  },
+  "features/mae_walk_noise1.0/s1/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.2931808829307556,
+    "dcka_drift@backbone:daytime": 0.296215819680991,
+    "cka_drift@backbone:dawn/dusk": 0.3257041573524475,
+    "dcka_drift@backbone:dawn/dusk": 0.3276256130078058,
+    "cka_drift@backbone:night": 0.6022988855838776,
+    "dcka_drift@backbone:night": 0.6191167308340437
+  },
+  "features/mae_walk_noise1.0/s2/final.pt": {
+    "cka_drift@backbone:daytime": 0.1811320185661316,
+    "dcka_drift@backbone:daytime": 0.18218736314408257,
+    "cka_drift@backbone:dawn/dusk": 0.14688408374786377,
+    "dcka_drift@backbone:dawn/dusk": 0.14724938827115408,
+    "cka_drift@backbone:night": 0.2191157341003418,
+    "dcka_drift@backbone:night": 0.21902644743817046
+  },
+  "features/mae_walk_noise1.0/s2/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.235321044921875,
+    "dcka_drift@backbone:daytime": 0.23664716674854913,
+    "cka_drift@backbone:dawn/dusk": 0.25818508863449097,
+    "dcka_drift@backbone:dawn/dusk": 0.25960880870738534,
+    "cka_drift@backbone:night": 0.579274982213974,
+    "dcka_drift@backbone:night": 0.5971405130897673
+  },
+  "features/mae_walk_none/s0/final.pt": {
+    "cka_drift@backbone:daytime": 0.007884025573730469,
+    "dcka_drift@backbone:daytime": 0.007868337531116931,
+    "cka_drift@backbone:dawn/dusk": 0.006709158420562744,
+    "dcka_drift@backbone:dawn/dusk": 0.006728931862178711,
+    "cka_drift@backbone:night": 0.01868581771850586,
+    "dcka_drift@backbone:night": 0.019165550857468294
+  },
+  "features/mae_walk_none/s1/final.pt": {
+    "cka_drift@backbone:daytime": 0.0021547675132751465,
+    "dcka_drift@backbone:daytime": 0.0021673315310253294,
+    "cka_drift@backbone:dawn/dusk": 0.0015925765037536621,
+    "dcka_drift@backbone:dawn/dusk": 0.0016000063029628642,
+    "cka_drift@backbone:night": 0.0028325319290161133,
+    "dcka_drift@backbone:night": 0.002865639538240816
+  },
+  "features/mae_walk_none/s2/final.pt": {
+    "cka_drift@backbone:daytime": 0.0035321712493896484,
+    "dcka_drift@backbone:daytime": 0.0035425530467892985,
+    "cka_drift@backbone:dawn/dusk": 0.0039460062980651855,
+    "dcka_drift@backbone:dawn/dusk": 0.0039586533068846075,
+    "cka_drift@backbone:night": 0.02078568935394287,
+    "dcka_drift@backbone:night": 0.02116256469494171
+  },
+  "features/mae_walk_reinit12/s0/final.pt": {
+    "cka_drift@backbone:daytime": 0.38761627674102783,
+    "dcka_drift@backbone:daytime": 0.3901729549906484,
+    "cka_drift@backbone:dawn/dusk": 0.38632845878601074,
+    "dcka_drift@backbone:dawn/dusk": 0.3877820091471599,
+    "cka_drift@backbone:night": 0.6370889842510223,
+    "dcka_drift@backbone:night": 0.5511837789469347
+  },
+  "features/mae_walk_reinit12/s0/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.15500634908676147,
+    "dcka_drift@backbone:daytime": 0.15619543934148883,
+    "cka_drift@backbone:dawn/dusk": 0.15067893266677856,
+    "dcka_drift@backbone:dawn/dusk": 0.1508447183777719,
+    "cka_drift@backbone:night": 0.3667125105857849,
+    "dcka_drift@backbone:night": 0.37302784734511274
+  },
+  "features/mae_walk_reinit12/s1/final.pt": {
+    "cka_drift@backbone:daytime": 0.6020667254924774,
+    "dcka_drift@backbone:daytime": 0.5936868076603963,
+    "cka_drift@backbone:dawn/dusk": 0.5426021218299866,
+    "dcka_drift@backbone:dawn/dusk": 0.5356738993615063,
+    "cka_drift@backbone:night": 0.8204970061779022,
+    "dcka_drift@backbone:night": 0.8346373877154486
+  },
+  "features/mae_walk_reinit12/s1/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.16628265380859375,
+    "dcka_drift@backbone:daytime": 0.16786627061473136,
+    "cka_drift@backbone:dawn/dusk": 0.16314697265625,
+    "dcka_drift@backbone:dawn/dusk": 0.16402286024451573,
+    "cka_drift@backbone:night": 0.4010459780693054,
+    "dcka_drift@backbone:night": 0.4051857387145449
+  },
+  "features/mae_walk_reinit12/s2/final.pt": {
+    "cka_drift@backbone:daytime": 0.3962191939353943,
+    "dcka_drift@backbone:daytime": 0.3972801181804423,
+    "cka_drift@backbone:dawn/dusk": 0.4229525327682495,
+    "dcka_drift@backbone:dawn/dusk": 0.42388854695048317,
+    "cka_drift@backbone:night": 0.7483645975589752,
+    "dcka_drift@backbone:night": 0.7625153128361332
+  },
+  "features/mae_walk_reinit12/s2/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.1962815523147583,
+    "dcka_drift@backbone:daytime": 0.1983868294458998,
+    "cka_drift@backbone:dawn/dusk": 0.19388091564178467,
+    "dcka_drift@backbone:dawn/dusk": 0.1951724037378919,
+    "cka_drift@backbone:night": 0.4139257073402405,
+    "dcka_drift@backbone:night": 0.41840841752717617
+  },
+  "features/mae_walk_reinit4/s0/final.pt": {
+    "cka_drift@backbone:daytime": 0.012846827507019043,
+    "dcka_drift@backbone:daytime": 0.012845131917031405,
+    "cka_drift@backbone:dawn/dusk": 0.010202407836914062,
+    "dcka_drift@backbone:dawn/dusk": 0.010214376733463704,
+    "cka_drift@backbone:night": 0.011682569980621338,
+    "dcka_drift@backbone:night": 0.011792989227070727
+  },
+  "features/mae_walk_reinit4/s0/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.015318512916564941,
+    "dcka_drift@backbone:daytime": 0.015273093602193422,
+    "cka_drift@backbone:dawn/dusk": 0.010320127010345459,
+    "dcka_drift@backbone:dawn/dusk": 0.010308131766807893,
+    "cka_drift@backbone:night": 0.011800169944763184,
+    "dcka_drift@backbone:night": 0.01199311300263528
+  },
+  "features/mae_walk_reinit4/s1/final.pt": {
+    "cka_drift@backbone:daytime": 0.012444913387298584,
+    "dcka_drift@backbone:daytime": 0.012429734591667185,
+    "cka_drift@backbone:dawn/dusk": 0.008796334266662598,
+    "dcka_drift@backbone:dawn/dusk": 0.008818821244624409,
+    "cka_drift@backbone:night": 0.011424839496612549,
+    "dcka_drift@backbone:night": 0.011549799603086774
+  },
+  "features/mae_walk_reinit4/s1/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.013128221035003662,
+    "dcka_drift@backbone:daytime": 0.013098699064069352,
+    "cka_drift@backbone:dawn/dusk": 0.008881092071533203,
+    "dcka_drift@backbone:dawn/dusk": 0.008877063272325292,
+    "cka_drift@backbone:night": 0.020633816719055176,
+    "dcka_drift@backbone:night": 0.020729306334713926
+  },
+  "features/mae_walk_reinit4/s2/final.pt": {
+    "cka_drift@backbone:daytime": 0.03896892070770264,
+    "dcka_drift@backbone:daytime": 0.03900480105807269,
+    "cka_drift@backbone:dawn/dusk": 0.03432309627532959,
+    "dcka_drift@backbone:dawn/dusk": 0.034434175821487334,
+    "cka_drift@backbone:night": 0.018658161163330078,
+    "dcka_drift@backbone:night": 0.01885807272354234
+  },
+  "features/mae_walk_reinit4/s2/post_damage.pt": {
+    "cka_drift@backbone:daytime": 0.01383209228515625,
+    "dcka_drift@backbone:daytime": 0.013814502928102823,
+    "cka_drift@backbone:dawn/dusk": 0.009187936782836914,
+    "dcka_drift@backbone:dawn/dusk": 0.009168330478264264,
+    "cka_drift@backbone:night": 0.028490900993347168,
+    "dcka_drift@backbone:night": 0.028677208931375597
+  }
+}

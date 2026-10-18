@@ -1,0 +1,79 @@
+encoder:
+  _target_: cafl4ds.models.vit_mae_pretrained.MAEPretrainedViTEncoder
+  state_dict_path: /mnt/cifar100/mae_pretrain_vit_base.pth
+  img_size: 224
+  patch_size: 16
+  embed_dim: 768
+  depth: 12
+  num_heads: 12
+  mlp_ratio: 4.0
+family: mae
+ssl:
+  _target_: cafl4ds.ssl.factory.build_mae
+  mask_ratio: 0.75
+  decoder_dim: 64
+  decoder_depth: 2
+  decoder_heads: 4
+  decoder_mlp_ratio: 2.0
+  norm_pix_loss: true
+monitor:
+  _target_: cafl4ds.monitor.HealthMonitor
+  knn_k: 20
+  run_knn: true
+  run_linear: true
+  run_alignment: true
+  align_seed: 0
+  drift_surfaces: false
+data:
+  _target_: cafl4ds.data.attributes.BDD100KSource
+  bdd_root: ${bdd_root}
+  split: val
+  img_size: ${img_size}
+  max_images: ${max_images}
+  min_canary_count: 50
+stream:
+  _target_: cafl4ds.data.regime.RegimeStream
+  source: ${data}
+  batch_size: ${batch_size}
+  block_size: null
+  support_per_canary: 45
+  query_per_canary: 45
+  max_train_per_regime: ${max_train_per_regime}
+  seed: ${seed}
+  canary_seed: 0
+  order: walk
+  stratify_canary: true
+  well_fraction: 0.5
+  well_overlap: 0.0
+  select_support_per_canary: 50
+  select_query_per_canary: 50
+optim:
+  _target_: torch.optim.AdamW
+  lr: 0.0001
+  weight_decay: 0.05
+init:
+  mode: from_scratch
+  checkpoint: null
+img_size: 224
+batch_size: 32
+seed: 0
+device: hpu
+bdd_root: /mnt/pr_2018_scaleout_workdir/bdd100k
+max_images: null
+max_train_per_regime: null
+warmup:
+  window: 20
+  tol: 0.001
+  min_steps: 40
+  max_steps: 3000
+  max_passes: 100
+  grad_clip: 1.0
+  stop: budget
+  select_every: 100
+  drive_read_per_class: 500
+  competence:
+    key: knn_acc
+    window: 500
+    min_gain: 0.01
+    min_steps: 1000
+well_out: outputs/p110_vitb_scout/wells/mae_vit_b16_mae_lr1e-4.pt

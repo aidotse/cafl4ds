@@ -1,0 +1,20 @@
+well_je_o0.0: warm well: 108 steps, plateaued=True, loss -0.3919 → -0.9466
+well_je_o0.0: well competence: knn_acc=0.395061731338501, linear_acc=0.44197529554367065
+well_je_o0.25: warm well: 111 steps, plateaued=True, loss -0.3260 → -0.9332
+well_je_o0.25: well competence: knn_acc=0.40740740299224854, linear_acc=0.4543209969997406
+well_je_o0.5: warm well: 107 steps, plateaued=True, loss -0.3909 → -0.9398
+well_je_o0.5: well competence: knn_acc=0.4000000059604645, linear_acc=0.4246913492679596
+well_je_o0.75: warm well: 108 steps, plateaued=True, loss -0.3730 → -0.9409
+well_je_o0.75: well competence: knn_acc=0.42222222685813904, linear_acc=0.41728395223617554
+well_je_o1.0: warm well: 110 steps, plateaued=True, loss -0.3881 → -0.9331
+well_je_o1.0: well competence: knn_acc=0.40246912837028503, linear_acc=0.43209877610206604
+well_mae_o0.0: warm well: 98 steps, plateaued=True, loss 1.0401 → 0.8775
+well_mae_o0.0: well competence: knn_acc=0.40740740299224854, linear_acc=0.43703705072402954
+well_mae_o0.25: warm well: 126 steps, plateaued=True, loss 1.0396 → 0.8677
+well_mae_o0.25: well competence: knn_acc=0.3629629611968994, linear_acc=0.42222222685813904
+well_mae_o0.5: warm well: 140 steps, plateaued=True, loss 1.0379 → 0.8624
+well_mae_o0.5: well competence: knn_acc=0.35061728954315186, linear_acc=0.42222222685813904
+well_mae_o0.75: warm well: 105 steps, plateaued=True, loss 1.0418 → 0.8773
+well_mae_o0.75: well competence: knn_acc=0.3728395104408264, linear_acc=0.43209877610206604
+well_mae_o1.0: warm well: 107 steps, plateaued=True, loss 1.0364 → 0.8720
+well_mae_o1.0: well competence: knn_acc=0.3629629611968994, linear_acc=0.42716050148010254

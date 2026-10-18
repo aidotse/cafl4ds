@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "study": "P1.1.1",
+  "backbone_family": "mae",
+  "config": {
+    "backbone": "mae",
+    "I": "from_scratch",
+    "warm": true,
+    "diet": "regime",
+    "order": "iid",
+    "block_size": null,
+    "stratified_canary": true,
+    "well_fraction": 0.5,
+    "well_overlap": 0.0,
+    "anchor": "wells/p110_deep/mae_o0.0.pt",
+    "familiarity": {
+      "well_side": 0.0,
+      "drive_side": 0.0
+    },
+    "n_probe_query": {
+      "pooled": 405,
+      "daytime": 135,
+      "dawn_dusk": 135,
+      "night": 135
+    },
+    "A": "AcceptAll",
+    "seed": 5,
+    "img_size": 224,
+    "device": "hpu",
+    "gate_arms": false,
+    "branch": null
+  },
+  "seeds": [
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "n_rows": 590,
+  "channels": {
+    "label_free": [
+      "alignment",
+      "cka_drift",
+      "cosine_drift",
+      "grad_norm",
+      "mean_feature_var",
+      "offdiag_cov",
+      "rankme",
+      "uniformity"
+    ],
+    "canary": [
+      "knn_acc",
+      "knn_acc_dawn_dusk",
+      "knn_acc_daytime",
+      "knn_acc_night",
+      "linear_acc",
+      "linear_acc_dawn_dusk",
+      "linear_acc_daytime",
+      "linear_acc_night"
+    ]
+  },
+  "tier_a_passed": {
+    "5": true,
+    "6": true,
+    "7": true,
+    "8": true,
+    "9": true
+  },
+  "tier_b_passed": {
+    "5": true,
+    "6": true,
+    "7": true,
+    "8": true,
+    "9": true
+  },
+  "git_sha": null,
+  "n_seeds": 5,
+  "warm": true,
+  "eval_every": 1
+}

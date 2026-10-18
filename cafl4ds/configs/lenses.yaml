@@ -1,0 +1,34 @@
+# P1.1.2 Stage 1 — screen the label-free readers against P1.1.1's damage branches (CPU, minutes).
+#
+#   uv run python scripts/analyze_lenses.py
+#
+# `features` holds scripts/extract_block_features.py's output per backbone ({bb} filled in): the well,
+# the P1.1.0 overlap-0 drives' leg checkpoints, and each P1.1.1 branch's post-damage and final states.
+features: outputs/p112/features_{bb}
+null_root: outputs/p110_deep
+root: outputs/p111
+backbones: [je, mae]
+# P1.1.1's report: which damage arms the canary called (fired on all 3 seeds) and which it never did.
+reading_report: ${root}/reading_report.json
+# The lenses' null: the 5 IID drives at their 18 leg checkpoints. One panel per lens (all its layers
+# share a threshold, so "any layer fired" holds alpha), pooled over +-span neighbouring checkpoints.
+alpha: 0.05
+span: 3
+floor: 0.25
+# The scalar instruments the corpus logs every step, each its own panel, on P1.1.1's 10 calibration
+# seeds (its span and floor) — every label-free one, loss and grad norm included: a damaged arm and its
+# twin see identical batches, so the diet confound P1.1.1 excluded them for cancels in the twin read.
+scalars:
+  calibration: ["${null_root}/warm/{bb}_o0.0_iid", "${root}/heldout/{bb}_iid"]
+  span: 15
+  signals:
+    je: [rankme_proj, uniformity_proj, cka_drift_proj, cosine_drift_proj, alignment_proj, mean_feature_var_proj,
+      offdiag_cov_proj, rankme, uniformity, cka_drift, cosine_drift, mean_feature_var, offdiag_cov, loss, grad_norm]
+    mae: [rankme, uniformity, cka_drift, cosine_drift, alignment, mean_feature_var, offdiag_cov, loss, grad_norm]
+batch_size: 32
+min_batch: 8
+canary: linear_acc # the per-seed dent the readers are ranked against
+canary_window: 5 # end-of-drive canary: the mean of the last readings (P1.1.1's smoothing)
+dose0: none
+workers: 12
+out: outputs/p112/lens_report.json
