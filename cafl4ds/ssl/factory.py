@@ -30,6 +30,7 @@ def build_mae(
     decoder_heads: int = 4,
     decoder_mlp_ratio: float = 2.0,
     norm_pix_loss: bool = True,
+    aux_weight: float = 0.01,
 ) -> MAE:
     """Build an :class:`~cafl4ds.ssl.mae.MAE` with a decoder sized to the encoder.
 
@@ -41,6 +42,7 @@ def build_mae(
         decoder_heads: Attention heads per decoder block (must divide ``decoder_dim``).
         decoder_mlp_ratio: Decoder MLP hidden width as a multiple of ``decoder_dim``.
         norm_pix_loss: Whether to per-patch normalize the reconstruction targets.
+        aux_weight: Coefficient for the encoder's batch balancing loss.
 
     Returns:
         The assembled MAE method.
@@ -55,7 +57,7 @@ def build_mae(
         num_heads=decoder_heads,
         mlp_ratio=decoder_mlp_ratio,
     )
-    return MAE(encoder, decoder, mask_ratio=mask_ratio, norm_pix_loss=norm_pix_loss)
+    return MAE(encoder, decoder, mask_ratio=mask_ratio, norm_pix_loss=norm_pix_loss, aux_weight=aux_weight)
 
 
 def build_simsiam(
@@ -68,6 +70,7 @@ def build_simsiam(
     stopgrad_beta: float = 1.0,
     aug_min_scale: float = 0.4,
     aug_jitter_strength: float = 1.0,
+    aux_weight: float = 0.01,
 ) -> SimSiam:
     """Build a :class:`~cafl4ds.ssl.simsiam.SimSiam` with heads sized to the encoder.
 
@@ -86,6 +89,7 @@ def build_simsiam(
             P0.2.x augmentation, and the P0.2.4 heavy-augmentation stressor lowers this.
         aug_jitter_strength: ColorJitter magnitude multiplier (``1.0`` = published strength); the
             P0.2.4 heavy-augmentation stressor raises this.
+        aux_weight: Coefficient for the mean encoder balancing loss of both views.
 
     Returns:
         The assembled SimSiam method.
@@ -101,6 +105,7 @@ def build_simsiam(
         anti_collapse=anti_collapse,
         collapse_alpha=collapse_alpha,
         stopgrad_beta=stopgrad_beta,
+        aux_weight=aux_weight,
     )
 
 
@@ -112,6 +117,7 @@ def build_barlow(
     anti_collapse: bool = True,
     aug_min_scale: float = 0.4,
     aug_jitter_strength: float = 1.0,
+    aux_weight: float = 0.01,
 ) -> BarlowTwins:
     """Build a :class:`~cafl4ds.ssl.barlow.BarlowTwins` with a projector sized to the encoder.
 
@@ -128,10 +134,13 @@ def build_barlow(
         aug_min_scale: Random-resized-crop lower area bound (defaults reproduce the certified
             P0.2.x augmentation).
         aug_jitter_strength: ColorJitter magnitude multiplier (``1.0`` = published strength).
+        aux_weight: Coefficient for the mean encoder balancing loss of both views.
 
     Returns:
         The assembled Barlow Twins method.
     """
     projector = MLPHead(encoder.embed_dim, proj_hidden, proj_dim, num_layers=3, last_bn=True)
     augment = make_ssl_augment(_encoder_img_size(encoder), min_scale=aug_min_scale, jitter_strength=aug_jitter_strength)
-    return BarlowTwins(encoder, projector, augment=augment, lambd=lambd, anti_collapse=anti_collapse)
+    return BarlowTwins(
+        encoder, projector, augment=augment, lambd=lambd, anti_collapse=anti_collapse, aux_weight=aux_weight
+    )

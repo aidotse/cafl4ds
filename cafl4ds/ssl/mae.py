@@ -31,6 +31,7 @@ class MAE(SSLMethod):
         mask_ratio: float = 0.75,
         norm_pix_loss: bool = True,
         augment: v2.Transform | None = None,
+        aux_weight: float = 0.01,
     ) -> None:
         """Build the MAE method.
 
@@ -42,8 +43,9 @@ class MAE(SSLMethod):
                 the reconstruction loss, as in the MAE paper (usually more stable).
             augment: Light spatial augmentation applied before masking; defaults to
                 :func:`~cafl4ds.ssl.augment.make_light_augment` sized to the encoder.
+            aux_weight: Coefficient for the encoder's batch balancing loss.
         """
-        super().__init__(encoder)
+        super().__init__(encoder, aux_weight=aux_weight)
         self.decoder = decoder
         self.mask_ratio = mask_ratio
         self.norm_pix_loss = norm_pix_loss
@@ -74,8 +76,8 @@ class MAE(SSLMethod):
             target = (target - mean) / (var + 1.0e-6).sqrt()
         return target
 
-    def _masked_recon_loss(self, imgs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
-        """Augment, mask, reconstruct, and return the per-patch loss and the mask.
+    def _masked_recon_loss(self, imgs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Augment, mask, reconstruct, and return per-patch loss, mask, and aux loss.
 
         Shared by :meth:`training_step` (mean over masked patches) and
         :meth:`per_sample_loss` (per-image mean over its masked patches). Masking is random,
@@ -85,16 +87,17 @@ class MAE(SSLMethod):
             imgs: A batch of raw images ``[B, C, H, W]``.
 
         Returns:
-            A ``(loss_per_patch, mask)`` pair, each ``[B, N]``; ``mask`` is 1 on masked
-            (reconstructed) patches and 0 on visible ones.
+            ``(loss_per_patch, mask, aux_loss)``; the first two are ``[B, N]`` and
+            the auxiliary loss is scalar. The mask is 1 on reconstructed patches.
         """
         views = self.augment(imgs)
-        latent, mask, ids_restore = self.encoder.forward_encoder(views, mask_ratio=self.mask_ratio)
+        result = self.encoder.forward_with_aux(views, mask_ratio=self.mask_ratio)
+        latent, mask, ids_restore = result.tokens, result.mask, result.ids_restore
         assert mask is not None and ids_restore is not None  # noqa: S101 - guaranteed by mask_ratio > 0
         pred = self.decoder(latent, ids_restore)
         target = self._reconstruction_target(views)
         loss_per_patch = (pred - target).pow(2).mean(dim=-1)  # [B, N]
-        return loss_per_patch, mask
+        return loss_per_patch, mask, result.aux_loss
 
     def training_step(self, imgs: torch.Tensor) -> torch.Tensor:
         """Compute the masked reconstruction loss on the masked patches only.
@@ -103,10 +106,11 @@ class MAE(SSLMethod):
             imgs: A batch of raw images ``[B, C, H, W]``.
 
         Returns:
-            The mean squared reconstruction error over masked patches (scalar).
+            Reconstruction loss plus weighted encoder balancing loss (scalar).
         """
-        loss_per_patch, mask = self._masked_recon_loss(imgs)
-        return cast(torch.Tensor, (loss_per_patch * mask).sum() / mask.sum().clamp_min(1.0))
+        loss_per_patch, mask, aux_loss = self._masked_recon_loss(imgs)
+        task_loss = (loss_per_patch * mask).sum() / mask.sum().clamp_min(1.0)
+        return self._with_aux_loss(cast(torch.Tensor, task_loss), aux_loss)
 
     def per_sample_loss(self, imgs: torch.Tensor) -> torch.Tensor:
         """Per-image masked reconstruction MSE ``[B]`` (no gradient).
@@ -121,7 +125,7 @@ class MAE(SSLMethod):
             A detached ``[B]`` tensor of per-image reconstruction errors.
         """
         with torch.no_grad():
-            loss_per_patch, mask = self._masked_recon_loss(imgs)
+            loss_per_patch, mask, _ = self._masked_recon_loss(imgs)
             per_image = (loss_per_patch * mask).sum(dim=-1) / mask.sum(dim=-1).clamp_min(1.0)
         return per_image
 
