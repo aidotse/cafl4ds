@@ -15,10 +15,12 @@ import zipfile
 from pathlib import Path
 from types import ModuleType
 
+import numpy as np
 import pytest
 import torch
 from hydra import compose, initialize_config_dir
 from hydra.core.global_hydra import GlobalHydra
+from hydra.utils import instantiate
 from omegaconf import DictConfig, OmegaConf
 
 from cafl4ds.measurements import rankme
@@ -446,3 +448,76 @@ def test_bdd_legacy_labels_merges_per_image_jsons_into_the_legacy_format(tmp_pat
     assert records == [{"name": "a.jpg", "attributes": attrs, "labels": [{"category": "bicycle", "box2d": {}}]}]
     check = script.compare(records, [{"name": "a.jpg", "attributes": attrs, "labels": [{"category": "bicycle"}]}])
     assert check["missing"] == check["attribute_mismatches"] == check["box_count_mismatches"] == 0
+
+
+def test_warm_well_freeze_encoder_trains_only_the_heads_then_resume_unfreezes(tmp_path: Path) -> None:
+    """P1.2's settled-head start: a frozen-encoder warm-up leaves the encoder bit-identical.
+
+    Resuming it with the encoder trainable then moves the encoder from exactly that state.
+    """
+    script = _load_script("warm_well")
+    heads = tmp_path / "heads.pt"
+    steps = ["warmup.window=2", "warmup.min_steps=2", "warmup.max_steps=4", "warmup.stop=budget"]
+    script.warm(_compose("warm_well", [*_P11_DIET, *steps, "warmup.freeze_encoder=true", f"well_out={heads}"]))
+    trace = json.loads(heads.with_suffix(".trace.json").read_text())
+    assert trace["encoder_unchanged"] is True
+    torch.manual_seed(0)  # warm() seeds from config.seed=0, so a fresh build reproduces the start
+    fresh = _compose("warm_well", [*_P11_DIET, f"well_out={tmp_path / 'x.pt'}"])
+    start = instantiate(fresh.ssl, encoder=instantiate(fresh.encoder)).state_dict()
+    settled = torch.load(heads)
+    enc = [k for k in start if k.startswith("encoder.")]
+    head = [k for k in start if not k.startswith("encoder.") and start[k].is_floating_point()]
+    assert all(torch.equal(start[k], settled[k]) for k in enc)
+    assert any(not torch.equal(start[k], settled[k]) for k in head)
+
+    resumed = tmp_path / "resumed.pt"
+    script.warm(_compose("warm_well", [*_P11_DIET, *steps, f"resume_well={heads}", f"well_out={resumed}"]))
+    moved = torch.load(resumed)
+    assert any(not torch.equal(settled[k], moved[k]) for k in enc)
+
+
+def test_read_adaptation_reads_the_ladder_and_saves_per_image_correctness(tmp_path: Path) -> None:
+    """The reader scores B5, a random init and a saved well on frozen + few-shot rungs, on both pools."""
+    well_out = tmp_path / "je_well.pt"
+    _load_script("warm_well").warm(_compose("warm_well", [*_P11_DIET, "warmup.max_steps=2", f"well_out={well_out}"]))
+    script = _load_script("read_adaptation")
+    encoders = [
+        "+encoders=[{name:b5,kind:pretrained},{name:rand,kind:random},"
+        f"{{name:well,kind:well,path:'{well_out}',fewshot:false}}]"
+    ]
+    common = [
+        *_P11_DIET,
+        "probe_per_class=6",
+        "fewshot.enabled=true",
+        "fewshot.ks=[2]",
+        "fewshot.draws=2",
+        "fewshot.steps=3",
+        "threads=1",
+        "~encoders",
+        *encoders,
+    ]
+    summary = script.run(_compose("read_adaptation", [*common, "pool.fit_fraction=0.5"]), tmp_path / "heldout")
+    assert set(summary["encoders"]) == {"b5", "rand", "well"}
+    b5 = np.load(tmp_path / "heldout" / "b5.npz")
+    pool = np.load(tmp_path / "heldout" / "pool.npz")
+    assert b5["scene|linear"].shape == (1, pool["query_index"].size)
+    assert b5["scene|ft2"].shape == (2, pool["query_index"].size)
+    assert "scene|ft2" not in np.load(tmp_path / "heldout" / "well.npz")
+    canary = script.run(_compose("read_adaptation", [*common, "pool.kind=canary"]), tmp_path / "canary")
+    assert canary["pool"]["n_fit"] == canary["pool"]["n_query"]
+
+    lr = script.run(
+        _compose(
+            "read_adaptation",
+            [
+                *common,
+                "mode=select_lr",
+                "fewshot.lr_grid=[1e-4,1e-3]",
+                "fewshot.select_k=2",
+                "fewshot.val_per_class=2",
+                "pool.fit_fraction=0.8",
+            ],
+        ),
+        tmp_path / "lr",
+    )
+    assert lr["best_lr"] in (1e-4, 1e-3)

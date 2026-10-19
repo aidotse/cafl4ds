@@ -32,6 +32,9 @@ warmup:
   max_steps: 2000 # hard cap on optimizer steps
   max_passes: 50 # cap on passes over the stationary pool
   grad_clip: 1.0
+  # P1.2: train only the SSL heads, the encoder frozen (verified bit-identical at the end) — settles
+  # fresh heads on an untouched pretrained encoder. Pair with stop=loss: nothing else is changing.
+  freeze_encoder: false
   # What stops the warm-up (P1.1.0): loss (the plateau above) | competence (the selection-set accuracy
   # plateau below — needs stream.select_*_per_canary > 0) | budget (run to max_steps: the scout).
   stop: loss
@@ -44,6 +47,9 @@ warmup:
     window: 500
     tol: 0.01
     min_steps: 1000
+
+# A saved well to continue from (P1.2.0: unfreeze a head-settled well); reserved like this run.
+resume_well: null
 
 # Where the well is written (resolved to an absolute path against the launch cwd, so it is reusable).
 well_out: wells/${family}_well.pt

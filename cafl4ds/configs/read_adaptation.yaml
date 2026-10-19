@@ -1,0 +1,62 @@
+# P1.2 readout ladder — score encoders (B5, a random init, wells, drive checkpoints) on a held-out pool:
+# frozen kNN / linear probes and a few-shot fine-tune, saved as per-image correctness for the
+# adapted-vs-frozen bootstrap (cafl4ds/adaptation.py). See scripts/read_adaptation.py.
+#
+#   uv run python scripts/read_adaptation.py data=bdd bdd_root=/abs/path encoder=vit_b16_mae img_size=224 \
+#     device=hpu backbone=mae encoders_file=encoders.yaml
+defaults:
+  - encoder: tiny
+  - backbone: je # the SSL family a `well` / `checkpoint` encoder was saved from
+  - data: attr_synthetic # attribute source: attr_synthetic | bdd
+  - stream: regime # only read with pool.kind=canary
+  - _self_
+
+img_size: 32
+batch_size: 32
+seed: 0
+device: cpu
+threads: 8 # torch + BLAS threads (cap them beside HPU jobs)
+
+bdd_root: /mnt/bdd100k
+max_images: null
+max_train_per_regime: null
+
+mode: read # read | select_lr | screen
+
+pool:
+  kind: heldout # heldout (frames no encoder trained on, split into fit / query) | canary (the stream's probes)
+  split: null # heldout: the BDD split to read (null = the data config's)
+  max_images: null # heldout: the first N attribute-valid frames
+  fit_fraction: 0.4
+  seed: 0 # the fit / query split, and the probe-fit subsample — fixed, so every encoder reads the same frames
+
+tasks: [scene] # scene | presence:<category> (e.g. "presence:traffic light")
+probe_per_class: 500 # each task's probes fit on this many fit-pool frames per class
+knn_k: 20
+
+fewshot:
+  enabled: false # per-encoder `fewshot:` in the encoder list overrides this
+  ks: [10, 100] # labels per class
+  draws: 3 # label draws per k (draw d = the same frames for every encoder)
+  lr: 3.0e-5 # the encoder's lr (fixed on B5 by mode=select_lr)
+  head_lr_mult: 10.0
+  weight_decay: 0.05
+  steps: 150
+  batch_size: 32
+  # mode=select_lr: the grid, scored on the first encoder at select_k against val_per_class reserved frames
+  lr_grid: [1.0e-5, 3.0e-5, 1.0e-4]
+  select_k: 100
+  select_task: scene
+  val_per_class: 200
+
+screen: # mode=screen (P1.2.0 part 4), on the first encoder (B5)
+  candidates: [traffic light, pedestrian, truck]
+  ceiling_per_class: 1500
+  ceiling_steps: 1900 # ~20 epochs over 2 x 1,500 frames at batch 32
+  max_overlap: 0.60 # eligible only if scene + time of day predict presence at most this well
+
+# The encoders: [{name, kind: pretrained | random | well | checkpoint, path?, fewshot?}], plus encoders_file.
+encoders:
+  - name: b5
+    kind: pretrained
+encoders_file: null
