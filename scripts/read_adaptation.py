@@ -184,7 +184,8 @@ def read(config: DictConfig, out_dir: Path) -> dict[str, Any]:
                 features, labels[task], sub, query, int(config.knn_k)
             ).items():
                 arrays[f"{task}|{rung}"] = correct[None, :]
-            if not spec.get("fewshot", bool(config.fewshot.enabled)):
+            ft_tasks = config.fewshot.get("tasks")
+            if not spec.get("fewshot", bool(config.fewshot.enabled)) or (ft_tasks is not None and task not in ft_tasks):
                 continue
             for k in config.fewshot.ks:
                 rows = []

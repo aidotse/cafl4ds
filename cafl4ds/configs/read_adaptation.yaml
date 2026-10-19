@@ -37,6 +37,7 @@ knn_k: 20
 fewshot:
   enabled: false # per-encoder `fewshot:` in the encoder list overrides this
   ks: [10, 100] # labels per class
+  tasks: null # the tasks to fine-tune on (null = every task; frozen rungs always read them all)
   draws: 3 # label draws per k (draw d = the same frames for every encoder)
   lr: 3.0e-5 # the encoder's lr (fixed on B5 by mode=select_lr)
   head_lr_mult: 10.0
