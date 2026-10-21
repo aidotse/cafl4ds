@@ -602,6 +602,8 @@ def test_analyze_adaptation_reads_p120_contrasts_and_the_p121_gate(tmp_path: Pat
                 "n_seeds": 3,
                 "backbones": ["je"],
                 "tasks": ["scene"],
+                "gate_tasks": ["scene"],
+                "alpha": 0.025,
                 "rungs": ["knn", "linear", "ft10", "ft100"],
                 "primary": {"je": "linear"},
                 "delta_floor": 0.02,

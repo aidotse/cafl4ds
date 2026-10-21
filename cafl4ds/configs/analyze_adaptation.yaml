@@ -14,8 +14,10 @@ backbones: [je, mae]
 pools: [ladder, canary]
 
 # p121 — the pre-registered gate (docs/experiments/phase1/P1.2.1.md)
-tasks: [scene] # scene + the presence task P1.2.0 chose — co-primary
+tasks: [scene, "presence:traffic light"] # every task read and reported
+gate_tasks: [scene] # the gate's tasks — P1.2.0's screen admitted no presence task, so scene alone
 rungs: [knn, linear, ft10, ft100]
 primary: { je: linear, mae: ft100 }
 delta_floor: 0.02
+alpha: 0.025 # family-wise one-sided level over the gate tasks (scene alone: p <= 0.025, P1.2.1)
 b5_name: b5 # the settled-head well: its encoder is the off-the-shelf B5, bit for bit

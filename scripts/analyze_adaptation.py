@@ -166,7 +166,12 @@ def p121(config: DictConfig, root: Path) -> dict[str, Any]:
                 )
                 if result is not None:
                     contrasts[task][rung] = result
-        gate = adaptation.gate_verdict(contrasts, str(config.primary[bb]), delta_floor=float(config.delta_floor))
+        gate = adaptation.gate_verdict(
+            {t: contrasts[t] for t in config.gate_tasks},
+            str(config.primary[bb]),
+            delta_floor=float(config.delta_floor),
+            alpha=float(config.alpha),
+        )
         # Δ(t): every walk checkpoint suffix (e.g. t00100, end), all rungs present
         suffixes = sorted(
             {m.group(1) for p in ladder.path.glob("walk_s*_*.npz") if (m := re.match(r"walk_s\d+_(\w+)\.npz", p.name))}
