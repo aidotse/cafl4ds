@@ -1,0 +1,40 @@
+{
+  "encoder": {
+    "name": "b5",
+    "kind": "pretrained"
+  },
+  "rule": {
+    "candidates": [
+      "traffic light",
+      "pedestrian",
+      "truck"
+    ],
+    "ceiling_per_class": 1500,
+    "ceiling_steps": 1900,
+    "max_overlap": 0.6
+  },
+  "candidates": {
+    "traffic light": {
+      "prevalence": 0.5631699299699872,
+      "overlap": 0.7095037698745728,
+      "b5_linear": 0.6743303537368774,
+      "ceiling": 0.8012040381997716,
+      "headroom": 0.12687368446289415
+    },
+    "pedestrian": {
+      "prevalence": 0.29326854366156924,
+      "overlap": 0.6756556034088135,
+      "b5_linear": 0.671630859375,
+      "ceiling": 0.7544190444483255,
+      "headroom": 0.08278818507332553
+    },
+    "truck": {
+      "prevalence": 0.2684007431756467,
+      "overlap": 0.6502173542976379,
+      "b5_linear": 0.5853938460350037,
+      "ceiling": 0.6648242153654832,
+      "headroom": 0.07943036933047953
+    }
+  },
+  "choice": null
+}

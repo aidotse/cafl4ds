@@ -1,0 +1,109 @@
+{
+  "encoder": {
+    "name": "b5",
+    "kind": "pretrained"
+  },
+  "rule": {
+    "reference": "scene",
+    "candidates": [
+      "weather",
+      "presence_cell:car",
+      "presence_cell:truck",
+      "presence_cell:pedestrian",
+      "presence_cell:traffic light"
+    ],
+    "ceiling_per_class": 1500,
+    "ceiling_steps": 1900,
+    "max_overlap": 0.6,
+    "min_headroom": 0.1
+  },
+  "tasks": {
+    "scene": {
+      "n_fit": 5565,
+      "n_query": 8347,
+      "class_share": {
+        "0": 0.6259734036180664,
+        "1": 0.26296873128069964,
+        "2": 0.11105786510123397
+      },
+      "overlap": 1.0,
+      "b5_knn": 0.5245459675788879,
+      "b5_linear": 0.610338032245636,
+      "b5_ft100": 0.6237234567315979,
+      "ceiling": 0.6746014743223524,
+      "headroom": 0.06426344207671641
+    },
+    "weather": {
+      "n_fit": 4307,
+      "n_query": 6449,
+      "class_share": {
+        "0": 0.7824468909908513,
+        "1": 0.10311676228872693,
+        "2": 0.11443634672042177
+      },
+      "overlap": 0.4023313522338867,
+      "b5_knn": 0.551638662815094,
+      "b5_linear": 0.7016230225563049,
+      "b5_ft100": 0.7470064417822578,
+      "ceiling": 0.8147077597030966,
+      "headroom": 0.11308473714679168
+    },
+    "presence_cell:car": {
+      "n_fit": 92,
+      "n_query": 172,
+      "class_share": {
+        "0": 0.5,
+        "1": 0.5
+      },
+      "overlap": 0.5,
+      "b5_knn": 0.49418604373931885,
+      "b5_linear": 0.6395348906517029,
+      "b5_ft100": 0.8255813953488372,
+      "ceiling": 0.8255813953488372,
+      "headroom": 0.18604650469713435
+    },
+    "presence_cell:truck": {
+      "n_fit": 3038,
+      "n_query": 4444,
+      "class_share": {
+        "0": 0.5,
+        "1": 0.5
+      },
+      "overlap": 0.5,
+      "b5_knn": 0.5218271613121033,
+      "b5_linear": 0.5391539335250854,
+      "b5_ft100": 0.5465796579657966,
+      "ceiling": 0.6264626462646266,
+      "headroom": 0.0873087127395411
+    },
+    "presence_cell:pedestrian": {
+      "n_fit": 3034,
+      "n_query": 4708,
+      "class_share": {
+        "0": 0.5,
+        "1": 0.5
+      },
+      "overlap": 0.5,
+      "b5_knn": 0.6040781736373901,
+      "b5_linear": 0.6121495366096497,
+      "b5_ft100": 0.6233361653922401,
+      "ceiling": 0.6677994902293968,
+      "headroom": 0.05564995361974712
+    },
+    "presence_cell:traffic light": {
+      "n_fit": 3176,
+      "n_query": 4662,
+      "class_share": {
+        "0": 0.5,
+        "1": 0.5
+      },
+      "overlap": 0.5,
+      "b5_knn": 0.5722865462303162,
+      "b5_linear": 0.6027456521987915,
+      "b5_ft100": 0.6352066352066351,
+      "ceiling": 0.75997425997426,
+      "headroom": 0.15722860777546854
+    }
+  },
+  "choice": "presence_cell:car"
+}

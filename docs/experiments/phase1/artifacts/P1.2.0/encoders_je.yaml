@@ -1,0 +1,23 @@
+- {name: b5, kind: pretrained}
+- {name: random, kind: random}
+- {name: je_well, kind: well, path: wells/p110_deep/je_o0.0.pt}
+- {name: je_walk_s0_mid, kind: checkpoint, path: outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00060.pt, fewshot: false}
+- {name: je_walk_s0_end, kind: checkpoint, path: outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/final.pt}
+- {name: je_walk_s1_mid, kind: checkpoint, path: outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00060.pt, fewshot: false}
+- {name: je_walk_s1_end, kind: checkpoint, path: outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/final.pt}
+- {name: je_walk_s2_mid, kind: checkpoint, path: outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00060.pt, fewshot: false}
+- {name: je_walk_s2_end, kind: checkpoint, path: outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/final.pt}
+- {name: je_walk_s3_mid, kind: checkpoint, path: outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/step00060.pt, fewshot: false}
+- {name: je_walk_s3_end, kind: checkpoint, path: outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/final.pt}
+- {name: je_walk_s4_mid, kind: checkpoint, path: outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/step00060.pt, fewshot: false}
+- {name: je_walk_s4_end, kind: checkpoint, path: outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/final.pt}
+- {name: je_iid_s0_mid, kind: checkpoint, path: outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00060.pt, fewshot: false}
+- {name: je_iid_s0_end, kind: checkpoint, path: outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/final.pt}
+- {name: je_iid_s1_mid, kind: checkpoint, path: outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00060.pt, fewshot: false}
+- {name: je_iid_s1_end, kind: checkpoint, path: outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/final.pt}
+- {name: je_iid_s2_mid, kind: checkpoint, path: outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00060.pt, fewshot: false}
+- {name: je_iid_s2_end, kind: checkpoint, path: outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/final.pt}
+- {name: je_iid_s3_mid, kind: checkpoint, path: outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/step00060.pt, fewshot: false}
+- {name: je_iid_s3_end, kind: checkpoint, path: outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/final.pt}
+- {name: je_iid_s4_mid, kind: checkpoint, path: outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/step00060.pt, fewshot: false}
+- {name: je_iid_s4_end, kind: checkpoint, path: outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/final.pt}
