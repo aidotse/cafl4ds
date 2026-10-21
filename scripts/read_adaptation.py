@@ -154,13 +154,19 @@ def _summarize(correct: np.ndarray, labels: np.ndarray, strata: np.ndarray, name
 
 
 def read(config: DictConfig, out_dir: Path) -> dict[str, Any]:
-    """Score every encoder on the ladder; write per-image correctness and a summary."""
+    """Score every encoder on the ladder; write per-image correctness and a summary.
+
+    Each task reads the frames it uses (:func:`cafl4ds.adaptation.task_indices`): all of them for the scene
+    and full-frame presence, a labelled or cell-balanced subset otherwise. ``pool.npz`` records each task's
+    positions within the shared query (``pos|<task>``), so the analysis aligns correctness to its frames.
+    """
     pool, fit, query = build_pool(config)
+    seed = int(config.pool.seed)
     tasks = list(config.tasks)
     labels = {t: adaptation.task_labels(pool, t).numpy() for t in tasks}
-    subset = [t for t in tasks if adaptation.task_indices(pool, t, query, int(config.pool.seed)).size != query.size]
-    if subset:  # the ladder shares one query set across tasks; a subset task needs its own (screen mode has it)
-        raise ValueError(f"tasks {subset} use a subset of the query frames; read mode supports full-pool tasks only.")
+    t_fit = {t: adaptation.task_indices(pool, t, fit, seed) for t in tasks}
+    t_query = {t: adaptation.task_indices(pool, t, query, seed) for t in tasks}
+    pos = {t: np.searchsorted(query, t_query[t]) for t in tasks}
     strata = pool.stratum.numpy()[query]
     np.savez_compressed(
         out_dir / "pool.npz",
@@ -168,26 +174,28 @@ def read(config: DictConfig, out_dir: Path) -> dict[str, Any]:
         stratum=strata,
         regime=pool.regime.numpy()[query],
         **{f"labels|{t}": labels[t][query] for t in tasks},
+        **{f"pos|{t}": pos[t] for t in tasks},
     )
     summary: dict[str, Any] = {
         "pool": {"kind": str(config.pool.kind), "n_fit": int(fit.size), "n_query": int(query.size)},
+        "n_query_by_task": {t: int(t_query[t].size) for t in tasks},
         "stratum_names": pool.stratum_names,
         "regime_names": pool.regime_names,
         "encoders": {},
     }
     recipe = _recipe(config)
+    ft_tasks = config.fewshot.get("tasks")
     for spec in _encoder_specs(config):
         name = spec["name"]
         encoder = load_encoder(config, spec).to(config.device)
         features = adaptation.encode(encoder, pool.images, str(config.device))
         arrays: dict[str, np.ndarray] = {}
         for task in tasks:
-            sub = _fit_subsample(labels[task], fit, config)
+            sub = _fit_subsample(labels[task], t_fit[task], config)
             for rung, correct in adaptation.frozen_correctness(
-                features, labels[task], sub, query, int(config.knn_k)
+                features, labels[task], sub, t_query[task], int(config.knn_k)
             ).items():
                 arrays[f"{task}|{rung}"] = correct[None, :]
-            ft_tasks = config.fewshot.get("tasks")
             if not spec.get("fewshot", bool(config.fewshot.enabled)) or (ft_tasks is not None and task not in ft_tasks):
                 continue
             for k in config.fewshot.ks:
@@ -198,18 +206,23 @@ def read(config: DictConfig, out_dir: Path) -> dict[str, Any]:
                         encoder,
                         pool.images[train],
                         torch.from_numpy(labels[task][train]),
-                        pool.images[query],
+                        pool.images[t_query[task]],
                         recipe,
                         seed=draw,
                         device=str(config.device),
                     )
-                    rows.append((pred == labels[task][query]).astype(np.float32))
+                    rows.append((pred == labels[task][t_query[task]]).astype(np.float32))
                 arrays[f"{task}|ft{k}"] = np.stack(rows)
         np.savez_compressed(out_dir / f"{name.replace('/', '__')}.npz", **arrays)
         summary["encoders"][name] = {
             "spec": spec,
             "bacc": {
-                key: _summarize(arr, labels[key.split("|")[0]][query], strata, pool.stratum_names)
+                key: _summarize(
+                    arr,
+                    labels[key.split("|")[0]][t_query[key.split("|")[0]]],
+                    strata[pos[key.split("|")[0]]],
+                    pool.stratum_names,
+                )
                 for key, arr in arrays.items()
             },
         }

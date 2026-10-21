@@ -46,7 +46,10 @@ class Ladder:
         self.query = pool["query_index"]
         self.stratum = pool["stratum"]
         self.regime = pool["regime"]
-        self.labels = {k.split("|", 1)[1]: pool[k] for k in pool.files if k.startswith("labels|")}
+        # Each task's frames within the shared query (older reads hold no ``pos|`` keys: every frame).
+        tasks = [k.split("|", 1)[1] for k in pool.files if k.startswith("labels|")]
+        self.pos = {t: pool[f"pos|{t}"] if f"pos|{t}" in pool.files else np.arange(self.query.size) for t in tasks}
+        self.labels = {t: pool[f"labels|{t}"][self.pos[t]] for t in tasks}
         self.summary = json.loads((path / "summary.json").read_text(encoding="utf-8"))
         self._cache: dict[str, Any] = {}
 
@@ -76,13 +79,15 @@ def _contrast(
 
 
 def _strata(
-    adapted: np.ndarray, reference: np.ndarray, ladder: Ladder, labels: np.ndarray, config: DictConfig
+    adapted: np.ndarray, reference: np.ndarray, ladder: Ladder, task: str, config: DictConfig
 ) -> dict[str, dict[str, float]]:
     """The contrast within each time-of-day stratum (strata missing a class are skipped)."""
     names = ladder.summary.get("stratum_names", {})
+    labels = ladder.labels[task]
+    stratum = ladder.stratum[ladder.pos[task]]
     out = {}
-    for sid in np.unique(ladder.stratum):
-        keep = ladder.stratum == sid
+    for sid in np.unique(stratum):
+        keep = stratum == sid
         if np.unique(labels[keep]).size == np.unique(labels).size:
             result = _contrast(adapted[:, keep], reference[:, keep], labels[keep], config)
             if result is not None:
@@ -91,7 +96,8 @@ def _strata(
 
 
 def _check_aligned(a: Ladder, b: Ladder) -> None:
-    if not np.array_equal(a.query, b.query) or a.labels.keys() != b.labels.keys():
+    same_tasks = a.labels.keys() == b.labels.keys() and all(np.array_equal(a.pos[t], b.pos[t]) for t in a.pos)
+    if not np.array_equal(a.query, b.query) or not same_tasks:
         raise ValueError(f"{a.path} and {b.path} read different query sets; their contrasts would not pair.")
 
 
@@ -136,7 +142,9 @@ def p120(config: DictConfig, root: Path) -> dict[str, Any]:
                     },
                 }
                 if got["walk_end"] is not None:
-                    entry["walk_end_vs_b5_by_stratum"] = _strata(got["walk_end"], b5, refs, labels, config)
+                    entry["walk_end_vs_b5_by_stratum"] = _strata(
+                        got["walk_end"], b5, refs, key.split("|", 1)[0], config
+                    )
                 if bb == "je" and refs.has("random"):
                     rand = refs.rows(["random"], key)
                     entry["bacc"]["random"] = (

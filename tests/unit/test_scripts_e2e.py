@@ -638,3 +638,65 @@ def test_read_adaptation_screen_reads_reference_and_candidates_and_applies_the_r
     assert {"overlap", "b5_linear", "b5_ft2", "ceiling", "headroom"} <= set(open_bar["tasks"]["scene"])
     closed = script.run(_compose("read_adaptation", [*base, "screen.min_headroom=2.0"]), tmp_path / "closed")
     assert closed["choice"] is None
+
+
+def test_read_and_analyze_align_a_cell_balanced_task_to_its_own_query_frames(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A subset task (presence_cell) is read on its own frames, and the gate analysis pairs it correctly."""
+    from cafl4ds import adaptation  # noqa: PLC0415 — local: only this test builds a pool by hand
+
+    rng = np.random.default_rng(0)
+    n = 240
+    scene = torch.from_numpy(rng.integers(0, 3, n))
+    present = rng.random(n) < np.where(scene.numpy() == 0, 0.7, 0.3)
+    images = torch.rand(n, 3, 16, 16) + torch.from_numpy(present)[:, None, None, None].float()
+    pool = adaptation.HeldOutPool(
+        images=images.clamp(0, 1),
+        scene=scene,
+        stratum=torch.from_numpy(rng.integers(0, 2, n)),
+        regime=torch.zeros(n, dtype=torch.long),
+        categories=[{"car": 1} if p else {} for p in present],
+    )
+    script = _load_script("read_adaptation")
+    fit, query = adaptation.split_pool(n, 0.5, seed=0)
+    monkeypatch.setattr(script, "build_pool", lambda config: (pool, fit, query))
+    names = "[{name:b5,kind:pretrained},{name:walk_s0_end,kind:pretrained},{name:walk_s1_end,kind:pretrained}]"
+    overrides = [
+        "data=attr_synthetic",
+        "img_size=16",
+        "probe_per_class=20",
+        "threads=1",
+        "~encoders",
+        f"+encoders={names}",
+        'tasks=[scene,"presence_cell:car"]',
+    ]
+    summary = script.run(_compose("read_adaptation", overrides), tmp_path / "ladder" / "je")
+    cell = adaptation.task_indices(pool, "presence_cell:car", query, seed=0)
+    assert (
+        summary["n_query_by_task"] == {"scene": query.size, "presence_cell:car": cell.size} and cell.size < query.size
+    )
+    assert np.load(tmp_path / "ladder" / "je" / "b5.npz")["presence_cell:car|linear"].shape == (1, cell.size)
+
+    report = _load_script("analyze_adaptation").run(
+        OmegaConf.create(
+            {
+                "mode": "p121",
+                "root": str(tmp_path),
+                "n_boot": 100,
+                "seed": 0,
+                "threads": 1,
+                "n_seeds": 2,
+                "backbones": ["je"],
+                "tasks": ["scene", "presence_cell:car"],
+                "gate_tasks": ["scene", "presence_cell:car"],
+                "rungs": ["knn", "linear"],
+                "primary": {"je": "linear"},
+                "delta_floor": 0.02,
+                "alpha": 0.05,
+                "b5_name": "b5",
+            }
+        )
+    )
+    contrast = report["je"]["contrasts"]["presence_cell:car"]["linear"]
+    assert contrast["n_images"] == cell.size and contrast["delta"] == pytest.approx(0.0)
