@@ -158,6 +158,9 @@ def read(config: DictConfig, out_dir: Path) -> dict[str, Any]:
     pool, fit, query = build_pool(config)
     tasks = list(config.tasks)
     labels = {t: adaptation.task_labels(pool, t).numpy() for t in tasks}
+    subset = [t for t in tasks if adaptation.task_indices(pool, t, query, int(config.pool.seed)).size != query.size]
+    if subset:  # the ladder shares one query set across tasks; a subset task needs its own (screen mode has it)
+        raise ValueError(f"tasks {subset} use a subset of the query frames; read mode supports full-pool tasks only.")
     strata = pool.stratum.numpy()[query]
     np.savez_compressed(
         out_dir / "pool.npz",
@@ -251,48 +254,93 @@ def select_lr(config: DictConfig, out_dir: Path) -> dict[str, Any]:
     return report
 
 
+def _tuned_bacc(
+    config: DictConfig,
+    encoder: torch.nn.Module,
+    pool: HeldOutPool,
+    labels: np.ndarray,
+    train: np.ndarray,
+    query: np.ndarray,
+    recipe: FineTuneRecipe,
+    draw: int,
+) -> float:
+    """Balanced accuracy on ``query`` of ``encoder`` fine-tuned on ``train`` (a copy; the encoder is untouched)."""
+    pred = adaptation.fine_tune_predict(
+        encoder,
+        pool.images[train],
+        torch.from_numpy(labels[train]),
+        pool.images[query],
+        recipe,
+        seed=draw,
+        device=str(config.device),
+    )
+    truth = labels[query]
+    return adaptation.balanced_accuracy((pred == truth).astype(float), truth)
+
+
 def screen(config: DictConfig, out_dir: Path) -> dict[str, Any]:
-    """The presence-task screen (P1.2.0 part 4): overlap, B5 linear, full-label ceiling, the rule's choice."""
+    """The readout-task screen (P1.2.0 part 4) on the first encoder (B5).
+
+    Per task — the ``screen.reference`` (the scene canary) and each ``screen.candidates`` — on the frames
+    the task uses (:func:`cafl4ds.adaptation.task_indices`): B5's frozen kNN / linear and few-shot
+    (``fewshot.select_k`` per class, ``fewshot.draws`` draws) reads, a full-label fine-tune ceiling, the
+    overlap with scene + time of day, and the headroom (ceiling − B5 linear). The rule picks, among
+    candidates with overlap ≤ ``max_overlap`` and headroom ≥ ``min_headroom``, the largest headroom.
+    """
     pool, fit, query = build_pool(config)
     spec = _encoder_specs(config)[0]
     encoder = load_encoder(config, spec).to(config.device)
     features = adaptation.encode(encoder, pool.images, str(config.device))
     context = torch.stack([pool.scene, pool.stratum], dim=1).numpy()
     sc = config.screen
-    rows: dict[str, dict[str, float]] = {}
-    for category in sc.candidates:
-        task = f"{adaptation.PRESENCE_PREFIX}{category}"
+    seed = int(config.pool.seed)
+    ceiling_recipe = FineTuneRecipe(**{**_recipe(config).__dict__, "steps": int(sc.ceiling_steps)})
+    rows: dict[str, dict[str, Any]] = {}
+    for task in [str(sc.reference), *[str(c) for c in sc.candidates]]:
         labels = adaptation.task_labels(pool, task).numpy()
-        sub = _fit_subsample(labels, fit, config)
-        linear = adaptation.frozen_correctness(features, labels, sub, query, int(config.knn_k))["linear"]
-        train = adaptation.balanced_indices(labels, fit, int(sc.ceiling_per_class), int(config.pool.seed))
-        ceiling_recipe = FineTuneRecipe(**{**_recipe(config).__dict__, "steps": int(sc.ceiling_steps)})
-        pred = adaptation.fine_tune_predict(
-            encoder,
-            pool.images[train],
-            torch.from_numpy(labels[train]),
-            pool.images[query],
-            ceiling_recipe,
-            seed=0,
-            device=str(config.device),
-        )
-        rows[str(category)] = {
-            "prevalence": float(labels.mean()),
-            "overlap": adaptation.scene_overlap(context, labels, sub, query),
-            "b5_linear": adaptation.balanced_accuracy(linear, labels[query]),
-            "ceiling": adaptation.balanced_accuracy((pred == labels[query]).astype(float), labels[query]),
+        t_fit, t_query = (adaptation.task_indices(pool, task, idx, seed) for idx in (fit, query))
+        sub = _fit_subsample(labels, t_fit, config)
+        truth = labels[t_query]
+        frozen = adaptation.frozen_correctness(features, labels, sub, t_query, int(config.knn_k))
+
+        k = int(config.fewshot.select_k)
+        fewshot = [
+            _tuned_bacc(
+                config,
+                encoder,
+                pool,
+                labels,
+                adaptation.balanced_indices(labels, sub, k, seed=d),
+                t_query,
+                _recipe(config),
+                d,
+            )
+            for d in range(int(config.fewshot.draws))
+        ]
+        ceiling_train = adaptation.balanced_indices(labels, t_fit, int(sc.ceiling_per_class), seed)
+        ceiling = _tuned_bacc(config, encoder, pool, labels, ceiling_train, t_query, ceiling_recipe, 0)
+        row: dict[str, Any] = {
+            "n_fit": int(t_fit.size),
+            "n_query": int(t_query.size),
+            "class_share": {str(c): float((truth == c).mean()) for c in np.unique(truth)},
+            "overlap": adaptation.scene_overlap(context, labels, sub, t_query),
+            "b5_knn": adaptation.balanced_accuracy(frozen["knn"], truth),
+            "b5_linear": adaptation.balanced_accuracy(frozen["linear"], truth),
+            f"b5_ft{k}": float(np.mean(fewshot)),
+            "ceiling": ceiling,
         }
-        rows[str(category)]["headroom"] = rows[str(category)]["ceiling"] - rows[str(category)]["b5_linear"]
-        logger.info(f"{category}: {rows[str(category)]}")
-    eligible = [c for c, r in rows.items() if r["overlap"] <= float(sc.max_overlap)]
-    choice = (
-        max(eligible, key=lambda c: (round(rows[c]["headroom"], 3), -abs(rows[c]["prevalence"] - 0.5)))
-        if eligible
-        else None
-    )
-    report = {"encoder": spec, "rule": OmegaConf.to_container(sc), "candidates": rows, "choice": choice}
+        row["headroom"] = row["ceiling"] - row["b5_linear"]
+        rows[task] = row
+        logger.info(f"{task}: {row}")
+    eligible = [
+        c
+        for c in map(str, sc.candidates)
+        if rows[c]["overlap"] <= float(sc.max_overlap) and rows[c]["headroom"] >= float(sc.min_headroom)
+    ]
+    choice = max(eligible, key=lambda c: rows[c]["headroom"]) if eligible else None
+    report = {"encoder": spec, "rule": OmegaConf.to_container(sc), "tasks": rows, "choice": choice}
     (out_dir / "screen.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
-    logger.info(f"presence screen choice: {choice}")
+    logger.info(f"screen choice: {choice}")
     return report
 
 

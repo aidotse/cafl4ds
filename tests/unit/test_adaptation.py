@@ -36,7 +36,7 @@ def test_presence_needs_categories_and_unknown_tasks_raise() -> None:
     with pytest.raises(ValueError, match="categories"):
         adaptation.task_labels(pool, "presence:car")
     with pytest.raises(ValueError, match="unknown task"):
-        adaptation.task_labels(_pool(), "weather")
+        adaptation.task_labels(_pool(), "lane count")
 
 
 def test_split_pool_is_disjoint_exhaustive_and_seed_fixed() -> None:
@@ -206,3 +206,37 @@ def test_gate_fails_only_when_every_rung_rules_out_a_two_point_gain() -> None:
     assert adaptation.gate_verdict({"scene": low, "presence:truck": reaching}, "ft100")["verdict"] == "INCONCLUSIVE"
     with pytest.raises(ValueError, match="primary rung"):
         adaptation.gate_verdict({"scene": {"knn": _c(0, 0, 0, 0.5)}}, "ft100")
+
+
+def test_weather_labels_read_the_regime_name_and_mark_other_weathers_unused() -> None:
+    """Weather comes off the regime name; overcast etc. are -1 (unused)."""
+    pool = _pool(4)
+    pool.regime = torch.tensor([0, 1, 2, 3])
+    pool.regime_names = {0: "daytime·clear", 1: "night·rainy", 2: "night·snowy", 3: "daytime·overcast"}
+    assert adaptation.task_labels(pool, "weather").tolist() == [0, 1, 2, -1]
+    assert adaptation.task_indices(pool, "weather", np.arange(4), seed=0).tolist() == [0, 1, 2]
+
+
+def test_cell_balanced_presence_removes_the_scene_signal() -> None:
+    """Within every (scene x stratum) cell the kept frames are half positive, half negative."""
+    rng = np.random.default_rng(6)
+    n = 600
+    scene = torch.from_numpy(rng.integers(0, 3, n))
+    stratum = torch.from_numpy(rng.integers(0, 2, n))
+    present = rng.random(n) < np.where(scene.numpy() == 0, 0.8, 0.2)  # strongly scene-dependent
+    pool = HeldOutPool(
+        images=torch.zeros(n, 3, 2, 2),
+        scene=scene,
+        stratum=stratum,
+        regime=torch.zeros(n, dtype=torch.long),
+        categories=[{"car": 1} if p else {} for p in present],
+    )
+    keep = adaptation.task_indices(pool, "presence_cell:car", np.arange(n), seed=0)
+    labels = adaptation.task_labels(pool, "presence_cell:car").numpy()
+    for cell in {(int(a), int(b)) for a, b in zip(scene[keep], stratum[keep], strict=True)}:
+        members = keep[(scene.numpy()[keep] == cell[0]) & (stratum.numpy()[keep] == cell[1])]
+        assert labels[members].mean() == 0.5
+    context = np.stack([scene.numpy(), stratum.numpy()], axis=1)
+    fit, query = keep[::2], keep[1::2]
+    assert adaptation.scene_overlap(context, labels, fit, query) < 0.62
+    assert adaptation.task_indices(pool, "presence:car", np.arange(n), seed=0).size == n

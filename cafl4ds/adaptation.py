@@ -31,7 +31,10 @@ from cafl4ds import measurements
 from cafl4ds.data.attributes import as_float
 
 SCENE = "scene"
+WEATHER = "weather"
+WEATHER_CLASSES = ("clear", "rainy", "snowy")  # BDD's unambiguous, well-populated weathers
 PRESENCE_PREFIX = "presence:"
+PRESENCE_CELL_PREFIX = "presence_cell:"
 _ENCODE_CHUNK = 128  # a ViT-B/16 at 224 px: features are read in chunks, then probed on CPU
 
 
@@ -63,19 +66,55 @@ class HeldOutPool:
 
 
 def task_labels(pool: HeldOutPool, task: str) -> torch.Tensor:
-    """Integer labels for ``task``: ``"scene"``, or ``"presence:<category>"`` (1 if any box of it).
+    """Integer labels for ``task``; ``-1`` marks a frame the task does not use.
+
+    * ``"scene"`` — the canary.
+    * ``"weather"`` — clear / rainy / snowy, read off the regime name (``"<timeofday>·<weather>"``);
+      other weathers are ``-1``.
+    * ``"presence:<category>"`` / ``"presence_cell:<category>"`` — 1 if any box of the category. The
+      ``_cell`` form uses the same labels; :func:`task_indices` then balances them within each
+      (scene × time-of-day) cell, so scene and time of day carry no information about the label.
 
     Raises:
         ValueError: If the task is unknown, or a presence task is asked of a pool with no categories.
     """
     if task == SCENE:
         return pool.scene
-    if task.startswith(PRESENCE_PREFIX):
-        if pool.categories is None:
-            raise ValueError(f"task {task!r} needs per-image object categories; this pool has none.")
-        category = task[len(PRESENCE_PREFIX) :]
-        return torch.tensor([int(c.get(category, 0) > 0) for c in pool.categories], dtype=torch.long)
-    raise ValueError(f"unknown task {task!r}; expected {SCENE!r} or '{PRESENCE_PREFIX}<category>'.")
+    if task == WEATHER:
+        weather = {rid: name.split("·")[-1] for rid, name in pool.regime_names.items()}
+        code = {w: i for i, w in enumerate(WEATHER_CLASSES)}
+        return torch.tensor([code.get(weather.get(int(r), ""), -1) for r in pool.regime], dtype=torch.long)
+    for prefix in (PRESENCE_PREFIX, PRESENCE_CELL_PREFIX):
+        if task.startswith(prefix):
+            if pool.categories is None:
+                raise ValueError(f"task {task!r} needs per-image object categories; this pool has none.")
+            category = task[len(prefix) :]
+            return torch.tensor([int(c.get(category, 0) > 0) for c in pool.categories], dtype=torch.long)
+    raise ValueError(
+        f"unknown task {task!r}; expected {SCENE!r}, {WEATHER!r}, '{PRESENCE_PREFIX}<category>' or "
+        f"'{PRESENCE_CELL_PREFIX}<category>'."
+    )
+
+
+def task_indices(pool: HeldOutPool, task: str, candidates: np.ndarray, seed: int) -> np.ndarray:
+    """The frames of ``candidates`` the task uses.
+
+    Those labelled (``>= 0``); for ``presence_cell`` tasks, further balanced — equal positives and
+    negatives drawn within every (scene × time-of-day) cell.
+    """
+    labels = task_labels(pool, task).numpy()
+    keep = candidates[labels[candidates] >= 0]
+    if not task.startswith(PRESENCE_CELL_PREFIX):
+        return keep
+    rng = np.random.default_rng(seed)
+    cells = pool.scene.numpy() * 1000 + pool.stratum.numpy()
+    out = []
+    for cell in np.unique(cells[keep]):
+        members = keep[cells[keep] == cell]
+        pos, neg = members[labels[members] == 1], members[labels[members] == 0]
+        n = min(pos.size, neg.size)
+        out += [rng.permutation(pos)[:n], rng.permutation(neg)[:n]]
+    return np.sort(np.concatenate(out)) if out else keep[:0]
 
 
 def split_pool(n: int, fit_fraction: float, seed: int) -> tuple[np.ndarray, np.ndarray]:

@@ -613,3 +613,28 @@ def test_analyze_adaptation_reads_p120_contrasts_and_the_p121_gate(tmp_path: Pat
     )
     assert p121["je"]["gate"]["verdict"] == "PASS"
     assert set(p121["je"]["trajectory"]) == {"end", "t00100"}
+
+
+def test_read_adaptation_screen_reads_reference_and_candidates_and_applies_the_rule(tmp_path: Path) -> None:
+    """The screen scores the reference and each candidate on B5 and applies overlap + headroom bars."""
+    script = _load_script("read_adaptation")
+    base = [
+        *_P11_DIET,
+        "mode=screen",
+        "probe_per_class=6",
+        "threads=1",
+        "fewshot.select_k=2",
+        "fewshot.draws=1",
+        "fewshot.steps=2",
+        "screen.ceiling_per_class=4",
+        "screen.ceiling_steps=2",
+        "screen.reference=scene",
+        "screen.candidates=[scene]",
+    ]
+    open_bar = script.run(
+        _compose("read_adaptation", [*base, "screen.max_overlap=1.0", "screen.min_headroom=-1.0"]), tmp_path / "open"
+    )
+    assert set(open_bar["tasks"]) == {"scene"} and open_bar["choice"] == "scene"
+    assert {"overlap", "b5_linear", "b5_ft2", "ceiling", "headroom"} <= set(open_bar["tasks"]["scene"])
+    closed = script.run(_compose("read_adaptation", [*base, "screen.min_headroom=2.0"]), tmp_path / "closed")
+    assert closed["choice"] is None

@@ -15,3 +15,7 @@ min_canary_count: 0
 pixel_dtype: float32
 # Save / reuse the decode here (e.g. outputs/cache) — a BDD-train decode at 224 px takes ~35 min; null = off.
 cache_dir: null
+# Keep only these scenes (null = all); P1.2 pins the three canary scenes so train and val agree.
+scenes: null
+# squash (default: the 16:9 frame resized straight to a square) | center_crop (aspect kept, sides dropped)
+resize_mode: squash

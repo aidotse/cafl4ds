@@ -51,10 +51,12 @@ fewshot:
   val_per_class: 200
 
 screen: # mode=screen (P1.2.0 part 4), on the first encoder (B5)
-  candidates: [traffic light, pedestrian, truck]
+  reference: scene # read beside the candidates for comparison; never chosen
+  candidates: ["presence:traffic light", "presence:pedestrian", "presence:truck"]
   ceiling_per_class: 1500
   ceiling_steps: 1900 # ~20 epochs over 2 x 1,500 frames at batch 32
-  max_overlap: 0.60 # eligible only if scene + time of day predict presence at most this well
+  max_overlap: 0.60 # eligible only if scene + time of day predict the task at most this well
+  min_headroom: 0.0 # ... and its headroom (full-label ceiling − B5 linear) is at least this
 
 # The encoders: [{name, kind: pretrained | random | well | checkpoint, path?, fewshot?}], plus encoders_file.
 encoders:

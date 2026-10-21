@@ -207,6 +207,8 @@ class BDD100KSource(AttributeSource):
         min_canary_count: int = 0,
         pixel_dtype: str = "float32",
         cache_dir: str | None = None,
+        scenes: list[str] | None = None,
+        resize_mode: str = "squash",
     ) -> None:
         """Configure the BDD100K source.
 
@@ -232,9 +234,22 @@ class BDD100KSource(AttributeSource):
                 BDD-train decode at 224 px takes ~35 min, a cached load seconds. The decode is deterministic,
                 so a cached load is identical to a fresh one.
 
+            scenes: If set, keep only frames of these scenes (the canary classes), applied before
+                ``min_canary_count``. P1.2 pins the three canary scenes so train and val agree: BDD train
+                has 378 parking-lot frames (enough to pass a count filter), val only 49.
+            resize_mode: ``"squash"`` (default) resizes the 16:9 frame straight to a square, narrowing
+                it 1.78x horizontally; ``"center_crop"`` keeps the aspect ratio — resize the short side,
+                then crop the centre square, dropping the frame's sides (the ImageNet evaluation
+                convention). P1.2.0 compares the two on the frozen baseline.
+
         Raises:
-            ValueError: If ``pixel_dtype`` is neither ``"float32"`` nor ``"uint8"``.
+            ValueError: If ``pixel_dtype`` is neither ``"float32"`` nor ``"uint8"``, or ``resize_mode``
+                is unknown.
         """
+        if resize_mode not in ("squash", "center_crop"):
+            raise ValueError(f"resize_mode must be 'squash' or 'center_crop'; got {resize_mode!r}.")
+        self.scenes = list(scenes) if scenes else None
+        self.resize_mode = resize_mode
         if pixel_dtype not in ("float32", "uint8"):
             raise ValueError(f"pixel_dtype must be 'float32' or 'uint8'; got {pixel_dtype!r}.")
         self.pixel_dtype = pixel_dtype
@@ -296,6 +311,8 @@ class BDD100KSource(AttributeSource):
                 self.max_images,
                 self.min_canary_count,
                 self.pixel_dtype,
+                self.scenes,
+                self.resize_mode,
                 str(labels_file.resolve()),
                 stat.st_size,
                 int(stat.st_mtime),
@@ -320,6 +337,24 @@ class BDD100KSource(AttributeSource):
             partial.replace(path)  # atomic: a concurrent reader never sees a half-written cache
             logger.info(f"BDD100KSource: cached the decode at {path}")
         return data
+
+    def _filter_scenes(
+        self, valid: list[tuple[Path, tuple[str, str], str, dict[str, int]]]
+    ) -> list[tuple[Path, tuple[str, str], str, dict[str, int]]]:
+        """Apply the ``scenes`` whitelist, then the ``min_canary_count`` rare-scene drop."""
+        if self.scenes is not None:
+            valid = [v for v in valid if v[2] in self.scenes]
+        if self.min_canary_count > 0:
+            valid = _drop_rare_scenes(valid, self.min_canary_count)
+        return valid
+
+    def _resize_transform(self) -> transforms.Compose:
+        """PIL frame -> uint8 ``[3, img_size, img_size]``, by ``resize_mode`` (squash, or aspect-kept centre crop)."""
+        if self.resize_mode == "squash":
+            steps = [transforms.Resize((self.img_size, self.img_size))]
+        else:  # center_crop: short side to img_size, then the centre square
+            steps = [transforms.Resize(self.img_size), transforms.CenterCrop(self.img_size)]
+        return transforms.Compose([*steps, transforms.PILToTensor()])
 
     def _decode(self) -> AttributedImages:
         """Parse the attribute records and decode the referenced images (the uncached work)."""
@@ -351,8 +386,7 @@ class BDD100KSource(AttributeSource):
         if not valid:
             raise ValueError(f"no attribute-valid BDD100K images found under {images_dir}")
 
-        if self.min_canary_count > 0:
-            valid = _drop_rare_scenes(valid, self.min_canary_count)
+        valid = self._filter_scenes(valid)
 
         regime_order, regime_id, regime_names = _rank_regimes({r for _, r, _, _ in valid})
         scene_id, canary_names = _index_scenes({s for _, _, s, _ in valid})
@@ -363,7 +397,7 @@ class BDD100KSource(AttributeSource):
         stratum_id = {t: i for i, t in enumerate(timeofdays)}
 
         # Decode as uint8 into one preallocated tensor (no list-then-stack copy); ToTensor's float is this / 255.
-        resize = transforms.Compose([transforms.Resize((self.img_size, self.img_size)), transforms.PILToTensor()])
+        resize = self._resize_transform()
         frames = torch.empty((len(valid), 3, self.img_size, self.img_size), dtype=torch.uint8)
         era_key, canary, stratum, categories = [], [], [], []
         for i, (path, regime, scene, cats) in enumerate(valid):
