@@ -127,7 +127,10 @@ class FinalEvaluator:
             method: The model to evaluate.
 
         Returns:
-            ``knn_acc`` and ``linear_acc`` on the test split, in ``[0, 1]``.
+            ``knn_acc`` / ``linear_acc`` and their class-balanced twins ``knn_bal_acc`` /
+            ``linear_bal_acc`` (mean per-class recall) on the test split, in ``[0, 1]``. Plain
+            accuracy on a skewed test split sits near the majority-class share even for an
+            uninformative model; the balanced scores put chance at ``1 / num_classes``.
         """
         zs = encode_batched(method, self.support.images, self.batch_size)
         zt = encode_batched(method, self.test.images, self.batch_size)
@@ -136,9 +139,13 @@ class FinalEvaluator:
         def identity(z: torch.Tensor) -> torch.Tensor:
             return z  # features are precomputed
 
+        knn_pred, knn_true = measurements.knn_predictions(identity, support, test, k=self.knn_k)
+        lin_pred, lin_true = measurements.linear_predictions(identity, support, test)
         return {
-            "knn_acc": measurements.knn_probe(identity, support, test, k=self.knn_k),
-            "linear_acc": measurements.linear_probe(identity, support, test),
+            "knn_acc": float((knn_pred == knn_true).mean()),
+            "linear_acc": float((lin_pred == lin_true).mean()),
+            "knn_bal_acc": measurements.balanced_accuracy(knn_pred, knn_true),
+            "linear_bal_acc": measurements.balanced_accuracy(lin_pred, lin_true),
         }
 
     def write_report(self, start: dict[str, float], final: dict[str, float], path: Path) -> dict[str, Any]:

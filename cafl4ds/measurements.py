@@ -49,7 +49,7 @@ import numpy as np
 import torch
 from sklearn.cluster import KMeans
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import silhouette_score
+from sklearn.metrics import balanced_accuracy_score, silhouette_score
 from sklearn.neighbors import KNeighborsClassifier
 
 # Anything we accept as an embedding matrix / label vector.
@@ -523,12 +523,30 @@ def knn_probe(
     Returns:
         Top-1 query accuracy in ``[0, 1]``.
     """
+    predicted, true = knn_predictions(encoder, support, query, k, metric=metric, weights=weights)
+    return float((predicted == true).mean())
+
+
+def knn_predictions(
+    encoder: Encoder,
+    support: Dataset,
+    query: Dataset,
+    k: int = 20,
+    *,
+    metric: str = "cosine",
+    weights: str = "distance",
+) -> tuple[np.ndarray, np.ndarray]:
+    """The k-NN probe's query predictions, for scores beyond plain accuracy (see :func:`knn_probe`).
+
+    Returns:
+        ``(predicted, true)`` query labels.
+    """
     xs, ys = _encode(encoder, support[0]), _labels(support[1])
     xq, yq = _encode(encoder, query[0]), _labels(query[1])
     n_neighbors = max(1, min(k, xs.shape[0]))
     clf = KNeighborsClassifier(n_neighbors=n_neighbors, metric=metric, weights=weights)
     clf.fit(xs, ys)
-    return float((clf.predict(xq) == yq).mean())
+    return clf.predict(xq), yq
 
 
 def linear_probe(
@@ -558,6 +576,24 @@ def linear_probe(
     Returns:
         Top-1 query accuracy in ``[0, 1]``.
     """
+    predicted, true = linear_predictions(encoder, support, query, max_iter=max_iter, C=C, standardize=standardize)
+    return float((predicted == true).mean())
+
+
+def linear_predictions(
+    encoder: Encoder,
+    support: Dataset,
+    query: Dataset,
+    *,
+    max_iter: int = 1000,
+    C: float = 1.0,
+    standardize: bool = True,
+) -> tuple[np.ndarray, np.ndarray]:
+    """The linear probe's query predictions, for scores beyond plain accuracy (see :func:`linear_probe`).
+
+    Returns:
+        ``(predicted, true)`` query labels.
+    """
     xs, ys = _encode(encoder, support[0]), _labels(support[1])
     xq, yq = _encode(encoder, query[0]), _labels(query[1])
     if standardize:
@@ -568,7 +604,16 @@ def linear_probe(
         xq = (xq - mean) / std
     clf = LogisticRegression(max_iter=max_iter, C=C)
     clf.fit(xs, ys)
-    return float((clf.predict(xq) == yq).mean())
+    return clf.predict(xq), yq
+
+
+def balanced_accuracy(predicted: np.ndarray, true: np.ndarray) -> float:
+    """Mean of the per-class recalls: chance level is ``1 / num_classes`` however skewed the labels.
+
+    Plain accuracy rewards predicting the majority class (61% of BDD's test scenes are city street);
+    this does not, so a gain here holds across classes rather than coming from the majority one.
+    """
+    return float(balanced_accuracy_score(true, predicted))
 
 
 def frozen_baseline(
