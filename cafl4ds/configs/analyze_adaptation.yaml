@@ -1,0 +1,21 @@
+# P1.2 analysis — adapted-vs-frozen (B5) contrasts over the readout ladder's per-image correctness
+# (scripts/read_adaptation.py output). See scripts/analyze_adaptation.py.
+#
+#   uv run python scripts/analyze_adaptation.py mode=p120 root=outputs/p120
+mode: p120 # p120 (P1.2.0's descriptive contrasts) | p121 (P1.2.1's pre-registered gate)
+root: outputs/p120
+n_boot: 4000
+seed: 0
+threads: 4 # BLAS threads — keep low beside HPU jobs
+n_seeds: 5
+backbones: [je, mae]
+
+# p120: the reader output dirs under root (each with je/ and mae/ subdirs; B5 + random in je/)
+pools: [ladder, canary]
+
+# p121 — the pre-registered gate (docs/experiments/phase1/P1.2.1.md)
+tasks: [scene] # scene + the presence task P1.2.0 chose — co-primary
+rungs: [knn, linear, ft10, ft100]
+primary: { je: linear, mae: ft100 }
+delta_floor: 0.02
+b5_name: b5 # the settled-head well: its encoder is the off-the-shelf B5, bit for bit

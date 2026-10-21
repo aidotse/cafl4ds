@@ -8,12 +8,14 @@ from pathlib import Path
 import pytest
 import torch
 from PIL import Image
+from torchvision import transforms
 
 from cafl4ds.data.attributes import (
     BDD100KSource,
     SyntheticAttributeSource,
     _index_scenes,
     _rank_regimes,
+    as_float,
     resize_images,
 )
 
@@ -221,3 +223,21 @@ def test_bdd_source_raises_on_missing_root(tmp_path: Path) -> None:
     """A missing image directory is a clear FileNotFoundError, not an opaque crash."""
     with pytest.raises(FileNotFoundError, match="BDD100K images not found"):
         BDD100KSource(str(tmp_path / "nope")).load()
+
+
+def test_bdd_source_uint8_frames_match_the_float_decode_bit_for_bit(tmp_path: Path) -> None:
+    """``pixel_dtype=uint8`` holds a quarter of the memory; as_float recovers the float32 decode exactly."""
+    records: list[dict[str, object]] = [
+        {"name": "a.jpg", "attributes": {"timeofday": "daytime", "weather": "clear", "scene": "highway"}},
+        {"name": "b.jpg", "attributes": {"timeofday": "night", "weather": "rainy", "scene": "city street"}},
+    ]
+    _write_bdd_fixture(tmp_path, records)
+    reference = BDD100KSource(str(tmp_path), img_size=16).load().images
+    compact = BDD100KSource(str(tmp_path), img_size=16, pixel_dtype="uint8").load().images
+    assert reference.dtype == torch.float32 and compact.dtype == torch.uint8
+    assert torch.equal(as_float(compact), reference)
+    legacy = transforms.Compose([transforms.Resize((16, 16)), transforms.ToTensor()])
+    with Image.open(tmp_path / "images" / "100k" / "train" / "a.jpg") as im:
+        assert torch.equal(legacy(im.convert("RGB")), reference[0])  # the pre-uint8 decode path
+    with pytest.raises(ValueError, match="pixel_dtype"):
+        BDD100KSource(str(tmp_path), pixel_dtype="float16")

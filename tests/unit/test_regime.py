@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import dataclasses
+
 import pytest
 import torch
 
@@ -548,3 +550,39 @@ def test_a_drive_disjoint_well_pool_never_shares_a_drive_frame(overlap: float) -
         assert disjoint == raw
     if overlap == 1.0:
         assert not disjoint
+
+
+class _QuantizedSource(AttributeSource):
+    """The synthetic source's frames quantized to 8 bits, held either as uint8 or as their float twin."""
+
+    def __init__(self, compact: bool) -> None:
+        self.compact = compact
+        self._inner = _source()
+
+    @property
+    def num_canary_classes(self) -> int:
+        return self._inner.num_canary_classes
+
+    def load(self) -> AttributedImages:
+        data = self._inner.load()
+        frames = (data.images.clamp(0, 1) * 255).round().to(torch.uint8)
+        return dataclasses.replace(data, images=frames if self.compact else frames.float().div(255))
+
+
+def test_a_uint8_source_streams_the_same_float_batches_and_probes_as_its_float_twin() -> None:
+    """Compact frames are converted on indexing: batches, probes and pools match the float decode exactly."""
+
+    def build(compact: bool) -> RegimeStream:
+        return RegimeStream(
+            _QuantizedSource(compact=compact), batch_size=8, support_per_canary=4, query_per_canary=4, well_fraction=0.2
+        )
+
+    compact, full = build(compact=True), build(compact=False)
+    for a, b in zip(compact, full, strict=True):
+        assert a.images.dtype == torch.float32 and torch.equal(a.images, b.images)
+    assert torch.equal(compact.eval_sets.probe_query.images, full.eval_sets.probe_query.images)
+    assert torch.equal(compact.labelled_pool("well").images, full.labelled_pool("well").images)
+    assert all(
+        torch.equal(a.images, b.images)
+        for a, b in zip(compact.stationary_batches(), full.stationary_batches(), strict=False)
+    )

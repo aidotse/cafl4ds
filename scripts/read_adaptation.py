@@ -85,7 +85,7 @@ def build_pool(config: DictConfig) -> tuple[HeldOutPool, np.ndarray, np.ndarray]
 
 def _encoder_specs(config: DictConfig) -> list[dict[str, Any]]:
     """The encoders to read: ``encoders`` from the config, then any listed in ``encoders_file``."""
-    listed = OmegaConf.create(list(config.encoders or []))
+    listed = OmegaConf.create(list(config.get("encoders") or []))
     if config.get("encoders_file"):
         listed = OmegaConf.create([*listed, *OmegaConf.load(to_absolute_path(str(config.encoders_file)))])
     specs: list[dict[str, Any]] = [dict(e) for e in OmegaConf.to_container(listed, resolve=True)]

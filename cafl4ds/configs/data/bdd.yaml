@@ -10,3 +10,6 @@ max_images: ${max_images}
 # gas stations, …) cannot support a balanced held-out probe. 0 keeps every scene. Override per run,
 # e.g. `data.min_canary_count=50` keeps the well-populated scenes (city street / highway / residential).
 min_canary_count: 0
+# How decoded frames are held: float32 in [0, 1] (default) or uint8 (a quarter of the memory — BDD train
+# at 224 px is ~42 GB as float32); the regime stream converts uint8 slices to float, bit-identically.
+pixel_dtype: float32

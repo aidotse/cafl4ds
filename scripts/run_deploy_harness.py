@@ -90,7 +90,8 @@ def _branch_stream(
     ``recovery_steps``, runs the recovery pass over the well's stationary pool. A branch reads the
     canary just before and just after the damage (identical at dose 0), so the immediate dent is on
     record and every dose consumes the same RNG. ``checkpoint_legs`` saves every remaining leg
-    boundary (``true``) or only the end state (``final``).
+    boundary (``true``), only the end state (``final``), or before each ``checkpoint_steps`` step and at
+    the end (``steps``).
     """
     resume: DictConfig = config.get("resume") or OmegaConf.create({})
     damage: DictConfig = config.get("damage") or OmegaConf.create({})
@@ -127,6 +128,10 @@ def _branch_stream(
     legs = config.get("checkpoint_legs")
     if legs:
         steps = [] if str(legs) == "final" or recovery else [s for s in stream.leg_boundary_steps if s > start]
+        if str(legs) == "steps":  # P1.2.1: a handful of chosen steps — a long drive has too many legs to keep
+            # a value in (0, 1) is a fraction of the drive's batches (its exact length is known only here)
+            chosen = [round(float(s) * len(stream)) if 0 < float(s) < 1 else int(s) for s in config.checkpoint_steps]
+            steps = [s for s in chosen if s > start]
         fed = CheckpointingStream(fed, method, steps, out_dir / "checkpoints" / f"s{config.seed}")
     return fed, record
 

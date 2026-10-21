@@ -21,12 +21,26 @@ from typing import Any
 
 import torch
 
-from cafl4ds.data.attributes import AttributeSource
+from cafl4ds.data.attributes import AttributeSource, as_float
 from cafl4ds.data.streams import EvalSet, EvalSets, StreamBatch
 
 
+class _FloatFrames:
+    """A uint8 frame tensor that hands out float ``[0, 1]`` slices on indexing.
+
+    It keeps BDD train at a quarter of the memory (see :class:`~cafl4ds.data.attributes.BDD100KSource`
+    ``pixel_dtype``) while every batch and probe the stream hands out stays float.
+    """
+
+    def __init__(self, frames: torch.Tensor) -> None:
+        self._frames = frames
+
+    def __getitem__(self, index: torch.Tensor | list[int]) -> torch.Tensor:
+        return as_float(self._frames[index])
+
+
 def iter_ordered_batches(
-    order: list[tuple[int, int]], images: torch.Tensor, batch_size: int, drop_last: bool
+    order: list[tuple[int, int]], images: torch.Tensor | _FloatFrames, batch_size: int, drop_last: bool
 ) -> Iterator[StreamBatch]:
     """Yield label-free batches from an ordered ``(era, image_index)`` stream.
 
@@ -327,7 +341,8 @@ class RegimeStream:
         reserve_generator = torch.Generator().manual_seed(canary_seed)
 
         attributed = source.load()
-        self._images = attributed.images
+        # Compact (uint8) frames stay compact; every slice the stream hands out is float in [0, 1].
+        self._images = attributed.images if attributed.images.is_floating_point() else _FloatFrames(attributed.images)
         self.regime_names = attributed.regime_names
         self.canary_names = attributed.canary_names
         self._object_categories = attributed.object_categories

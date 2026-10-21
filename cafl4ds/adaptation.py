@@ -28,6 +28,7 @@ import torch
 from torch import nn
 
 from cafl4ds import measurements
+from cafl4ds.data.attributes import as_float
 
 SCENE = "scene"
 PRESENCE_PREFIX = "presence:"
@@ -39,7 +40,7 @@ class HeldOutPool:
     """Labelled frames for reading encoders — never trained on by any compared encoder.
 
     Attributes:
-        images: ``[N, C, H, W]`` float images in ``[0, 1]``.
+        images: ``[N, C, H, W]`` frames — float in ``[0, 1]`` or uint8 in ``[0, 255]`` (converted per batch).
         scene: Scene (canary) label per image ``[N]``.
         stratum: Time-of-day stratum per image ``[N]``.
         regime: Regime id per image ``[N]`` (shift-walk order), for regime-relative reads.
@@ -107,7 +108,7 @@ def encode(encoder: nn.Module, images: torch.Tensor, device: str) -> np.ndarray:
     encoder.eval()
     try:
         with torch.no_grad():
-            parts = [encoder.embed(chunk.to(device)).float().cpu() for chunk in images.split(_ENCODE_CHUNK)]
+            parts = [encoder.embed(as_float(chunk).to(device)).float().cpu() for chunk in images.split(_ENCODE_CHUNK)]
     finally:
         encoder.train(was_training)
     return torch.cat(parts).numpy()
@@ -182,7 +183,7 @@ def fine_tune_predict(
     loss_fn = nn.CrossEntropyLoss()
     for _ in range(recipe.steps):
         batch = torch.cat([idx[torch.randint(idx.numel(), (per_class,), generator=generator)] for idx in by_class])
-        imgs = train_images[batch]
+        imgs = as_float(train_images[batch])
         flip = torch.rand(imgs.shape[0], generator=generator) < 0.5
         imgs = torch.where(flip[:, None, None, None], imgs.flip(-1), imgs)
         optimizer.zero_grad()
@@ -192,7 +193,7 @@ def fine_tune_predict(
         schedule.step()
     model.eval()
     with torch.no_grad():
-        preds = [model(chunk.to(device)).argmax(dim=1).cpu() for chunk in query_images.split(_ENCODE_CHUNK)]
+        preds = [model(as_float(chunk).to(device)).argmax(dim=1).cpu() for chunk in query_images.split(_ENCODE_CHUNK)]
     return torch.cat(preds).numpy()
 
 
@@ -278,3 +279,47 @@ def scene_overlap(context: np.ndarray, labels: np.ndarray, fit: np.ndarray, quer
     )
     correct = frozen_correctness(onehot, labels, fit, query, knn_k=1)["linear"]
     return balanced_accuracy(correct, labels[query])
+
+
+PASS, FAIL, INCONCLUSIVE = "PASS", "FAIL", "INCONCLUSIVE"
+
+
+def gate_verdict(
+    contrasts: dict[str, dict[str, dict[str, float]]],
+    primary_rung: str,
+    *,
+    delta_floor: float = 0.02,
+    alpha: float = 0.05,
+) -> dict[str, object]:
+    """P1.2.1's pre-registered leg-(a) verdict for one backbone, from its end-of-walk contrasts vs B5.
+
+    * **PASS** — on at least one task, the primary rung's one-sided p clears Holm over the tasks at
+      family-wise ``alpha`` (with two tasks: the smaller p ≤ ``alpha`` / 2).
+    * **FAIL** — on every task and every rung, the upper bound of Δ's 95% interval is below
+      ``delta_floor``: every reading rules out a gain that large.
+    * **INCONCLUSIVE** — anything else.
+
+    Args:
+        contrasts: ``task -> rung -> bootstrap_delta`` result (Δ = adapted − B5).
+        primary_rung: The backbone's pre-registered primary rung (JE ``linear``, MAE ``ft100``).
+        delta_floor: The smallest gain a FAIL must rule out.
+        alpha: Family-wise one-sided level over the tasks.
+
+    Returns:
+        ``verdict``, the per-task primary-rung ``holm`` rejections, and the ``max_upper`` bound seen.
+
+    Raises:
+        ValueError: If a task lacks the primary rung.
+    """
+    missing = [t for t, rungs in contrasts.items() if primary_rung not in rungs]
+    if missing:
+        raise ValueError(f"tasks {missing} lack the primary rung {primary_rung!r}.")
+    rejected = holm({t: rungs[primary_rung]["p_one_sided"] for t, rungs in contrasts.items()}, alpha)
+    max_upper = max(c["hi"] for rungs in contrasts.values() for c in rungs.values())
+    if any(rejected.values()):
+        verdict = PASS
+    elif max_upper < delta_floor:
+        verdict = FAIL
+    else:
+        verdict = INCONCLUSIVE
+    return {"verdict": verdict, "holm": rejected, "max_upper": max_upper, "primary_rung": primary_rung}

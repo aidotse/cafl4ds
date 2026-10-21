@@ -521,3 +521,93 @@ def test_read_adaptation_reads_the_ladder_and_saves_per_image_correctness(tmp_pa
         tmp_path / "lr",
     )
     assert lr["best_lr"] in (1e-4, 1e-3)
+
+
+def test_p121_drive_from_a_settled_head_well_saves_chosen_steps_and_reads_on_the_ladder(tmp_path: Path) -> None:
+    """P1.2.1's wiring: a settled-head well, a drive checkpointing only the chosen steps, the reader on them."""
+    heads = tmp_path / "heads.pt"
+    warm = [*_P11_DIET, "warmup.window=2", "warmup.min_steps=2", "warmup.max_steps=3", "warmup.freeze_encoder=true"]
+    _load_script("warm_well").warm(_compose("warm_well", [*warm, f"well_out={heads}"]))
+    drive = [*_P11_DIET, "eval_every=4", f"well={heads}", "checkpoint_legs=steps", "checkpoint_steps=[2,0.5]"]
+    _load_script("run_deploy_harness").run_deploy(_compose("deploy", drive), tmp_path / "drive")
+    index = json.loads((tmp_path / "drive" / "checkpoints" / "s0" / "index.json").read_text())
+    files = [e["file"] for e in index]  # step 2, the drive's halfway batch, and the end
+    assert files[0] == "step00002.pt" and files[-1] == "final.pt" and len(files) == 3
+    assert index[1]["batches_seen"] > 2
+
+    ckpt = tmp_path / "drive" / "checkpoints" / "s0"
+    encoders = (
+        f"+encoders=[{{name:b5,kind:well,path:'{heads}'}},{{name:end,kind:checkpoint,path:'{ckpt / 'final.pt'}'}}]"
+    )
+    summary = _load_script("read_adaptation").run(
+        _compose("read_adaptation", [*_P11_DIET, "probe_per_class=6", "threads=1", "~encoders", encoders]),
+        tmp_path / "read",
+    )
+    assert set(summary["encoders"]) == {"b5", "end"}
+
+
+def _fake_ladder(path: Path, names: list[str], gain: dict[str, float], n: int = 300) -> None:
+    """A reader output dir: pool metadata plus per-encoder correctness at accuracy 0.6 + ``gain[name]``."""
+    rng = np.random.default_rng(len(str(path)))
+    path.mkdir(parents=True)
+    labels = rng.integers(0, 3, n)
+    np.savez(
+        path / "pool.npz",
+        query_index=np.arange(n),
+        stratum=rng.integers(0, 2, n),
+        regime=np.zeros(n),
+        **{"labels|scene": labels},
+    )
+    (path / "summary.json").write_text(json.dumps({"stratum_names": {"0": "day", "1": "night"}}))
+    for name in names:
+        p = 0.6 + gain.get(name, 0.0)
+        frozen = {f"scene|{r}": (rng.random((1, n)) < p).astype(np.float32) for r in ("knn", "linear")}
+        ft = {f"scene|ft{k}": (rng.random((3, n)) < p).astype(np.float32) for k in (10, 100)}
+        np.savez(path / f"{name}.npz", **frozen, **({} if name.endswith("_mid") else ft))
+
+
+def test_analyze_adaptation_reads_p120_contrasts_and_the_p121_gate(tmp_path: Path) -> None:
+    """The analysis pairs encoders on one query set, reports both framings, and calls the gate."""
+    script = _load_script("analyze_adaptation")
+    drives = [f"{bb}_{o}_s{s}_{pt}" for o in ("walk", "iid") for s in (0, 1) for pt in ("mid", "end") for bb in ("je",)]
+    _fake_ladder(tmp_path / "p120" / "ladder" / "je", ["b5", "random", "je_well", *drives], {"je_well": 0.1})
+    p120 = script.run(
+        OmegaConf.create(
+            {
+                "mode": "p120",
+                "root": str(tmp_path / "p120"),
+                "n_boot": 200,
+                "seed": 0,
+                "threads": 1,
+                "n_seeds": 2,
+                "backbones": ["je"],
+                "pools": ["ladder", "canary"],
+            }
+        )
+    )
+    linear = p120["ladder"]["je"]["scene|linear"]
+    assert linear["vs_b5"]["well"]["delta"] > 0.05 and linear["vs_well"]["walk_end"]["delta"] < -0.05
+    assert "ft100" not in str(p120["ladder"]["je"].get("scene|ft100", {}).get("vs_b5", {}).get("walk_mid"))
+
+    names = ["b5", *[f"walk_s{s}_{t}" for s in range(3) for t in ("t00100", "end")]]
+    _fake_ladder(tmp_path / "p121" / "ladder" / "je", names, {f"walk_s{s}_end": 0.12 for s in range(3)}, n=2000)
+    p121 = script.run(
+        OmegaConf.create(
+            {
+                "mode": "p121",
+                "root": str(tmp_path / "p121"),
+                "n_boot": 300,
+                "seed": 0,
+                "threads": 1,
+                "n_seeds": 3,
+                "backbones": ["je"],
+                "tasks": ["scene"],
+                "rungs": ["knn", "linear", "ft10", "ft100"],
+                "primary": {"je": "linear"},
+                "delta_floor": 0.02,
+                "b5_name": "b5",
+            }
+        )
+    )
+    assert p121["je"]["gate"]["verdict"] == "PASS"
+    assert set(p121["je"]["trajectory"]) == {"end", "t00100"}

@@ -177,3 +177,32 @@ def test_frozen_correctness_returns_per_query_rows_for_both_probes() -> None:
     out = adaptation.frozen_correctness(features, labels, fit, query, knn_k=5)
     assert set(out) == {"knn", "linear"}
     assert out["linear"].shape == (query.size,) and out["linear"].mean() > 0.95
+
+
+def _c(delta: float, lo: float, hi: float, p: float) -> dict[str, float]:
+    return {"delta": delta, "lo": lo, "hi": hi, "p_one_sided": p}
+
+
+def test_gate_passes_when_the_primary_rung_clears_holm_on_either_task() -> None:
+    """One task's primary rung at p 0.01 (≤ 0.025) passes, whatever the other task reads."""
+    contrasts = {
+        "scene": {"linear": _c(0.04, 0.01, 0.07, 0.01), "knn": _c(-0.05, -0.08, -0.02, 0.99)},
+        "presence:truck": {"linear": _c(0.0, -0.02, 0.02, 0.5), "knn": _c(0.0, -0.02, 0.02, 0.5)},
+    }
+    assert adaptation.gate_verdict(contrasts, "linear")["verdict"] == adaptation.PASS
+
+
+def test_gate_does_not_pass_a_primary_p_between_the_holm_steps() -> None:
+    """P 0.04 on the better task is not enough with two tasks (Holm's first step is 0.025)."""
+    contrasts = {"scene": {"linear": _c(0.03, 0.0, 0.06, 0.04)}, "presence:truck": {"linear": _c(0, -0.01, 0.01, 0.5)}}
+    assert adaptation.gate_verdict(contrasts, "linear")["verdict"] == adaptation.INCONCLUSIVE
+
+
+def test_gate_fails_only_when_every_rung_rules_out_a_two_point_gain() -> None:
+    """FAIL needs every upper bound below the floor; one rung reaching it leaves the read inconclusive."""
+    low = {"ft100": _c(-0.03, -0.05, 0.01, 0.9), "linear": _c(-0.08, -0.1, -0.06, 1.0)}
+    assert adaptation.gate_verdict({"scene": low, "presence:truck": low}, "ft100")["verdict"] == adaptation.FAIL
+    reaching = {**low, "knn": _c(0.0, -0.02, 0.025, 0.5)}
+    assert adaptation.gate_verdict({"scene": low, "presence:truck": reaching}, "ft100")["verdict"] == "INCONCLUSIVE"
+    with pytest.raises(ValueError, match="primary rung"):
+        adaptation.gate_verdict({"scene": {"knn": _c(0, 0, 0, 0.5)}}, "ft100")

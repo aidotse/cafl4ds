@@ -43,11 +43,14 @@ anchor: ${well}
 # for post-hoc reads too costly to run inline (the P1.3 fine-tune probe). The IID control checkpoints
 # at the same (matched) steps.
 checkpoint_legs: false
+checkpoint_steps: [] # with checkpoint_legs=steps (P1.2.1): save before these steps (a value in (0, 1) = that
+# fraction of the drive's batches), and at the end
 
 # P1.1.1 branches (cafl4ds/branch.py) — start from a saved checkpoint instead of the well. `checkpoint`
 # is a full-method file ("{seed}" is filled with the drive seed); `step` is the drive step it was saved
 # before (step<NNNNN>.pt), and the drive resumes there (fresh optimizer — compare against a dose-0
-# branch, not the original drive). `checkpoint_legs` also accepts `final` (save only the end state).
+# branch, not the original drive). `checkpoint_legs` also accepts `final` (save only the end state) and
+# `steps` (save before each `checkpoint_steps` step and at the end — P1.2.1's long drive).
 resume:
   checkpoint: null
   step: 0

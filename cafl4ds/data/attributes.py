@@ -37,12 +37,18 @@ _WEATHER_RANK = {"clear": 0, "partly cloudy": 1, "overcast": 2, "rainy": 3, "sno
 _UNKNOWN_ATTRS = frozenset({"undefined", "", None})
 
 
+def as_float(images: torch.Tensor) -> torch.Tensor:
+    """Frames as ``float32`` in ``[0, 1]`` — uint8 frames divided by 255, float frames unchanged."""
+    return images.float().div_(255) if images.dtype == torch.uint8 else images
+
+
 @dataclass(frozen=True)
 class AttributedImages:
     """Loaded images with the diet's two attribute axes and the default shift-walk order.
 
     Attributes:
-        images: Image batch ``[N, C, H, W]`` (``float32`` in ``[0, 1]``).
+        images: Image batch ``[N, C, H, W]`` (``float32`` in ``[0, 1]``, or ``uint8`` in ``[0, 255]`` when a
+            source holds compact frames — :func:`as_float` converts).
         era_key: Integer regime id per image ``[N]`` — the axis the diet orders eras on.
         canary: Integer canary label per image ``[N]`` — the orthogonal probe axis.
         regime_order: Regime ids in the default shift-walk order (a stream may override it).
@@ -198,6 +204,7 @@ class BDD100KSource(AttributeSource):
         images_dir: str | None = None,
         labels_file: str | None = None,
         min_canary_count: int = 0,
+        pixel_dtype: str = "float32",
     ) -> None:
         """Configure the BDD100K source.
 
@@ -213,7 +220,17 @@ class BDD100KSource(AttributeSource):
                 attribute-valid images. Real BDD has a long scene tail (e.g. ``tunnel`` ≈ a handful of
                 frames) that cannot support a balanced held-out probe; this keeps the canary to
                 probeable classes. ``0`` (default) keeps every observed scene — no change.
+            pixel_dtype: How decoded frames are held: ``"float32"`` in ``[0, 1]`` (default), or
+                ``"uint8"`` in ``[0, 255]`` — a quarter of the memory (BDD train at 224 px: ~10.5 GB
+                instead of ~42 GB). :class:`~cafl4ds.data.regime.RegimeStream` converts uint8 frames to
+                float on indexing (``/ 255``, bit-identical to the float32 decode).
+
+        Raises:
+            ValueError: If ``pixel_dtype`` is neither ``"float32"`` nor ``"uint8"``.
         """
+        if pixel_dtype not in ("float32", "uint8"):
+            raise ValueError(f"pixel_dtype must be 'float32' or 'uint8'; got {pixel_dtype!r}.")
+        self.pixel_dtype = pixel_dtype
         self.bdd_root = bdd_root
         self.split = split
         self.img_size = img_size
@@ -299,21 +316,23 @@ class BDD100KSource(AttributeSource):
         timeofdays = sorted({r[0] for _, r, _, _ in valid}, key=lambda t: (_TIMEOFDAY_RANK.get(t, 99), t))
         stratum_id = {t: i for i, t in enumerate(timeofdays)}
 
-        resize = transforms.Compose([transforms.Resize((self.img_size, self.img_size)), transforms.ToTensor()])
-        imgs, era_key, canary, stratum, categories = [], [], [], [], []
-        for path, regime, scene, cats in valid:
+        # Decode as uint8 into one preallocated tensor (no list-then-stack copy); ToTensor's float is this / 255.
+        resize = transforms.Compose([transforms.Resize((self.img_size, self.img_size)), transforms.PILToTensor()])
+        frames = torch.empty((len(valid), 3, self.img_size, self.img_size), dtype=torch.uint8)
+        era_key, canary, stratum, categories = [], [], [], []
+        for i, (path, regime, scene, cats) in enumerate(valid):
             with Image.open(path) as im:
-                imgs.append(resize(im.convert("RGB")))
+                frames[i] = resize(im.convert("RGB"))
             era_key.append(regime_id[regime])
             canary.append(scene_id[scene])
             stratum.append(stratum_id[regime[0]])
             categories.append(cats)
         logger.info(
-            f"BDD100KSource: loaded {len(imgs)} images ({self.split}) at {self.img_size}px "
+            f"BDD100KSource: loaded {len(valid)} images ({self.split}) at {self.img_size}px ({self.pixel_dtype}) "
             f"over {len(regime_order)} regimes, {len(scene_id)} scenes"
         )
         return AttributedImages(
-            images=torch.stack(imgs),
+            images=frames if self.pixel_dtype == "uint8" else frames.float().div_(255),
             era_key=torch.tensor(era_key, dtype=torch.long),
             canary=torch.tensor(canary, dtype=torch.long),
             regime_order=regime_order,
