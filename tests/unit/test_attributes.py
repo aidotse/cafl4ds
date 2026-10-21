@@ -241,3 +241,21 @@ def test_bdd_source_uint8_frames_match_the_float_decode_bit_for_bit(tmp_path: Pa
         assert torch.equal(legacy(im.convert("RGB")), reference[0])  # the pre-uint8 decode path
     with pytest.raises(ValueError, match="pixel_dtype"):
         BDD100KSource(str(tmp_path), pixel_dtype="float16")
+
+
+def test_bdd_source_cache_reuses_an_identical_decode_and_keys_on_the_config(tmp_path: Path) -> None:
+    """A cached load equals the fresh decode; a different size is a different cache entry."""
+    records: list[dict[str, object]] = [
+        {"name": "a.jpg", "attributes": {"timeofday": "daytime", "weather": "clear", "scene": "highway"}},
+        {"name": "b.jpg", "attributes": {"timeofday": "night", "weather": "rainy", "scene": "city street"}},
+    ]
+    _write_bdd_fixture(tmp_path / "bdd", records)
+    cache = tmp_path / "cache"
+    fresh = BDD100KSource(str(tmp_path / "bdd"), img_size=16, pixel_dtype="uint8", cache_dir=str(cache)).load()
+    assert len(list(cache.glob("*.pt"))) == 1
+    again = BDD100KSource(str(tmp_path / "bdd"), img_size=16, pixel_dtype="uint8", cache_dir=str(cache))
+    cached = again.load()
+    assert torch.equal(cached.images, fresh.images) and torch.equal(cached.canary, fresh.canary)
+    assert cached.regime_names == fresh.regime_names and again.num_canary_classes == 2
+    BDD100KSource(str(tmp_path / "bdd"), img_size=8, pixel_dtype="uint8", cache_dir=str(cache)).load()
+    assert len(list(cache.glob("*.pt"))) == 2

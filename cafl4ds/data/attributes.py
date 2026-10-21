@@ -17,6 +17,7 @@ lets the whole rig — and its Tier-A wiring check — run from a fresh clone wi
 
 from __future__ import annotations
 
+import hashlib
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -205,6 +206,7 @@ class BDD100KSource(AttributeSource):
         labels_file: str | None = None,
         min_canary_count: int = 0,
         pixel_dtype: str = "float32",
+        cache_dir: str | None = None,
     ) -> None:
         """Configure the BDD100K source.
 
@@ -225,12 +227,18 @@ class BDD100KSource(AttributeSource):
                 instead of ~42 GB). :class:`~cafl4ds.data.regime.RegimeStream` converts uint8 frames to
                 float on indexing (``/ 255``, bit-identical to the float32 decode).
 
+            cache_dir: If set, the decoded frames and attributes are saved here on first load and reused by
+                every later run with the same split, size, image cap, scene filter, labels file and dtype — a
+                BDD-train decode at 224 px takes ~35 min, a cached load seconds. The decode is deterministic,
+                so a cached load is identical to a fresh one.
+
         Raises:
             ValueError: If ``pixel_dtype`` is neither ``"float32"`` nor ``"uint8"``.
         """
         if pixel_dtype not in ("float32", "uint8"):
             raise ValueError(f"pixel_dtype must be 'float32' or 'uint8'; got {pixel_dtype!r}.")
         self.pixel_dtype = pixel_dtype
+        self.cache_dir = cache_dir
         self.bdd_root = bdd_root
         self.split = split
         self.img_size = img_size
@@ -272,8 +280,46 @@ class BDD100KSource(AttributeSource):
             ValueError: If no image survives attribute filtering.
         """
         if self._cache is None:
-            self._cache = self._decode()
+            self._cache = self._load_or_decode()
         return self._cache
+
+    def _cache_path(self) -> Path | None:
+        """The on-disk decode cache for this configuration (``None`` when caching is off)."""
+        if not self.cache_dir:
+            return None
+        _, labels_file = self._paths()
+        stat = labels_file.stat()
+        key = json.dumps(
+            [
+                self.split,
+                self.img_size,
+                self.max_images,
+                self.min_canary_count,
+                self.pixel_dtype,
+                str(labels_file.resolve()),
+                stat.st_size,
+                int(stat.st_mtime),
+            ]
+        )
+        digest = hashlib.sha256(key.encode()).hexdigest()[:16]
+        return Path(self.cache_dir) / f"bdd_{self.split}_{self.img_size}px_{self.pixel_dtype}_{digest}.pt"
+
+    def _load_or_decode(self) -> AttributedImages:
+        """Load the decode from the on-disk cache when present; otherwise decode (and cache if configured)."""
+        path = self._cache_path()
+        if path is not None and path.is_file():
+            data: AttributedImages = torch.load(path, weights_only=False)
+            self._num_canary = len(data.canary_names)
+            logger.info(f"BDD100KSource: loaded {data.canary.shape[0]} cached images from {path}")
+            return data
+        data = self._decode()
+        if path is not None:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            partial = path.with_suffix(".partial")
+            torch.save(data, partial)
+            partial.replace(path)  # atomic: a concurrent reader never sees a half-written cache
+            logger.info(f"BDD100KSource: cached the decode at {path}")
+        return data
 
     def _decode(self) -> AttributedImages:
         """Parse the attribute records and decode the referenced images (the uncached work)."""

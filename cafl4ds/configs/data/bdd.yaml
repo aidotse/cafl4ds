@@ -13,3 +13,5 @@ min_canary_count: 0
 # How decoded frames are held: float32 in [0, 1] (default) or uint8 (a quarter of the memory — BDD train
 # at 224 px is ~42 GB as float32); the regime stream converts uint8 slices to float, bit-identically.
 pixel_dtype: float32
+# Save / reuse the decode here (e.g. outputs/cache) — a BDD-train decode at 224 px takes ~35 min; null = off.
+cache_dir: null
