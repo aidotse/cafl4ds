@@ -1,0 +1,29 @@
+- {name: b5, kind: well, path: wells/p121/mae_heads.pt}
+- {name: walk_s0_t00100, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s0/step00100.pt, fewshot: false}
+- {name: walk_s0_t00437, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s0/step00437.pt, fewshot: false}
+- {name: walk_s0_t00874, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s0/step00874.pt, fewshot: false}
+- {name: walk_s0_t01311, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s0/step01311.pt, fewshot: false}
+- {name: walk_s0_end, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s0/final.pt, fewshot: true}
+- {name: walk_s1_t00100, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s1/step00100.pt, fewshot: false}
+- {name: walk_s1_t00437, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s1/step00437.pt, fewshot: false}
+- {name: walk_s1_t00874, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s1/step00874.pt, fewshot: false}
+- {name: walk_s1_t01311, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s1/step01311.pt, fewshot: false}
+- {name: walk_s1_end, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s1/final.pt, fewshot: true}
+- {name: walk_s2_t00100, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s2/step00100.pt, fewshot: false}
+- {name: walk_s2_t00437, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s2/step00437.pt, fewshot: false}
+- {name: walk_s2_t00874, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s2/step00874.pt, fewshot: false}
+- {name: walk_s2_t01311, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s2/step01311.pt, fewshot: false}
+- {name: walk_s2_end, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s2/final.pt, fewshot: true}
+- {name: walk_s3_t00100, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s3/step00100.pt, fewshot: false}
+- {name: walk_s3_t00437, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s3/step00437.pt, fewshot: false}
+- {name: walk_s3_t00874, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s3/step00874.pt, fewshot: false}
+- {name: walk_s3_t01311, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s3/step01311.pt, fewshot: false}
+- {name: walk_s3_end, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s3/final.pt, fewshot: true}
+- {name: walk_s4_t00100, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s4/step00100.pt, fewshot: false}
+- {name: walk_s4_t00437, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s4/step00437.pt, fewshot: false}
+- {name: walk_s4_t00874, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s4/step00874.pt, fewshot: false}
+- {name: walk_s4_t01311, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s4/step01311.pt, fewshot: false}
+- {name: walk_s4_end, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s4/final.pt, fewshot: true}
+- {name: iid_s0_end, kind: checkpoint, path: outputs/p121/drive/mae_iid/checkpoints/s0/final.pt}
+- {name: iid_s1_end, kind: checkpoint, path: outputs/p121/drive/mae_iid/checkpoints/s1/final.pt}
+- {name: iid_s2_end, kind: checkpoint, path: outputs/p121/drive/mae_iid/checkpoints/s2/final.pt}

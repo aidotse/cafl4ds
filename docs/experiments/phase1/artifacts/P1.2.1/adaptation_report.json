@@ -1,0 +1,606 @@
+{
+  "mode": "p121",
+  "n_boot": 4000,
+  "je": {
+    "gate": {
+      "verdict": "PASS",
+      "holm": {
+        "scene": true,
+        "presence_cell:traffic light": true
+      },
+      "max_upper": 0.06098715348208239,
+      "primary_rung": "linear"
+    },
+    "contrasts": {
+      "scene": {
+        "knn": {
+          "delta": -0.013308611486584354,
+          "lo": -0.0323554578829581,
+          "hi": 0.0055696890659238845,
+          "p_one_sided": 0.9150212446888278,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "linear": {
+          "delta": 0.0251791094805055,
+          "lo": 0.008411665684860131,
+          "hi": 0.041174051166434626,
+          "p_one_sided": 0.0022494376405898524,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "ft10": {
+          "delta": -0.009144167807164982,
+          "lo": -0.021789925370663002,
+          "hi": 0.0040380992613652565,
+          "p_one_sided": 0.9220194951262184,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "ft100": {
+          "delta": -0.012337506305548307,
+          "lo": -0.0230903443713316,
+          "hi": -0.002081174157638771,
+          "p_one_sided": 0.9897525618595351,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        }
+      },
+      "presence_cell:traffic light": {
+        "knn": {
+          "delta": 0.00588235294117645,
+          "lo": -0.014807302231237166,
+          "hi": 0.026639621365787465,
+          "p_one_sided": 0.28817795551112224,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "linear": {
+          "delta": 0.04036511156186606,
+          "lo": 0.021769776876267685,
+          "hi": 0.06098715348208239,
+          "p_one_sided": 0.00024993751562109475,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "ft10": {
+          "delta": 0.0007437492077861929,
+          "lo": -0.011697653217028365,
+          "hi": 0.013162050188756472,
+          "p_one_sided": 0.45263684078980254,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "ft100": {
+          "delta": 0.018976784866754026,
+          "lo": 0.007954134489985817,
+          "hi": 0.02968278021965379,
+          "p_one_sided": 0.000999750062484379,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        }
+      }
+    },
+    "trajectory": {
+      "end": {
+        "scene|knn": {
+          "delta": -0.013308611486584354,
+          "lo": -0.0323554578829581,
+          "hi": 0.0055696890659238845,
+          "p_one_sided": 0.9150212446888278,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|linear": {
+          "delta": 0.0251791094805055,
+          "lo": 0.008411665684860131,
+          "hi": 0.041174051166434626,
+          "p_one_sided": 0.0022494376405898524,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|ft10": {
+          "delta": -0.009144167807164982,
+          "lo": -0.021789925370663002,
+          "hi": 0.0040380992613652565,
+          "p_one_sided": 0.9220194951262184,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|ft100": {
+          "delta": -0.012337506305548307,
+          "lo": -0.0230903443713316,
+          "hi": -0.002081174157638771,
+          "p_one_sided": 0.9897525618595351,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "presence_cell:traffic light|knn": {
+          "delta": 0.00588235294117645,
+          "lo": -0.014807302231237166,
+          "hi": 0.026639621365787465,
+          "p_one_sided": 0.28817795551112224,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|linear": {
+          "delta": 0.04036511156186606,
+          "lo": 0.021769776876267685,
+          "hi": 0.06098715348208239,
+          "p_one_sided": 0.00024993751562109475,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|ft10": {
+          "delta": 0.0007437492077861929,
+          "lo": -0.011697653217028365,
+          "hi": 0.013162050188756472,
+          "p_one_sided": 0.45263684078980254,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|ft100": {
+          "delta": 0.018976784866754026,
+          "lo": 0.007954134489985817,
+          "hi": 0.02968278021965379,
+          "p_one_sided": 0.000999750062484379,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        }
+      },
+      "t00100": {
+        "scene|knn": {
+          "delta": 0.013241711087461971,
+          "lo": -0.0037631013615290086,
+          "hi": 0.030427893615881763,
+          "p_one_sided": 0.05998500374906274,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|linear": {
+          "delta": -0.009209031828954384,
+          "lo": -0.026297519907310912,
+          "hi": 0.00753568743499798,
+          "p_one_sided": 0.8637840539865034,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|ft10": null,
+        "scene|ft100": null,
+        "presence_cell:traffic light|knn": {
+          "delta": 0.009127789046653012,
+          "lo": -0.005951656524678891,
+          "hi": 0.02407200811359035,
+          "p_one_sided": 0.11872031992002,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|linear": {
+          "delta": 0.009871534820824923,
+          "lo": -0.008586883029073733,
+          "hi": 0.028600405679513163,
+          "p_one_sided": 0.14446388402899274,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|ft10": null,
+        "presence_cell:traffic light|ft100": null
+      },
+      "t00437": {
+        "scene|knn": {
+          "delta": 0.029116873014397027,
+          "lo": 0.010030974712896604,
+          "hi": 0.0486018590493081,
+          "p_one_sided": 0.001999500124968758,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|linear": {
+          "delta": 0.012954964468466557,
+          "lo": -0.003315469761759199,
+          "hi": 0.028453498201087907,
+          "p_one_sided": 0.06198450387403149,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|ft10": null,
+        "scene|ft100": null,
+        "presence_cell:traffic light|knn": {
+          "delta": 0.010547667342799105,
+          "lo": -0.007236308316430076,
+          "hi": 0.026979377958079823,
+          "p_one_sided": 0.11772056985753562,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|linear": {
+          "delta": 0.024949290060851892,
+          "lo": 0.0068948613928330104,
+          "hi": 0.04266565246788369,
+          "p_one_sided": 0.0022494376405898524,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|ft10": null,
+        "presence_cell:traffic light|ft100": null
+      },
+      "t00874": {
+        "scene|knn": {
+          "delta": 0.029610309388733658,
+          "lo": 0.010626764359955182,
+          "hi": 0.048354464422153215,
+          "p_one_sided": 0.0017495626093476631,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|linear": {
+          "delta": 0.028001433205111836,
+          "lo": 0.012875567437075918,
+          "hi": 0.043869576664738695,
+          "p_one_sided": 0.0004998750312421895,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|ft10": null,
+        "scene|ft100": null,
+        "presence_cell:traffic light|knn": {
+          "delta": 0.0037187288708584454,
+          "lo": -0.015620351588911513,
+          "hi": 0.02183908045977012,
+          "p_one_sided": 0.3586603349162709,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|linear": {
+          "delta": 0.030831643002028453,
+          "lo": 0.011494252873563312,
+          "hi": 0.05016903313049359,
+          "p_one_sided": 0.0007498125468632841,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|ft10": null,
+        "presence_cell:traffic light|ft100": null
+      },
+      "t01311": {
+        "scene|knn": {
+          "delta": 0.008586229900985565,
+          "lo": -0.01247232915091339,
+          "hi": 0.029731642896418747,
+          "p_one_sided": 0.22419395151212196,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|linear": {
+          "delta": 0.02744517614899422,
+          "lo": 0.011860299727200868,
+          "hi": 0.042501509549891035,
+          "p_one_sided": 0.0004998750312421895,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|ft10": null,
+        "scene|ft100": null,
+        "presence_cell:traffic light|knn": {
+          "delta": 0.01284651791751168,
+          "lo": -0.008453346855983767,
+          "hi": 0.03326572008113604,
+          "p_one_sided": 0.11747063234191452,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|linear": {
+          "delta": 0.03657876943881011,
+          "lo": 0.018052738336713947,
+          "hi": 0.0551064908722111,
+          "p_one_sided": 0.00024993751562109475,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|ft10": null,
+        "presence_cell:traffic light|ft100": null
+      }
+    }
+  },
+  "mae": {
+    "gate": {
+      "verdict": "FAIL",
+      "holm": {
+        "scene": false,
+        "presence_cell:traffic light": false
+      },
+      "max_upper": 0.006965855307640282,
+      "primary_rung": "ft100"
+    },
+    "contrasts": {
+      "scene": {
+        "knn": {
+          "delta": -0.056490559966887344,
+          "lo": -0.07157873812845264,
+          "hi": -0.04142999931600581,
+          "p_one_sided": 1.0,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "linear": {
+          "delta": -0.043109782776301286,
+          "lo": -0.06004874202997804,
+          "hi": -0.026266722820699986,
+          "p_one_sided": 1.0,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "ft10": {
+          "delta": -0.047920397630841105,
+          "lo": -0.061481307325139074,
+          "hi": -0.035912201055483726,
+          "p_one_sided": 1.0,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "ft100": {
+          "delta": -0.051043361810023336,
+          "lo": -0.06730998154398642,
+          "hi": -0.03773610397821375,
+          "p_one_sided": 1.0,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        }
+      },
+      "presence_cell:traffic light": {
+        "knn": {
+          "delta": -0.008316430020284038,
+          "lo": -0.022315753887762094,
+          "hi": 0.005341446923596951,
+          "p_one_sided": 0.8850287428142964,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "linear": {
+          "delta": -0.011494252873563204,
+          "lo": -0.029682217714672054,
+          "hi": 0.006965855307640282,
+          "p_one_sided": 0.884028992751812,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "ft10": {
+          "delta": -0.005611897530468757,
+          "lo": -0.017625645777415957,
+          "hi": 0.00601814469029116,
+          "p_one_sided": 0.8222944263934017,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "ft100": {
+          "delta": -0.016069417212604242,
+          "lo": -0.027270678378354504,
+          "hi": -0.004934641867674642,
+          "p_one_sided": 0.9972506873281679,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        }
+      }
+    },
+    "trajectory": {
+      "end": {
+        "scene|knn": {
+          "delta": -0.056490559966887344,
+          "lo": -0.07157873812845264,
+          "hi": -0.04142999931600581,
+          "p_one_sided": 1.0,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|linear": {
+          "delta": -0.043109782776301286,
+          "lo": -0.06004874202997804,
+          "hi": -0.026266722820699986,
+          "p_one_sided": 1.0,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|ft10": {
+          "delta": -0.047920397630841105,
+          "lo": -0.061481307325139074,
+          "hi": -0.035912201055483726,
+          "p_one_sided": 1.0,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|ft100": {
+          "delta": -0.051043361810023336,
+          "lo": -0.06730998154398642,
+          "hi": -0.03773610397821375,
+          "p_one_sided": 1.0,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "presence_cell:traffic light|knn": {
+          "delta": -0.008316430020284038,
+          "lo": -0.022315753887762094,
+          "hi": 0.005341446923596951,
+          "p_one_sided": 0.8850287428142964,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|linear": {
+          "delta": -0.011494252873563204,
+          "lo": -0.029682217714672054,
+          "hi": 0.006965855307640282,
+          "p_one_sided": 0.884028992751812,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|ft10": {
+          "delta": -0.005611897530468757,
+          "lo": -0.017625645777415957,
+          "hi": 0.00601814469029116,
+          "p_one_sided": 0.8222944263934017,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|ft100": {
+          "delta": -0.016069417212604242,
+          "lo": -0.027270678378354504,
+          "hi": -0.004934641867674642,
+          "p_one_sided": 0.9972506873281679,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        }
+      },
+      "t00100": {
+        "scene|knn": {
+          "delta": -0.03239481220043838,
+          "lo": -0.04505820151140101,
+          "hi": -0.01979970655088178,
+          "p_one_sided": 1.0,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|linear": {
+          "delta": -0.02113333651948346,
+          "lo": -0.03642013679115695,
+          "hi": -0.005397804320002383,
+          "p_one_sided": 0.9955011247188202,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|ft10": null,
+        "scene|ft100": null,
+        "presence_cell:traffic light|knn": {
+          "delta": -0.008316430020284038,
+          "lo": -0.020757268424611012,
+          "hi": 0.004261325219743106,
+          "p_one_sided": 0.9027743064233942,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|linear": {
+          "delta": -0.0025016903313049843,
+          "lo": -0.020486815415821424,
+          "hi": 0.015956727518593672,
+          "p_one_sided": 0.6033491627093227,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|ft10": null,
+        "presence_cell:traffic light|ft100": null
+      },
+      "t00437": {
+        "scene|knn": {
+          "delta": -0.04029261158980468,
+          "lo": -0.05448937629154263,
+          "hi": -0.026648241223722578,
+          "p_one_sided": 1.0,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|linear": {
+          "delta": -0.038890724724445214,
+          "lo": -0.0545369528476266,
+          "hi": -0.022496507605702404,
+          "p_one_sided": 1.0,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|ft10": null,
+        "scene|ft100": null,
+        "presence_cell:traffic light|knn": {
+          "delta": -0.01048005409060182,
+          "lo": -0.024545300878972227,
+          "hi": 0.0028414469235970162,
+          "p_one_sided": 0.9362659335166208,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|linear": {
+          "delta": -0.007843137254901822,
+          "lo": -0.026842461122379983,
+          "hi": 0.011020960108181214,
+          "p_one_sided": 0.7868032991752062,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|ft10": null,
+        "presence_cell:traffic light|ft100": null
+      },
+      "t00874": {
+        "scene|knn": {
+          "delta": -0.04769068089681616,
+          "lo": -0.062206248441518466,
+          "hi": -0.03399015191134629,
+          "p_one_sided": 1.0,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|linear": {
+          "delta": -0.04449779811848187,
+          "lo": -0.0611772174473364,
+          "hi": -0.02775557492043136,
+          "p_one_sided": 1.0,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|ft10": null,
+        "scene|ft100": null,
+        "presence_cell:traffic light|knn": {
+          "delta": -0.00993914807302243,
+          "lo": -0.023258958755916107,
+          "hi": 0.0031778228532792774,
+          "p_one_sided": 0.9317670582354411,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|linear": {
+          "delta": -0.00845165652467883,
+          "lo": -0.027856659905341367,
+          "hi": 0.011561866125760606,
+          "p_one_sided": 0.7975506123469133,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|ft10": null,
+        "presence_cell:traffic light|ft100": null
+      },
+      "t01311": {
+        "scene|knn": {
+          "delta": -0.0553510589322973,
+          "lo": -0.06989505025611707,
+          "hi": -0.041448051457642784,
+          "p_one_sided": 1.0,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|linear": {
+          "delta": -0.04410867538241503,
+          "lo": -0.06090887637879862,
+          "hi": -0.027636408280694632,
+          "p_one_sided": 1.0,
+          "n_seeds": 5.0,
+          "n_images": 5252.0
+        },
+        "scene|ft10": null,
+        "scene|ft100": null,
+        "presence_cell:traffic light|knn": {
+          "delta": -0.00588235294117645,
+          "lo": -0.019812373225152176,
+          "hi": 0.007237998647735026,
+          "p_one_sided": 0.8045488627843039,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|linear": {
+          "delta": -0.01724137931034475,
+          "lo": -0.0363759296822177,
+          "hi": 0.0026369168356997763,
+          "p_one_sided": 0.955011247188203,
+          "n_seeds": 5.0,
+          "n_images": 2958.0
+        },
+        "presence_cell:traffic light|ft10": null,
+        "presence_cell:traffic light|ft100": null
+      }
+    }
+  }
+}
