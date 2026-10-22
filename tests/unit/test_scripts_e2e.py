@@ -555,10 +555,11 @@ def _fake_ladder(path: Path, names: list[str], gain: dict[str, float], n: int = 
         path / "pool.npz",
         query_index=np.arange(n),
         stratum=rng.integers(0, 2, n),
-        regime=np.zeros(n),
+        regime=rng.integers(0, 2, n),
         **{"labels|scene": labels},
     )
-    (path / "summary.json").write_text(json.dumps({"stratum_names": {"0": "day", "1": "night"}}))
+    summary = {"stratum_names": {"0": "day", "1": "night"}, "regime_names": {"0": "day·clear", "1": "night·clear"}}
+    (path / "summary.json").write_text(json.dumps(summary))
     for name in names:
         p = 0.6 + gain.get(name, 0.0)
         frozen = {f"scene|{r}": (rng.random((1, n)) < p).astype(np.float32) for r in ("knn", "linear")}
@@ -589,8 +590,15 @@ def test_analyze_adaptation_reads_p120_contrasts_and_the_p121_gate(tmp_path: Pat
     assert linear["vs_b5"]["well"]["delta"] > 0.05 and linear["vs_well"]["walk_end"]["delta"] < -0.05
     assert "ft100" not in str(p120["ladder"]["je"].get("scene|ft100", {}).get("vs_b5", {}).get("walk_mid"))
 
-    names = ["b5", *[f"walk_s{s}_{t}" for s in range(3) for t in ("t00100", "end")]]
+    names = ["b5", *[f"walk_s{s}_{t}" for s in range(3) for t in ("t00100", "end")], "iid_s0_end", "iid_s1_end"]
     _fake_ladder(tmp_path / "p121" / "ladder" / "je", names, {f"walk_s{s}_end": 0.12 for s in range(3)}, n=2000)
+    corpus = tmp_path / "p121" / "drive" / "je_walk" / "corpus"
+    corpus.mkdir(parents=True)
+    legs = [
+        {"era_index": 0, "era_name": "day·clear", "start_step": 0, "end_step": 149},
+        {"era_index": 1, "era_name": "night·clear", "start_step": 150, "end_step": 299},
+    ]
+    (corpus / "segments.json").write_text(json.dumps({"segments": legs}))
     p121 = script.run(
         OmegaConf.create(
             {
@@ -600,6 +608,7 @@ def test_analyze_adaptation_reads_p120_contrasts_and_the_p121_gate(tmp_path: Pat
                 "seed": 0,
                 "threads": 1,
                 "n_seeds": 3,
+                "n_iid_seeds": 2,
                 "backbones": ["je"],
                 "tasks": ["scene"],
                 "gate_tasks": ["scene"],
@@ -613,6 +622,13 @@ def test_analyze_adaptation_reads_p120_contrasts_and_the_p121_gate(tmp_path: Pat
     )
     assert p121["je"]["gate"]["verdict"] == "PASS"
     assert set(p121["je"]["trajectory"]) == {"end", "t00100"}
+    secondary = p121["je"]["secondary"]
+    assert secondary["walk_vs_iid"]["scene|linear"]["delta"] > 0.05  # the walk ends 0.12 up, the IID seeds flat
+    by_regime = secondary["by_regime"]["scene|linear"]
+    assert by_regime["t00100"]["era"] == 0 and by_regime["t00100"]["left"] is None  # nothing left yet at step 100
+    assert (
+        by_regime["end"]["era"] == 1 and by_regime["end"]["left"]["delta"] > 0.05 and by_regime["end"]["ahead"] is None
+    )
 
 
 def test_read_adaptation_screen_reads_reference_and_candidates_and_applies_the_rule(tmp_path: Path) -> None:

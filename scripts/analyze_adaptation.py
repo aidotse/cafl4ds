@@ -59,6 +59,8 @@ class Ladder:
 
     def rows(self, names: list[str], key: str) -> np.ndarray | None:
         """``[S, N]`` correctness of ``names`` for ``task|rung`` (draws averaged), or ``None`` if any lacks it."""
+        if not names:
+            return None
         out = []
         for name in names:
             if name not in self._cache:
@@ -197,8 +199,73 @@ def p121(config: DictConfig, root: Path) -> dict[str, Any]:
                 for task in tasks
                 for rung in config.rungs
             }
-        report[bb] = {"gate": gate, "contrasts": contrasts, "trajectory": trajectory}
+        report[bb] = {
+            "gate": gate,
+            "contrasts": contrasts,
+            "trajectory": trajectory,
+            "secondary": _p121_secondary(config, root, bb, ladder),
+        }
     return report
+
+
+def _walk_position(segments: list[dict[str, Any]], step: int) -> int:
+    """The walk leg (era index) that delivered batch ``step - 1`` — the last one a checkpoint before ``step`` saw."""
+    seen = [seg["era_index"] for seg in segments if seg["start_step"] <= max(step - 1, 0)]
+    return int(max(seen)) if seen else 0
+
+
+def _p121_secondary(config: DictConfig, root: Path, bb: str, ladder: Ladder) -> dict[str, Any]:
+    """P1.2.1's pre-registered secondary reads (not gating).
+
+    * ``iid_vs_b5`` / ``walk_vs_iid`` — the IID control's end against B5, and the walk's end against it
+      (5 vs ``n_iid_seeds`` seeds, descriptive).
+    * ``by_stratum`` — the walk's end against B5 within each time-of-day stratum.
+    * ``by_regime`` — at every saved walk checkpoint, Δ against B5 on the query frames whose regime the
+      walk has already **left**, is **in**, or has **not reached**: does it adapt to what it sees, forget
+      what it left, transfer ahead?
+    """
+    seeds = range(int(config.n_seeds))
+    walk_end = [f"walk_s{s}_end" for s in seeds]
+    iid_end = [f"iid_s{s}_end" for s in range(int(config.get("n_iid_seeds", 0)))]
+    b5 = [str(config.b5_name)]
+    segments_file = root / "drive" / f"{bb}_walk" / "corpus" / "segments.json"
+    segments = json.loads(segments_file.read_text())["segments"] if segments_file.is_file() else []
+    era_of_name = {seg["era_name"]: seg["era_index"] for seg in segments}
+    regime_names = {int(k): v for k, v in ladder.summary.get("regime_names", {}).items()}
+    total = max((seg["end_step"] for seg in segments), default=0) + 1
+    out: dict[str, Any] = {"iid_vs_b5": {}, "walk_vs_iid": {}, "by_stratum": {}, "by_regime": {}}
+    for task in config.tasks:
+        labels = ladder.labels[task]
+        era = np.array([era_of_name.get(regime_names.get(int(r), ""), -1) for r in ladder.regime[ladder.pos[task]]])
+        for rung in config.rungs:
+            key = f"{task}|{rung}"
+            walk, iid, ref = ladder.rows(walk_end, key), ladder.rows(iid_end, key), ladder.rows(b5, key)
+            if walk is None or ref is None:
+                continue
+            if iid_end and iid is not None:
+                out["iid_vs_b5"][key] = _contrast(iid, ref, labels, config)
+                out["walk_vs_iid"][key] = _contrast(walk, iid, labels, config)
+            out["by_stratum"][key] = _strata(walk, ref, ladder, task, config)
+        for rung in ("knn", "linear") if segments else ():  # every checkpoint carries the frozen rungs
+            key = f"{task}|{rung}"
+            ref = ladder.rows(b5, key)
+            rows: dict[str, Any] = {}
+            for path in sorted(ladder.path.glob("walk_s0_*.npz")):
+                suffix = path.stem.split("_", 2)[2]
+                step = total if suffix == "end" else int(suffix[1:])
+                here = _walk_position(segments, step)
+                adapted = ladder.rows([f"walk_s{s}_{suffix}" for s in seeds], key)
+                if adapted is None or ref is None:
+                    continue
+                groups = {"left": (era >= 0) & (era < here), "in": era == here, "ahead": era > here}
+                rows[suffix] = {"step": step, "era": here}
+                for name, keep in groups.items():
+                    enough = keep.sum() >= 30 and np.unique(labels[keep]).size == np.unique(labels).size
+                    rows[suffix][name] = (
+                        _contrast(adapted[:, keep], ref[:, keep], labels[keep], config) if enough else None
+                    )
+            out["by_regime"][key] = rows
+    return out
 
 
 def _print_p120(report: dict[str, Any]) -> None:

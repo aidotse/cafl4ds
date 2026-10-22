@@ -8,6 +8,7 @@ n_boot: 4000
 seed: 0
 threads: 4 # BLAS threads — keep low beside HPU jobs
 n_seeds: 5
+n_iid_seeds: 3 # p121: the IID control's seeds (secondary reads)
 backbones: [je, mae]
 
 # p120: the reader output dirs under root (each with je/ and mae/ subdirs; B5 + random in je/)
