@@ -1,0 +1,1532 @@
+{
+  "pool": {
+    "kind": "heldout",
+    "n_fit": 3501,
+    "n_query": 5252
+  },
+  "n_query_by_task": {
+    "scene": 5252,
+    "presence_cell:traffic light": 2958
+  },
+  "stratum_names": {
+    "0": "daytime",
+    "1": "dawn/dusk",
+    "2": "night"
+  },
+  "regime_names": {
+    "0": "daytime\u00b7clear",
+    "1": "daytime\u00b7partly cloudy",
+    "2": "daytime\u00b7overcast",
+    "3": "daytime\u00b7rainy",
+    "4": "daytime\u00b7snowy",
+    "5": "daytime\u00b7foggy",
+    "6": "dawn/dusk\u00b7clear",
+    "7": "dawn/dusk\u00b7partly cloudy",
+    "8": "dawn/dusk\u00b7overcast",
+    "9": "dawn/dusk\u00b7rainy",
+    "10": "dawn/dusk\u00b7snowy",
+    "11": "dawn/dusk\u00b7foggy",
+    "12": "night\u00b7clear",
+    "13": "night\u00b7partly cloudy",
+    "14": "night\u00b7overcast",
+    "15": "night\u00b7rainy",
+    "16": "night\u00b7snowy",
+    "17": "night\u00b7foggy"
+  },
+  "encoders": {
+    "b5": {
+      "spec": {
+        "name": "b5",
+        "kind": "well",
+        "path": "wells/p121/je_heads.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5667700171470642,
+          "daytime": 0.5558638572692871,
+          "dawn/dusk": 0.5182650089263916,
+          "night": 0.5429219007492065
+        },
+        "scene|linear": {
+          "pooled": 0.6354460120201111,
+          "daytime": 0.6383728384971619,
+          "dawn/dusk": 0.6597791314125061,
+          "night": 0.6149389743804932
+        },
+        "scene|knn@block04": {
+          "pooled": 0.581076979637146,
+          "daytime": 0.5653337836265564,
+          "dawn/dusk": 0.5217322707176208,
+          "night": 0.5648126602172852
+        },
+        "scene|linear@block04": {
+          "pooled": 0.5789160132408142,
+          "daytime": 0.5842856764793396,
+          "dawn/dusk": 0.5866087675094604,
+          "night": 0.5429311394691467
+        },
+        "scene|knn@block05": {
+          "pooled": 0.5948637127876282,
+          "daytime": 0.5809249877929688,
+          "dawn/dusk": 0.5323359370231628,
+          "night": 0.5713539123535156
+        },
+        "scene|linear@block05": {
+          "pooled": 0.5957489013671875,
+          "daytime": 0.5939852595329285,
+          "dawn/dusk": 0.6351624131202698,
+          "night": 0.5598090887069702
+        },
+        "scene|knn@block06": {
+          "pooled": 0.6017625331878662,
+          "daytime": 0.594524085521698,
+          "dawn/dusk": 0.5472694039344788,
+          "night": 0.5715627074241638
+        },
+        "scene|linear@block06": {
+          "pooled": 0.6140627264976501,
+          "daytime": 0.6072127819061279,
+          "dawn/dusk": 0.6436401009559631,
+          "night": 0.586495578289032
+        },
+        "scene|knn@block07": {
+          "pooled": 0.6033287644386292,
+          "daytime": 0.591116726398468,
+          "dawn/dusk": 0.557058572769165,
+          "night": 0.5764573216438293
+        },
+        "scene|linear@block07": {
+          "pooled": 0.6298385858535767,
+          "daytime": 0.6234627366065979,
+          "dawn/dusk": 0.6425377726554871,
+          "night": 0.612089216709137
+        },
+        "scene|knn@block08": {
+          "pooled": 0.6188989281654358,
+          "daytime": 0.6040690541267395,
+          "dawn/dusk": 0.5730925798416138,
+          "night": 0.6082479953765869
+        },
+        "scene|linear@block08": {
+          "pooled": 0.6358732581138611,
+          "daytime": 0.6301800608634949,
+          "dawn/dusk": 0.670353889465332,
+          "night": 0.6178858280181885
+        },
+        "scene|knn@block09": {
+          "pooled": 0.6268242001533508,
+          "daytime": 0.6121664643287659,
+          "dawn/dusk": 0.6048746705055237,
+          "night": 0.6074876189231873
+        },
+        "scene|linear@block09": {
+          "pooled": 0.6500648856163025,
+          "daytime": 0.651401937007904,
+          "dawn/dusk": 0.6455552577972412,
+          "night": 0.6333362460136414
+        },
+        "scene|knn@block10": {
+          "pooled": 0.6331208348274231,
+          "daytime": 0.6220431923866272,
+          "dawn/dusk": 0.6079971194267273,
+          "night": 0.6165322661399841
+        },
+        "scene|linear@block10": {
+          "pooled": 0.6485543847084045,
+          "daytime": 0.6496413350105286,
+          "dawn/dusk": 0.6660539507865906,
+          "night": 0.6297545433044434
+        },
+        "scene|knn@block11": {
+          "pooled": 0.6418834328651428,
+          "daytime": 0.6270782351493835,
+          "dawn/dusk": 0.6313313841819763,
+          "night": 0.6258866786956787
+        },
+        "scene|linear@block11": {
+          "pooled": 0.6335471272468567,
+          "daytime": 0.6420435309410095,
+          "dawn/dusk": 0.6562358736991882,
+          "night": 0.6010096073150635
+        },
+        "scene|knn@block12": {
+          "pooled": 0.6367934346199036,
+          "daytime": 0.6262577772140503,
+          "dawn/dusk": 0.622853696346283,
+          "night": 0.6017077565193176
+        },
+        "scene|linear@block12": {
+          "pooled": 0.6334396600723267,
+          "daytime": 0.6327903866767883,
+          "dawn/dusk": 0.6637161374092102,
+          "night": 0.6151583790779114
+        },
+        "presence_cell:traffic light|knn": {
+          "pooled": 0.5777552127838135,
+          "daytime": 0.5589848756790161,
+          "dawn/dusk": 0.5123966932296753,
+          "night": 0.6120826601982117
+        },
+        "presence_cell:traffic light|linear": {
+          "pooled": 0.6064908504486084,
+          "daytime": 0.6008230447769165,
+          "dawn/dusk": 0.5950413346290588,
+          "night": 0.6152623295783997
+        },
+        "presence_cell:traffic light|knn@block04": {
+          "pooled": 0.5845165848731995,
+          "daytime": 0.5679012537002563,
+          "dawn/dusk": 0.4876033067703247,
+          "night": 0.6224164962768555
+        },
+        "presence_cell:traffic light|linear@block04": {
+          "pooled": 0.5858688354492188,
+          "daytime": 0.5857338905334473,
+          "dawn/dusk": 0.557851254940033,
+          "night": 0.5914149284362793
+        },
+        "presence_cell:traffic light|knn@block05": {
+          "pooled": 0.5865449905395508,
+          "daytime": 0.5651577711105347,
+          "dawn/dusk": 0.5247933864593506,
+          "night": 0.6232114434242249
+        },
+        "presence_cell:traffic light|linear@block05": {
+          "pooled": 0.5750507116317749,
+          "daytime": 0.5672153830528259,
+          "dawn/dusk": 0.5123966932296753,
+          "night": 0.5961844325065613
+        },
+        "presence_cell:traffic light|knn@block06": {
+          "pooled": 0.59263014793396,
+          "daytime": 0.5795609951019287,
+          "dawn/dusk": 0.5289256572723389,
+          "night": 0.6200317740440369
+        },
+        "presence_cell:traffic light|linear@block06": {
+          "pooled": 0.6068289279937744,
+          "daytime": 0.5733882188796997,
+          "dawn/dusk": 0.6033058166503906,
+          "night": 0.6462639570236206
+        },
+        "presence_cell:traffic light|knn@block07": {
+          "pooled": 0.5966869592666626,
+          "daytime": 0.5864197611808777,
+          "dawn/dusk": 0.5537189841270447,
+          "night": 0.6168521642684937
+        },
+        "presence_cell:traffic light|linear@block07": {
+          "pooled": 0.5993914604187012,
+          "daytime": 0.5912208557128906,
+          "dawn/dusk": 0.5909091234207153,
+          "night": 0.6104928255081177
+        },
+        "presence_cell:traffic light|knn@block08": {
+          "pooled": 0.5997295379638672,
+          "daytime": 0.5781892538070679,
+          "dawn/dusk": 0.5578511953353882,
+          "night": 0.632750391960144
+        },
+        "presence_cell:traffic light|linear@block08": {
+          "pooled": 0.6007437705993652,
+          "daytime": 0.5850480198860168,
+          "dawn/dusk": 0.6198347210884094,
+          "night": 0.6152623295783997
+        },
+        "presence_cell:traffic light|knn@block09": {
+          "pooled": 0.6000676155090332,
+          "daytime": 0.5987654328346252,
+          "dawn/dusk": 0.5413223505020142,
+          "night": 0.612877607345581
+        },
+        "presence_cell:traffic light|linear@block09": {
+          "pooled": 0.6088573336601257,
+          "daytime": 0.609739363193512,
+          "dawn/dusk": 0.5743801593780518,
+          "night": 0.6144673824310303
+        },
+        "presence_cell:traffic light|knn@block10": {
+          "pooled": 0.6017579436302185,
+          "daytime": 0.591906726360321,
+          "dawn/dusk": 0.5206611752510071,
+          "night": 0.6287758350372314
+        },
+        "presence_cell:traffic light|linear@block10": {
+          "pooled": 0.6081812381744385,
+          "daytime": 0.5987654328346252,
+          "dawn/dusk": 0.6033058166503906,
+          "night": 0.6200317740440369
+        },
+        "presence_cell:traffic light|knn@block11": {
+          "pooled": 0.6031101942062378,
+          "daytime": 0.5912208557128906,
+          "dawn/dusk": 0.5,
+          "night": 0.6367249488830566
+        },
+        "presence_cell:traffic light|linear@block11": {
+          "pooled": 0.6068289279937744,
+          "daytime": 0.5925925970077515,
+          "dawn/dusk": 0.5702479481697083,
+          "night": 0.6303656101226807
+        },
+        "presence_cell:traffic light|knn@block12": {
+          "pooled": 0.6041244268417358,
+          "daytime": 0.5871056318283081,
+          "dawn/dusk": 0.5206611156463623,
+          "night": 0.6399046182632446
+        },
+        "presence_cell:traffic light|linear@block12": {
+          "pooled": 0.5990533828735352,
+          "daytime": 0.5877915024757385,
+          "dawn/dusk": 0.5950412750244141,
+          "night": 0.612877607345581
+        }
+      }
+    },
+    "walk_s0_end": {
+      "spec": {
+        "name": "walk_s0_end",
+        "kind": "checkpoint",
+        "path": "outputs/p121/drive/je_walk/checkpoints/s0/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5530669093132019,
+          "daytime": 0.533660352230072,
+          "dawn/dusk": 0.5334655046463013,
+          "night": 0.5186569690704346
+        },
+        "scene|linear": {
+          "pooled": 0.6452179551124573,
+          "daytime": 0.6464831233024597,
+          "dawn/dusk": 0.6776531338691711,
+          "night": 0.6169800162315369
+        },
+        "scene|knn@block04": {
+          "pooled": 0.5722566246986389,
+          "daytime": 0.5632390379905701,
+          "dawn/dusk": 0.515486478805542,
+          "night": 0.536196768283844
+        },
+        "scene|linear@block04": {
+          "pooled": 0.5763846635818481,
+          "daytime": 0.5720042586326599,
+          "dawn/dusk": 0.5962929129600525,
+          "night": 0.5620823502540588
+        },
+        "scene|knn@block05": {
+          "pooled": 0.5904098153114319,
+          "daytime": 0.5704177618026733,
+          "dawn/dusk": 0.5617793202400208,
+          "night": 0.5707215666770935
+        },
+        "scene|linear@block05": {
+          "pooled": 0.6016325354576111,
+          "daytime": 0.6017101407051086,
+          "dawn/dusk": 0.6615901589393616,
+          "night": 0.561663031578064
+        },
+        "scene|knn@block06": {
+          "pooled": 0.601316511631012,
+          "daytime": 0.5801736116409302,
+          "dawn/dusk": 0.5565590262413025,
+          "night": 0.5921701788902283
+        },
+        "scene|linear@block06": {
+          "pooled": 0.6298686861991882,
+          "daytime": 0.6238403916358948,
+          "dawn/dusk": 0.6939749717712402,
+          "night": 0.5961875319480896
+        },
+        "scene|knn@block07": {
+          "pooled": 0.6090659499168396,
+          "daytime": 0.5853291153907776,
+          "dawn/dusk": 0.5709657073020935,
+          "night": 0.5973910093307495
+        },
+        "scene|linear@block07": {
+          "pooled": 0.6447184681892395,
+          "daytime": 0.6329012513160706,
+          "dawn/dusk": 0.6792234778404236,
+          "night": 0.6218633055686951
+        },
+        "scene|knn@block08": {
+          "pooled": 0.6185973286628723,
+          "daytime": 0.6023561954498291,
+          "dawn/dusk": 0.5862141251564026,
+          "night": 0.5868359804153442
+        },
+        "scene|linear@block08": {
+          "pooled": 0.6522787809371948,
+          "daytime": 0.6508062481880188,
+          "dawn/dusk": 0.6756032109260559,
+          "night": 0.6190497875213623
+        },
+        "scene|knn@block09": {
+          "pooled": 0.6161215901374817,
+          "daytime": 0.5864422917366028,
+          "dawn/dusk": 0.6057172417640686,
+          "night": 0.598147451877594
+        },
+        "scene|linear@block09": {
+          "pooled": 0.6469600796699524,
+          "daytime": 0.6466198563575745,
+          "dawn/dusk": 0.6680459976196289,
+          "night": 0.6194605827331543
+        },
+        "scene|knn@block10": {
+          "pooled": 0.6033032536506653,
+          "daytime": 0.5864420533180237,
+          "dawn/dusk": 0.6131686568260193,
+          "night": 0.5452296733856201
+        },
+        "scene|linear@block10": {
+          "pooled": 0.6326841711997986,
+          "daytime": 0.6327247023582458,
+          "dawn/dusk": 0.6916092038154602,
+          "night": 0.5984660983085632
+        },
+        "scene|knn@block11": {
+          "pooled": 0.5841624140739441,
+          "daytime": 0.5678752064704895,
+          "dawn/dusk": 0.6036655306816101,
+          "night": 0.5245243310928345
+        },
+        "scene|linear@block11": {
+          "pooled": 0.645152747631073,
+          "daytime": 0.6510893106460571,
+          "dawn/dusk": 0.6728735566139221,
+          "night": 0.618391215801239
+        },
+        "scene|knn@block12": {
+          "pooled": 0.546837329864502,
+          "daytime": 0.5357382893562317,
+          "dawn/dusk": 0.5551398396492004,
+          "night": 0.4956381320953369
+        },
+        "scene|linear@block12": {
+          "pooled": 0.6464753150939941,
+          "daytime": 0.6506039500236511,
+          "dawn/dusk": 0.6769444942474365,
+          "night": 0.614686131477356
+        },
+        "presence_cell:traffic light|knn": {
+          "pooled": 0.5899256467819214,
+          "daytime": 0.5877915024757385,
+          "dawn/dusk": 0.5247933864593506,
+          "night": 0.6049284934997559
+        },
+        "presence_cell:traffic light|linear": {
+          "pooled": 0.639959454536438,
+          "daytime": 0.6330589652061462,
+          "dawn/dusk": 0.5743801593780518,
+          "night": 0.6605722904205322
+        },
+        "presence_cell:traffic light|knn@block04": {
+          "pooled": 0.5831643342971802,
+          "daytime": 0.5672153234481812,
+          "dawn/dusk": 0.4876033067703247,
+          "night": 0.6200318336486816
+        },
+        "presence_cell:traffic light|linear@block04": {
+          "pooled": 0.5902637243270874,
+          "daytime": 0.5658435821533203,
+          "dawn/dusk": 0.5371900796890259,
+          "night": 0.6287758350372314
+        },
+        "presence_cell:traffic light|knn@block05": {
+          "pooled": 0.592292070388794,
+          "daytime": 0.5596708059310913,
+          "dawn/dusk": 0.5413223505020142,
+          "night": 0.6399046182632446
+        },
+        "presence_cell:traffic light|linear@block05": {
+          "pooled": 0.6139283180236816,
+          "daytime": 0.5891631841659546,
+          "dawn/dusk": 0.5578511953353882,
+          "night": 0.6534181237220764
+        },
+        "presence_cell:traffic light|knn@block06": {
+          "pooled": 0.5946585536003113,
+          "daytime": 0.5747599601745605,
+          "dawn/dusk": 0.5330578684806824,
+          "night": 0.629570722579956
+        },
+        "presence_cell:traffic light|linear@block06": {
+          "pooled": 0.6203515529632568,
+          "daytime": 0.6035665273666382,
+          "dawn/dusk": 0.6115702390670776,
+          "night": 0.6414943933486938
+        },
+        "presence_cell:traffic light|knn@block07": {
+          "pooled": 0.6034482717514038,
+          "daytime": 0.583676278591156,
+          "dawn/dusk": 0.5537190437316895,
+          "night": 0.635930061340332
+        },
+        "presence_cell:traffic light|linear@block07": {
+          "pooled": 0.6193373799324036,
+          "daytime": 0.6028806567192078,
+          "dawn/dusk": 0.5743801593780518,
+          "night": 0.6470588445663452
+        },
+        "presence_cell:traffic light|knn@block08": {
+          "pooled": 0.6004056930541992,
+          "daytime": 0.5850480198860168,
+          "dawn/dusk": 0.5495867729187012,
+          "night": 0.6279809474945068
+        },
+        "presence_cell:traffic light|linear@block08": {
+          "pooled": 0.6291413307189941,
+          "daytime": 0.6207132935523987,
+          "dawn/dusk": 0.5661157369613647,
+          "night": 0.6510334014892578
+        },
+        "presence_cell:traffic light|knn@block09": {
+          "pooled": 0.59432053565979,
+          "daytime": 0.5781892538070679,
+          "dawn/dusk": 0.5289256572723389,
+          "night": 0.6255961656570435
+        },
+        "presence_cell:traffic light|linear@block09": {
+          "pooled": 0.6291413307189941,
+          "daytime": 0.6200274229049683,
+          "dawn/dusk": 0.5826445817947388,
+          "night": 0.6486486196517944
+        },
+        "presence_cell:traffic light|knn@block10": {
+          "pooled": 0.6004056930541992,
+          "daytime": 0.5932784080505371,
+          "dawn/dusk": 0.5413223505020142,
+          "night": 0.6200317740440369
+        },
+        "presence_cell:traffic light|linear@block10": {
+          "pooled": 0.6419878005981445,
+          "daytime": 0.6234567761421204,
+          "dawn/dusk": 0.6363636255264282,
+          "night": 0.6645469069480896
+        },
+        "presence_cell:traffic light|knn@block11": {
+          "pooled": 0.5912778973579407,
+          "daytime": 0.588477373123169,
+          "dawn/dusk": 0.5371900796890259,
+          "night": 0.6049284338951111
+        },
+        "presence_cell:traffic light|linear@block11": {
+          "pooled": 0.6490871906280518,
+          "daytime": 0.6282578706741333,
+          "dawn/dusk": 0.6157025098800659,
+          "night": 0.6796501874923706
+        },
+        "presence_cell:traffic light|knn@block12": {
+          "pooled": 0.5858688354492188,
+          "daytime": 0.5802469253540039,
+          "dawn/dusk": 0.5371900796890259,
+          "night": 0.6017488241195679
+        },
+        "presence_cell:traffic light|linear@block12": {
+          "pooled": 0.6419878005981445,
+          "daytime": 0.6330589652061462,
+          "dawn/dusk": 0.5826446413993835,
+          "night": 0.6637519598007202
+        }
+      }
+    },
+    "walk_s1_end": {
+      "spec": {
+        "name": "walk_s1_end",
+        "kind": "checkpoint",
+        "path": "outputs/p121/drive/je_walk/checkpoints/s1/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5426314473152161,
+          "daytime": 0.5323655009269714,
+          "dawn/dusk": 0.5333025455474854,
+          "night": 0.49557483196258545
+        },
+        "scene|linear": {
+          "pooled": 0.6616612076759338,
+          "daytime": 0.6631771922111511,
+          "dawn/dusk": 0.6727685928344727,
+          "night": 0.6321231722831726
+        },
+        "scene|knn@block04": {
+          "pooled": 0.5755476951599121,
+          "daytime": 0.5670914053916931,
+          "dawn/dusk": 0.5506778955459595,
+          "night": 0.5266151428222656
+        },
+        "scene|linear@block04": {
+          "pooled": 0.5790662169456482,
+          "daytime": 0.5828830599784851,
+          "dawn/dusk": 0.6248456835746765,
+          "night": 0.5502195954322815
+        },
+        "scene|knn@block05": {
+          "pooled": 0.5883791446685791,
+          "daytime": 0.5734777450561523,
+          "dawn/dusk": 0.5419132709503174,
+          "night": 0.5598258376121521
+        },
+        "scene|linear@block05": {
+          "pooled": 0.5913285613059998,
+          "daytime": 0.5882086753845215,
+          "dawn/dusk": 0.6598560810089111,
+          "night": 0.5546775460243225
+        },
+        "scene|knn@block06": {
+          "pooled": 0.6049417853355408,
+          "daytime": 0.5937678217887878,
+          "dawn/dusk": 0.5555344223976135,
+          "night": 0.5736509561538696
+        },
+        "scene|linear@block06": {
+          "pooled": 0.6140971779823303,
+          "daytime": 0.6155787706375122,
+          "dawn/dusk": 0.6566566824913025,
+          "night": 0.5753857493400574
+        },
+        "scene|knn@block07": {
+          "pooled": 0.6041367053985596,
+          "daytime": 0.5992973446846008,
+          "dawn/dusk": 0.567344605922699,
+          "night": 0.5590622425079346
+        },
+        "scene|linear@block07": {
+          "pooled": 0.6183906197547913,
+          "daytime": 0.619515597820282,
+          "dawn/dusk": 0.6488116383552551,
+          "night": 0.5866022706031799
+        },
+        "scene|knn@block08": {
+          "pooled": 0.6094545125961304,
+          "daytime": 0.60065096616745,
+          "dawn/dusk": 0.6158702373504639,
+          "night": 0.5578669905662537
+        },
+        "scene|linear@block08": {
+          "pooled": 0.6284443736076355,
+          "daytime": 0.642425537109375,
+          "dawn/dusk": 0.6355072855949402,
+          "night": 0.5879042744636536
+        },
+        "scene|knn@block09": {
+          "pooled": 0.6050429940223694,
+          "daytime": 0.5958853363990784,
+          "dawn/dusk": 0.6001231074333191,
+          "night": 0.5557029247283936
+        },
+        "scene|linear@block09": {
+          "pooled": 0.6423883438110352,
+          "daytime": 0.6527426838874817,
+          "dawn/dusk": 0.6568675637245178,
+          "night": 0.6008577942848206
+        },
+        "scene|knn@block10": {
+          "pooled": 0.6060595512390137,
+          "daytime": 0.5876433253288269,
+          "dawn/dusk": 0.6160521507263184,
+          "night": 0.5585359334945679
+        },
+        "scene|linear@block10": {
+          "pooled": 0.636033833026886,
+          "daytime": 0.6333431005477905,
+          "dawn/dusk": 0.6718770861625671,
+          "night": 0.6078186631202698
+        },
+        "scene|knn@block11": {
+          "pooled": 0.5750202536582947,
+          "daytime": 0.5515711307525635,
+          "dawn/dusk": 0.61201012134552,
+          "night": 0.5315112471580505
+        },
+        "scene|linear@block11": {
+          "pooled": 0.649262011051178,
+          "daytime": 0.6459109783172607,
+          "dawn/dusk": 0.7040519714355469,
+          "night": 0.6219834685325623
+        },
+        "scene|knn@block12": {
+          "pooled": 0.537661612033844,
+          "daytime": 0.5165794491767883,
+          "dawn/dusk": 0.5458213686943054,
+          "night": 0.5007739663124084
+        },
+        "scene|linear@block12": {
+          "pooled": 0.655211865901947,
+          "daytime": 0.6551405787467957,
+          "dawn/dusk": 0.6729794144630432,
+          "night": 0.6291823387145996
+        },
+        "presence_cell:traffic light|knn": {
+          "pooled": 0.587559163570404,
+          "daytime": 0.5781893134117126,
+          "dawn/dusk": 0.5330578684806824,
+          "night": 0.6089030504226685
+        },
+        "presence_cell:traffic light|linear": {
+          "pooled": 0.6636240482330322,
+          "daytime": 0.6550068855285645,
+          "dawn/dusk": 0.6652892827987671,
+          "night": 0.6732909679412842
+        },
+        "presence_cell:traffic light|knn@block04": {
+          "pooled": 0.5851926803588867,
+          "daytime": 0.5692729949951172,
+          "dawn/dusk": 0.5165289640426636,
+          "night": 0.6168521642684937
+        },
+        "presence_cell:traffic light|linear@block04": {
+          "pooled": 0.5855307579040527,
+          "daytime": 0.5720164775848389,
+          "dawn/dusk": 0.5537189841270447,
+          "night": 0.6073131561279297
+        },
+        "presence_cell:traffic light|knn@block05": {
+          "pooled": 0.5882352590560913,
+          "daytime": 0.5754457712173462,
+          "dawn/dusk": 0.5206611752510071,
+          "night": 0.6160572171211243
+        },
+        "presence_cell:traffic light|linear@block05": {
+          "pooled": 0.616294801235199,
+          "daytime": 0.6015089154243469,
+          "dawn/dusk": 0.5909091234207153,
+          "night": 0.6383147835731506
+        },
+        "presence_cell:traffic light|knn@block06": {
+          "pooled": 0.5980392098426819,
+          "daytime": 0.5829904079437256,
+          "dawn/dusk": 0.5247933864593506,
+          "night": 0.629570722579956
+        },
+        "presence_cell:traffic light|linear@block06": {
+          "pooled": 0.6304935812950134,
+          "daytime": 0.6138545870780945,
+          "dawn/dusk": 0.6198347210884094,
+          "night": 0.6518282890319824
+        },
+        "presence_cell:traffic light|knn@block07": {
+          "pooled": 0.5956727266311646,
+          "daytime": 0.5733882188796997,
+          "dawn/dusk": 0.5247933864593506,
+          "night": 0.6351351737976074
+        },
+        "presence_cell:traffic light|linear@block07": {
+          "pooled": 0.6200134754180908,
+          "daytime": 0.6124828457832336,
+          "dawn/dusk": 0.64462810754776,
+          "night": 0.6240063905715942
+        },
+        "presence_cell:traffic light|knn@block08": {
+          "pooled": 0.6061527729034424,
+          "daytime": 0.5823045372962952,
+          "dawn/dusk": 0.5537190437316895,
+          "night": 0.6438791751861572
+        },
+        "presence_cell:traffic light|linear@block08": {
+          "pooled": 0.6457065343856812,
+          "daytime": 0.6474622488021851,
+          "dawn/dusk": 0.6074380278587341,
+          "night": 0.6510334014892578
+        },
+        "presence_cell:traffic light|knn@block09": {
+          "pooled": 0.5892494916915894,
+          "daytime": 0.5898491144180298,
+          "dawn/dusk": 0.5041322112083435,
+          "night": 0.6049284934997559
+        },
+        "presence_cell:traffic light|linear@block09": {
+          "pooled": 0.633874237537384,
+          "daytime": 0.6316872239112854,
+          "dawn/dusk": 0.6198347210884094,
+          "night": 0.63910973072052
+        },
+        "presence_cell:traffic light|knn@block10": {
+          "pooled": 0.5909398198127747,
+          "daytime": 0.596707820892334,
+          "dawn/dusk": 0.5661157369613647,
+          "night": 0.5890302062034607
+        },
+        "presence_cell:traffic light|linear@block10": {
+          "pooled": 0.6423258781433105,
+          "daytime": 0.6378600597381592,
+          "dawn/dusk": 0.6528925895690918,
+          "night": 0.6454689502716064
+        },
+        "presence_cell:traffic light|knn@block11": {
+          "pooled": 0.593644380569458,
+          "daytime": 0.588477373123169,
+          "dawn/dusk": 0.5619834661483765,
+          "night": 0.6057233810424805
+        },
+        "presence_cell:traffic light|linear@block11": {
+          "pooled": 0.6507775783538818,
+          "daytime": 0.63923180103302,
+          "dawn/dusk": 0.64462810754776,
+          "night": 0.665341854095459
+        },
+        "presence_cell:traffic light|knn@block12": {
+          "pooled": 0.5780932903289795,
+          "daytime": 0.5637860298156738,
+          "dawn/dusk": 0.5330578684806824,
+          "night": 0.6033385992050171
+        },
+        "presence_cell:traffic light|linear@block12": {
+          "pooled": 0.6659905314445496,
+          "daytime": 0.659122109413147,
+          "dawn/dusk": 0.6694214940071106,
+          "night": 0.6732909679412842
+        }
+      }
+    },
+    "walk_s2_end": {
+      "spec": {
+        "name": "walk_s2_end",
+        "kind": "checkpoint",
+        "path": "outputs/p121/drive/je_walk/checkpoints/s2/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5586647391319275,
+          "daytime": 0.5465183854103088,
+          "dawn/dusk": 0.5313105583190918,
+          "night": 0.5076435208320618
+        },
+        "scene|linear": {
+          "pooled": 0.6712045669555664,
+          "daytime": 0.6695613861083984,
+          "dawn/dusk": 0.700747549533844,
+          "night": 0.6488950848579407
+        },
+        "scene|knn@block04": {
+          "pooled": 0.5714181065559387,
+          "daytime": 0.5595893263816833,
+          "dawn/dusk": 0.5404190421104431,
+          "night": 0.5365235805511475
+        },
+        "scene|linear@block04": {
+          "pooled": 0.5617101788520813,
+          "daytime": 0.5548842549324036,
+          "dawn/dusk": 0.5919621586799622,
+          "night": 0.5334359407424927
+        },
+        "scene|knn@block05": {
+          "pooled": 0.5892148017883301,
+          "daytime": 0.5728073716163635,
+          "dawn/dusk": 0.5597583651542664,
+          "night": 0.5641863346099854
+        },
+        "scene|linear@block05": {
+          "pooled": 0.588235080242157,
+          "daytime": 0.5809689164161682,
+          "dawn/dusk": 0.6346357464790344,
+          "night": 0.57158362865448
+        },
+        "scene|knn@block06": {
+          "pooled": 0.598303496837616,
+          "daytime": 0.5744141936302185,
+          "dawn/dusk": 0.5600742697715759,
+          "night": 0.5881361961364746
+        },
+        "scene|linear@block06": {
+          "pooled": 0.6174052953720093,
+          "daytime": 0.6034013628959656,
+          "dawn/dusk": 0.6826915740966797,
+          "night": 0.5973764061927795
+        },
+        "scene|knn@block07": {
+          "pooled": 0.6030853390693665,
+          "daytime": 0.5822572112083435,
+          "dawn/dusk": 0.5895474553108215,
+          "night": 0.5768154263496399
+        },
+        "scene|linear@block07": {
+          "pooled": 0.6370400786399841,
+          "daytime": 0.6370548605918884,
+          "dawn/dusk": 0.6764168739318848,
+          "night": 0.6034795641899109
+        },
+        "scene|knn@block08": {
+          "pooled": 0.6155734658241272,
+          "daytime": 0.6046229004859924,
+          "dawn/dusk": 0.5966829657554626,
+          "night": 0.5718126893043518
+        },
+        "scene|linear@block08": {
+          "pooled": 0.6431130766868591,
+          "daytime": 0.6400188207626343,
+          "dawn/dusk": 0.6913502812385559,
+          "night": 0.6040279269218445
+        },
+        "scene|knn@block09": {
+          "pooled": 0.6079937815666199,
+          "daytime": 0.5845963954925537,
+          "dawn/dusk": 0.6034555435180664,
+          "night": 0.5785585045814514
+        },
+        "scene|linear@block09": {
+          "pooled": 0.6363031268119812,
+          "daytime": 0.6389408111572266,
+          "dawn/dusk": 0.6765227317810059,
+          "night": 0.5896469950675964
+        },
+        "scene|knn@block10": {
+          "pooled": 0.5999481081962585,
+          "daytime": 0.5847132802009583,
+          "dawn/dusk": 0.5794416069984436,
+          "night": 0.54164057970047
+        },
+        "scene|linear@block10": {
+          "pooled": 0.6444297432899475,
+          "daytime": 0.6484917998313904,
+          "dawn/dusk": 0.6948954463005066,
+          "night": 0.5937780737876892
+        },
+        "scene|knn@block11": {
+          "pooled": 0.588361918926239,
+          "daytime": 0.5728182196617126,
+          "dawn/dusk": 0.5617784261703491,
+          "night": 0.5301943421363831
+        },
+        "scene|linear@block11": {
+          "pooled": 0.6594898104667664,
+          "daytime": 0.6559082269668579,
+          "dawn/dusk": 0.7209005355834961,
+          "night": 0.6207903027534485
+        },
+        "scene|knn@block12": {
+          "pooled": 0.545768141746521,
+          "daytime": 0.5364894270896912,
+          "dawn/dusk": 0.5544031262397766,
+          "night": 0.48516353964805603
+        },
+        "scene|linear@block12": {
+          "pooled": 0.6748966574668884,
+          "daytime": 0.6707005500793457,
+          "dawn/dusk": 0.6956040859222412,
+          "night": 0.6583643555641174
+        },
+        "presence_cell:traffic light|knn": {
+          "pooled": 0.5736984610557556,
+          "daytime": 0.5802469253540039,
+          "dawn/dusk": 0.5165289044380188,
+          "night": 0.5771064758300781
+        },
+        "presence_cell:traffic light|linear": {
+          "pooled": 0.6416497230529785,
+          "daytime": 0.6262003183364868,
+          "dawn/dusk": 0.5991735458374023,
+          "night": 0.6677265167236328
+        },
+        "presence_cell:traffic light|knn@block04": {
+          "pooled": 0.587559163570404,
+          "daytime": 0.5610425472259521,
+          "dawn/dusk": 0.5247933864593506,
+          "night": 0.6303656697273254
+        },
+        "presence_cell:traffic light|linear@block04": {
+          "pooled": 0.6061527729034424,
+          "daytime": 0.5939643383026123,
+          "dawn/dusk": 0.5702479481697083,
+          "night": 0.6271860003471375
+        },
+        "presence_cell:traffic light|knn@block05": {
+          "pooled": 0.5838404297828674,
+          "daytime": 0.5672153234481812,
+          "dawn/dusk": 0.5,
+          "night": 0.6192368865013123
+        },
+        "presence_cell:traffic light|linear@block05": {
+          "pooled": 0.6125760674476624,
+          "daytime": 0.5871056318283081,
+          "dawn/dusk": 0.5909091234207153,
+          "night": 0.6462638974189758
+        },
+        "presence_cell:traffic light|knn@block06": {
+          "pooled": 0.5983772873878479,
+          "daytime": 0.5816186666488647,
+          "dawn/dusk": 0.5619834661483765,
+          "night": 0.6248012781143188
+        },
+        "presence_cell:traffic light|linear@block06": {
+          "pooled": 0.6146044731140137,
+          "daytime": 0.6015089154243469,
+          "dawn/dusk": 0.5743801593780518,
+          "night": 0.6375198364257812
+        },
+        "presence_cell:traffic light|knn@block07": {
+          "pooled": 0.6044625043869019,
+          "daytime": 0.5850480198860168,
+          "dawn/dusk": 0.5578511953353882,
+          "night": 0.635930061340332
+        },
+        "presence_cell:traffic light|linear@block07": {
+          "pooled": 0.6088573336601257,
+          "daytime": 0.5912208557128906,
+          "dawn/dusk": 0.5743801593780518,
+          "night": 0.635930061340332
+        },
+        "presence_cell:traffic light|knn@block08": {
+          "pooled": 0.6169708967208862,
+          "daytime": 0.6069958806037903,
+          "dawn/dusk": 0.5371900796890259,
+          "night": 0.6438791751861572
+        },
+        "presence_cell:traffic light|linear@block08": {
+          "pooled": 0.633874237537384,
+          "daytime": 0.617969810962677,
+          "dawn/dusk": 0.6074379682540894,
+          "night": 0.657392680644989
+        },
+        "presence_cell:traffic light|knn@block09": {
+          "pooled": 0.5963488817214966,
+          "daytime": 0.5823045372962952,
+          "dawn/dusk": 0.5041322112083435,
+          "night": 0.6303656697273254
+        },
+        "presence_cell:traffic light|linear@block09": {
+          "pooled": 0.6254225969314575,
+          "daytime": 0.609739363193512,
+          "dawn/dusk": 0.5826446413993835,
+          "night": 0.6518282890319824
+        },
+        "presence_cell:traffic light|knn@block10": {
+          "pooled": 0.5997295379638672,
+          "daytime": 0.5980795621871948,
+          "dawn/dusk": 0.5619834661483765,
+          "night": 0.6089030504226685
+        },
+        "presence_cell:traffic light|linear@block10": {
+          "pooled": 0.6369168758392334,
+          "daytime": 0.6193415522575378,
+          "dawn/dusk": 0.6239669322967529,
+          "night": 0.6597774028778076
+        },
+        "presence_cell:traffic light|knn@block11": {
+          "pooled": 0.5845165252685547,
+          "daytime": 0.5775034427642822,
+          "dawn/dusk": 0.5578511953353882,
+          "night": 0.5977742671966553
+        },
+        "presence_cell:traffic light|linear@block11": {
+          "pooled": 0.640297532081604,
+          "daytime": 0.6262003183364868,
+          "dawn/dusk": 0.5909091234207153,
+          "night": 0.6661367416381836
+        },
+        "presence_cell:traffic light|knn@block12": {
+          "pooled": 0.5730223059654236,
+          "daytime": 0.5720164775848389,
+          "dawn/dusk": 0.5371900796890259,
+          "night": 0.5810810923576355
+        },
+        "presence_cell:traffic light|linear@block12": {
+          "pooled": 0.6413117051124573,
+          "daytime": 0.6275720596313477,
+          "dawn/dusk": 0.6033058166503906,
+          "night": 0.6645469069480896
+        }
+      }
+    },
+    "walk_s3_end": {
+      "spec": {
+        "name": "walk_s3_end",
+        "kind": "checkpoint",
+        "path": "outputs/p121/drive/je_walk/checkpoints/s3/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5571489930152893,
+          "daytime": 0.5602908730506897,
+          "dawn/dusk": 0.5367417931556702,
+          "night": 0.4718124568462372
+        },
+        "scene|linear": {
+          "pooled": 0.662070095539093,
+          "daytime": 0.6593939661979675,
+          "dawn/dusk": 0.7046845555305481,
+          "night": 0.6262504458427429
+        },
+        "scene|knn@block04": {
+          "pooled": 0.5696592330932617,
+          "daytime": 0.5646148324012756,
+          "dawn/dusk": 0.5247778296470642,
+          "night": 0.5218289494514465
+        },
+        "scene|linear@block04": {
+          "pooled": 0.5790825486183167,
+          "daytime": 0.5804567337036133,
+          "dawn/dusk": 0.6018580794334412,
+          "night": 0.5493472218513489
+        },
+        "scene|knn@block05": {
+          "pooled": 0.590523898601532,
+          "daytime": 0.5778964757919312,
+          "dawn/dusk": 0.5354575514793396,
+          "night": 0.5688733458518982
+        },
+        "scene|linear@block05": {
+          "pooled": 0.5925585031509399,
+          "daytime": 0.5881147384643555,
+          "dawn/dusk": 0.6144818663597107,
+          "night": 0.5702727437019348
+        },
+        "scene|knn@block06": {
+          "pooled": 0.5938045382499695,
+          "daytime": 0.5832244753837585,
+          "dawn/dusk": 0.5351407527923584,
+          "night": 0.5671331286430359
+        },
+        "scene|linear@block06": {
+          "pooled": 0.6092656254768372,
+          "daytime": 0.5965743064880371,
+          "dawn/dusk": 0.6243759989738464,
+          "night": 0.5991105437278748
+        },
+        "scene|knn@block07": {
+          "pooled": 0.6076846122741699,
+          "daytime": 0.5941627025604248,
+          "dawn/dusk": 0.5801511406898499,
+          "night": 0.5750749707221985
+        },
+        "scene|linear@block07": {
+          "pooled": 0.6235871911048889,
+          "daytime": 0.6185522079467773,
+          "dawn/dusk": 0.6176332831382751,
+          "night": 0.6019538044929504
+        },
+        "scene|knn@block08": {
+          "pooled": 0.6019384264945984,
+          "daytime": 0.5901381373405457,
+          "dawn/dusk": 0.589336633682251,
+          "night": 0.565931499004364
+        },
+        "scene|linear@block08": {
+          "pooled": 0.6349353194236755,
+          "daytime": 0.6319873929023743,
+          "dawn/dusk": 0.6299130916595459,
+          "night": 0.6227737069129944
+        },
+        "scene|knn@block09": {
+          "pooled": 0.6031360030174255,
+          "daytime": 0.6025530695915222,
+          "dawn/dusk": 0.5651416778564453,
+          "night": 0.5432743430137634
+        },
+        "scene|linear@block09": {
+          "pooled": 0.638164222240448,
+          "daytime": 0.6424019932746887,
+          "dawn/dusk": 0.6757371425628662,
+          "night": 0.6063222289085388
+        },
+        "scene|knn@block10": {
+          "pooled": 0.5927305221557617,
+          "daytime": 0.5894732475280762,
+          "dawn/dusk": 0.5850837230682373,
+          "night": 0.5188895463943481
+        },
+        "scene|linear@block10": {
+          "pooled": 0.6494377851486206,
+          "daytime": 0.6500670313835144,
+          "dawn/dusk": 0.6875672340393066,
+          "night": 0.6186280250549316
+        },
+        "scene|knn@block11": {
+          "pooled": 0.5675003528594971,
+          "daytime": 0.5614019632339478,
+          "dawn/dusk": 0.578493058681488,
+          "night": 0.4944869577884674
+        },
+        "scene|linear@block11": {
+          "pooled": 0.6479092836380005,
+          "daytime": 0.6533053517341614,
+          "dawn/dusk": 0.6865997314453125,
+          "night": 0.603164792060852
+        },
+        "scene|knn@block12": {
+          "pooled": 0.5476970672607422,
+          "daytime": 0.5464715957641602,
+          "dawn/dusk": 0.5800163149833679,
+          "night": 0.4670226573944092
+        },
+        "scene|linear@block12": {
+          "pooled": 0.6618070006370544,
+          "daytime": 0.6583251357078552,
+          "dawn/dusk": 0.7210353016853333,
+          "night": 0.6258155703544617
+        },
+        "presence_cell:traffic light|knn": {
+          "pooled": 0.569979727268219,
+          "daytime": 0.5528120398521423,
+          "dawn/dusk": 0.5123966932296753,
+          "night": 0.6009538769721985
+        },
+        "presence_cell:traffic light|linear": {
+          "pooled": 0.6426639556884766,
+          "daytime": 0.6275720000267029,
+          "dawn/dusk": 0.6157025098800659,
+          "night": 0.6653417944908142
+        },
+        "presence_cell:traffic light|knn@block04": {
+          "pooled": 0.5892494916915894,
+          "daytime": 0.5747599601745605,
+          "dawn/dusk": 0.5041322112083435,
+          "night": 0.6224164962768555
+        },
+        "presence_cell:traffic light|linear@block04": {
+          "pooled": 0.610209584236145,
+          "daytime": 0.5905349850654602,
+          "dawn/dusk": 0.5826446413993835,
+          "night": 0.6383147835731506
+        },
+        "presence_cell:traffic light|knn@block05": {
+          "pooled": 0.5919539928436279,
+          "daytime": 0.5733882188796997,
+          "dawn/dusk": 0.4958677589893341,
+          "night": 0.6319555044174194
+        },
+        "presence_cell:traffic light|linear@block05": {
+          "pooled": 0.609871506690979,
+          "daytime": 0.5871056318283081,
+          "dawn/dusk": 0.5661157369613647,
+          "night": 0.6446740627288818
+        },
+        "presence_cell:traffic light|knn@block06": {
+          "pooled": 0.5977011919021606,
+          "daytime": 0.5781893134117126,
+          "dawn/dusk": 0.5247933864593506,
+          "night": 0.634340226650238
+        },
+        "presence_cell:traffic light|linear@block06": {
+          "pooled": 0.610885739326477,
+          "daytime": 0.5912208557128906,
+          "dawn/dusk": 0.6115702390670776,
+          "night": 0.6335452795028687
+        },
+        "presence_cell:traffic light|knn@block07": {
+          "pooled": 0.6061527729034424,
+          "daytime": 0.5864197611808777,
+          "dawn/dusk": 0.5454545021057129,
+          "night": 0.6406995058059692
+        },
+        "presence_cell:traffic light|linear@block07": {
+          "pooled": 0.615956723690033,
+          "daytime": 0.6090534925460815,
+          "dawn/dusk": 0.5702479481697083,
+          "night": 0.632750391960144
+        },
+        "presence_cell:traffic light|knn@block08": {
+          "pooled": 0.6091954112052917,
+          "daytime": 0.5932784676551819,
+          "dawn/dusk": 0.5413223505020142,
+          "night": 0.6406995058059692
+        },
+        "presence_cell:traffic light|linear@block08": {
+          "pooled": 0.6281270980834961,
+          "daytime": 0.6207132935523987,
+          "dawn/dusk": 0.6115702390670776,
+          "night": 0.6399046182632446
+        },
+        "presence_cell:traffic light|knn@block09": {
+          "pooled": 0.59263014793396,
+          "daytime": 0.5788751840591431,
+          "dawn/dusk": 0.5206611156463623,
+          "night": 0.6224164962768555
+        },
+        "presence_cell:traffic light|linear@block09": {
+          "pooled": 0.6223800182342529,
+          "daytime": 0.6124828457832336,
+          "dawn/dusk": 0.5991735458374023,
+          "night": 0.6383147835731506
+        },
+        "presence_cell:traffic light|knn@block10": {
+          "pooled": 0.5838404297828674,
+          "daytime": 0.5802469253540039,
+          "dawn/dusk": 0.4710743725299835,
+          "night": 0.6096979379653931
+        },
+        "presence_cell:traffic light|linear@block10": {
+          "pooled": 0.6304935812950134,
+          "daytime": 0.6145404577255249,
+          "dawn/dusk": 0.5950413346290588,
+          "night": 0.655802845954895
+        },
+        "presence_cell:traffic light|knn@block11": {
+          "pooled": 0.5716700553894043,
+          "daytime": 0.5733882188796997,
+          "dawn/dusk": 0.4876033067703247,
+          "night": 0.5858505964279175
+        },
+        "presence_cell:traffic light|linear@block11": {
+          "pooled": 0.6379310488700867,
+          "daytime": 0.6227709054946899,
+          "dawn/dusk": 0.64462810754776,
+          "night": 0.6542130708694458
+        },
+        "presence_cell:traffic light|knn@block12": {
+          "pooled": 0.5581473708152771,
+          "daytime": 0.5534979701042175,
+          "dawn/dusk": 0.4876033067703247,
+          "night": 0.5771064758300781
+        },
+        "presence_cell:traffic light|linear@block12": {
+          "pooled": 0.64063560962677,
+          "daytime": 0.6275720000267029,
+          "dawn/dusk": 0.6074380278587341,
+          "night": 0.662162184715271
+        }
+      }
+    },
+    "walk_s4_end": {
+      "spec": {
+        "name": "walk_s4_end",
+        "kind": "checkpoint",
+        "path": "outputs/p121/drive/je_walk/checkpoints/s4/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5557949542999268,
+          "daytime": 0.5450008511543274,
+          "dawn/dusk": 0.5518861413002014,
+          "night": 0.496562123298645
+        },
+        "scene|linear": {
+          "pooled": 0.6629719138145447,
+          "daytime": 0.6558417677879333,
+          "dawn/dusk": 0.7249433994293213,
+          "night": 0.6358175277709961
+        },
+        "scene|knn@block04": {
+          "pooled": 0.5788314938545227,
+          "daytime": 0.5628218054771423,
+          "dawn/dusk": 0.5388967394828796,
+          "night": 0.5602732300758362
+        },
+        "scene|linear@block04": {
+          "pooled": 0.5782726407051086,
+          "daytime": 0.5743401050567627,
+          "dawn/dusk": 0.609098494052887,
+          "night": 0.564500629901886
+        },
+        "scene|knn@block05": {
+          "pooled": 0.5884165167808533,
+          "daytime": 0.5669075846672058,
+          "dawn/dusk": 0.5770286917686462,
+          "night": 0.5758460164070129
+        },
+        "scene|linear@block05": {
+          "pooled": 0.5998923182487488,
+          "daytime": 0.6077134013175964,
+          "dawn/dusk": 0.6208615899085999,
+          "night": 0.5645967125892639
+        },
+        "scene|knn@block06": {
+          "pooled": 0.6043239235877991,
+          "daytime": 0.5858016014099121,
+          "dawn/dusk": 0.5586568713188171,
+          "night": 0.5929462313652039
+        },
+        "scene|linear@block06": {
+          "pooled": 0.6123145222663879,
+          "daytime": 0.6035387516021729,
+          "dawn/dusk": 0.6221449971199036,
+          "night": 0.5989966988563538
+        },
+        "scene|knn@block07": {
+          "pooled": 0.6108147501945496,
+          "daytime": 0.5909711718559265,
+          "dawn/dusk": 0.5704670548439026,
+          "night": 0.5911843776702881
+        },
+        "scene|linear@block07": {
+          "pooled": 0.6315186619758606,
+          "daytime": 0.6320547461509705,
+          "dawn/dusk": 0.6238501071929932,
+          "night": 0.5966000556945801
+        },
+        "scene|knn@block08": {
+          "pooled": 0.6224691271781921,
+          "daytime": 0.6012977361679077,
+          "dawn/dusk": 0.6033505797386169,
+          "night": 0.6011039018630981
+        },
+        "scene|linear@block08": {
+          "pooled": 0.6399691700935364,
+          "daytime": 0.645874559879303,
+          "dawn/dusk": 0.63590008020401,
+          "night": 0.6117488741874695
+        },
+        "scene|knn@block09": {
+          "pooled": 0.6224955916404724,
+          "daytime": 0.5981661677360535,
+          "dawn/dusk": 0.6120381951332092,
+          "night": 0.600986897945404
+        },
+        "scene|linear@block09": {
+          "pooled": 0.6319794058799744,
+          "daytime": 0.6278099417686462,
+          "dawn/dusk": 0.6366856694221497,
+          "night": 0.6037957072257996
+        },
+        "scene|knn@block10": {
+          "pooled": 0.6097355484962463,
+          "daytime": 0.5887017250061035,
+          "dawn/dusk": 0.6008317470550537,
+          "night": 0.5691998600959778
+        },
+        "scene|linear@block10": {
+          "pooled": 0.6491382122039795,
+          "daytime": 0.6421145796775818,
+          "dawn/dusk": 0.6908245086669922,
+          "night": 0.6219717860221863
+        },
+        "scene|knn@block11": {
+          "pooled": 0.580086886882782,
+          "daytime": 0.5624331831932068,
+          "dawn/dusk": 0.5761091113090515,
+          "night": 0.523576557636261
+        },
+        "scene|linear@block11": {
+          "pooled": 0.6525154709815979,
+          "daytime": 0.6411408185958862,
+          "dawn/dusk": 0.731218159198761,
+          "night": 0.626875638961792
+        },
+        "scene|knn@block12": {
+          "pooled": 0.5544477105140686,
+          "daytime": 0.547198474407196,
+          "dawn/dusk": 0.5620671510696411,
+          "night": 0.487931489944458
+        },
+        "scene|linear@block12": {
+          "pooled": 0.6634665727615356,
+          "daytime": 0.6512884497642517,
+          "dawn/dusk": 0.7238419651985168,
+          "night": 0.6481241583824158
+        },
+        "presence_cell:traffic light|knn": {
+          "pooled": 0.5970250368118286,
+          "daytime": 0.5953360795974731,
+          "dawn/dusk": 0.5371900796890259,
+          "night": 0.6104928255081177
+        },
+        "presence_cell:traffic light|linear": {
+          "pooled": 0.6463826894760132,
+          "daytime": 0.6406035423278809,
+          "dawn/dusk": 0.5909091234207153,
+          "night": 0.6637519598007202
+        },
+        "presence_cell:traffic light|knn@block04": {
+          "pooled": 0.5791075229644775,
+          "daytime": 0.5569273233413696,
+          "dawn/dusk": 0.5,
+          "night": 0.6200318336486816
+        },
+        "presence_cell:traffic light|linear@block04": {
+          "pooled": 0.5987153649330139,
+          "daytime": 0.570644736289978,
+          "dawn/dusk": 0.5909091234207153,
+          "night": 0.632750391960144
+        },
+        "presence_cell:traffic light|knn@block05": {
+          "pooled": 0.5919539928436279,
+          "daytime": 0.562414288520813,
+          "dawn/dusk": 0.5413222908973694,
+          "night": 0.635930061340332
+        },
+        "presence_cell:traffic light|linear@block05": {
+          "pooled": 0.6118999719619751,
+          "daytime": 0.5953360795974731,
+          "dawn/dusk": 0.5661157369613647,
+          "night": 0.6399046182632446
+        },
+        "presence_cell:traffic light|knn@block06": {
+          "pooled": 0.6027721166610718,
+          "daytime": 0.5809327363967896,
+          "dawn/dusk": 0.5454545021057129,
+          "night": 0.63910973072052
+        },
+        "presence_cell:traffic light|linear@block06": {
+          "pooled": 0.6095334887504578,
+          "daytime": 0.5871056318283081,
+          "dawn/dusk": 0.6074380278587341,
+          "night": 0.635930061340332
+        },
+        "presence_cell:traffic light|knn@block07": {
+          "pooled": 0.5997295379638672,
+          "daytime": 0.5781892538070679,
+          "dawn/dusk": 0.5123966932296753,
+          "night": 0.6414943933486938
+        },
+        "presence_cell:traffic light|linear@block07": {
+          "pooled": 0.6034482717514038,
+          "daytime": 0.5720164775848389,
+          "dawn/dusk": 0.6157024502754211,
+          "night": 0.637519896030426
+        },
+        "presence_cell:traffic light|knn@block08": {
+          "pooled": 0.6058146953582764,
+          "daytime": 0.5891632437705994,
+          "dawn/dusk": 0.5537189841270447,
+          "night": 0.6351351141929626
+        },
+        "presence_cell:traffic light|linear@block08": {
+          "pooled": 0.6237322092056274,
+          "daytime": 0.609739363193512,
+          "dawn/dusk": 0.5950413346290588,
+          "night": 0.6454689502716064
+        },
+        "presence_cell:traffic light|knn@block09": {
+          "pooled": 0.6054766774177551,
+          "daytime": 0.5905349850654602,
+          "dawn/dusk": 0.5330578684806824,
+          "night": 0.6367249488830566
+        },
+        "presence_cell:traffic light|linear@block09": {
+          "pooled": 0.6416497230529785,
+          "daytime": 0.6371742486953735,
+          "dawn/dusk": 0.5991735458374023,
+          "night": 0.6550079584121704
+        },
+        "presence_cell:traffic light|knn@block10": {
+          "pooled": 0.6139283180236816,
+          "daytime": 0.5994513034820557,
+          "dawn/dusk": 0.5826445817947388,
+          "night": 0.6367249488830566
+        },
+        "presence_cell:traffic light|linear@block10": {
+          "pooled": 0.6419878005981445,
+          "daytime": 0.6426612138748169,
+          "dawn/dusk": 0.6198347210884094,
+          "night": 0.6454689502716064
+        },
+        "presence_cell:traffic light|knn@block11": {
+          "pooled": 0.6044625043869019,
+          "daytime": 0.6008230447769165,
+          "dawn/dusk": 0.5619834661483765,
+          "night": 0.6168521642684937
+        },
+        "presence_cell:traffic light|linear@block11": {
+          "pooled": 0.6450303792953491,
+          "daytime": 0.6495199203491211,
+          "dawn/dusk": 0.5950412750244141,
+          "night": 0.6494435667991638
+        },
+        "presence_cell:traffic light|knn@block12": {
+          "pooled": 0.5963488817214966,
+          "daytime": 0.6056241393089294,
+          "dawn/dusk": 0.5413222908973694,
+          "night": 0.5961843729019165
+        },
+        "presence_cell:traffic light|linear@block12": {
+          "pooled": 0.6446923613548279,
+          "daytime": 0.6419752836227417,
+          "dawn/dusk": 0.586776852607727,
+          "night": 0.658982515335083
+        }
+      }
+    }
+  }
+}

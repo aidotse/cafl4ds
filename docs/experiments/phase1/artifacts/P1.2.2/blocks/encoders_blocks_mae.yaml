@@ -1,0 +1,6 @@
+- {name: b5, kind: well, path: wells/p121/mae_heads.pt}
+- {name: walk_s0_end, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s0/final.pt}
+- {name: walk_s1_end, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s1/final.pt}
+- {name: walk_s2_end, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s2/final.pt}
+- {name: walk_s3_end, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s3/final.pt}
+- {name: walk_s4_end, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s4/final.pt}

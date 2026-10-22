@@ -1,0 +1,161 @@
+{
+  "pool": {
+    "kind": "selection",
+    "n_fit": 450,
+    "n_query": 450
+  },
+  "n_query_by_task": {
+    "scene": 450
+  },
+  "stratum_names": {},
+  "regime_names": {},
+  "encoders": {
+    "b5": {
+      "spec": {
+        "name": "b5",
+        "kind": "well",
+        "path": "wells/p121/mae_heads.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.46888887882232666,
+          "0": 0.46888887882232666
+        },
+        "scene|linear": {
+          "pooled": 0.5755555629730225,
+          "0": 0.5755555629730225
+        },
+        "scene|ft100": {
+          "pooled": 0.6303703784942627,
+          "0": 0.6303703784942627
+        }
+      }
+    },
+    "base": {
+      "spec": {
+        "name": "base",
+        "kind": "checkpoint",
+        "path": "outputs/p121/drive/mae_walk/checkpoints/s0/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.46444442868232727,
+          "0": 0.46444442868232727
+        },
+        "scene|linear": {
+          "pooled": 0.5377777218818665,
+          "0": 0.5377777218818665
+        },
+        "scene|ft100": {
+          "pooled": 0.5629629492759705,
+          "0": 0.5629629492759705
+        }
+      }
+    },
+    "zero_lr": {
+      "spec": {
+        "name": "zero_lr",
+        "kind": "checkpoint",
+        "path": "outputs/p122/drive/zero_lr/checkpoints/s0/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.46888887882232666,
+          "0": 0.46888887882232666
+        },
+        "scene|linear": {
+          "pooled": 0.5755555629730225,
+          "0": 0.5755555629730225
+        },
+        "scene|ft100": {
+          "pooled": 0.6303703784942627,
+          "0": 0.6303703784942627
+        }
+      }
+    },
+    "lr_third": {
+      "spec": {
+        "name": "lr_third",
+        "kind": "checkpoint",
+        "path": "outputs/p122/drive/lr_third/checkpoints/s0/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.47111108899116516,
+          "0": 0.47111108899116516
+        },
+        "scene|linear": {
+          "pooled": 0.5288888812065125,
+          "0": 0.5288888812065125
+        },
+        "scene|ft100": {
+          "pooled": 0.5718517899513245,
+          "0": 0.5718517899513245
+        }
+      }
+    },
+    "lr_x3": {
+      "spec": {
+        "name": "lr_x3",
+        "kind": "checkpoint",
+        "path": "outputs/p122/drive/lr_x3/checkpoints/s0/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.46888887882232666,
+          "0": 0.46888887882232666
+        },
+        "scene|linear": {
+          "pooled": 0.5355555415153503,
+          "0": 0.5355555415153503
+        },
+        "scene|ft100": {
+          "pooled": 0.538518488407135,
+          "0": 0.538518488407135
+        }
+      }
+    },
+    "warmup": {
+      "spec": {
+        "name": "warmup",
+        "kind": "checkpoint",
+        "path": "outputs/p122/drive/warmup/checkpoints/s0/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.46222224831581116,
+          "0": 0.46222224831581116
+        },
+        "scene|linear": {
+          "pooled": 0.5666666626930237,
+          "0": 0.5666666626930237
+        },
+        "scene|ft100": {
+          "pooled": 0.5674074292182922,
+          "0": 0.5674074292182922
+        }
+      }
+    },
+    "protect": {
+      "spec": {
+        "name": "protect",
+        "kind": "checkpoint",
+        "path": "outputs/p122/drive/protect/checkpoints/s0/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.46888887882232666,
+          "0": 0.46888887882232666
+        },
+        "scene|linear": {
+          "pooled": 0.5444445013999939,
+          "0": 0.5444445013999939
+        },
+        "scene|ft100": {
+          "pooled": 0.5851852297782898,
+          "0": 0.5851852297782898
+        }
+      }
+    }
+  }
+}
