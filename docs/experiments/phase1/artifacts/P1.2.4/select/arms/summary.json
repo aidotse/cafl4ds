@@ -1,0 +1,150 @@
+{
+  "pool": {
+    "kind": "selection",
+    "n_fit": 450,
+    "n_query": 450
+  },
+  "n_query_by_task": {
+    "scene": 450
+  },
+  "stratum_names": {},
+  "regime_names": {},
+  "encoders": {
+    "b5": {
+      "spec": {
+        "name": "b5",
+        "kind": "well",
+        "path": "wells/p121/je_heads.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.46888887882232666,
+          "0": 0.46888887882232666
+        },
+        "scene|linear": {
+          "pooled": 0.5755555629730225,
+          "0": 0.5755555629730225
+        }
+      }
+    },
+    "base": {
+      "spec": {
+        "name": "base",
+        "kind": "checkpoint",
+        "path": "outputs/p121/drive/je_walk/checkpoints/s0/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.4488888680934906,
+          "0": 0.4488888680934906
+        },
+        "scene|linear": {
+          "pooled": 0.5933333039283752,
+          "0": 0.5933333039283752
+        }
+      }
+    },
+    "cosine": {
+      "spec": {
+        "name": "cosine",
+        "kind": "checkpoint",
+        "path": "outputs/p124/drive/cosine/checkpoints/s0/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5511110424995422,
+          "0": 0.5511110424995422
+        },
+        "scene|linear": {
+          "pooled": 0.5799999833106995,
+          "0": 0.5799999833106995
+        }
+      }
+    },
+    "ema": {
+      "spec": {
+        "name": "ema",
+        "kind": "checkpoint",
+        "path": "outputs/p124/drive/ema/checkpoints/s0/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.48000001907348633,
+          "0": 0.48000001907348633
+        },
+        "scene|linear": {
+          "pooled": 0.5755555629730225,
+          "0": 0.5755555629730225
+        }
+      }
+    },
+    "lr_third": {
+      "spec": {
+        "name": "lr_third",
+        "kind": "checkpoint",
+        "path": "outputs/p124/drive/lr_third/checkpoints/s0/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.551111102104187,
+          "0": 0.551111102104187
+        },
+        "scene|linear": {
+          "pooled": 0.5577778220176697,
+          "0": 0.5577778220176697
+        }
+      }
+    },
+    "lr_x3": {
+      "spec": {
+        "name": "lr_x3",
+        "kind": "checkpoint",
+        "path": "outputs/p124/drive/lr_x3/checkpoints/s0/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.4377777874469757,
+          "0": 0.4377777874469757
+        },
+        "scene|linear": {
+          "pooled": 0.5311110615730286,
+          "0": 0.5311110615730286
+        }
+      }
+    },
+    "protect": {
+      "spec": {
+        "name": "protect",
+        "kind": "checkpoint",
+        "path": "outputs/p124/drive/protect/checkpoints/s0/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5177777409553528,
+          "0": 0.5177777409553528
+        },
+        "scene|linear": {
+          "pooled": 0.6177777647972107,
+          "0": 0.6177777647972107
+        }
+      }
+    },
+    "ema_avg": {
+      "spec": {
+        "name": "ema_avg",
+        "kind": "checkpoint",
+        "path": "outputs/p124/drive/ema/checkpoints/s0/ema_final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5088889002799988,
+          "0": 0.5088889002799988
+        },
+        "scene|linear": {
+          "pooled": 0.5711111426353455,
+          "0": 0.5711111426353455
+        }
+      }
+    }
+  }
+}

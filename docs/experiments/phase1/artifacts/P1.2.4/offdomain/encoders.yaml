@@ -1,0 +1,7 @@
+- {name: b5, kind: well, path: wells/p121/je_heads.pt}
+- {name: coco_s0_end, kind: checkpoint, path: outputs/p124/offdomain/drive/coco/checkpoints/s0/final.pt}
+- {name: coco_s1_end, kind: checkpoint, path: outputs/p124/offdomain/drive/coco/checkpoints/s1/final.pt}
+- {name: coco_s2_end, kind: checkpoint, path: outputs/p124/offdomain/drive/coco/checkpoints/s2/final.pt}
+- {name: places365_s0_end, kind: checkpoint, path: outputs/p124/offdomain/drive/places365/checkpoints/s0/final.pt}
+- {name: places365_s1_end, kind: checkpoint, path: outputs/p124/offdomain/drive/places365/checkpoints/s1/final.pt}
+- {name: places365_s2_end, kind: checkpoint, path: outputs/p124/offdomain/drive/places365/checkpoints/s2/final.pt}

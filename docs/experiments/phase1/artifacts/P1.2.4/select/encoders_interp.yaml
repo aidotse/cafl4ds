@@ -1,0 +1,21 @@
+- {name: b5, kind: well, path: wells/p121/je_heads.pt}
+- {name: walk_s0_a1.0, kind: checkpoint, path: outputs/p121/drive/je_walk/checkpoints/s0/final.pt}
+- {name: walk_s0_a0.25, kind: interp, alpha: 0.25, a: {kind: well, path: wells/p121/je_heads.pt}, b: {kind: checkpoint, path: outputs/p121/drive/je_walk/checkpoints/s0/final.pt}}
+- {name: walk_s0_a0.5, kind: interp, alpha: 0.5, a: {kind: well, path: wells/p121/je_heads.pt}, b: {kind: checkpoint, path: outputs/p121/drive/je_walk/checkpoints/s0/final.pt}}
+- {name: walk_s0_a0.75, kind: interp, alpha: 0.75, a: {kind: well, path: wells/p121/je_heads.pt}, b: {kind: checkpoint, path: outputs/p121/drive/je_walk/checkpoints/s0/final.pt}}
+- {name: walk_s1_a1.0, kind: checkpoint, path: outputs/p121/drive/je_walk/checkpoints/s1/final.pt}
+- {name: walk_s1_a0.25, kind: interp, alpha: 0.25, a: {kind: well, path: wells/p121/je_heads.pt}, b: {kind: checkpoint, path: outputs/p121/drive/je_walk/checkpoints/s1/final.pt}}
+- {name: walk_s1_a0.5, kind: interp, alpha: 0.5, a: {kind: well, path: wells/p121/je_heads.pt}, b: {kind: checkpoint, path: outputs/p121/drive/je_walk/checkpoints/s1/final.pt}}
+- {name: walk_s1_a0.75, kind: interp, alpha: 0.75, a: {kind: well, path: wells/p121/je_heads.pt}, b: {kind: checkpoint, path: outputs/p121/drive/je_walk/checkpoints/s1/final.pt}}
+- {name: walk_s2_a1.0, kind: checkpoint, path: outputs/p121/drive/je_walk/checkpoints/s2/final.pt}
+- {name: walk_s2_a0.25, kind: interp, alpha: 0.25, a: {kind: well, path: wells/p121/je_heads.pt}, b: {kind: checkpoint, path: outputs/p121/drive/je_walk/checkpoints/s2/final.pt}}
+- {name: walk_s2_a0.5, kind: interp, alpha: 0.5, a: {kind: well, path: wells/p121/je_heads.pt}, b: {kind: checkpoint, path: outputs/p121/drive/je_walk/checkpoints/s2/final.pt}}
+- {name: walk_s2_a0.75, kind: interp, alpha: 0.75, a: {kind: well, path: wells/p121/je_heads.pt}, b: {kind: checkpoint, path: outputs/p121/drive/je_walk/checkpoints/s2/final.pt}}
+- {name: walk_s3_a1.0, kind: checkpoint, path: outputs/p121/drive/je_walk/checkpoints/s3/final.pt}
+- {name: walk_s3_a0.25, kind: interp, alpha: 0.25, a: {kind: well, path: wells/p121/je_heads.pt}, b: {kind: checkpoint, path: outputs/p121/drive/je_walk/checkpoints/s3/final.pt}}
+- {name: walk_s3_a0.5, kind: interp, alpha: 0.5, a: {kind: well, path: wells/p121/je_heads.pt}, b: {kind: checkpoint, path: outputs/p121/drive/je_walk/checkpoints/s3/final.pt}}
+- {name: walk_s3_a0.75, kind: interp, alpha: 0.75, a: {kind: well, path: wells/p121/je_heads.pt}, b: {kind: checkpoint, path: outputs/p121/drive/je_walk/checkpoints/s3/final.pt}}
+- {name: walk_s4_a1.0, kind: checkpoint, path: outputs/p121/drive/je_walk/checkpoints/s4/final.pt}
+- {name: walk_s4_a0.25, kind: interp, alpha: 0.25, a: {kind: well, path: wells/p121/je_heads.pt}, b: {kind: checkpoint, path: outputs/p121/drive/je_walk/checkpoints/s4/final.pt}}
+- {name: walk_s4_a0.5, kind: interp, alpha: 0.5, a: {kind: well, path: wells/p121/je_heads.pt}, b: {kind: checkpoint, path: outputs/p121/drive/je_walk/checkpoints/s4/final.pt}}
+- {name: walk_s4_a0.75, kind: interp, alpha: 0.75, a: {kind: well, path: wells/p121/je_heads.pt}, b: {kind: checkpoint, path: outputs/p121/drive/je_walk/checkpoints/s4/final.pt}}

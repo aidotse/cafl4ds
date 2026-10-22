@@ -1,0 +1,3 @@
+- {name: protect_a0.25, kind: interp, alpha: 0.25, a: {kind: well, path: wells/p121/je_heads.pt}, b: {kind: checkpoint, path: outputs/p124/drive/protect/checkpoints/s0/final.pt}}
+- {name: protect_a0.5, kind: interp, alpha: 0.5, a: {kind: well, path: wells/p121/je_heads.pt}, b: {kind: checkpoint, path: outputs/p124/drive/protect/checkpoints/s0/final.pt}}
+- {name: protect_a0.75, kind: interp, alpha: 0.75, a: {kind: well, path: wells/p121/je_heads.pt}, b: {kind: checkpoint, path: outputs/p124/drive/protect/checkpoints/s0/final.pt}}
