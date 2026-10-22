@@ -16,13 +16,18 @@ the loop skips a batch the filter leaves too small to update on, so the two can 
 written even when the loop stops early (divergence breaks it before the stream is exhausted); an
 early stop leaves no ``final.pt``. The wrapper is single-pass: ``batch.step`` restarts on a second
 pass, which would overwrite the first pass's checkpoints, so re-iterating raises.
+
+:class:`AveragingStream` uses the same wrapping to keep a weight average beside the drive (P1.2.4).
 """
 
 from __future__ import annotations
 
+import copy
 import json
 from collections.abc import Iterable, Iterator
 from pathlib import Path
+
+import torch
 
 from cafl4ds.data.streams import StreamBatch
 from cafl4ds.ssl.base import SSLMethod
@@ -85,3 +90,56 @@ class CheckpointingStream:
         """Save the method and record how many delivered batches the checkpoint covers."""
         save_well(self.method, self.out_dir / filename)
         self.saved.append({"file": filename, "batches_seen": batches_seen})
+
+
+class AveragingStream:
+    """A stream wrapper that keeps an exponential moving average of the method's weights (P1.2.4).
+
+    The shadow starts as a copy of the method when iteration begins (on the loop's device) and folds in
+    the live weights after every delivered batch — the wrapper resumes only once the loop has trained on
+    the batch it yielded. Float parameters and buffers are averaged; integer buffers are copied. Once the
+    wrapped stream is exhausted, the shadow is saved as a full method at ``out_path`` (the drive's
+    ``ema_final.pt``), readable like any checkpoint.
+    """
+
+    def __init__(self, stream: Iterable[StreamBatch], method: SSLMethod, decay: float, out_path: str | Path) -> None:
+        """Wrap ``stream``.
+
+        Args:
+            stream: The stream the loop iterates (its length, if any, is passed through).
+            method: The method the loop trains (read after every batch, never modified).
+            decay: The EMA decay per batch, in ``[0, 1)``.
+            out_path: Where the averaged method is saved at the end.
+
+        Raises:
+            ValueError: If ``decay`` is outside ``[0, 1)``.
+        """
+        if not 0.0 <= decay < 1.0:
+            raise ValueError(f"decay must be in [0, 1); got {decay}.")
+        self.stream = stream
+        self.method = method
+        self.decay = decay
+        self.out_path = Path(out_path)
+        self.shadow: SSLMethod | None = None
+
+    def __len__(self) -> int:
+        """The wrapped stream's batch count."""
+        return len(self.stream)  # type: ignore[arg-type]
+
+    def __iter__(self) -> Iterator[StreamBatch]:
+        """Yield the wrapped stream's batches, averaging after each and saving the average at the end."""
+        self.shadow = shadow = copy.deepcopy(self.method)
+        for batch in self.stream:
+            yield batch
+            self._fold(shadow)
+        save_well(shadow, self.out_path)
+
+    def _fold(self, shadow: SSLMethod) -> None:
+        """Fold the live weights into ``shadow``: ``shadow = decay * shadow + (1 - decay) * live``."""
+        live = self.method.state_dict()
+        with torch.no_grad():
+            for name, value in shadow.state_dict().items():
+                if value.is_floating_point():
+                    value.lerp_(live[name], 1.0 - self.decay)
+                else:
+                    value.copy_(live[name])

@@ -16,6 +16,8 @@ The pool (``pool.kind``):
   BDD *val* for its train-driven models.
 * ``canary`` — the regime stream's reserved canary probes (support = fit, query = query), for
   continuity with P1.1's in-run canary. Pass the drive's diet overrides so the reservation matches.
+* ``selection`` — the stream's train-side selection set (``stream.select_*_per_canary``; scene labels
+  only), never trained on: where P1.2.2 / P1.2.4 choose their recipes without reading val.
 
 Modes: ``read`` (the ladder), ``select_lr`` (the few-shot learning-rate pick, on the first encoder —
 B5 — against a validation reservation from the fit pool) and ``screen`` (the presence-task screen:
@@ -67,8 +69,11 @@ def build_pool(config: DictConfig) -> tuple[HeldOutPool, np.ndarray, np.ndarray]
         )
         fit, query = adaptation.split_pool(len(pool), float(config.pool.fit_fraction), int(config.pool.seed))
         return pool, fit, query
-    if kind == "canary":
-        sets = instantiate(config.stream).eval_sets
+    if kind in ("canary", "selection"):
+        stream = instantiate(config.stream)
+        sets = stream.eval_sets if kind == "canary" else stream.selection_sets
+        if sets is None:
+            raise ValueError("pool.kind=selection needs the drive's stream.select_*_per_canary reservation.")
         support, probe = sets.probe_support, sets.probe_query
         groups = [s.groups if s.groups is not None else torch.zeros_like(s.labels) for s in (support, probe)]
         pool = HeldOutPool(
@@ -80,7 +85,7 @@ def build_pool(config: DictConfig) -> tuple[HeldOutPool, np.ndarray, np.ndarray]
         )
         n_fit = support.labels.numel()
         return pool, np.arange(n_fit), np.arange(n_fit, len(pool))
-    raise ValueError(f"pool.kind must be 'heldout' or 'canary'; got {kind!r}.")
+    raise ValueError(f"pool.kind must be 'heldout', 'canary' or 'selection'; got {kind!r}.")
 
 
 def _encoder_specs(config: DictConfig) -> list[dict[str, Any]]:
@@ -100,9 +105,17 @@ def load_encoder(config: DictConfig, spec: dict[str, Any]) -> torch.nn.Module:
 
     ``pretrained`` is the encoder as configured; ``random`` the same architecture at the from-scratch
     init (the input resize / normalization kept); ``well`` / ``checkpoint`` a saved full method of the
-    configured SSL family, whose encoder is returned.
+    configured SSL family, whose encoder is returned; ``interp`` the weight interpolation
+    ``(1 - alpha) * a + alpha * b`` of two encoder specs (P1.2.4's WiSE-FT arm; non-float buffers from ``b``).
     """
     kind = str(spec["kind"])
+    if kind == "interp":
+        alpha = float(spec["alpha"])
+        start, end = (load_encoder(config, dict(spec[k])).state_dict() for k in ("a", "b"))
+        mixed = {k: torch.lerp(start[k], v, alpha) if v.is_floating_point() else v for k, v in end.items()}
+        encoder = instantiate(config.encoder)
+        encoder.load_state_dict(mixed)
+        return encoder
     encoder = instantiate(config.encoder)
     if kind == "pretrained":
         return encoder
@@ -123,7 +136,7 @@ def load_encoder(config: DictConfig, spec: dict[str, Any]) -> torch.nn.Module:
         method = instantiate(config.ssl, encoder=encoder)
         warmup.load_well(method, to_absolute_path(str(spec["path"])))
         return method.encoder
-    raise ValueError(f"encoder kind must be pretrained | random | well | checkpoint; got {kind!r}.")
+    raise ValueError(f"encoder kind must be pretrained | random | well | checkpoint | interp; got {kind!r}.")
 
 
 def _recipe(config: DictConfig, lr: float | None = None) -> FineTuneRecipe:
@@ -188,14 +201,18 @@ def read(config: DictConfig, out_dir: Path) -> dict[str, Any]:
     for spec in _encoder_specs(config):
         name = spec["name"]
         encoder = load_encoder(config, spec).to(config.device)
-        features = adaptation.encode(encoder, pool.images, str(config.device))
+        features = {"": adaptation.encode(encoder, pool.images, str(config.device))}
+        if config.get("blocks"):  # P1.2.2's per-block probes: frozen rungs on each listed block too
+            blocks = adaptation.encode_blocks(encoder, pool.images, str(config.device), list(config.blocks))
+            features |= {f"@block{b:02d}": f for b, f in blocks.items()}
         arrays: dict[str, np.ndarray] = {}
         for task in tasks:
             sub = _fit_subsample(labels[task], t_fit[task], config)
-            for rung, correct in adaptation.frozen_correctness(
-                features, labels[task], sub, t_query[task], int(config.knn_k)
-            ).items():
-                arrays[f"{task}|{rung}"] = correct[None, :]
+            for at, feats in features.items():
+                for rung, correct in adaptation.frozen_correctness(
+                    feats, labels[task], sub, t_query[task], int(config.knn_k)
+                ).items():
+                    arrays[f"{task}|{rung}{at}"] = correct[None, :]
             if not spec.get("fewshot", bool(config.fewshot.enabled)) or (ft_tasks is not None and task not in ft_tasks):
                 continue
             for k in config.fewshot.ks:

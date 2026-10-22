@@ -546,6 +546,42 @@ def test_p121_drive_from_a_settled_head_well_saves_chosen_steps_and_reads_on_the
     assert set(summary["encoders"]) == {"b5", "end"}
 
 
+def test_p122_recipe_arms_drive_and_read_on_the_selection_set(tmp_path: Path) -> None:
+    """P1.2.2 / P1.2.4 wiring: a drive with every recipe lever on, then the reads that choose between arms.
+
+    The drive runs a warmup schedule, the fine-tuning protections and an EMA; the reader scores it on the
+    selection set, interpolated with its start, and per block.
+    """
+    heads = tmp_path / "heads.pt"
+    select = ["stream.select_support_per_canary=3", "stream.select_query_per_canary=3"]
+    warm = [*_P11_DIET, *select, "warmup.max_steps=2", "warmup.freeze_encoder=true"]
+    _load_script("warm_well").warm(_compose("warm_well", [*warm, f"well_out={heads}"]))
+    arms = ["schedule=warmup_constant", "param_groups.layer_decay=0.75", "param_groups.no_decay=true", "ema=0.9"]
+    drive = [*_P11_DIET, *select, "eval_every=4", f"well={heads}", "checkpoint_legs=final", *arms]
+    _load_script("run_deploy_harness").run_deploy(_compose("deploy", drive), tmp_path / "drive")
+    ckpt = tmp_path / "drive" / "checkpoints" / "s0"
+    assert (ckpt / "final.pt").is_file() and (ckpt / "ema_final.pt").is_file()
+
+    end = {"kind": "checkpoint", "path": str(ckpt / "final.pt")}
+    encoders = [
+        {"name": "b5", "kind": "well", "path": str(heads)},
+        {"name": "end", **end},
+        {"name": "ema", "kind": "checkpoint", "path": str(ckpt / "ema_final.pt")},
+        {"name": "mid", "kind": "interp", "a": {"kind": "well", "path": str(heads)}, "b": end, "alpha": 0.5},
+        {"name": "at_end", "kind": "interp", "a": {"kind": "well", "path": str(heads)}, "b": end, "alpha": 1.0},
+    ]
+    listed = tmp_path / "encoders.yaml"
+    OmegaConf.save(OmegaConf.create(encoders), listed)
+    read = [*_P11_DIET, *select, "pool.kind=selection", "probe_per_class=3", "threads=1", "blocks=[1,4]"]
+    summary = _load_script("read_adaptation").run(
+        _compose("read_adaptation", [*read, "~encoders", f"encoders_file={listed}"]), tmp_path / "read"
+    )
+    assert summary["pool"]["n_fit"] == summary["pool"]["n_query"] > 0  # 3 + 3 per scene
+    assert {"scene|linear@block01", "scene|knn@block04"} <= set(summary["encoders"]["end"]["bacc"])
+    same = [np.load(tmp_path / "read" / f"{n}.npz")["scene|linear"] for n in ("end", "at_end")]
+    np.testing.assert_array_equal(*same)
+
+
 def _fake_ladder(path: Path, names: list[str], gain: dict[str, float], n: int = 300) -> None:
     """A reader output dir: pool metadata plus per-encoder correctness at accuracy 0.6 + ``gain[name]``."""
     rng = np.random.default_rng(len(str(path)))

@@ -36,12 +36,12 @@ from hydra.utils import instantiate, to_absolute_path
 from loguru import logger
 from omegaconf import DictConfig, OmegaConf
 
-from cafl4ds import branch, deploy, deploy_corpus, harness, warmup
+from cafl4ds import branch, deploy, deploy_corpus, harness, optim_groups, warmup
 from cafl4ds.data.attributes import AttributeSource
 from cafl4ds.data.regime import RegimeStream
 from cafl4ds.data.streams import StreamBatch
 from cafl4ds.health_trust import CANARY_SIGNALS, DEFAULT_LABEL_FREE_SIGNALS, Backbone, backbone_family
-from cafl4ds.leg_checkpoints import CheckpointingStream
+from cafl4ds.leg_checkpoints import AveragingStream, CheckpointingStream
 from cafl4ds.monitor import HealthMonitor, group_key
 from cafl4ds.ssl.base import SSLMethod, apply_encoder_init
 
@@ -158,7 +158,11 @@ def _run_live(
             f"{method.name!r} ({backbone_family(method.name).value}) — check the backbone override."
         )
     stream = instantiate(config.stream, source=source)
-    for path in {str(p) for p in (config.get("well"), config.get("anchor")) if p}:
+    # P1.2.4's off-domain drives resume a BDD well on another source, whose split cannot match: the one
+    # deliberate exception (resume_check_split=false).
+    for path in {
+        str(p) for p in (config.get("well"), config.get("anchor")) if p and config.get("resume_check_split", True)
+    }:
         warmup.check_split(to_absolute_path(path), stream.split_fingerprint())
     logger.info(
         f"deploy '{name}': backbone={method.name}, order={stream.order}, {stream.num_eras} eras, "
@@ -169,19 +173,41 @@ def _run_live(
         with torch.random.fork_rng():  # building the anchor must not shift the arm's RNG draws
             monitor.anchor_drift(_anchor_method(config))
     fed, branched = _branch_stream(config, stream, method, monitor, out_dir)
+    if config.get("ema"):  # P1.2.4: a weight average beside the drive, saved as checkpoints/s<seed>/ema_final.pt
+        fed = AveragingStream(
+            fed, method, float(config.ema), out_dir / "checkpoints" / f"s{config.seed}" / "ema_final.pt"
+        )
+    optimizer = _optimizer(config, method)
+    schedule = config.get("schedule")
     arm = harness.run_stream_arm(
         name=f"{name}_live",
         role="live",
         method=method,
         stream=fed,
-        optimizer=instantiate(config.optim, params=method.parameters()),
+        optimizer=optimizer,
         selection_filter=instantiate(config.filter),
         monitor=monitor,
         out_dir=out_dir,
         eval_every=config.eval_every,
+        scheduler=instantiate(schedule, optimizer=optimizer, total_steps=len(stream)) if schedule else None,
         device=config.device,
     )
     return arm, stream, branched
+
+
+def _optimizer(config: DictConfig, method: SSLMethod) -> torch.optim.Optimizer:
+    """The live arm's optimizer: one group, or P1.2.2's protections (``param_groups``) when asked for."""
+    groups = config.get("param_groups") or {}
+    if groups.get("layer_decay") is None and not groups.get("no_decay"):
+        return instantiate(config.optim, params=method.parameters())
+    params = optim_groups.param_groups(
+        method,
+        lr=float(config.optim.lr),
+        weight_decay=float(config.optim.weight_decay),
+        layer_decay=groups.get("layer_decay"),
+        no_decay=bool(groups.get("no_decay")),
+    )
+    return instantiate(config.optim, _partial_=True)(params)  # plain dicts: instantiate would wrap them in DictConfig
 
 
 def _probe_query_counts(stream: RegimeStream) -> dict[str, int]:

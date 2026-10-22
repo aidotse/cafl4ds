@@ -153,6 +153,27 @@ def encode(encoder: nn.Module, images: torch.Tensor, device: str) -> np.ndarray:
     return torch.cat(parts).numpy()
 
 
+def encode_blocks(encoder: nn.Module, images: torch.Tensor, device: str, blocks: list[int]) -> dict[int, np.ndarray]:
+    """Pooled features after each of ``blocks`` (1-based, pre final norm) — P1.2.2's per-block probes.
+
+    Pooled as :func:`cafl4ds.block_features.block_features` pools them (patch-token mean, ``cls`` dropped),
+    captured by hooks on ``encoder.blocks`` during :func:`encode`'s forward.
+    """
+    captured: dict[int, list[torch.Tensor]] = {b: [] for b in blocks}
+    handles = [
+        encoder.blocks[b - 1].register_forward_hook(
+            lambda _m, _i, out, b=b: captured[b].append(out[:, 1:, :].mean(dim=1).float().cpu())
+        )
+        for b in blocks
+    ]
+    try:
+        encode(encoder, images, device)
+    finally:
+        for handle in handles:
+            handle.remove()
+    return {b: torch.cat(parts).numpy() for b, parts in captured.items()}
+
+
 def frozen_correctness(
     features: np.ndarray, labels: np.ndarray, fit: np.ndarray, query: np.ndarray, knn_k: int
 ) -> dict[str, np.ndarray]:
@@ -291,6 +312,62 @@ def bootstrap_delta(
         "hi": float(np.quantile(deltas, 0.975)),
         "p_one_sided": float((1 + np.sum(deltas <= 0)) / (1 + n_boot)),
         "n_seeds": float(n_seeds),
+        "n_images": float(labels.shape[0]),
+    }
+
+
+def bootstrap_contrast(
+    first: np.ndarray,
+    second: np.ndarray,
+    labels: np.ndarray,
+    *,
+    n_boot: int = 4000,
+    seed: int = 0,
+) -> dict[str, float]:
+    """The two-sample version of :func:`bootstrap_delta`: both arms are adapted, so both carry seed spread.
+
+    Δ = mean-over-seeds balanced accuracy of ``first`` minus ``second``'s (P1.2.4's adapted-vs-adapted
+    contrasts, e.g. the BDD IID drive against an off-domain control). Each resample draws the query
+    images within each class, shared by both arms (paired), and each arm's seeds with replacement,
+    independently (the arms' seeds are unrelated runs).
+
+    Args:
+        first: Per-image correctness ``[S1, N]``.
+        second: Per-image correctness ``[S2, N]``.
+        labels: Class label per query image ``[N]``.
+        n_boot: Number of bootstrap resamples.
+        seed: Bootstrap RNG seed.
+
+    Returns:
+        As :func:`bootstrap_delta`, with ``n_seeds`` for ``first`` and ``n_seeds_second`` for ``second``.
+    """
+    arms = [np.atleast_2d(np.asarray(a, dtype=np.float64)) for a in (first, second)]
+    if any(a.shape[1] != labels.shape[0] for a in arms):
+        raise ValueError("first, second and labels must share the query-image axis.")
+    rng = np.random.default_rng(seed)
+    classes = np.unique(labels)
+    recalls = [np.zeros((n_boot, a.shape[0])) for a in arms]
+    for cls in classes:
+        members = np.flatnonzero(labels == cls)
+        weights = rng.multinomial(members.size, np.full(members.size, 1.0 / members.size), size=n_boot)
+        for i, arm in enumerate(arms):
+            recalls[i] += weights @ arm[:, members].T / members.size
+    means = []
+    for recall, arm in zip(recalls, arms, strict=True):
+        draw = rng.integers(0, arm.shape[0], size=(n_boot, arm.shape[0]))
+        means.append(np.take_along_axis(recall / classes.size, draw, axis=1).mean(axis=1))
+    deltas = means[0] - means[1]
+    point = float(
+        np.mean([balanced_accuracy(r, labels) for r in arms[0]])
+        - np.mean([balanced_accuracy(r, labels) for r in arms[1]])
+    )
+    return {
+        "delta": point,
+        "lo": float(np.quantile(deltas, 0.025)),
+        "hi": float(np.quantile(deltas, 0.975)),
+        "p_one_sided": float((1 + np.sum(deltas <= 0)) / (1 + n_boot)),
+        "n_seeds": float(arms[0].shape[0]),
+        "n_seeds_second": float(arms[1].shape[0]),
         "n_images": float(labels.shape[0]),
     }
 

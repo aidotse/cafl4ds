@@ -55,3 +55,29 @@ def warmup_cosine_schedule(
         return min_lr_frac + (1.0 - min_lr_frac) * cosine
 
     return LambdaLR(optimizer, lr_lambda)
+
+
+def warmup_constant_schedule(optimizer: optim.Optimizer, total_steps: int, warmup_frac: float = 0.1) -> LambdaLR:
+    """Linear warmup, then a flat base LR (P1.2.2's warmup arm).
+
+    A fresh AdamW's first steps move every parameter by about the full learning rate whatever its
+    gradient; on a pretrained encoder that is a jolt. The ramp spreads it over the first ``warmup_frac``
+    of the run and leaves the rest of the drive at the pinned constant rate.
+
+    Args:
+        optimizer: The optimizer whose base LR(s) are scaled.
+        total_steps: Total number of optimizer steps over the run.
+        warmup_frac: Fraction of ``total_steps`` spent warming up, in ``[0, 1)``.
+
+    Returns:
+        A :class:`~torch.optim.lr_scheduler.LambdaLR` implementing the schedule.
+
+    Raises:
+        ValueError: If ``total_steps`` is not positive or ``warmup_frac`` is out of range.
+    """
+    if total_steps <= 0:
+        raise ValueError(f"total_steps must be positive, got {total_steps}.")
+    if not 0.0 <= warmup_frac < 1.0:
+        raise ValueError(f"warmup_frac must be in [0, 1), got {warmup_frac}.")
+    warmup_steps = max(1, int(round(warmup_frac * total_steps)))
+    return LambdaLR(optimizer, lambda step: min(1.0, (step + 1) / warmup_steps))

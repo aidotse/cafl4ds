@@ -24,7 +24,8 @@ max_train_per_regime: null
 mode: read # read | select_lr | screen
 
 pool:
-  kind: heldout # heldout (frames no encoder trained on, split into fit / query) | canary (the stream's probes)
+  kind: heldout # heldout (frames no encoder trained on, split into fit / query) | canary (the stream's probes) |
+  # selection (the stream's train-side selection set — P1.2.2 / P1.2.4 choose recipes here, never on val)
   split: null # heldout: the BDD split to read (null = the data config's)
   max_images: null # heldout: the first N attribute-valid frames
   fit_fraction: 0.4
@@ -33,6 +34,7 @@ pool:
 tasks: [scene] # scene | presence:<category> (e.g. "presence:traffic light")
 probe_per_class: 500 # each task's probes fit on this many fit-pool frames per class
 knn_k: 20
+blocks: null # P1.2.2's per-block probes: also read the frozen rungs after these encoder blocks (1-based)
 
 fewshot:
   enabled: false # per-encoder `fewshot:` in the encoder list overrides this

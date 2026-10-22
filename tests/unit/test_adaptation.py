@@ -240,3 +240,50 @@ def test_cell_balanced_presence_removes_the_scene_signal() -> None:
     fit, query = keep[::2], keep[1::2]
     assert adaptation.scene_overlap(context, labels, fit, query) < 0.62
     assert adaptation.task_indices(pool, "presence:car", np.arange(n), seed=0).size == n
+
+
+def test_bootstrap_contrast_resamples_both_arms_seeds() -> None:
+    """Two adapted arms: the gain is recovered, and seed spread in either arm widens the interval."""
+    rng = np.random.default_rng(7)
+    labels = rng.integers(0, 3, 2000)
+    base = rng.random(2000)
+    first = np.stack([(base < 0.65).astype(float)] * 3)
+    second = np.stack([(base < 0.55).astype(float)] * 3)
+    out = adaptation.bootstrap_contrast(first, second, labels, n_boot=500)
+    assert out["delta"] == pytest.approx(0.10, abs=0.02) and out["p_one_sided"] < 0.01
+    assert out["n_seeds_second"] == 3.0
+    spread = np.stack([(base < q).astype(float) for q in (0.45, 0.55, 0.65)])
+    wide = adaptation.bootstrap_contrast(first, spread, labels, n_boot=500)
+    assert wide["delta"] == pytest.approx(out["delta"], abs=0.01)
+    assert wide["hi"] - wide["lo"] > 2 * (out["hi"] - out["lo"])
+    same = adaptation.bootstrap_contrast(first, first, labels, n_boot=200)
+    assert same["delta"] == 0.0 and same["lo"] == 0.0 == same["hi"]
+    with pytest.raises(ValueError):
+        adaptation.bootstrap_contrast(first, second[:, :10], labels)
+
+
+class _Blocks(nn.Module):  # type: ignore[misc]  # nn.Module is Any without torch stubs (mypy hook env)
+    """Two token-mixing blocks over a 1 + 4 token sequence; ``embed`` pools the last."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.blocks = nn.ModuleList([nn.Linear(3, 3), nn.Linear(3, 3)])
+
+    def embed(self, imgs: torch.Tensor) -> torch.Tensor:
+        x = imgs.flatten(2).transpose(1, 2)[:, :5, :]  # [B, 5 tokens, 3 channels]
+        for block in self.blocks:
+            x = block(x)
+        return x[:, 1:, :].mean(dim=1)
+
+
+def test_encode_blocks_pools_each_block_like_the_encoder_and_unhooks() -> None:
+    """Block features are the patch-token mean after each block; the last equals ``embed``; hooks are removed."""
+    torch.manual_seed(0)
+    encoder, images = _Blocks(), torch.rand(10, 3, 4, 4)
+    out = adaptation.encode_blocks(encoder, images, "cpu", [1, 2])
+    tokens = images.flatten(2).transpose(1, 2)[:, :5, :]
+    with torch.no_grad():
+        first = encoder.blocks[0](tokens)
+    np.testing.assert_allclose(out[1], first[:, 1:, :].mean(dim=1).numpy(), rtol=1e-5)
+    np.testing.assert_allclose(out[2], adaptation.encode(encoder, images, "cpu"), rtol=1e-5)
+    assert not encoder.blocks[0]._forward_hooks

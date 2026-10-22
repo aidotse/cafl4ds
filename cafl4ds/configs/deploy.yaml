@@ -17,6 +17,7 @@ defaults:
   - optim: adamw
   - init: from_scratch
   - pc: collapse # the manufactured-pathology gate arm (used iff gate_arms=true)
+  - schedule: null # per-step lr schedule for the live arm (null = flat; P1.2.2/P1.2.4: warmup_constant | warmup_cosine)
   - _self_
 
 # Shared scalars (interpolated into the groups above).
@@ -38,6 +39,19 @@ well: null
 # the run's own first checkpoint. Defaults to the drive's well; a cold drive may point it at a well to
 # read "distance from a competent reference" (cka_drift only — cosine_drift needs a shared frame).
 anchor: ${well}
+
+# Optimizer parameter groups for the live arm (P1.2.2 / P1.2.4 fine-tuning protections, cafl4ds/optim_groups.py):
+# layer-wise lr decay per encoder block (null = flat), and no weight decay on biases, norms, position
+# embeddings and tokens. Both off = one group over method.parameters(), as before.
+param_groups:
+  layer_decay: null
+  no_decay: false
+# An exponential moving average of the live weights (decay per batch; null = off), saved at the end as
+# checkpoints/s<seed>/ema_final.pt (P1.2.4).
+ema: null
+# Refuse a well whose split fingerprint differs from the drive's. false only for P1.2.4's off-domain
+# controls, which resume a BDD well on another source by design.
+resume_check_split: true
 
 # Save the full method at every leg boundary of the walk (and at the end) under checkpoints/s<seed>/,
 # for post-hoc reads too costly to run inline (the P1.3 fine-tune probe). The IID control checkpoints

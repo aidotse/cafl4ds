@@ -10,7 +10,7 @@ import torch
 
 from cafl4ds.data.attributes import SyntheticAttributeSource
 from cafl4ds.data.regime import RegimeStream
-from cafl4ds.leg_checkpoints import CheckpointingStream
+from cafl4ds.leg_checkpoints import AveragingStream, CheckpointingStream
 
 
 def _stream() -> RegimeStream:
@@ -19,7 +19,7 @@ def _stream() -> RegimeStream:
     return RegimeStream(source, batch_size=8, support_per_canary=3, query_per_canary=3)
 
 
-def _drive(wrapped: CheckpointingStream, module: torch.nn.Linear) -> None:
+def _drive(wrapped: CheckpointingStream | AveragingStream, module: torch.nn.Linear) -> None:
     """Consume the stream like the loop does: train on each batch only after it is yielded.
 
     The "training" stamps the module's bias with the number of completed steps, so a checkpoint's
@@ -85,3 +85,22 @@ def test_a_second_pass_is_rejected(tmp_path: Path) -> None:
     list(wrapped)
     with pytest.raises(RuntimeError, match="single-pass"):
         iter(wrapped)
+
+
+def test_averaging_stream_folds_each_trained_state_and_saves_the_average(tmp_path: Path) -> None:
+    """The shadow folds in the state after every batch (the loop trains before resuming the wrapper)."""
+    stream = _stream()
+    module = torch.nn.Linear(1, 1)
+    with torch.no_grad():
+        module.bias.fill_(0.0)
+    wrapped = AveragingStream(stream, module, decay=0.5, out_path=tmp_path / "ema_final.pt")
+    assert len(wrapped) == len(stream)
+    _drive(wrapped, module)  # the bias after batch t is t + 1
+    expected = 0.0
+    for t in range(len(stream)):
+        expected = 0.5 * expected + 0.5 * (t + 1)
+    saved = torch.load(tmp_path / "ema_final.pt")
+    assert saved["bias"].item() == pytest.approx(expected)
+    assert module.bias.item() == len(stream)  # the live module is never touched
+    with pytest.raises(ValueError):
+        AveragingStream(stream, module, decay=1.0, out_path=tmp_path / "x.pt")

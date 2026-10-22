@@ -1,0 +1,5 @@
+# Linear warmup, then a flat LR (multiplier on the optimizer's base LR), stepped once per optimizer step.
+# The run script supplies `optimizer=` and `total_steps=`. Introduced for P1.2.2: soften a fresh AdamW's
+# first steps on a pretrained encoder, leaving the drive's pinned constant rate after the ramp.
+_target_: cafl4ds.schedule.warmup_constant_schedule
+warmup_frac: 0.1
