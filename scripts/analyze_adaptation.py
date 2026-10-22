@@ -9,6 +9,8 @@ Few-shot rows are averaged over their paired label draws first.
   drive − B5), the deployment framing (drive end − its well), and random − B5. Not a gate.
 * ``mode=p121`` — P1.2.1's pre-registered gate (:func:`cafl4ds.adaptation.gate_verdict`) per backbone
   on the end of the walk, plus Δ at every saved checkpoint.
+* ``mode=p124`` — P1.2.4's attribution verdict per off-domain control
+  (:func:`cafl4ds.adaptation.attribution_verdict`), and the confirmed recipe against the best frozen floor.
 
 Writes ``<root>/adaptation_report.json`` and prints the tables. CPU only; cap ``threads`` beside HPU jobs.
 
@@ -208,6 +210,79 @@ def p121(config: DictConfig, root: Path) -> dict[str, Any]:
     return report
 
 
+def p124(config: DictConfig, root: Path) -> dict[str, Any]:
+    """P1.2.4's pre-registered reads: attribution per off-domain control, and the confirmation against the best floor.
+
+    Attribution (A1): D_c = the BDD IID drive's arm − the control's arm (both adapted; B5 cancels), on the
+    primary rung, per task, with both arms' seeds resampled (:func:`cafl4ds.adaptation.bootstrap_contrast`).
+    The floor test: the confirmed recipe against, per task, the frozen backbone reading highest on the
+    primary rung. Every ladder must have read the same query frames.
+    """
+    p = config.p124
+    rung, tasks = str(p.rung), list(config.gate_tasks)
+    bdd = Ladder(Path(to_absolute_path(str(p.bdd_ladder))))
+    controls = Ladder(Path(to_absolute_path(str(p.control_ladder))))
+    _check_aligned(bdd, controls)
+    iid = [f"iid_s{s}_end" for s in range(int(config.n_iid_seeds))]
+    attribution: dict[str, Any] = {}
+    for control in p.controls:
+        arms = [f"{control}_s{s}_end" for s in range(int(p.n_control_seeds))]
+        per_task: dict[str, Any] = {}
+        for task in tasks:
+            key, labels = f"{task}|{rung}", bdd.labels[task]
+            first, second, b5 = bdd.rows(iid, key), controls.rows(arms, key), bdd.rows([str(config.b5_name)], key)
+            if first is None or second is None or b5 is None:
+                raise ValueError(f"missing {key} reads for the {control} contrast.")
+            gain = adaptation.bootstrap_delta(first, b5, labels, n_boot=int(config.n_boot), seed=int(config.seed))
+            contrast = adaptation.bootstrap_contrast(
+                first, second, labels, n_boot=int(config.n_boot), seed=int(config.seed)
+            )
+            per_task[task] = {
+                **contrast,
+                "gain_bdd": gain["delta"],
+                "gain_control": adaptation.bootstrap_delta(second, b5, labels, n_boot=int(config.n_boot))["delta"],
+                "share_stream": contrast["delta"] / gain["delta"] if gain["delta"] else None,
+            }
+        attribution[control] = {
+            **adaptation.attribution_verdict(
+                per_task, generic_ceiling=float(p.generic_ceiling), alpha=float(config.alpha)
+            ),
+            "tasks": per_task,
+        }
+    report: dict[str, Any] = {
+        "attribution": attribution,
+        "attribution_claim": adaptation.weakest_attribution([a["verdict"] for a in attribution.values()]),
+    }
+    if p.get("confirm_ladder"):
+        confirm = Ladder(Path(to_absolute_path(str(p.confirm_ladder))))
+        ends = [f"walk_s{s}_end" for s in range(int(config.n_seeds))]
+        floors = {
+            str(config.b5_name): bdd,
+            **{str(n): Ladder(Path(to_absolute_path(str(d)))) for n, d in p.floors.items()},
+        }
+        for ladder in floors.values():
+            _check_aligned(confirm, ladder)
+        vs_floor: dict[str, Any] = {}
+        for task in tasks:
+            key, labels = f"{task}|{rung}", confirm.labels[task]
+            reads = {}
+            for name, ladder in floors.items():
+                row = ladder.rows([name], key)
+                if row is not None:
+                    reads[name] = (adaptation.balanced_accuracy(row[0], labels), row)
+            best = max(reads, key=lambda n: reads[n][0])
+            vs_floor[task] = {
+                "floor": best,
+                "floor_reads": {n: r[0] for n, r in reads.items()},
+                **adaptation.bootstrap_delta(
+                    confirm.rows(ends, key), reads[best][1], labels, n_boot=int(config.n_boot), seed=int(config.seed)
+                ),
+            }
+        beats = adaptation.holm({t: c["p_one_sided"] for t, c in vs_floor.items()}, float(config.alpha))
+        report["vs_best_floor"] = {"beats": any(beats.values()), "holm": beats, "tasks": vs_floor}
+    return report
+
+
 def _walk_position(segments: list[dict[str, Any]], step: int) -> int:
     """The walk leg (era index) that delivered batch ``step - 1`` — the last one a checkpoint before ``step`` saw."""
     seen = [seg["era_index"] for seg in segments if seg["start_step"] <= max(step - 1, 0)]
@@ -288,7 +363,7 @@ def _print_p120(report: dict[str, Any]) -> None:
 def run(config: DictConfig) -> dict[str, Any]:
     """Run the configured analysis and write the report (Hydra-free core)."""
     root = Path(to_absolute_path(str(config.root)))
-    modes = {"p120": p120, "p121": p121}
+    modes = {"p120": p120, "p121": p121, "p124": p124}
     if str(config.mode) not in modes:
         raise ValueError(f"mode must be one of {sorted(modes)}; got {config.mode!r}.")
     with threadpool_limits(int(config.threads)):
@@ -299,6 +374,8 @@ def run(config: DictConfig) -> dict[str, Any]:
     )
     if config.mode == "p120":
         _print_p120(report)
+    elif config.mode == "p124":
+        print(json.dumps(report, indent=2))
     else:
         for bb, entry in report.items():
             print(f"{bb}: {entry['gate']}")

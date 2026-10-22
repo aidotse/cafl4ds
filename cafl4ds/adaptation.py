@@ -439,3 +439,44 @@ def gate_verdict(
     else:
         verdict = INCONCLUSIVE
     return {"verdict": verdict, "holm": rejected, "max_upper": max_upper, "primary_rung": primary_rung}
+
+
+STREAM_SPECIFIC, MIXED, GENERIC = "STREAM-SPECIFIC", "MIXED", "GENERIC"
+
+
+def attribution_verdict(
+    contrasts: dict[str, dict[str, float]], *, generic_ceiling: float = 0.01, alpha: float = 0.05
+) -> dict[str, object]:
+    """P1.2.4's pre-registered attribution verdict for one off-domain control.
+
+    The contrast per task is D_c = Δ_BDD − Δ_c, the BDD-trained arm's gain over the control's (B5 cancels,
+    so it is :func:`bootstrap_contrast` of the two arms).
+
+    * **STREAM-SPECIFIC** — on at least one task, D_c's one-sided p clears Holm over the tasks at ``alpha``.
+    * **GENERIC** — on every task, D_c's upper bound is below ``generic_ceiling``: the control gets
+      essentially all of the gain.
+    * **MIXED** — anything else.
+
+    Args:
+        contrasts: ``task -> bootstrap_contrast`` result (BDD arm first, the control second).
+        generic_ceiling: The upper bound a GENERIC verdict needs D_c to stay below on every task.
+        alpha: Family-wise one-sided level over the tasks.
+
+    Returns:
+        ``verdict``, the per-task ``holm`` rejections, and the ``max_upper`` bound seen.
+    """
+    rejected = holm({t: c["p_one_sided"] for t, c in contrasts.items()}, alpha)
+    max_upper = max(c["hi"] for c in contrasts.values())
+    if any(rejected.values()):
+        verdict = STREAM_SPECIFIC
+    elif max_upper < generic_ceiling:
+        verdict = GENERIC
+    else:
+        verdict = MIXED
+    return {"verdict": verdict, "holm": rejected, "max_upper": max_upper}
+
+
+def weakest_attribution(verdicts: list[str]) -> str:
+    """The attribution claim over several controls: their weakest verdict (GENERIC < MIXED < STREAM-SPECIFIC)."""
+    order = [GENERIC, MIXED, STREAM_SPECIFIC]
+    return min(verdicts, key=order.index)

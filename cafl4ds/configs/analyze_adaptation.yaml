@@ -22,3 +22,14 @@ primary: { je: linear, mae: ft100 }
 delta_floor: 0.02
 alpha: 0.05 # family-wise one-sided level over the gate tasks (Holm: the better task needs p <= 0.025)
 b5_name: b5 # the settled-head well: its encoder is the off-the-shelf B5, bit for bit
+
+# p124 — P1.2.4's attribution and floor reads (docs/experiments/phase1/P1.2.4.md); root is where the report lands
+p124:
+  rung: linear # JE's primary rung
+  bdd_ladder: outputs/p121/ladder/je # B5 + the BDD IID drive's ends (iid_s<k>_end, n_iid_seeds of them)
+  control_ladder: outputs/p124/offdomain/ladder # <control>_s<k>_end per control
+  controls: [coco, places365]
+  n_control_seeds: 3
+  generic_ceiling: 0.01 # GENERIC: D_c's upper bound below this on every task
+  confirm_ladder: null # the confirmation's val ladder (walk_s<k>_end, n_seeds of them); null skips the floor test
+  floors: {} # name -> ladder dir of each extra frozen floor (read as encoder <name>); B5 comes from bdd_ladder

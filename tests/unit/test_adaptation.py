@@ -287,3 +287,18 @@ def test_encode_blocks_pools_each_block_like_the_encoder_and_unhooks() -> None:
     np.testing.assert_allclose(out[1], first[:, 1:, :].mean(dim=1).numpy(), rtol=1e-5)
     np.testing.assert_allclose(out[2], adaptation.encode(encoder, images, "cpu"), rtol=1e-5)
     assert not encoder.blocks[0]._forward_hooks
+
+
+def _d(delta: float, lo: float, hi: float, p: float) -> dict[str, float]:
+    return {"delta": delta, "lo": lo, "hi": hi, "p_one_sided": p}
+
+
+def test_attribution_verdict_and_the_weakest_claim_over_controls() -> None:
+    """Stream-specific on a Holm-cleared task, generic when every bound is below the ceiling, mixed otherwise."""
+    specific = adaptation.attribution_verdict({"a": _d(0.03, 0.01, 0.05, 0.004), "b": _d(0.0, -0.02, 0.02, 0.5)})
+    generic = adaptation.attribution_verdict({"a": _d(-0.01, -0.03, 0.009, 0.8), "b": _d(0.0, -0.02, 0.005, 0.5)})
+    mixed = adaptation.attribution_verdict({"a": _d(0.01, -0.01, 0.03, 0.04), "b": _d(0.0, -0.02, 0.005, 0.5)})
+    assert [specific["verdict"], generic["verdict"], mixed["verdict"]] == ["STREAM-SPECIFIC", "GENERIC", "MIXED"]
+    assert adaptation.weakest_attribution(["STREAM-SPECIFIC", "MIXED"]) == "MIXED"
+    assert adaptation.weakest_attribution(["STREAM-SPECIFIC", "GENERIC"]) == "GENERIC"
+    assert adaptation.weakest_attribution(["STREAM-SPECIFIC", "STREAM-SPECIFIC"]) == "STREAM-SPECIFIC"

@@ -752,3 +752,42 @@ def test_read_and_analyze_align_a_cell_balanced_task_to_its_own_query_frames(
     )
     contrast = report["je"]["contrasts"]["presence_cell:car"]["linear"]
     assert contrast["n_images"] == cell.size and contrast["delta"] == pytest.approx(0.0)
+
+
+def test_analyze_adaptation_reads_p124_attribution_and_the_best_floor(tmp_path: Path) -> None:
+    """A control gaining as much as BDD is GENERIC, one gaining nothing STREAM-SPECIFIC; the floor is the best."""
+    n = 3000
+    iid = [f"iid_s{s}_end" for s in range(3)]
+    _fake_ladder(tmp_path / "bdd", ["b5", *iid], dict.fromkeys(iid, 0.1), n=n)
+    controls = [f"{c}_s{s}_end" for c in ("same", "none") for s in range(3)]
+    _fake_ladder(tmp_path / "ctrl", controls, {f"same_s{s}_end": 0.1 for s in range(3)}, n=n)
+    ends = [f"walk_s{s}_end" for s in range(5)]
+    _fake_ladder(tmp_path / "confirm", ends, dict.fromkeys(ends, 0.1), n=n)
+    _fake_ladder(tmp_path / "dino", ["dino"], {"dino": 0.05}, n=n)
+    for d in ("ctrl", "confirm", "dino"):  # one shared query set, as the reader guarantees
+        (tmp_path / d / "pool.npz").write_bytes((tmp_path / "bdd" / "pool.npz").read_bytes())
+    base = _compose("analyze_adaptation", [])
+    OmegaConf.set_struct(base, False)  # the floors map is open (any frozen backbone's name)
+    config = OmegaConf.merge(
+        base,
+        {
+            "mode": "p124",
+            "root": str(tmp_path),
+            "n_boot": 300,
+            "gate_tasks": ["scene"],
+            "p124": {
+                "bdd_ladder": str(tmp_path / "bdd"),
+                "control_ladder": str(tmp_path / "ctrl"),
+                "controls": ["same", "none"],
+                "generic_ceiling": 0.05,
+                "confirm_ladder": str(tmp_path / "confirm"),
+                "floors": {"dino": str(tmp_path / "dino")},
+            },
+        },
+    )
+    report = _load_script("analyze_adaptation").run(config)
+    assert report["attribution"]["none"]["verdict"] == "STREAM-SPECIFIC"
+    assert report["attribution"]["same"]["verdict"] == "GENERIC"
+    assert report["attribution_claim"] == "GENERIC"
+    floor = report["vs_best_floor"]["tasks"]["scene"]
+    assert floor["floor"] == "dino" and floor["delta"] == pytest.approx(0.05, abs=0.03)
