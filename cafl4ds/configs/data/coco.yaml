@@ -1,0 +1,14 @@
+# P1.2.4's matched off-domain control: COCO train2017 without street content (cafl4ds/data/offdomain.py).
+# One regime, a placeholder canary; centre-crop to 16:9 then squash, exactly as a BDD frame. Mount
+# /home/mauricio/data in the container. n_images = the BDD IID drive's frames + the stream's probe reservation.
+_target_: cafl4ds.data.offdomain.COCOSource
+archive: /home/mauricio/data/coco/train2017.zip
+annotations: /home/mauricio/data/coco/annotations_trainval2017.zip
+n_images: 55976
+exclude: [bicycle, car, motorcycle, bus, train, truck, traffic light, fire hydrant, stop sign, parking meter]
+crop_aspect: 1.7777777777777777 # 16:9
+img_size: ${img_size}
+seed: 0
+pixel_dtype: uint8
+cache_dir: null
+workers: 8

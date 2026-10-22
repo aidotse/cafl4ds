@@ -1,0 +1,18 @@
+# P1.2.4's strict off-domain control: Places365-Standard (256 px) without road, traffic, vehicle and
+# BDD-scene categories (cafl4ds/data/offdomain.py). One regime, a placeholder canary; crop 256 x 192 then
+# squash — the net 16:9 -> 1:1 distortion for 4:3 originals. Mount /home/mauricio/data in the container.
+_target_: cafl4ds.data.offdomain.Places365Source
+archive: /home/mauricio/data/places365/train_256_places365standard.tar
+file_list: /home/mauricio/data/places365/places365_train_standard.txt
+categories: /home/mauricio/data/places365/categories_places365.txt
+n_images: 55976
+exclude: [alley, auto_factory, auto_showroom, bridge, bus_interior, bus_station/indoor, car_interior, crosswalk,
+  desert_road, downtown, driveway, field_road, forest_road, garage/indoor, garage/outdoor, gas_station, highway,
+  industrial_area, loading_dock, motel, parking_garage/indoor, parking_garage/outdoor, parking_lot, racecourse,
+  railroad_track, residential_neighborhood, street, train_interior, train_station/platform, viaduct]
+crop_aspect: 1.3333333333333333 # 4:3 -> a 256 x 192 crop of the 256 x 256 image
+img_size: ${img_size}
+seed: 0
+pixel_dtype: uint8
+cache_dir: null
+workers: 8
