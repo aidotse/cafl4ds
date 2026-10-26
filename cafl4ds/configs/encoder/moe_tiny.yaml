@@ -1,0 +1,17 @@
+# Sparse MoE in the last two blocks (zero-based indices); other ViT settings match tiny.
+_target_: cafl4ds.models.vit.MoEViTEncoder
+img_size: ${img_size}
+patch_size: 8
+in_chans: 3
+embed_dim: 96
+depth: 4
+num_heads: 3
+mlp_ratio: 2.0
+num_experts: 4
+top_k: 1
+moe_blocks: null  # Last two blocks for the configured depth; e.g. [2, 3] at depth=4.
+routing_level: token  # token or image (mean of all block input tokens, including CLS)
+balancing_mode: batch
+router_noise_std: 1.0  # Training logit noise std = this value / num_experts; zero disables it.
+importance_weight: 1.0
+load_weight: 1.0

@@ -20,10 +20,44 @@ to the transformer blocks is ``[B, 1 + N, d]`` (a prepended ``cls`` token).
 
 from __future__ import annotations
 
+from collections.abc import Callable, Sequence
+from dataclasses import dataclass, field
+from math import isfinite, sqrt
 from typing import cast
 
 import torch
 from torch import nn
+
+
+@dataclass(eq=False)
+class FeedForwardOutput:
+    """Feedforward features, unweighted balancing loss, and full router probabilities."""
+
+    features: torch.Tensor
+    aux_loss: torch.Tensor
+    routing_probs: torch.Tensor | None = None
+
+
+@dataclass(eq=False)
+class BlockOutput:
+    """Residual block output with optional attention and routing readouts."""
+
+    features: torch.Tensor
+    aux_loss: torch.Tensor
+    attention: torch.Tensor | None = None
+    routing_probs: torch.Tensor | None = None
+
+
+@dataclass(eq=False)
+class EncoderOutput:
+    """Encoder tokens and MAE metadata, with an explicit scalar auxiliary loss."""
+
+    tokens: torch.Tensor
+    mask: torch.Tensor | None
+    ids_restore: torch.Tensor | None
+    aux_loss: torch.Tensor
+    attentions: list[torch.Tensor] = field(default_factory=list)
+    routing_probs: dict[int, torch.Tensor] = field(default_factory=dict)
 
 
 def patchify(imgs: torch.Tensor, patch_size: int) -> torch.Tensor:
@@ -81,7 +115,118 @@ class Mlp(nn.Module):  # type: ignore[misc]  # nn.Module is Any without torch st
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Apply the MLP to ``x`` (``[..., dim] -> [..., dim]``)."""
-        return self.fc2(self.act(self.fc1(x)))
+        return cast(torch.Tensor, self.fc2(self.act(self.fc1(x))))
+
+    def forward_with_aux(self, x: torch.Tensor, *, deterministic: bool = False) -> FeedForwardOutput:
+        """Return dense features with zero auxiliary loss; deterministic is a shared option."""
+        return FeedForwardOutput(self(x), x.new_zeros(()))
+
+
+class MoEMlp(nn.Module):  # type: ignore[misc]
+    """Sparse top-k experts with batch importance/load balancing.
+
+    Softmax is computed over all experts before top-k. Selected probabilities
+    weight the expert outputs without renormalization, retaining task gradients
+    through the gate even for top-1.
+    Router noise has standard deviation ``router_noise_std / num_experts`` during
+    training, following V-MoE. Evaluation and diagnostic reads are deterministic.
+    """
+
+    def __init__(
+        self,
+        dim: int,
+        hidden_dim: int,
+        num_experts: int = 4,
+        top_k: int = 1,
+        routing_level: str = "token",
+        router_noise_std: float = 1.0,
+        importance_weight: float = 1.0,
+        load_weight: float = 1.0,
+    ) -> None:
+        """Build experts and router; loss weights apply before SSL's aux_weight.
+
+        Image routing pools all input tokens, including CLS when present. With
+        zero noise, load is a hard-count diagnostic (no load gradient); importance
+        remains differentiable. No expert capacity or token dropping is imposed.
+        """
+        super().__init__()
+        if not 1 <= top_k <= num_experts:
+            raise ValueError("Require 1 <= top_k <= num_experts.")
+        if routing_level not in {"token", "image"}:
+            raise ValueError("routing_level must be 'token' or 'image'.")
+        for name, value in (
+            ("router_noise_std", router_noise_std),
+            ("importance_weight", importance_weight),
+            ("load_weight", load_weight),
+        ):
+            if not isfinite(value) or value < 0:
+                raise ValueError(f"{name} must be finite and nonnegative.")
+        self.experts = nn.ModuleList([Mlp(dim, hidden_dim) for _ in range(num_experts)])
+        self.router = nn.Linear(dim, num_experts)
+        self.num_experts = num_experts
+        self.top_k = top_k
+        self.routing_level = routing_level
+        self.router_noise_std = router_noise_std
+        self.importance_weight = importance_weight
+        self.load_weight = load_weight
+
+    @staticmethod
+    def _cv_squared(values: torch.Tensor) -> torch.Tensor:
+        """Population coefficient of variation squared, zero for uniform usage."""
+        return values.var(unbiased=False) / values.mean().square().clamp_min(1e-9)
+
+    def _balancing_loss(self, logits: torch.Tensor, routed_logits: torch.Tensor, noise_std: float) -> torch.Tensor:
+        """V-MoE importance and expected-load losses over this batch's routing units.
+
+        Importance uses full clean softmax probabilities. Expected load is the
+        Gaussian probability of exceeding the noisy K-th logit (V-MoE Appendix
+        A.2), rather than a nondifferentiable count of selected experts. Image
+        decisions are counted once per image, before broadcasting over tokens.
+        """
+        importance = logits.softmax(dim=-1).sum(dim=0)
+        importance_loss = self._cv_squared(importance)
+        if self.top_k == self.num_experts:
+            load_loss = logits.new_zeros(())
+        elif noise_std > 0:
+            threshold = routed_logits.topk(self.top_k, dim=-1).values[:, -1:]
+            expected_load = (0.5 * torch.erfc((threshold - logits) / (noise_std * sqrt(2)))).mean(dim=0)
+            load_loss = self._cv_squared(expected_load)
+        else:
+            ids = routed_logits.topk(self.top_k, dim=-1).indices
+            load = torch.nn.functional.one_hot(ids, self.num_experts).float().sum(dim=(0, 1))
+            load_loss = self._cv_squared(load)
+        return self.importance_weight * importance_loss + self.load_weight * load_loss
+
+    def forward(self, x: torch.Tensor, *, deterministic: bool = False) -> FeedForwardOutput:
+        """Route [B, N, D] tokens and return features, loss, and [B, N, E] probabilities."""
+        b, n, d = x.shape
+        router_input = x.mean(dim=1) if self.routing_level == "image" else x
+        logits = self.router(router_input).float().reshape(-1, self.num_experts)
+        noise_std = self.router_noise_std / self.num_experts if self.training and not deterministic else 0.0
+        routed_logits = logits + noise_std * torch.randn_like(logits) if noise_std > 0 else logits
+        probs = routed_logits.softmax(dim=-1)
+        weights, expert_ids = probs.topk(self.top_k, dim=-1)
+        aux_loss = self._balancing_loss(logits, routed_logits, noise_std)
+        if self.routing_level == "image":
+            expert_ids = expert_ids[:, None, :].expand(-1, n, -1)
+            weights = weights[:, None, :].expand(-1, n, -1)
+            probs = probs[:, None, :].expand(-1, n, -1)
+        tokens = x.reshape(b * n, d)
+        expert_ids = expert_ids.reshape(b * n, self.top_k)
+        weights = weights.reshape(b * n, self.top_k)
+        out = torch.zeros_like(tokens)
+        for expert_id, expert in enumerate(self.experts):
+            token_idx, slot_idx = torch.where(expert_ids == expert_id)
+            if token_idx.numel() == 0:
+                continue
+            expert_out = expert(tokens[token_idx])
+            weighted = expert_out * weights[token_idx, slot_idx, None]
+            out.index_add_(0, token_idx, weighted.to(out.dtype))
+        return FeedForwardOutput(out.reshape(b, n, d), aux_loss, probs.reshape(b, n, self.num_experts))
+
+    def forward_with_aux(self, x: torch.Tensor, *, deterministic: bool = False) -> FeedForwardOutput:
+        """Use the same explicit-result interface as the dense feedforward layer."""
+        return cast(FeedForwardOutput, self(x, deterministic=deterministic))
 
 
 class Attention(nn.Module):  # type: ignore[misc]  # nn.Module is Any without torch stubs (mypy hook env)
@@ -131,31 +276,48 @@ class Attention(nn.Module):  # type: ignore[misc]  # nn.Module is Any without to
             return self.proj(out), attn
         out = torch.nn.functional.scaled_dot_product_attention(q, k, v)
         out = out.transpose(1, 2).reshape(b, t, d)
-        return self.proj(out)
+        return cast(torch.Tensor, self.proj(out))
 
 
 class Block(nn.Module):  # type: ignore[misc]  # nn.Module is Any without torch stubs (mypy hook env)
     """A pre-norm transformer block: attention + MLP with residual connections."""
 
-    def __init__(self, dim: int, num_heads: int, mlp_ratio: float) -> None:
+    def __init__(self, dim: int, num_heads: int, mlp_ratio: float, mlp: Mlp | MoEMlp | None = None) -> None:
         """Build the transformer block.
 
         Args:
             dim: Token dimensionality.
             num_heads: Number of attention heads.
             mlp_ratio: Hidden-layer width of the MLP as a multiple of ``dim``.
+            mlp: Optional feedforward layer; defaults to the original dense MLP.
         """
         super().__init__()
         self.norm1 = nn.LayerNorm(dim)
         self.attn = Attention(dim, num_heads)
         self.norm2 = nn.LayerNorm(dim)
-        self.mlp = Mlp(dim, int(dim * mlp_ratio))
+        self.mlp = mlp if mlp is not None else Mlp(dim, int(dim * mlp_ratio))
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(
+        self, x: torch.Tensor, *, return_aux: bool = False, return_attn: bool = False, deterministic: bool = False
+    ) -> torch.Tensor | BlockOutput:
         """Apply attention then MLP, each with a residual connection."""
-        x = x + self.attn(self.norm1(x))
-        x = x + self.mlp(self.norm2(x))
+        attention = None
+        if return_attn:
+            attended, attention = self.attn(self.norm1(x), return_attn=True)
+        else:
+            attended = self.attn(self.norm1(x))
+        x = x + attended
+        result = self.mlp.forward_with_aux(self.norm2(x), deterministic=deterministic)
+        x = x + result.features
+        if return_aux:
+            return BlockOutput(x, result.aux_loss, attention, result.routing_probs)
         return x
+
+    def forward_with_aux(
+        self, x: torch.Tensor, *, return_attn: bool = False, deterministic: bool = False
+    ) -> BlockOutput:
+        """Return features and auxiliary loss using the normal module call path."""
+        return cast(BlockOutput, self(x, return_aux=True, return_attn=return_attn, deterministic=deterministic))
 
 
 class TinyViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is Any without torch stubs (mypy hook env)
@@ -183,6 +345,8 @@ class TinyViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is Any witho
         depth: int = 4,
         num_heads: int = 3,
         mlp_ratio: float = 2.0,
+        *,
+        block_factory: Callable[[int], Block] | None = None,
     ) -> None:
         """Build the encoder.
 
@@ -194,6 +358,7 @@ class TinyViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is Any witho
             depth: Number of transformer blocks.
             num_heads: Number of attention heads per block.
             mlp_ratio: MLP hidden width as a multiple of ``embed_dim``.
+            block_factory: Optional layer-index factory, called before weight initialization.
 
         Raises:
             ValueError: If ``img_size`` is not divisible by ``patch_size``.
@@ -209,7 +374,9 @@ class TinyViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is Any witho
         self.patch_embed = nn.Conv2d(in_chans, embed_dim, kernel_size=patch_size, stride=patch_size)
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
         self.pos_embed = nn.Parameter(torch.zeros(1, 1 + self.num_patches, embed_dim))
-        self.blocks = nn.ModuleList([Block(embed_dim, num_heads, mlp_ratio) for _ in range(depth)])
+        self.blocks = nn.ModuleList(
+            [block_factory(i) if block_factory else Block(embed_dim, num_heads, mlp_ratio) for i in range(depth)]
+        )
         self.norm = nn.LayerNorm(embed_dim)
         self._init_weights()
 
@@ -255,12 +422,15 @@ class TinyViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is Any witho
         return cast(torch.Tensor, x + self.pos_embed[:, 1:, :])
 
     @staticmethod
-    def random_masking(x: torch.Tensor, mask_ratio: float) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def random_masking(
+        x: torch.Tensor, mask_ratio: float, *, noise: torch.Tensor | None = None
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Per-sample random masking of a patch sequence (MAE, He et al. 2022).
 
         Args:
             x: Patch tokens ``[B, N, d]``.
             mask_ratio: Fraction of patches to drop, in ``[0, 1)``.
+            noise: Optional fixed ``[B, N]`` mask priorities for paired experiments.
 
         Returns:
             A tuple ``(x_kept, mask, ids_restore)`` where ``x_kept`` is ``[B, N_keep, d]``
@@ -269,7 +439,12 @@ class TinyViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is Any witho
         """
         b, n, d = x.shape
         len_keep = max(1, int(round(n * (1.0 - mask_ratio))))
-        noise = torch.rand(b, n, device=x.device)
+        if noise is None:
+            noise = torch.rand(b, n, device=x.device)
+        elif noise.shape != (b, n):
+            raise ValueError("Mask noise must have shape [B, N].")
+        else:
+            noise = noise.to(x.device)
         ids_shuffle = torch.argsort(noise, dim=1)
         ids_restore = torch.argsort(ids_shuffle, dim=1)
         ids_keep = ids_shuffle[:, :len_keep]
@@ -294,16 +469,60 @@ class TinyViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is Any witho
             (final-normed, ``cls`` token first). ``mask`` and ``ids_restore`` are ``[B, N]``
             when ``mask_ratio > 0`` and ``None`` otherwise.
         """
+        result = self.forward_with_aux(imgs, mask_ratio)
+        return result.tokens, result.mask, result.ids_restore
+
+    def _encode(
+        self,
+        imgs: torch.Tensor,
+        mask_ratio: float = 0.0,
+        *,
+        collect_attn: bool = False,
+        collect_routing: bool = False,
+        deterministic: bool = False,
+        mask_noise: torch.Tensor | None = None,
+    ) -> EncoderOutput:
+        """Shared token preparation and block execution for training and diagnostics."""
         x = self._embed_patches(imgs)
         mask: torch.Tensor | None = None
         ids_restore: torch.Tensor | None = None
         if mask_ratio > 0.0:
-            x, mask, ids_restore = self.random_masking(x, mask_ratio)
+            if mask_noise is None:
+                x, mask, ids_restore = self.random_masking(x, mask_ratio)
+            else:
+                x, mask, ids_restore = self.random_masking(x, mask_ratio, noise=mask_noise)
         cls = (self.cls_token + self.pos_embed[:, :1, :]).expand(x.shape[0], -1, -1)
         x = torch.cat([cls, x], dim=1)
-        for blk in self.blocks:
-            x = blk(x)
-        return self.norm(x), mask, ids_restore
+        losses: list[torch.Tensor] = []
+        attentions: list[torch.Tensor] = []
+        routing_probs: dict[int, torch.Tensor] = {}
+        for index, blk in enumerate(self.blocks):
+            blk = cast(Block, blk)
+            result = blk.forward_with_aux(x, return_attn=collect_attn, deterministic=deterministic)
+            x = result.features
+            if result.routing_probs is not None:
+                losses.append(result.aux_loss)
+                if collect_routing:
+                    routing_probs[index] = result.routing_probs
+            if result.attention is not None:
+                attentions.append(result.attention)
+        aux_loss = torch.stack(losses).mean() if losses else x.new_zeros(())
+        return EncoderOutput(self.norm(x), mask, ids_restore, aux_loss, attentions, routing_probs)
+
+    def forward_with_aux(
+        self, imgs: torch.Tensor, mask_ratio: float = 0.0, *, mask_noise: torch.Tensor | None = None
+    ) -> EncoderOutput:
+        """Return tokens, MAE metadata, and mean balancing loss over MoE layers.
+
+        Dense layers contribute no auxiliary loss. The returned loss belongs to
+        this call's graph; no last-forward state is stored on the encoder.
+        """
+        return self._encode(imgs, mask_ratio, mask_noise=mask_noise)
+
+    def embed_with_aux(self, imgs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        """Return pooled patch features and auxiliary loss from a single forward."""
+        result = self.forward_with_aux(imgs.to(self.pos_embed.device))
+        return result.tokens[:, 1:, :].mean(dim=1), result.aux_loss
 
     def forward(self, imgs: torch.Tensor) -> torch.Tensor:
         """Return the full-sequence tokens ``[B, 1 + N, d]`` (unmasked)."""
@@ -327,8 +546,8 @@ class TinyViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is Any witho
         # instrument entry point — usable when the model has been moved to an accelerator
         # (e.g. ``hpu``) without pushing device bookkeeping into the monitor/measurements.
         imgs = imgs.to(self.pos_embed.device)
-        tokens = self.forward(imgs)
-        return tokens[:, 1:, :].mean(dim=1)
+        features, _ = self.embed_with_aux(imgs)
+        return features
 
     @property
     def grid_size(self) -> int:
@@ -351,13 +570,82 @@ class TinyViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is Any witho
             A list of ``depth`` attention tensors, each ``[B, num_heads, 1 + N, 1 + N]``.
         """
         imgs = imgs.to(self.pos_embed.device)
-        x = self._embed_patches(imgs)
-        cls = (self.cls_token + self.pos_embed[:, :1, :]).expand(x.shape[0], -1, -1)
-        x = torch.cat([cls, x], dim=1)
-        attns: list[torch.Tensor] = []
-        for blk in self.blocks:
-            attended, attn = blk.attn(blk.norm1(x), return_attn=True)
-            x = x + attended
-            x = x + blk.mlp(blk.norm2(x))
-            attns.append(attn)
-        return attns
+        return self._encode(imgs, collect_attn=True, deterministic=True).attentions
+
+
+class MoEViTEncoder(TinyViTEncoder):
+    """Tiny ViT with sparse experts in selected blocks and explicit auxiliary losses.
+
+    Existing forward/forward_encoder/embed methods retain their dense interfaces.
+    Train with forward_with_aux or embed_with_aux to include batch balancing.
+    Block indices are zero-based; by default the last two blocks are converted.
+    """
+
+    def __init__(
+        self,
+        img_size: int = 32,
+        patch_size: int = 8,
+        in_chans: int = 3,
+        embed_dim: int = 96,
+        depth: int = 4,
+        num_heads: int = 3,
+        mlp_ratio: float = 2.0,
+        num_experts: int = 4,
+        top_k: int = 1,
+        moe_blocks: Sequence[int] | None = None,
+        routing_level: str = "token",
+        balancing_mode: str = "batch",
+        router_noise_std: float = 1.0,
+        importance_weight: float = 1.0,
+        load_weight: float = 1.0,
+    ) -> None:
+        """Construct selected MoE blocks before the inherited initialization pass.
+
+        Only batch balancing is supported. Set both balancing weights to zero
+        to disable it; EMA, bias balancing, and consistency are not implemented.
+        """
+        if depth < 1:
+            raise ValueError("depth must be positive.")
+        indices = tuple(range(max(0, depth - 2), depth)) if moe_blocks is None else tuple(moe_blocks)
+        if len(set(indices)) != len(indices) or any(not isinstance(i, int) or i < 0 or i >= depth for i in indices):
+            raise ValueError("moe_blocks must contain unique zero-based indices within depth.")
+        if balancing_mode != "batch":
+            raise ValueError("Only balancing_mode='batch' is supported.")
+        # Validate options even when the caller requests no MoE blocks.
+        if not 1 <= top_k <= num_experts:
+            raise ValueError("Require 1 <= top_k <= num_experts.")
+        if routing_level not in {"token", "image"}:
+            raise ValueError("routing_level must be 'token' or 'image'.")
+
+        def make_block(index: int) -> Block:
+            mlp = (
+                MoEMlp(
+                    embed_dim,
+                    int(embed_dim * mlp_ratio),
+                    num_experts,
+                    top_k,
+                    routing_level,
+                    router_noise_std,
+                    importance_weight,
+                    load_weight,
+                )
+                if index in indices
+                else None
+            )
+            return Block(embed_dim, num_heads, mlp_ratio, mlp=mlp)
+
+        super().__init__(
+            img_size, patch_size, in_chans, embed_dim, depth, num_heads, mlp_ratio, block_factory=make_block
+        )
+        self.moe_blocks = tuple(sorted(indices))
+
+    @torch.no_grad()  # type: ignore[misc]
+    def routing(self, imgs: torch.Tensor) -> dict[int, torch.Tensor]:
+        """Read full clean probabilities [B, 1+N, E], keyed by zero-based block index.
+
+        Uses full unmasked images, sequential block execution, and no router
+        noise, even in train mode. Image routing broadcasts one distribution per
+        image to every token. Does not change modes, RNG, parameters, or gradients.
+        """
+        imgs = imgs.to(self.pos_embed.device)
+        return self._encode(imgs, collect_routing=True, deterministic=True).routing_probs

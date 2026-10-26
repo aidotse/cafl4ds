@@ -1,0 +1,138 @@
+{
+  "protocol_hash": "a34eaad9948a5229ce71a95f266d71691a37a3afb19deef99a5613ac4c0871c8",
+  "config": {
+    "encoder": {
+      "_target_": "cafl4ds.models.vit.MoEViTEncoder",
+      "img_size": 64,
+      "patch_size": 8,
+      "in_chans": 3,
+      "embed_dim": 96,
+      "depth": 4,
+      "num_heads": 3,
+      "mlp_ratio": 2.0,
+      "num_experts": 4,
+      "top_k": 1,
+      "moe_blocks": null,
+      "routing_level": "token",
+      "balancing_mode": "batch",
+      "router_noise_std": 1.0,
+      "importance_weight": 1.0,
+      "load_weight": 1.0
+    },
+    "ssl": {
+      "_target_": "cafl4ds.ssl.factory.build_mae",
+      "mask_ratio": 0.75,
+      "decoder_dim": 64,
+      "decoder_depth": 2,
+      "decoder_heads": 4,
+      "decoder_mlp_ratio": 2.0,
+      "norm_pix_loss": true,
+      "aux_weight": 0.01
+    },
+    "optim": {
+      "_target_": "torch.optim.AdamW",
+      "lr": 0.001,
+      "weight_decay": 0.05
+    },
+    "source": {
+      "_target_": "cafl4ds.routing_experiment.CachedRoutingCorpus",
+      "directory": "outputs/wp_m0_mae_bdd_mps_2026-10-07/data",
+      "verify_hashes": true
+    },
+    "img_size": 64,
+    "device": "cpu",
+    "threads": 4,
+    "seed": 0,
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "epochs": 2,
+    "max_steps": null,
+    "batch_size": 64,
+    "eval_every": 50,
+    "mask_draws": 4,
+    "support_per_class": 50,
+    "query_per_class": 50,
+    "natural_query_size": 200,
+    "split_seed": 1729,
+    "grad_clip": 1.0,
+    "output": "outputs/moe_routing_entropy_2026-10-19",
+    "selectors": {
+      "random": {
+        "_target_": "cafl4ds.filters.routing_entropy.RoutingEntropyHalf",
+        "strategy": "random",
+        "seed": 0
+      },
+      "high": {
+        "_target_": "cafl4ds.filters.routing_entropy.RoutingEntropyHalf",
+        "strategy": "high",
+        "seed": 0
+      },
+      "low": {
+        "_target_": "cafl4ds.filters.routing_entropy.RoutingEntropyHalf",
+        "strategy": "low",
+        "seed": 0
+      }
+    }
+  },
+  "corpus": {
+    "directory": "/Users/williammin/cafl4ds/outputs/wp_m0_mae_bdd_mps_2026-10-07/data",
+    "complete": true,
+    "records_sha256": "458c82df6eded255a099f5ed8dc127538a9fd1c0176f1eb1ffe1fc32f61525cd",
+    "images_sha256": "fd5485ebe17ae4e8c7866878372f92b022994e58899d4615c3cea03e1ba333e5"
+  },
+  "gate_semantics": "full_softmax_before_topk_no_renormalization_v1",
+  "source_hashes": {
+    "routing_experiment.py": "c245efe79789c4d218cf7ef4edd2b92d39a4de45784dd51cd6ec4ba1821e6ae5",
+    "models/vit_mae_pretrained.py": "2a8bb66b1b3ac27f69e3c72a822498cf8ae267de666e1ac617218a55f0cc651c",
+    "models/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "models/vit.py": "130ee6046c729cf27a03a37c65ece45b17d32280efa4c4f01dc35d191bd567a0",
+    "models/vit_torchvision.py": "54044757ffe89e53ccabdeac7e8d77501953089220c9f50e6846d0c6afb5c35c",
+    "models/heads.py": "864f7dbb2df924608bc9ec30380144e96add235a24bb9726a725e27c13291095",
+    "ssl/mae.py": "24b61c56eaf19822578599cbf6bb238ae2f59c933a38f007a3bb48252b897b8d",
+    "ssl/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "ssl/augment.py": "e21b84f296f977aa066d19b56e62795bb8a874803c71ffd3df35acce63514fab",
+    "ssl/factory.py": "6e7157d27cb4b8bbdfc67ad0317a1453788aa7724775058655504589d90970c2",
+    "ssl/barlow.py": "6fdd32b743d80397fbe71dd211a9764053f5c8bfbded2740377cffed3ca4acd9",
+    "ssl/supervised.py": "5086863cdd6f516ea3b1587de36c7836d0d9f3f7e44e388ac39466b8f8e9977e",
+    "ssl/simsiam.py": "449d6c9ced5fb4b82f449cd729a5b58a7acd2f62b6b98a9a078303b9ceb95b5a",
+    "ssl/base.py": "48c2601e9287ecfa7267dd96155478ff250adc312f1d14a4d9295f565a0aa3ba",
+    "measurements.py": "e2641c48cdffa15886150f0b73db9ba782b239715ccdea9fdd55d1885497a409",
+    "filters/routing_entropy.py": "aba02945d04cfe56504bd3fd3d425d057207ac9a4e433e811986ffd2bee8b7ac",
+    "filters/base.py": "d2dd6f948096466925c37771167081488fdd4c05f8f4100cb02ba8bc2420b467",
+    "data/streams.py": "99708e7a202117a26210f81fe0fda856b60f2ab505aff5156db6f96a3a48ac78",
+    "data/attributes.py": "d3fbbc2b36211cb8085caabb8437971581d31be0ac3314e8fe27d99d7ab2d058",
+    "health_trust.py": "dec3f023de886a5aa54c0fdb5234f2baa3aac229923cb15de2b43ca2910c630c"
+  },
+  "runtime": {
+    "torch": "2.13.0",
+    "python": "3.12.13"
+  },
+  "primary_outcomes": [
+    "fixed_panel_entropy_change",
+    "natural_heldout_mse"
+  ],
+  "practical_thresholds": {
+    "normalized_entropy_absolute": 0.02,
+    "relative_mse": 0.05,
+    "probe_accuracy_pp": 3.0
+  },
+  "inference": "paired seed effects; descriptive 95% t intervals, no confirmatory significance claims",
+  "panel_counts": {
+    "support": 200,
+    "query": 200,
+    "natural": 200,
+    "train": 60955
+  },
+  "verification": {
+    "unit_tests_passed": 377,
+    "coverage_percent": 89.06,
+    "cpu_resume_exact": true,
+    "mps_resume_exact": true,
+    "total_measured_updates": 28560
+  }
+}

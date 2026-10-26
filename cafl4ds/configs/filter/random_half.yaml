@@ -1,0 +1,3 @@
+_target_: cafl4ds.filters.routing_entropy.RoutingEntropyHalf
+strategy: random
+seed: ${seed}

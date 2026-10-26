@@ -1,0 +1,3 @@
+_target_: cafl4ds.routing_experiment.CachedRoutingCorpus
+directory: outputs/wp_m0_mae_bdd_mps_2026-10-07/data
+verify_hashes: true

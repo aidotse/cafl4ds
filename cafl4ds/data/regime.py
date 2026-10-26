@@ -46,17 +46,20 @@ def iter_ordered_batches(
     buffer_era: int | None = None
     for era, image_index in order:
         if buffer_era is not None and era != buffer_era and buffer:
-            yield StreamBatch(images=images[torch.tensor(buffer, dtype=torch.long)], era=buffer_era, step=step)
+            ids = torch.tensor(buffer, dtype=torch.long)
+            yield StreamBatch(images=images[ids], era=buffer_era, step=step, sample_ids=ids)
             step += 1
             buffer = []
         buffer_era = era
         buffer.append(image_index)
         if len(buffer) == batch_size:
-            yield StreamBatch(images=images[torch.tensor(buffer, dtype=torch.long)], era=era, step=step)
+            ids = torch.tensor(buffer, dtype=torch.long)
+            yield StreamBatch(images=images[ids], era=era, step=step, sample_ids=ids)
             step += 1
             buffer = []
     if buffer and not drop_last and buffer_era is not None:
-        yield StreamBatch(images=images[torch.tensor(buffer, dtype=torch.long)], era=buffer_era, step=step)
+        ids = torch.tensor(buffer, dtype=torch.long)
+        yield StreamBatch(images=images[ids], era=buffer_era, step=step, sample_ids=ids)
 
 
 def count_ordered_batches(order: list[tuple[int, int]], batch_size: int, drop_last: bool) -> int:

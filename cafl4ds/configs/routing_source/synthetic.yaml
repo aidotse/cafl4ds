@@ -1,0 +1,3 @@
+_target_: cafl4ds.routing_experiment.SyntheticRoutingCorpus
+img_size: ${img_size}
+per_cell: 12

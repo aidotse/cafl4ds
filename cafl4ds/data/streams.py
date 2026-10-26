@@ -36,6 +36,8 @@ class StreamBatch:
     """Index of the era (class block) this batch belongs to."""
     step: int
     """Global step index of this batch within the single-pass stream."""
+    sample_ids: torch.Tensor | None = None
+    """Optional stable label-free image IDs, aligned with the image batch."""
 
 
 @dataclass(frozen=True)
@@ -327,4 +329,5 @@ class EraStream:
         Returns:
             The assembled label-free batch.
         """
-        return StreamBatch(images=self._images[torch.tensor(idx, dtype=torch.long)], era=era, step=step)
+        ids = torch.tensor(idx, dtype=torch.long)
+        return StreamBatch(images=self._images[ids], era=era, step=step, sample_ids=ids)

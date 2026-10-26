@@ -42,7 +42,9 @@ Conventions:
       batch of embeddings.
 """
 
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass
+from math import log
 from typing import TypeAlias, cast
 
 import numpy as np
@@ -60,6 +62,49 @@ Encoder: TypeAlias = Callable[[torch.Tensor], torch.Tensor]
 
 # A ``(inputs, labels)`` pair for the probe instruments. Labels are used HERE ONLY.
 Dataset: TypeAlias = tuple[TensorLike, TensorLike]
+
+
+@dataclass
+class RoutingEntropy:
+    """Detached routing ambiguity, excluding CLS and averaging entropies over MoE layers."""
+
+    token_nats: torch.Tensor
+    token_normalized: torch.Tensor
+    image_nats: torch.Tensor
+    image_normalized: torch.Tensor
+    layer_image_normalized: dict[int, torch.Tensor]
+
+
+def routing_entropy(probabilities: Mapping[int, torch.Tensor]) -> RoutingEntropy:
+    """Reduce full pre-top-k ``[B, CLS+T, E]`` distributions, never average distributions.
+
+    Layers must share patch identities and shapes. All outputs are detached; normalized
+    entropy divides each layer's entropy by log of that layer's expert count.
+    """
+    if not probabilities:
+        raise ValueError("Routing entropy requires at least one token-routed MoE layer.")
+    raw, normalized = [], []
+    layer_images = {}
+    shape = None
+    for layer, values in sorted(probabilities.items()):
+        p = values.detach().float()
+        if p.ndim != 3 or p.shape[0] == 0 or p.shape[1] < 2 or p.shape[2] < 2:
+            raise ValueError("Expected nonempty [B, CLS+patches, E] probabilities with E >= 2.")
+        if not bool(torch.isfinite(p).all()) or bool((p < 0).any()):
+            raise ValueError("Routing probabilities must be finite and nonnegative.")
+        if not torch.allclose(p.sum(-1), torch.ones_like(p[..., 0]), atol=1e-5, rtol=1e-5):
+            raise ValueError("Routing probabilities must sum to one over all experts.")
+        if shape is not None and p.shape[:2] != shape:
+            raise ValueError("MoE layers must share batch and patch identities.")
+        shape = p.shape[:2]
+        entropy = -(p[:, 1:] * p[:, 1:].clamp_min(torch.finfo(p.dtype).tiny).log()).sum(-1)
+        raw.append(entropy)
+        norm = entropy / log(p.shape[-1])
+        normalized.append(norm)
+        layer_images[layer] = norm.mean(-1)
+    token_nats = torch.stack(raw).mean(0)
+    token_normalized = torch.stack(normalized).mean(0)
+    return RoutingEntropy(token_nats, token_normalized, token_nats.mean(-1), token_normalized.mean(-1), layer_images)
 
 
 def _as_tensor(x: TensorLike) -> torch.Tensor:

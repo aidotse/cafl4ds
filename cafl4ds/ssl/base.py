@@ -18,6 +18,7 @@ contaminates the starting point).
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from math import isfinite
 from pathlib import Path
 
 import torch
@@ -30,14 +31,33 @@ from cafl4ds.models.vit import TinyViTEncoder
 class SSLMethod(nn.Module, ABC):  # type: ignore[misc]  # nn.Module is Any without torch stubs (mypy hook env)
     """A self-supervised method: a shared encoder plus a training objective."""
 
-    def __init__(self, encoder: TinyViTEncoder) -> None:
+    def __init__(self, encoder: TinyViTEncoder, aux_weight: float = 0.01) -> None:
         """Store the shared backbone encoder.
 
         Args:
             encoder: The :class:`~cafl4ds.models.vit.TinyViTEncoder` backbone under study.
+            aux_weight: Coefficient for explicitly returned encoder balancing losses.
         """
         super().__init__()
+        if not isfinite(aux_weight) or aux_weight < 0:
+            raise ValueError("aux_weight must be finite and nonnegative.")
         self.encoder = encoder
+        self.aux_weight = aux_weight
+
+    def _embed_with_aux(self, imgs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        """Read training features and loss, with zero loss for legacy encoders."""
+        embed_with_aux = getattr(self.encoder, "embed_with_aux", None)
+        if embed_with_aux is not None:
+            features, aux_loss = embed_with_aux(imgs)
+            return features, aux_loss
+        features = self.encoder.embed(imgs)
+        return features, features.new_zeros(())
+
+    def _with_aux_loss(self, task_loss: torch.Tensor, *aux_losses: torch.Tensor) -> torch.Tensor:
+        """Add the mean auxiliary loss across views after computing the SSL objective."""
+        if self.aux_weight == 0 or not aux_losses:
+            return task_loss
+        return task_loss + self.aux_weight * torch.stack(aux_losses).mean()
 
     @property
     @abstractmethod

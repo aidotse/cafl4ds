@@ -153,7 +153,7 @@ class StreamingLoop:
             The step's :class:`UpdateStats`, or ``None`` if the selected batch was sub-minimum
             (too few samples to run an update — the step is skipped).
         """
-        moved = StreamBatch(images=batch.images.to(self.device), era=batch.era, step=step)
+        moved = StreamBatch(images=batch.images.to(self.device), era=batch.era, step=step, sample_ids=batch.sample_ids)
         accepted = self.selection_filter.select(moved, FilterContext(method=self.method, step=step))
         if accepted.shape[0] < _MIN_BATCH:
             logger.debug(f"step {step}: skipping batch of {accepted.shape[0]} (< {_MIN_BATCH}).")

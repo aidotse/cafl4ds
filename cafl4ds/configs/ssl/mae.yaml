@@ -8,3 +8,4 @@ decoder_depth: 2
 decoder_heads: 4
 decoder_mlp_ratio: 2.0
 norm_pix_loss: true
+aux_weight: 0.01
