@@ -35,9 +35,10 @@ last-forward state. Dense encoders return zero. MAE, SimSiam, and Barlow Twins a
 ## Routing and balancing
 
 Dispatch gathers assigned tokens and runs only their selected experts, with no capacity limit or dropped tokens. Expert
-weights are softmax-normalized over the selected top-k logits only. Consequently, top-1 returns the chosen expert's
-output directly and its task-loss gate supplies no router gradient. The router instead receives gradients from the
-auxiliary loss.
+weights are computed by softmax over **all experts before top-k**, then gathered without renormalizing. Top-1 scales the
+chosen expert's output by its full-softmax probability. Reconstruction therefore trains the router through this weight
+as well as through the auxiliary loss. Expert choice itself remains discrete. This changes the computation of legacy
+checkpoints trained with selected-only normalization; historical WP-M0 results retain their original semantics.
 
 Batch balancing adds importance and load coefficients of variation squared, following
 [V-MoE's reference implementation](https://github.com/google-research/vmoe/blob/main/vmoe/nn/routing.py). Importance

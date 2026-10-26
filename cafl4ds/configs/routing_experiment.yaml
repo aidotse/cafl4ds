@@ -1,0 +1,42 @@
+defaults:
+  - encoder: moe_tiny
+  - ssl: mae
+  - optim: adamw
+  - routing_source@source: bdd_cache
+  - _self_
+
+img_size: 64
+device: cpu
+threads: 4
+seed: 0
+seeds: [0, 1, 2, 3, 4]
+epochs: 2
+max_steps: null
+batch_size: 64
+eval_every: 50
+mask_draws: 4
+support_per_class: 50
+query_per_class: 50
+natural_query_size: 200
+split_seed: 1729
+grad_clip: 1.0
+output: outputs/moe_routing_entropy_2026-10-19
+selectors:
+  random:
+    _target_: cafl4ds.filters.routing_entropy.RoutingEntropyHalf
+    strategy: random
+    seed: ${seed}
+  high:
+    _target_: cafl4ds.filters.routing_entropy.RoutingEntropyHalf
+    strategy: high
+    seed: ${seed}
+  low:
+    _target_: cafl4ds.filters.routing_entropy.RoutingEntropyHalf
+    strategy: low
+    seed: ${seed}
+
+hydra:
+  run:
+    dir: ${output}/hydra
+  job:
+    chdir: false

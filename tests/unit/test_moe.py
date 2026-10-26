@@ -42,8 +42,7 @@ def test_sparse_dispatch_matches_independent_token_reference(routing_level: str,
     layer = MoEMlp(4, 7, num_experts=3, top_k=top_k, routing_level=routing_level).eval()
     x = torch.randn(2, 5, 4)
     scores = layer.router(x.mean(dim=1)) if routing_level == "image" else layer.router(x)
-    logits, ids = scores.topk(top_k, dim=-1)
-    weights = logits.softmax(dim=-1)
+    weights, ids = scores.softmax(dim=-1).topk(top_k, dim=-1)
     expected = torch.zeros_like(x)
     for b in range(2):
         for n in range(5):
@@ -60,8 +59,8 @@ def test_sparse_dispatch_matches_independent_token_reference(routing_level: str,
 
 
 @pytest.mark.parametrize("routing_level", ["token", "image"])
-def test_top_one_is_exact_selected_expert_and_skips_unused_experts(routing_level: str) -> None:
-    """No expert work is done for unused assignments, and singleton gates equal one."""
+def test_top_one_retains_probability_gradient_and_skips_unused_experts(routing_level: str) -> None:
+    """Top-1 keeps the full-softmax weight and trains the router without balancing."""
     layer = MoEMlp(4, 7, num_experts=3, routing_level=routing_level).eval()
     with torch.no_grad():
         layer.router.weight.zero_()
@@ -76,17 +75,19 @@ def test_top_one_is_exact_selected_expert_and_skips_unused_experts(routing_level
     for handle in handles:
         handle.remove()
     assert called == [1]
-    assert torch.equal(result.features, layer.experts[1](x.reshape(-1, 4)).reshape_as(x))
+    probability = torch.tensor([-1.0, 2.0, 0.0]).softmax(dim=0)[1]
+    torch.testing.assert_close(result.features, probability * layer.experts[1](x.reshape(-1, 4)).reshape_as(x))
     result.features.square().sum().backward()
     assert layer.router.weight.grad is not None
-    assert torch.count_nonzero(layer.router.weight.grad) == 0
+    assert layer.router.weight.grad.abs().sum() > 0
+    assert layer.router.bias.grad is not None and (layer.router.bias.grad != 0).all()
     assert all(p.grad is None for i in (0, 2) for p in layer.experts[i].parameters())
 
 
 @pytest.mark.parametrize("noise_std", [0.0, 1.0])
 @pytest.mark.parametrize("routing_level", ["token", "image"])
 def test_auxiliary_loss_trains_top_one_router(noise_std: float, routing_level: str) -> None:
-    """Balancing provides the router gradient absent from top-1 task weighting."""
+    """Balancing independently supplies router gradients, with or without noise."""
     torch.manual_seed(3)
     layer = MoEMlp(4, 7, num_experts=3, routing_level=routing_level, router_noise_std=noise_std)
     with torch.no_grad():

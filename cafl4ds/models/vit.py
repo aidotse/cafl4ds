@@ -125,8 +125,9 @@ class Mlp(nn.Module):  # type: ignore[misc]  # nn.Module is Any without torch st
 class MoEMlp(nn.Module):  # type: ignore[misc]
     """Sparse top-k experts with batch importance/load balancing.
 
-    Selected logits are normalized over K only: top-1 returns the chosen expert
-    directly, so its router learns from balancing rather than the task-loss gate.
+    Softmax is computed over all experts before top-k. Selected probabilities
+    weight the expert outputs without renormalization, retaining task gradients
+    through the gate even for top-1.
     Router noise has standard deviation ``router_noise_std / num_experts`` during
     training, following V-MoE. Evaluation and diagnostic reads are deterministic.
     """
@@ -203,10 +204,9 @@ class MoEMlp(nn.Module):  # type: ignore[misc]
         logits = self.router(router_input).float().reshape(-1, self.num_experts)
         noise_std = self.router_noise_std / self.num_experts if self.training and not deterministic else 0.0
         routed_logits = logits + noise_std * torch.randn_like(logits) if noise_std > 0 else logits
-        selected_logits, expert_ids = routed_logits.topk(self.top_k, dim=-1)
-        weights = selected_logits.softmax(dim=-1)
-        aux_loss = self._balancing_loss(logits, routed_logits, noise_std)
         probs = routed_logits.softmax(dim=-1)
+        weights, expert_ids = probs.topk(self.top_k, dim=-1)
+        aux_loss = self._balancing_loss(logits, routed_logits, noise_std)
         if self.routing_level == "image":
             expert_ids = expert_ids[:, None, :].expand(-1, n, -1)
             weights = weights[:, None, :].expand(-1, n, -1)
@@ -422,12 +422,15 @@ class TinyViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is Any witho
         return cast(torch.Tensor, x + self.pos_embed[:, 1:, :])
 
     @staticmethod
-    def random_masking(x: torch.Tensor, mask_ratio: float) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def random_masking(
+        x: torch.Tensor, mask_ratio: float, *, noise: torch.Tensor | None = None
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Per-sample random masking of a patch sequence (MAE, He et al. 2022).
 
         Args:
             x: Patch tokens ``[B, N, d]``.
             mask_ratio: Fraction of patches to drop, in ``[0, 1)``.
+            noise: Optional fixed ``[B, N]`` mask priorities for paired experiments.
 
         Returns:
             A tuple ``(x_kept, mask, ids_restore)`` where ``x_kept`` is ``[B, N_keep, d]``
@@ -436,7 +439,12 @@ class TinyViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is Any witho
         """
         b, n, d = x.shape
         len_keep = max(1, int(round(n * (1.0 - mask_ratio))))
-        noise = torch.rand(b, n, device=x.device)
+        if noise is None:
+            noise = torch.rand(b, n, device=x.device)
+        elif noise.shape != (b, n):
+            raise ValueError("Mask noise must have shape [B, N].")
+        else:
+            noise = noise.to(x.device)
         ids_shuffle = torch.argsort(noise, dim=1)
         ids_restore = torch.argsort(ids_shuffle, dim=1)
         ids_keep = ids_shuffle[:, :len_keep]
@@ -472,13 +480,17 @@ class TinyViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is Any witho
         collect_attn: bool = False,
         collect_routing: bool = False,
         deterministic: bool = False,
+        mask_noise: torch.Tensor | None = None,
     ) -> EncoderOutput:
         """Shared token preparation and block execution for training and diagnostics."""
         x = self._embed_patches(imgs)
         mask: torch.Tensor | None = None
         ids_restore: torch.Tensor | None = None
         if mask_ratio > 0.0:
-            x, mask, ids_restore = self.random_masking(x, mask_ratio)
+            if mask_noise is None:
+                x, mask, ids_restore = self.random_masking(x, mask_ratio)
+            else:
+                x, mask, ids_restore = self.random_masking(x, mask_ratio, noise=mask_noise)
         cls = (self.cls_token + self.pos_embed[:, :1, :]).expand(x.shape[0], -1, -1)
         x = torch.cat([cls, x], dim=1)
         losses: list[torch.Tensor] = []
@@ -497,13 +509,15 @@ class TinyViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is Any witho
         aux_loss = torch.stack(losses).mean() if losses else x.new_zeros(())
         return EncoderOutput(self.norm(x), mask, ids_restore, aux_loss, attentions, routing_probs)
 
-    def forward_with_aux(self, imgs: torch.Tensor, mask_ratio: float = 0.0) -> EncoderOutput:
+    def forward_with_aux(
+        self, imgs: torch.Tensor, mask_ratio: float = 0.0, *, mask_noise: torch.Tensor | None = None
+    ) -> EncoderOutput:
         """Return tokens, MAE metadata, and mean balancing loss over MoE layers.
 
         Dense layers contribute no auxiliary loss. The returned loss belongs to
         this call's graph; no last-forward state is stored on the encoder.
         """
-        return self._encode(imgs, mask_ratio)
+        return self._encode(imgs, mask_ratio, mask_noise=mask_noise)
 
     def embed_with_aux(self, imgs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """Return pooled patch features and auxiliary loss from a single forward."""

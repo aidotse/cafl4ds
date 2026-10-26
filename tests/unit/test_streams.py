@@ -97,7 +97,7 @@ def test_len_matches_actual_batch_count_iid() -> None:
 
 
 def test_batches_carry_no_labels() -> None:
-    """A StreamBatch exposes only images (+ era/step) — labels cannot enter the update."""
+    """A StreamBatch exposes images, label-free IDs and era/step; labels stay outside the update."""
     stream = EraStream(
         SyntheticSource(num_classes=2, per_class=40, img_size=8),
         batch_size=8,
@@ -107,7 +107,9 @@ def test_batches_carry_no_labels() -> None:
     )
     batch = next(iter(stream))
     assert isinstance(batch, StreamBatch)
-    assert set(vars(batch)) == {"images", "era", "step"}
+    assert set(vars(batch)) == {"images", "era", "step", "sample_ids"}
+    assert batch.sample_ids is not None and batch.sample_ids.shape == (len(batch.images),)
+    torch.testing.assert_close(batch.images, stream._images[batch.sample_ids])
 
 
 def test_eval_sets_disjoint_from_training_and_each_other() -> None:
