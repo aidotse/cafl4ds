@@ -167,6 +167,14 @@ This is about clarity and flow, **not** length: do not pad, repeat, or add fille
 hit the style. For a direct factual answer, a status line, or a yes/no, stay short — the guidance above is for the
 explanatory paragraphs, where following along matters more than compression.
 
+### Response Formatting
+
+This applies to conversations in the terminal.
+
+Most terminal applications have difficulties rendering markdown, hence reading long responses can be tedious if there is
+no highlighting to orient the reader. Therefore, please rely on `raw text` whenever you want to highlight something in
+your response: section titles, the (otherwise) boldface title elements in a list, etc.
+
 ## Mandates
 
 We have two general mandates: completeness and accuracy. For completeness, this means e.g. making suggestions to the
