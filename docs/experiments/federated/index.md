@@ -10,8 +10,11 @@ sub-studies: motivation and status here, routing to detail docs as they're writt
 `cafl4ds/federated/` (entry point [`scripts/run_federated.py`](../../../scripts/run_federated.py)) is a single-process
 FedAvg simulation layered on the Phase-0 streaming loop:
 
-- **Partitioning (the `D` factor)** — one data source is split across `num_clients` shards, either `dirichlet`
-    (label-skewed non-IID, the headline heterogeneity knob) or `iid` (a uniform control).
+- **Partitioning (the `D` factor)** — one data source is split across `num_clients` shards: `dirichlet` (label-skewed
+    non-IID), `iid` (a uniform control), or `condition` (domain-skewed: images sorted by a per-image condition such as
+    BDD's weather and time of day, then cut into contiguous client blocks; `partition.sizes` / `partition.mix` set equal
+    or natural sizes and soften the split). `data=bdd_fl` gives BDD100K with scene labels and the conditions attached.
+    The global hold-out can be balanced per (condition, class) pair (`global_holdout_strata`).
 - **Per-client loop** — each client owns its own model, optimizer, selection filter, monitor, and single-pass
     `EraStream`, run through the *same* `StreamingLoop.train_step` as the centralized `run_loop.py`. A client's stream
     persists across rounds (true single pass) and it drops out once exhausted.
@@ -29,7 +32,8 @@ FedAvg simulation layered on the Phase-0 streaming loop:
 - **Repeated passes** — `client_epochs` lets each client stream its shard several times (same order), adding rounds, not
     local steps between averages; the federated counterpart of the centralized loop's `epochs`.
 - **Final evaluation** — `final_eval.enabled` scores the starting and the final model with kNN and linear probes fitted
-    on the training split and tested on the dataset's test split (`final_eval.json`); also in `run_loop.py`.
+    on the training split and tested on the dataset's test split (`final_eval.json`); also in `run_loop.py`. Each probe
+    reports plain and class-balanced accuracy (`*_bal_acc`, chance at 1 / number of classes).
 
 ## Sub-studies
 
@@ -38,15 +42,17 @@ FedAvg simulation layered on the Phase-0 streaming loop:
 | F1 | [Federated harness parity](F1.md) | Confirms the FedAvg harness reproduces the centralized [P0.1](../phase0/P0.1.md) reference under a degenerate/IID partition, before any non-IID skew is introduced — the FL analogue of P0.1's "does the loop run end-to-end" check. | ✅ **Complete** — exact reproduction at `num_clients=1`; multi-client FedAvg adapts sensibly under the IID control, both backbones |
 | F2 | [Non-IID label skew on a warm-started MAE](F2.md) | The first *scientific* FL question: does `Dirichlet(α)` label skew degrade global representation health over a single federated pass, with no selection filter? MAE has no classifier head, so supervised FL's dominant non-IID penalty should not apply — the question is whether the remaining client-drift mechanism is large enough to read. | 🟡 **Inconclusive — underpowered by design.** Clients train on images the warm start already saw, so the federated pass is worth ~the noise floor and skew has nothing to degrade. Two warm-start strengths × four arms each **disagree on the sign of every apparent effect**, so no non-IID claim survives; only RankMe moves reproducibly (expands in all eight arms, without reaching the probe). Two solid by-products: the encoder-only warm start's head warm-up confound found and **fixed** in the harness, and MAE recon loss shown to be anti-correlated with skew. Blocked on disjoint pretrain/federated data |
 | F3 | [Does from-scratch federated MAE learn on CIFAR-100?](F3.md) | Motivation: F2 could not see a non-IID effect because its federated phase re-trained on data the warm start knew. F3 asks the prior question — does federated MAE learn at all, scored on the official test split — and then whether FedAdam / FedProx improve on FedAvg under Dirichlet label skew. | 🟡 **Runs complete** (seed 0 only): one pass is too little (an early dip leaves one federated pass *below* the random start); five passes (`client_epochs=5`) learn steadily. No non-IID penalty at α=0.1 — the skew is too weak to cause drift — and plain FedAvg beats FedProx and FedAdam (collapses at the default server lr). Summary: [latest-results/F3](../latest-results/F3.md) |
+| F4 | [Federated MAE on BDD100K, clients split by driving condition](F4.md) | Motivation: F3's label skew was too weak to cause drift. F4 splits BDD100K by weather and time of day, so clients see genuinely different images, and asks whether a warm-started federated MAE improves, whether the split costs anything against IID clients, and whether FedProx / FedAdam help. | ✅ **Complete** (3 seeds): FedAvg gains about two points of balanced accuracy, reliably; the condition split costs nothing against IID (clients drift apart more, but averaging removes it); FedAvg beats FedProx and FedAdam in every seed. Starting model weak; within-client order scene-sorted. Summary: [latest-results/F4](../latest-results/F4.md) |
 
 ## Open questions (not yet scoped into a sub-study)
 
 - **Instrument transfer.** Once the Phase-0 instruments are calibrated (P0.2–P0.4), do they read collapse / forgetting /
     instability the same way on the aggregated global model as on a centralized one?
 - **Feature skew instead of label skew.** Label skew reaches a label-free objective only through the feature
-    distribution it induces, which over 100 classes is mild ([F2](F2.md)). Per-client pixel transforms (`grayscale` /
-    `phase_scramble`, built for [P0.3.8](../phase0/P0.3.8.md)) would give genuinely different input distributions — the
-    axis SSL actually responds to.
+    distribution it induces, which over 100 classes is mild ([F2](F2.md)). [F4](F4.md) tried natural feature skew
+    (BDD100K split by driving condition) and found no cost at 5 steps per round from a warm start. Open: whether more
+    local steps per round, or synthetic per-client pixel transforms (`grayscale` / `phase_scramble`, built for
+    [P0.3.8](../phase0/P0.3.8.md)), produce a cost.
 - **Healthy SimSiam at scale.** SimSiam point-collapses at the scaled ViT-Tiny F2 uses (RankMe ~1.2 against
     [P0.2.1](../phase0/P0.2.1.md)'s ~1.9 collapse floor) without the warmup+cosine schedule `run_loop.py` never wires,
     so the FL track is MAE-only until this is resolved.
