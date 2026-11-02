@@ -1,4 +1,7 @@
-# WP-M0 MAE/BDD native warm-well results
+# WP-M0.0: MAE/BDD native warm-well results
+
+This is the warm-well subexperiment within WP-M0; see the [WP-M0 summary](latest-results/WP-M0.md). The existing
+plan/results filenames, artifact paths and raw-run identifiers are retained for traceability.
 
 All 15 primary runs completed 2,000 optimizer updates on MPS.
 

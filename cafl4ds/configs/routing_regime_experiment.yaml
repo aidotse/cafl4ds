@@ -1,0 +1,6 @@
+defaults:
+  - routing_experiment
+  - _self_
+
+stream_order: regime_blocked
+output: outputs/moe_routing_entropy_regime_2026-10-27

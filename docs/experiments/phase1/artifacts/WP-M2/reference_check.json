@@ -1,0 +1,62 @@
+{
+  "baseline": "outputs/moe_routing_entropy_2026-10-19",
+  "baseline_protocol_hash": "a34eaad9948a5229ce71a95f266d71691a37a3afb19deef99a5613ac4c0871c8",
+  "changed_experiment_factors": [
+    "stream_order"
+  ],
+  "matched_configuration": true,
+  "matched_runtime": true,
+  "matched_panels": true,
+  "matched_initial_hashes": {
+    "0": "b7a46b660c3ad527850912da4b63a21d248f7f3c0c50b560b98f61d5e3c4f2f1",
+    "1": "0404c2c70d47059f96ccd67f1cf1b7a8a3bc88274c5ba539cfb82649d24b89c2",
+    "2": "017b4fd66b5464fd1bd0c2d891351310f4a102f581d03506275a697e52007c7b",
+    "3": "1735aec772c1b51c74a8134242cbeee16ea88f9b401cae5929c5875c09621d3d",
+    "4": "612fef0c923c13ce91d4d5a3144fbe319dd7729e9664ba3a73688fe9bff23acc"
+  },
+  "candidate_membership_and_dropped_tail_match_iid_each_seed_epoch": true,
+  "regime_order": [
+    "daytime\u00b7clear",
+    "daytime\u00b7partly cloudy",
+    "daytime\u00b7overcast",
+    "daytime\u00b7rainy",
+    "daytime\u00b7snowy",
+    "daytime\u00b7foggy",
+    "dawn/dusk\u00b7clear",
+    "dawn/dusk\u00b7partly cloudy",
+    "dawn/dusk\u00b7overcast",
+    "dawn/dusk\u00b7rainy",
+    "dawn/dusk\u00b7snowy",
+    "dawn/dusk\u00b7foggy",
+    "night\u00b7clear",
+    "night\u00b7partly cloudy",
+    "night\u00b7overcast",
+    "night\u00b7rainy",
+    "night\u00b7snowy",
+    "night\u00b7foggy"
+  ],
+  "mixed_batches_per_seed_epoch": {
+    "0": [
+      17,
+      17
+    ],
+    "1": [
+      17,
+      17
+    ],
+    "2": [
+      16,
+      17
+    ],
+    "3": [
+      16,
+      17
+    ],
+    "4": [
+      17,
+      16
+    ]
+  },
+  "updates_per_epoch": 952,
+  "total_updates_per_run": 1904
+}

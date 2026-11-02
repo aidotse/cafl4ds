@@ -1,0 +1,2253 @@
+{
+  "order": "regime_blocked",
+  "regime_order": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17
+  ],
+  "regime_names": {
+    "0": "daytime\u00b7clear",
+    "1": "daytime\u00b7partly cloudy",
+    "2": "daytime\u00b7overcast",
+    "3": "daytime\u00b7rainy",
+    "4": "daytime\u00b7snowy",
+    "5": "daytime\u00b7foggy",
+    "6": "dawn/dusk\u00b7clear",
+    "7": "dawn/dusk\u00b7partly cloudy",
+    "8": "dawn/dusk\u00b7overcast",
+    "9": "dawn/dusk\u00b7rainy",
+    "10": "dawn/dusk\u00b7snowy",
+    "11": "dawn/dusk\u00b7foggy",
+    "12": "night\u00b7clear",
+    "13": "night\u00b7partly cloudy",
+    "14": "night\u00b7overcast",
+    "15": "night\u00b7rainy",
+    "16": "night\u00b7snowy",
+    "17": "night\u00b7foggy"
+  },
+  "seeds": {
+    "0": [
+      {
+        "epoch": 0,
+        "candidate_order_sha256": "8d3321f8e2cbf5d2c473376afe7d205353386f07b429be82a40aadfbf6c2dd70",
+        "candidate_membership_sha256": "deea28706863305f39a5946a003950224709eafb2b89e0200fd8e131c6422c34",
+        "dropped_ids": [
+          30755,
+          23915,
+          16156,
+          24563,
+          52462,
+          32297,
+          50098,
+          22390,
+          57383,
+          14009,
+          44084,
+          808,
+          50116,
+          31832,
+          17563,
+          26352,
+          20857,
+          58510,
+          5122,
+          56355,
+          16338,
+          34037,
+          22656,
+          45966,
+          34554,
+          2125,
+          39263
+        ],
+        "candidate_count": 60928,
+        "updates": 952,
+        "mixed_batch_indices": [
+          192,
+          257,
+          374,
+          413,
+          457,
+          458,
+          489,
+          498,
+          516,
+          521,
+          527,
+          528,
+          880,
+          881,
+          882,
+          916,
+          950
+        ],
+        "mixed_batch_count": 17,
+        "segments": [
+          {
+            "regime": 0,
+            "name": "daytime\u00b7clear",
+            "start_candidate": 0,
+            "stop_candidate": 12295,
+            "count": 12295,
+            "start_update": 0.0,
+            "stop_update": 192.109375
+          },
+          {
+            "regime": 1,
+            "name": "daytime\u00b7partly cloudy",
+            "start_candidate": 12295,
+            "stop_candidate": 16509,
+            "count": 4214,
+            "start_update": 192.109375,
+            "stop_update": 257.953125
+          },
+          {
+            "regime": 2,
+            "name": "daytime\u00b7overcast",
+            "start_candidate": 16509,
+            "stop_candidate": 23972,
+            "count": 7463,
+            "start_update": 257.953125,
+            "stop_update": 374.5625
+          },
+          {
+            "regime": 3,
+            "name": "daytime\u00b7rainy",
+            "start_candidate": 23972,
+            "stop_candidate": 26460,
+            "count": 2488,
+            "start_update": 374.5625,
+            "stop_update": 413.4375
+          },
+          {
+            "regime": 4,
+            "name": "daytime\u00b7snowy",
+            "start_candidate": 26460,
+            "stop_candidate": 29295,
+            "count": 2835,
+            "start_update": 413.4375,
+            "stop_update": 457.734375
+          },
+          {
+            "regime": 5,
+            "name": "daytime\u00b7foggy",
+            "start_candidate": 29295,
+            "stop_candidate": 29342,
+            "count": 47,
+            "start_update": 457.734375,
+            "stop_update": 458.46875
+          },
+          {
+            "regime": 6,
+            "name": "dawn/dusk\u00b7clear",
+            "start_candidate": 29342,
+            "stop_candidate": 31322,
+            "count": 1980,
+            "start_update": 458.46875,
+            "stop_update": 489.40625
+          },
+          {
+            "regime": 7,
+            "name": "dawn/dusk\u00b7partly cloudy",
+            "start_candidate": 31322,
+            "stop_candidate": 31887,
+            "count": 565,
+            "start_update": 489.40625,
+            "stop_update": 498.234375
+          },
+          {
+            "regime": 8,
+            "name": "dawn/dusk\u00b7overcast",
+            "start_candidate": 31887,
+            "stop_candidate": 33025,
+            "count": 1138,
+            "start_update": 498.234375,
+            "stop_update": 516.015625
+          },
+          {
+            "regime": 9,
+            "name": "dawn/dusk\u00b7rainy",
+            "start_candidate": 33025,
+            "stop_candidate": 33350,
+            "count": 325,
+            "start_update": 516.015625,
+            "stop_update": 521.09375
+          },
+          {
+            "regime": 10,
+            "name": "dawn/dusk\u00b7snowy",
+            "start_candidate": 33350,
+            "stop_candidate": 33783,
+            "count": 433,
+            "start_update": 521.09375,
+            "stop_update": 527.859375
+          },
+          {
+            "regime": 11,
+            "name": "dawn/dusk\u00b7foggy",
+            "start_candidate": 33783,
+            "stop_candidate": 33798,
+            "count": 15,
+            "start_update": 527.859375,
+            "stop_update": 528.09375
+          },
+          {
+            "regime": 12,
+            "name": "night\u00b7clear",
+            "start_candidate": 33798,
+            "stop_candidate": 56356,
+            "count": 22558,
+            "start_update": 528.09375,
+            "stop_update": 880.5625
+          },
+          {
+            "regime": 13,
+            "name": "night\u00b7partly cloudy",
+            "start_candidate": 56356,
+            "stop_candidate": 56405,
+            "count": 49,
+            "start_update": 880.5625,
+            "stop_update": 881.328125
+          },
+          {
+            "regime": 14,
+            "name": "night\u00b7overcast",
+            "start_candidate": 56405,
+            "stop_candidate": 56476,
+            "count": 71,
+            "start_update": 881.328125,
+            "stop_update": 882.4375
+          },
+          {
+            "regime": 15,
+            "name": "night\u00b7rainy",
+            "start_candidate": 56476,
+            "stop_candidate": 58634,
+            "count": 2158,
+            "start_update": 882.4375,
+            "stop_update": 916.15625
+          },
+          {
+            "regime": 16,
+            "name": "night\u00b7snowy",
+            "start_candidate": 58634,
+            "stop_candidate": 60862,
+            "count": 2228,
+            "start_update": 916.15625,
+            "stop_update": 950.96875
+          },
+          {
+            "regime": 17,
+            "name": "night\u00b7foggy",
+            "start_candidate": 60862,
+            "stop_candidate": 60928,
+            "count": 66,
+            "start_update": 950.96875,
+            "stop_update": 952.0
+          }
+        ]
+      },
+      {
+        "epoch": 1,
+        "candidate_order_sha256": "866e2b6ef11352aaf6bafdb62ccedd7ea12b9d63564f3ce91c67d31f20b3b6ed",
+        "candidate_membership_sha256": "9005b9da255a2d663dbe538f1c2abb802b87184ea7d9b311a3130b5c06a0355d",
+        "dropped_ids": [
+          42668,
+          57137,
+          8566,
+          34135,
+          23592,
+          30359,
+          4930,
+          48995,
+          30555,
+          38548,
+          40160,
+          44047,
+          23623,
+          3803,
+          32343,
+          12768,
+          1862,
+          7361,
+          54441,
+          17969,
+          6543,
+          48942,
+          56881,
+          57424,
+          11233,
+          20820,
+          41100
+        ],
+        "candidate_count": 60928,
+        "updates": 952,
+        "mixed_batch_indices": [
+          192,
+          257,
+          374,
+          413,
+          457,
+          458,
+          489,
+          498,
+          516,
+          521,
+          527,
+          528,
+          880,
+          881,
+          882,
+          916,
+          950
+        ],
+        "mixed_batch_count": 17,
+        "segments": [
+          {
+            "regime": 0,
+            "name": "daytime\u00b7clear",
+            "start_candidate": 0,
+            "stop_candidate": 12293,
+            "count": 12293,
+            "start_update": 0.0,
+            "stop_update": 192.078125
+          },
+          {
+            "regime": 1,
+            "name": "daytime\u00b7partly cloudy",
+            "start_candidate": 12293,
+            "stop_candidate": 16506,
+            "count": 4213,
+            "start_update": 192.078125,
+            "stop_update": 257.90625
+          },
+          {
+            "regime": 2,
+            "name": "daytime\u00b7overcast",
+            "start_candidate": 16506,
+            "stop_candidate": 23970,
+            "count": 7464,
+            "start_update": 257.90625,
+            "stop_update": 374.53125
+          },
+          {
+            "regime": 3,
+            "name": "daytime\u00b7rainy",
+            "start_candidate": 23970,
+            "stop_candidate": 26462,
+            "count": 2492,
+            "start_update": 374.53125,
+            "stop_update": 413.46875
+          },
+          {
+            "regime": 4,
+            "name": "daytime\u00b7snowy",
+            "start_candidate": 26462,
+            "stop_candidate": 29298,
+            "count": 2836,
+            "start_update": 413.46875,
+            "stop_update": 457.78125
+          },
+          {
+            "regime": 5,
+            "name": "daytime\u00b7foggy",
+            "start_candidate": 29298,
+            "stop_candidate": 29345,
+            "count": 47,
+            "start_update": 457.78125,
+            "stop_update": 458.515625
+          },
+          {
+            "regime": 6,
+            "name": "dawn/dusk\u00b7clear",
+            "start_candidate": 29345,
+            "stop_candidate": 31324,
+            "count": 1979,
+            "start_update": 458.515625,
+            "stop_update": 489.4375
+          },
+          {
+            "regime": 7,
+            "name": "dawn/dusk\u00b7partly cloudy",
+            "start_candidate": 31324,
+            "stop_candidate": 31889,
+            "count": 565,
+            "start_update": 489.4375,
+            "stop_update": 498.265625
+          },
+          {
+            "regime": 8,
+            "name": "dawn/dusk\u00b7overcast",
+            "start_candidate": 31889,
+            "stop_candidate": 33027,
+            "count": 1138,
+            "start_update": 498.265625,
+            "stop_update": 516.046875
+          },
+          {
+            "regime": 9,
+            "name": "dawn/dusk\u00b7rainy",
+            "start_candidate": 33027,
+            "stop_candidate": 33352,
+            "count": 325,
+            "start_update": 516.046875,
+            "stop_update": 521.125
+          },
+          {
+            "regime": 10,
+            "name": "dawn/dusk\u00b7snowy",
+            "start_candidate": 33352,
+            "stop_candidate": 33783,
+            "count": 431,
+            "start_update": 521.125,
+            "stop_update": 527.859375
+          },
+          {
+            "regime": 11,
+            "name": "dawn/dusk\u00b7foggy",
+            "start_candidate": 33783,
+            "stop_candidate": 33798,
+            "count": 15,
+            "start_update": 527.859375,
+            "stop_update": 528.09375
+          },
+          {
+            "regime": 12,
+            "name": "night\u00b7clear",
+            "start_candidate": 33798,
+            "stop_candidate": 56356,
+            "count": 22558,
+            "start_update": 528.09375,
+            "stop_update": 880.5625
+          },
+          {
+            "regime": 13,
+            "name": "night\u00b7partly cloudy",
+            "start_candidate": 56356,
+            "stop_candidate": 56404,
+            "count": 48,
+            "start_update": 880.5625,
+            "stop_update": 881.3125
+          },
+          {
+            "regime": 14,
+            "name": "night\u00b7overcast",
+            "start_candidate": 56404,
+            "stop_candidate": 56475,
+            "count": 71,
+            "start_update": 881.3125,
+            "stop_update": 882.421875
+          },
+          {
+            "regime": 15,
+            "name": "night\u00b7rainy",
+            "start_candidate": 56475,
+            "stop_candidate": 58633,
+            "count": 2158,
+            "start_update": 882.421875,
+            "stop_update": 916.140625
+          },
+          {
+            "regime": 16,
+            "name": "night\u00b7snowy",
+            "start_candidate": 58633,
+            "stop_candidate": 60862,
+            "count": 2229,
+            "start_update": 916.140625,
+            "stop_update": 950.96875
+          },
+          {
+            "regime": 17,
+            "name": "night\u00b7foggy",
+            "start_candidate": 60862,
+            "stop_candidate": 60928,
+            "count": 66,
+            "start_update": 950.96875,
+            "stop_update": 952.0
+          }
+        ]
+      }
+    ],
+    "1": [
+      {
+        "epoch": 0,
+        "candidate_order_sha256": "2dc452ad4972866e74c175420c46abe48a9a7b326d356d26d252c4d5abb44f8b",
+        "candidate_membership_sha256": "ecf455e5fdadd4c1857358714ceec7c031543f25c019c9f907ca2db36d0da4a2",
+        "dropped_ids": [
+          17683,
+          16886,
+          56111,
+          20638,
+          52952,
+          50681,
+          25954,
+          4285,
+          60916,
+          4578,
+          3060,
+          4822,
+          55311,
+          9821,
+          21630,
+          13176,
+          50128,
+          37353,
+          48915,
+          58201,
+          14220,
+          38264,
+          28804,
+          571,
+          5153,
+          52202,
+          45255
+        ],
+        "candidate_count": 60928,
+        "updates": 952,
+        "mixed_batch_indices": [
+          192,
+          257,
+          374,
+          413,
+          457,
+          458,
+          489,
+          498,
+          516,
+          521,
+          527,
+          528,
+          880,
+          881,
+          882,
+          916,
+          950
+        ],
+        "mixed_batch_count": 17,
+        "segments": [
+          {
+            "regime": 0,
+            "name": "daytime\u00b7clear",
+            "start_candidate": 0,
+            "stop_candidate": 12291,
+            "count": 12291,
+            "start_update": 0.0,
+            "stop_update": 192.046875
+          },
+          {
+            "regime": 1,
+            "name": "daytime\u00b7partly cloudy",
+            "start_candidate": 12291,
+            "stop_candidate": 16506,
+            "count": 4215,
+            "start_update": 192.046875,
+            "stop_update": 257.90625
+          },
+          {
+            "regime": 2,
+            "name": "daytime\u00b7overcast",
+            "start_candidate": 16506,
+            "stop_candidate": 23967,
+            "count": 7461,
+            "start_update": 257.90625,
+            "stop_update": 374.484375
+          },
+          {
+            "regime": 3,
+            "name": "daytime\u00b7rainy",
+            "start_candidate": 23967,
+            "stop_candidate": 26458,
+            "count": 2491,
+            "start_update": 374.484375,
+            "stop_update": 413.40625
+          },
+          {
+            "regime": 4,
+            "name": "daytime\u00b7snowy",
+            "start_candidate": 26458,
+            "stop_candidate": 29295,
+            "count": 2837,
+            "start_update": 413.40625,
+            "stop_update": 457.734375
+          },
+          {
+            "regime": 5,
+            "name": "daytime\u00b7foggy",
+            "start_candidate": 29295,
+            "stop_candidate": 29342,
+            "count": 47,
+            "start_update": 457.734375,
+            "stop_update": 458.46875
+          },
+          {
+            "regime": 6,
+            "name": "dawn/dusk\u00b7clear",
+            "start_candidate": 29342,
+            "stop_candidate": 31321,
+            "count": 1979,
+            "start_update": 458.46875,
+            "stop_update": 489.390625
+          },
+          {
+            "regime": 7,
+            "name": "dawn/dusk\u00b7partly cloudy",
+            "start_candidate": 31321,
+            "stop_candidate": 31887,
+            "count": 566,
+            "start_update": 489.390625,
+            "stop_update": 498.234375
+          },
+          {
+            "regime": 8,
+            "name": "dawn/dusk\u00b7overcast",
+            "start_candidate": 31887,
+            "stop_candidate": 33025,
+            "count": 1138,
+            "start_update": 498.234375,
+            "stop_update": 516.015625
+          },
+          {
+            "regime": 9,
+            "name": "dawn/dusk\u00b7rainy",
+            "start_candidate": 33025,
+            "stop_candidate": 33350,
+            "count": 325,
+            "start_update": 516.015625,
+            "stop_update": 521.09375
+          },
+          {
+            "regime": 10,
+            "name": "dawn/dusk\u00b7snowy",
+            "start_candidate": 33350,
+            "stop_candidate": 33783,
+            "count": 433,
+            "start_update": 521.09375,
+            "stop_update": 527.859375
+          },
+          {
+            "regime": 11,
+            "name": "dawn/dusk\u00b7foggy",
+            "start_candidate": 33783,
+            "stop_candidate": 33798,
+            "count": 15,
+            "start_update": 527.859375,
+            "stop_update": 528.09375
+          },
+          {
+            "regime": 12,
+            "name": "night\u00b7clear",
+            "start_candidate": 33798,
+            "stop_candidate": 56357,
+            "count": 22559,
+            "start_update": 528.09375,
+            "stop_update": 880.578125
+          },
+          {
+            "regime": 13,
+            "name": "night\u00b7partly cloudy",
+            "start_candidate": 56357,
+            "stop_candidate": 56406,
+            "count": 49,
+            "start_update": 880.578125,
+            "stop_update": 881.34375
+          },
+          {
+            "regime": 14,
+            "name": "night\u00b7overcast",
+            "start_candidate": 56406,
+            "stop_candidate": 56476,
+            "count": 70,
+            "start_update": 881.34375,
+            "stop_update": 882.4375
+          },
+          {
+            "regime": 15,
+            "name": "night\u00b7rainy",
+            "start_candidate": 56476,
+            "stop_candidate": 58634,
+            "count": 2158,
+            "start_update": 882.4375,
+            "stop_update": 916.15625
+          },
+          {
+            "regime": 16,
+            "name": "night\u00b7snowy",
+            "start_candidate": 58634,
+            "stop_candidate": 60862,
+            "count": 2228,
+            "start_update": 916.15625,
+            "stop_update": 950.96875
+          },
+          {
+            "regime": 17,
+            "name": "night\u00b7foggy",
+            "start_candidate": 60862,
+            "stop_candidate": 60928,
+            "count": 66,
+            "start_update": 950.96875,
+            "stop_update": 952.0
+          }
+        ]
+      },
+      {
+        "epoch": 1,
+        "candidate_order_sha256": "22156680f7be37ee78ea33152e2697486470729ebf5e1f09430168a4c6649a0f",
+        "candidate_membership_sha256": "1a216c115cf416573dc2381c24b158cc74106095249899fd4355bd6d40593cf5",
+        "dropped_ids": [
+          35407,
+          53142,
+          2705,
+          28985,
+          43914,
+          35008,
+          53475,
+          53351,
+          12316,
+          8967,
+          10351,
+          32885,
+          28980,
+          44012,
+          2799,
+          51264,
+          59429,
+          20589,
+          996,
+          16344,
+          38739,
+          24205,
+          16521,
+          27183,
+          23214,
+          15603,
+          54914
+        ],
+        "candidate_count": 60928,
+        "updates": 952,
+        "mixed_batch_indices": [
+          192,
+          257,
+          374,
+          413,
+          457,
+          458,
+          489,
+          498,
+          515,
+          521,
+          527,
+          528,
+          880,
+          881,
+          882,
+          916,
+          950
+        ],
+        "mixed_batch_count": 17,
+        "segments": [
+          {
+            "regime": 0,
+            "name": "daytime\u00b7clear",
+            "start_candidate": 0,
+            "stop_candidate": 12293,
+            "count": 12293,
+            "start_update": 0.0,
+            "stop_update": 192.078125
+          },
+          {
+            "regime": 1,
+            "name": "daytime\u00b7partly cloudy",
+            "start_candidate": 12293,
+            "stop_candidate": 16506,
+            "count": 4213,
+            "start_update": 192.078125,
+            "stop_update": 257.90625
+          },
+          {
+            "regime": 2,
+            "name": "daytime\u00b7overcast",
+            "start_candidate": 16506,
+            "stop_candidate": 23965,
+            "count": 7459,
+            "start_update": 257.90625,
+            "stop_update": 374.453125
+          },
+          {
+            "regime": 3,
+            "name": "daytime\u00b7rainy",
+            "start_candidate": 23965,
+            "stop_candidate": 26453,
+            "count": 2488,
+            "start_update": 374.453125,
+            "stop_update": 413.328125
+          },
+          {
+            "regime": 4,
+            "name": "daytime\u00b7snowy",
+            "start_candidate": 26453,
+            "stop_candidate": 29290,
+            "count": 2837,
+            "start_update": 413.328125,
+            "stop_update": 457.65625
+          },
+          {
+            "regime": 5,
+            "name": "daytime\u00b7foggy",
+            "start_candidate": 29290,
+            "stop_candidate": 29337,
+            "count": 47,
+            "start_update": 457.65625,
+            "stop_update": 458.390625
+          },
+          {
+            "regime": 6,
+            "name": "dawn/dusk\u00b7clear",
+            "start_candidate": 29337,
+            "stop_candidate": 31318,
+            "count": 1981,
+            "start_update": 458.390625,
+            "stop_update": 489.34375
+          },
+          {
+            "regime": 7,
+            "name": "dawn/dusk\u00b7partly cloudy",
+            "start_candidate": 31318,
+            "stop_candidate": 31884,
+            "count": 566,
+            "start_update": 489.34375,
+            "stop_update": 498.1875
+          },
+          {
+            "regime": 8,
+            "name": "dawn/dusk\u00b7overcast",
+            "start_candidate": 31884,
+            "stop_candidate": 33022,
+            "count": 1138,
+            "start_update": 498.1875,
+            "stop_update": 515.96875
+          },
+          {
+            "regime": 9,
+            "name": "dawn/dusk\u00b7rainy",
+            "start_candidate": 33022,
+            "stop_candidate": 33346,
+            "count": 324,
+            "start_update": 515.96875,
+            "stop_update": 521.03125
+          },
+          {
+            "regime": 10,
+            "name": "dawn/dusk\u00b7snowy",
+            "start_candidate": 33346,
+            "stop_candidate": 33779,
+            "count": 433,
+            "start_update": 521.03125,
+            "stop_update": 527.796875
+          },
+          {
+            "regime": 11,
+            "name": "dawn/dusk\u00b7foggy",
+            "start_candidate": 33779,
+            "stop_candidate": 33794,
+            "count": 15,
+            "start_update": 527.796875,
+            "stop_update": 528.03125
+          },
+          {
+            "regime": 12,
+            "name": "night\u00b7clear",
+            "start_candidate": 33794,
+            "stop_candidate": 56357,
+            "count": 22563,
+            "start_update": 528.03125,
+            "stop_update": 880.578125
+          },
+          {
+            "regime": 13,
+            "name": "night\u00b7partly cloudy",
+            "start_candidate": 56357,
+            "stop_candidate": 56406,
+            "count": 49,
+            "start_update": 880.578125,
+            "stop_update": 881.34375
+          },
+          {
+            "regime": 14,
+            "name": "night\u00b7overcast",
+            "start_candidate": 56406,
+            "stop_candidate": 56477,
+            "count": 71,
+            "start_update": 881.34375,
+            "stop_update": 882.453125
+          },
+          {
+            "regime": 15,
+            "name": "night\u00b7rainy",
+            "start_candidate": 56477,
+            "stop_candidate": 58634,
+            "count": 2157,
+            "start_update": 882.453125,
+            "stop_update": 916.15625
+          },
+          {
+            "regime": 16,
+            "name": "night\u00b7snowy",
+            "start_candidate": 58634,
+            "stop_candidate": 60862,
+            "count": 2228,
+            "start_update": 916.15625,
+            "stop_update": 950.96875
+          },
+          {
+            "regime": 17,
+            "name": "night\u00b7foggy",
+            "start_candidate": 60862,
+            "stop_candidate": 60928,
+            "count": 66,
+            "start_update": 950.96875,
+            "stop_update": 952.0
+          }
+        ]
+      }
+    ],
+    "2": [
+      {
+        "epoch": 0,
+        "candidate_order_sha256": "3bef2276b3e20ca918e8c367fd56439b5bacdb32e6e42aa340b8a4079c6dcc41",
+        "candidate_membership_sha256": "710bf2ea7b5d1b819a46ce6b054f242b3b960d1b90cad00ff74acdc94d392a09",
+        "dropped_ids": [
+          36510,
+          58706,
+          23878,
+          57363,
+          13546,
+          15188,
+          38717,
+          29828,
+          47231,
+          18639,
+          51931,
+          56471,
+          26342,
+          16495,
+          30086,
+          43057,
+          12503,
+          23345,
+          49405,
+          34316,
+          56568,
+          12380,
+          53247,
+          39969,
+          39043,
+          23248,
+          45092
+        ],
+        "candidate_count": 60928,
+        "updates": 952,
+        "mixed_batch_indices": [
+          192,
+          257,
+          374,
+          413,
+          457,
+          458,
+          489,
+          498,
+          521,
+          527,
+          528,
+          880,
+          881,
+          882,
+          916,
+          950
+        ],
+        "mixed_batch_count": 16,
+        "segments": [
+          {
+            "regime": 0,
+            "name": "daytime\u00b7clear",
+            "start_candidate": 0,
+            "stop_candidate": 12290,
+            "count": 12290,
+            "start_update": 0.0,
+            "stop_update": 192.03125
+          },
+          {
+            "regime": 1,
+            "name": "daytime\u00b7partly cloudy",
+            "start_candidate": 12290,
+            "stop_candidate": 16504,
+            "count": 4214,
+            "start_update": 192.03125,
+            "stop_update": 257.875
+          },
+          {
+            "regime": 2,
+            "name": "daytime\u00b7overcast",
+            "start_candidate": 16504,
+            "stop_candidate": 23968,
+            "count": 7464,
+            "start_update": 257.875,
+            "stop_update": 374.5
+          },
+          {
+            "regime": 3,
+            "name": "daytime\u00b7rainy",
+            "start_candidate": 23968,
+            "stop_candidate": 26458,
+            "count": 2490,
+            "start_update": 374.5,
+            "stop_update": 413.40625
+          },
+          {
+            "regime": 4,
+            "name": "daytime\u00b7snowy",
+            "start_candidate": 26458,
+            "stop_candidate": 29294,
+            "count": 2836,
+            "start_update": 413.40625,
+            "stop_update": 457.71875
+          },
+          {
+            "regime": 5,
+            "name": "daytime\u00b7foggy",
+            "start_candidate": 29294,
+            "stop_candidate": 29341,
+            "count": 47,
+            "start_update": 457.71875,
+            "stop_update": 458.453125
+          },
+          {
+            "regime": 6,
+            "name": "dawn/dusk\u00b7clear",
+            "start_candidate": 29341,
+            "stop_candidate": 31321,
+            "count": 1980,
+            "start_update": 458.453125,
+            "stop_update": 489.390625
+          },
+          {
+            "regime": 7,
+            "name": "dawn/dusk\u00b7partly cloudy",
+            "start_candidate": 31321,
+            "stop_candidate": 31887,
+            "count": 566,
+            "start_update": 489.390625,
+            "stop_update": 498.234375
+          },
+          {
+            "regime": 8,
+            "name": "dawn/dusk\u00b7overcast",
+            "start_candidate": 31887,
+            "stop_candidate": 33024,
+            "count": 1137,
+            "start_update": 498.234375,
+            "stop_update": 516.0
+          },
+          {
+            "regime": 9,
+            "name": "dawn/dusk\u00b7rainy",
+            "start_candidate": 33024,
+            "stop_candidate": 33349,
+            "count": 325,
+            "start_update": 516.0,
+            "stop_update": 521.078125
+          },
+          {
+            "regime": 10,
+            "name": "dawn/dusk\u00b7snowy",
+            "start_candidate": 33349,
+            "stop_candidate": 33782,
+            "count": 433,
+            "start_update": 521.078125,
+            "stop_update": 527.84375
+          },
+          {
+            "regime": 11,
+            "name": "dawn/dusk\u00b7foggy",
+            "start_candidate": 33782,
+            "stop_candidate": 33797,
+            "count": 15,
+            "start_update": 527.84375,
+            "stop_update": 528.078125
+          },
+          {
+            "regime": 12,
+            "name": "night\u00b7clear",
+            "start_candidate": 33797,
+            "stop_candidate": 56357,
+            "count": 22560,
+            "start_update": 528.078125,
+            "stop_update": 880.578125
+          },
+          {
+            "regime": 13,
+            "name": "night\u00b7partly cloudy",
+            "start_candidate": 56357,
+            "stop_candidate": 56406,
+            "count": 49,
+            "start_update": 880.578125,
+            "stop_update": 881.34375
+          },
+          {
+            "regime": 14,
+            "name": "night\u00b7overcast",
+            "start_candidate": 56406,
+            "stop_candidate": 56477,
+            "count": 71,
+            "start_update": 881.34375,
+            "stop_update": 882.453125
+          },
+          {
+            "regime": 15,
+            "name": "night\u00b7rainy",
+            "start_candidate": 56477,
+            "stop_candidate": 58634,
+            "count": 2157,
+            "start_update": 882.453125,
+            "stop_update": 916.15625
+          },
+          {
+            "regime": 16,
+            "name": "night\u00b7snowy",
+            "start_candidate": 58634,
+            "stop_candidate": 60862,
+            "count": 2228,
+            "start_update": 916.15625,
+            "stop_update": 950.96875
+          },
+          {
+            "regime": 17,
+            "name": "night\u00b7foggy",
+            "start_candidate": 60862,
+            "stop_candidate": 60928,
+            "count": 66,
+            "start_update": 950.96875,
+            "stop_update": 952.0
+          }
+        ]
+      },
+      {
+        "epoch": 1,
+        "candidate_order_sha256": "e1dd48f8876ffc57a831708fa006204e2e7e345188529d48d8de64abc60cd686",
+        "candidate_membership_sha256": "ab5172eaaa624e18f84a05b6c5f69d9f4ff3021a151b9365d597fce97c67a10f",
+        "dropped_ids": [
+          6215,
+          1114,
+          18474,
+          5006,
+          13724,
+          29675,
+          36621,
+          27054,
+          20466,
+          25456,
+          60272,
+          17615,
+          51722,
+          53167,
+          49239,
+          58197,
+          19538,
+          50828,
+          35242,
+          27661,
+          44072,
+          6359,
+          47695,
+          40,
+          30644,
+          7163,
+          28978
+        ],
+        "candidate_count": 60928,
+        "updates": 952,
+        "mixed_batch_indices": [
+          192,
+          257,
+          374,
+          413,
+          457,
+          458,
+          489,
+          498,
+          515,
+          521,
+          527,
+          528,
+          880,
+          881,
+          882,
+          916,
+          950
+        ],
+        "mixed_batch_count": 17,
+        "segments": [
+          {
+            "regime": 0,
+            "name": "daytime\u00b7clear",
+            "start_candidate": 0,
+            "stop_candidate": 12292,
+            "count": 12292,
+            "start_update": 0.0,
+            "stop_update": 192.0625
+          },
+          {
+            "regime": 1,
+            "name": "daytime\u00b7partly cloudy",
+            "start_candidate": 12292,
+            "stop_candidate": 16504,
+            "count": 4212,
+            "start_update": 192.0625,
+            "stop_update": 257.875
+          },
+          {
+            "regime": 2,
+            "name": "daytime\u00b7overcast",
+            "start_candidate": 16504,
+            "stop_candidate": 23964,
+            "count": 7460,
+            "start_update": 257.875,
+            "stop_update": 374.4375
+          },
+          {
+            "regime": 3,
+            "name": "daytime\u00b7rainy",
+            "start_candidate": 23964,
+            "stop_candidate": 26456,
+            "count": 2492,
+            "start_update": 374.4375,
+            "stop_update": 413.375
+          },
+          {
+            "regime": 4,
+            "name": "daytime\u00b7snowy",
+            "start_candidate": 26456,
+            "stop_candidate": 29293,
+            "count": 2837,
+            "start_update": 413.375,
+            "stop_update": 457.703125
+          },
+          {
+            "regime": 5,
+            "name": "daytime\u00b7foggy",
+            "start_candidate": 29293,
+            "stop_candidate": 29340,
+            "count": 47,
+            "start_update": 457.703125,
+            "stop_update": 458.4375
+          },
+          {
+            "regime": 6,
+            "name": "dawn/dusk\u00b7clear",
+            "start_candidate": 29340,
+            "stop_candidate": 31320,
+            "count": 1980,
+            "start_update": 458.4375,
+            "stop_update": 489.375
+          },
+          {
+            "regime": 7,
+            "name": "dawn/dusk\u00b7partly cloudy",
+            "start_candidate": 31320,
+            "stop_candidate": 31886,
+            "count": 566,
+            "start_update": 489.375,
+            "stop_update": 498.21875
+          },
+          {
+            "regime": 8,
+            "name": "dawn/dusk\u00b7overcast",
+            "start_candidate": 31886,
+            "stop_candidate": 33023,
+            "count": 1137,
+            "start_update": 498.21875,
+            "stop_update": 515.984375
+          },
+          {
+            "regime": 9,
+            "name": "dawn/dusk\u00b7rainy",
+            "start_candidate": 33023,
+            "stop_candidate": 33348,
+            "count": 325,
+            "start_update": 515.984375,
+            "stop_update": 521.0625
+          },
+          {
+            "regime": 10,
+            "name": "dawn/dusk\u00b7snowy",
+            "start_candidate": 33348,
+            "stop_candidate": 33781,
+            "count": 433,
+            "start_update": 521.0625,
+            "stop_update": 527.828125
+          },
+          {
+            "regime": 11,
+            "name": "dawn/dusk\u00b7foggy",
+            "start_candidate": 33781,
+            "stop_candidate": 33796,
+            "count": 15,
+            "start_update": 527.828125,
+            "stop_update": 528.0625
+          },
+          {
+            "regime": 12,
+            "name": "night\u00b7clear",
+            "start_candidate": 33796,
+            "stop_candidate": 56356,
+            "count": 22560,
+            "start_update": 528.0625,
+            "stop_update": 880.5625
+          },
+          {
+            "regime": 13,
+            "name": "night\u00b7partly cloudy",
+            "start_candidate": 56356,
+            "stop_candidate": 56405,
+            "count": 49,
+            "start_update": 880.5625,
+            "stop_update": 881.328125
+          },
+          {
+            "regime": 14,
+            "name": "night\u00b7overcast",
+            "start_candidate": 56405,
+            "stop_candidate": 56476,
+            "count": 71,
+            "start_update": 881.328125,
+            "stop_update": 882.4375
+          },
+          {
+            "regime": 15,
+            "name": "night\u00b7rainy",
+            "start_candidate": 56476,
+            "stop_candidate": 58634,
+            "count": 2158,
+            "start_update": 882.4375,
+            "stop_update": 916.15625
+          },
+          {
+            "regime": 16,
+            "name": "night\u00b7snowy",
+            "start_candidate": 58634,
+            "stop_candidate": 60862,
+            "count": 2228,
+            "start_update": 916.15625,
+            "stop_update": 950.96875
+          },
+          {
+            "regime": 17,
+            "name": "night\u00b7foggy",
+            "start_candidate": 60862,
+            "stop_candidate": 60928,
+            "count": 66,
+            "start_update": 950.96875,
+            "stop_update": 952.0
+          }
+        ]
+      }
+    ],
+    "3": [
+      {
+        "epoch": 0,
+        "candidate_order_sha256": "9fbd7dc7343fad95b4727e462342829572b12975eee48e6544a7be8940b375bb",
+        "candidate_membership_sha256": "93f73af3073125526585a9e9fb5a81e7cd150aaa3918b46c2057482ba99729e8",
+        "dropped_ids": [
+          2543,
+          141,
+          12637,
+          23673,
+          57569,
+          59200,
+          312,
+          4746,
+          15471,
+          56770,
+          31265,
+          50971,
+          16124,
+          44222,
+          46350,
+          30132,
+          59490,
+          48033,
+          26976,
+          43104,
+          32788,
+          18661,
+          50316,
+          55780,
+          6108,
+          26591,
+          23397
+        ],
+        "candidate_count": 60928,
+        "updates": 952,
+        "mixed_batch_indices": [
+          191,
+          257,
+          374,
+          413,
+          457,
+          458,
+          489,
+          498,
+          521,
+          527,
+          528,
+          880,
+          881,
+          882,
+          916,
+          950
+        ],
+        "mixed_batch_count": 16,
+        "segments": [
+          {
+            "regime": 0,
+            "name": "daytime\u00b7clear",
+            "start_candidate": 0,
+            "stop_candidate": 12287,
+            "count": 12287,
+            "start_update": 0.0,
+            "stop_update": 191.984375
+          },
+          {
+            "regime": 1,
+            "name": "daytime\u00b7partly cloudy",
+            "start_candidate": 12287,
+            "stop_candidate": 16501,
+            "count": 4214,
+            "start_update": 191.984375,
+            "stop_update": 257.828125
+          },
+          {
+            "regime": 2,
+            "name": "daytime\u00b7overcast",
+            "start_candidate": 16501,
+            "stop_candidate": 23965,
+            "count": 7464,
+            "start_update": 257.828125,
+            "stop_update": 374.453125
+          },
+          {
+            "regime": 3,
+            "name": "daytime\u00b7rainy",
+            "start_candidate": 23965,
+            "stop_candidate": 26457,
+            "count": 2492,
+            "start_update": 374.453125,
+            "stop_update": 413.390625
+          },
+          {
+            "regime": 4,
+            "name": "daytime\u00b7snowy",
+            "start_candidate": 26457,
+            "stop_candidate": 29294,
+            "count": 2837,
+            "start_update": 413.390625,
+            "stop_update": 457.71875
+          },
+          {
+            "regime": 5,
+            "name": "daytime\u00b7foggy",
+            "start_candidate": 29294,
+            "stop_candidate": 29341,
+            "count": 47,
+            "start_update": 457.71875,
+            "stop_update": 458.453125
+          },
+          {
+            "regime": 6,
+            "name": "dawn/dusk\u00b7clear",
+            "start_candidate": 29341,
+            "stop_candidate": 31321,
+            "count": 1980,
+            "start_update": 458.453125,
+            "stop_update": 489.390625
+          },
+          {
+            "regime": 7,
+            "name": "dawn/dusk\u00b7partly cloudy",
+            "start_candidate": 31321,
+            "stop_candidate": 31887,
+            "count": 566,
+            "start_update": 489.390625,
+            "stop_update": 498.234375
+          },
+          {
+            "regime": 8,
+            "name": "dawn/dusk\u00b7overcast",
+            "start_candidate": 31887,
+            "stop_candidate": 33024,
+            "count": 1137,
+            "start_update": 498.234375,
+            "stop_update": 516.0
+          },
+          {
+            "regime": 9,
+            "name": "dawn/dusk\u00b7rainy",
+            "start_candidate": 33024,
+            "stop_candidate": 33349,
+            "count": 325,
+            "start_update": 516.0,
+            "stop_update": 521.078125
+          },
+          {
+            "regime": 10,
+            "name": "dawn/dusk\u00b7snowy",
+            "start_candidate": 33349,
+            "stop_candidate": 33782,
+            "count": 433,
+            "start_update": 521.078125,
+            "stop_update": 527.84375
+          },
+          {
+            "regime": 11,
+            "name": "dawn/dusk\u00b7foggy",
+            "start_candidate": 33782,
+            "stop_candidate": 33797,
+            "count": 15,
+            "start_update": 527.84375,
+            "stop_update": 528.078125
+          },
+          {
+            "regime": 12,
+            "name": "night\u00b7clear",
+            "start_candidate": 33797,
+            "stop_candidate": 56356,
+            "count": 22559,
+            "start_update": 528.078125,
+            "stop_update": 880.5625
+          },
+          {
+            "regime": 13,
+            "name": "night\u00b7partly cloudy",
+            "start_candidate": 56356,
+            "stop_candidate": 56405,
+            "count": 49,
+            "start_update": 880.5625,
+            "stop_update": 881.328125
+          },
+          {
+            "regime": 14,
+            "name": "night\u00b7overcast",
+            "start_candidate": 56405,
+            "stop_candidate": 56476,
+            "count": 71,
+            "start_update": 881.328125,
+            "stop_update": 882.4375
+          },
+          {
+            "regime": 15,
+            "name": "night\u00b7rainy",
+            "start_candidate": 56476,
+            "stop_candidate": 58634,
+            "count": 2158,
+            "start_update": 882.4375,
+            "stop_update": 916.15625
+          },
+          {
+            "regime": 16,
+            "name": "night\u00b7snowy",
+            "start_candidate": 58634,
+            "stop_candidate": 60862,
+            "count": 2228,
+            "start_update": 916.15625,
+            "stop_update": 950.96875
+          },
+          {
+            "regime": 17,
+            "name": "night\u00b7foggy",
+            "start_candidate": 60862,
+            "stop_candidate": 60928,
+            "count": 66,
+            "start_update": 950.96875,
+            "stop_update": 952.0
+          }
+        ]
+      },
+      {
+        "epoch": 1,
+        "candidate_order_sha256": "c7734ed538010936098988ef4c9e99800a70933a30c209f3a0304118f9208e8e",
+        "candidate_membership_sha256": "a56b445d8c57c9565d9b86caecd6534484b9a4ae991f1c50d875ac16fb97c106",
+        "dropped_ids": [
+          19980,
+          59486,
+          21705,
+          55837,
+          28724,
+          35533,
+          9895,
+          19389,
+          60402,
+          31059,
+          36637,
+          57783,
+          14401,
+          47761,
+          52422,
+          34173,
+          12542,
+          9326,
+          13041,
+          30800,
+          9277,
+          49387,
+          9392,
+          12784,
+          11000,
+          13274,
+          49397
+        ],
+        "candidate_count": 60928,
+        "updates": 952,
+        "mixed_batch_indices": [
+          192,
+          257,
+          374,
+          413,
+          457,
+          458,
+          489,
+          498,
+          516,
+          521,
+          527,
+          528,
+          880,
+          881,
+          882,
+          916,
+          950
+        ],
+        "mixed_batch_count": 17,
+        "segments": [
+          {
+            "regime": 0,
+            "name": "daytime\u00b7clear",
+            "start_candidate": 0,
+            "stop_candidate": 12290,
+            "count": 12290,
+            "start_update": 0.0,
+            "stop_update": 192.03125
+          },
+          {
+            "regime": 1,
+            "name": "daytime\u00b7partly cloudy",
+            "start_candidate": 12290,
+            "stop_candidate": 16504,
+            "count": 4214,
+            "start_update": 192.03125,
+            "stop_update": 257.875
+          },
+          {
+            "regime": 2,
+            "name": "daytime\u00b7overcast",
+            "start_candidate": 16504,
+            "stop_candidate": 23966,
+            "count": 7462,
+            "start_update": 257.875,
+            "stop_update": 374.46875
+          },
+          {
+            "regime": 3,
+            "name": "daytime\u00b7rainy",
+            "start_candidate": 23966,
+            "stop_candidate": 26458,
+            "count": 2492,
+            "start_update": 374.46875,
+            "stop_update": 413.40625
+          },
+          {
+            "regime": 4,
+            "name": "daytime\u00b7snowy",
+            "start_candidate": 26458,
+            "stop_candidate": 29295,
+            "count": 2837,
+            "start_update": 413.40625,
+            "stop_update": 457.734375
+          },
+          {
+            "regime": 5,
+            "name": "daytime\u00b7foggy",
+            "start_candidate": 29295,
+            "stop_candidate": 29342,
+            "count": 47,
+            "start_update": 457.734375,
+            "stop_update": 458.46875
+          },
+          {
+            "regime": 6,
+            "name": "dawn/dusk\u00b7clear",
+            "start_candidate": 29342,
+            "stop_candidate": 31321,
+            "count": 1979,
+            "start_update": 458.46875,
+            "stop_update": 489.390625
+          },
+          {
+            "regime": 7,
+            "name": "dawn/dusk\u00b7partly cloudy",
+            "start_candidate": 31321,
+            "stop_candidate": 31887,
+            "count": 566,
+            "start_update": 489.390625,
+            "stop_update": 498.234375
+          },
+          {
+            "regime": 8,
+            "name": "dawn/dusk\u00b7overcast",
+            "start_candidate": 31887,
+            "stop_candidate": 33025,
+            "count": 1138,
+            "start_update": 498.234375,
+            "stop_update": 516.015625
+          },
+          {
+            "regime": 9,
+            "name": "dawn/dusk\u00b7rainy",
+            "start_candidate": 33025,
+            "stop_candidate": 33349,
+            "count": 324,
+            "start_update": 516.015625,
+            "stop_update": 521.078125
+          },
+          {
+            "regime": 10,
+            "name": "dawn/dusk\u00b7snowy",
+            "start_candidate": 33349,
+            "stop_candidate": 33782,
+            "count": 433,
+            "start_update": 521.078125,
+            "stop_update": 527.84375
+          },
+          {
+            "regime": 11,
+            "name": "dawn/dusk\u00b7foggy",
+            "start_candidate": 33782,
+            "stop_candidate": 33797,
+            "count": 15,
+            "start_update": 527.84375,
+            "stop_update": 528.078125
+          },
+          {
+            "regime": 12,
+            "name": "night\u00b7clear",
+            "start_candidate": 33797,
+            "stop_candidate": 56356,
+            "count": 22559,
+            "start_update": 528.078125,
+            "stop_update": 880.5625
+          },
+          {
+            "regime": 13,
+            "name": "night\u00b7partly cloudy",
+            "start_candidate": 56356,
+            "stop_candidate": 56405,
+            "count": 49,
+            "start_update": 880.5625,
+            "stop_update": 881.328125
+          },
+          {
+            "regime": 14,
+            "name": "night\u00b7overcast",
+            "start_candidate": 56405,
+            "stop_candidate": 56476,
+            "count": 71,
+            "start_update": 881.328125,
+            "stop_update": 882.4375
+          },
+          {
+            "regime": 15,
+            "name": "night\u00b7rainy",
+            "start_candidate": 56476,
+            "stop_candidate": 58634,
+            "count": 2158,
+            "start_update": 882.4375,
+            "stop_update": 916.15625
+          },
+          {
+            "regime": 16,
+            "name": "night\u00b7snowy",
+            "start_candidate": 58634,
+            "stop_candidate": 60862,
+            "count": 2228,
+            "start_update": 916.15625,
+            "stop_update": 950.96875
+          },
+          {
+            "regime": 17,
+            "name": "night\u00b7foggy",
+            "start_candidate": 60862,
+            "stop_candidate": 60928,
+            "count": 66,
+            "start_update": 950.96875,
+            "stop_update": 952.0
+          }
+        ]
+      }
+    ],
+    "4": [
+      {
+        "epoch": 0,
+        "candidate_order_sha256": "b168da8f2fbc0baa001edfc003b62623202023453e6ddbce058936129a9e0d2a",
+        "candidate_membership_sha256": "1a3ce47330e4d9de84ef0374ced386d9d3cf037f3cde9fa6232e389e7ac0329e",
+        "dropped_ids": [
+          21792,
+          45779,
+          48469,
+          11602,
+          58513,
+          20898,
+          25437,
+          29733,
+          40558,
+          52306,
+          49433,
+          10327,
+          19696,
+          58920,
+          24093,
+          35793,
+          19511,
+          24503,
+          13344,
+          40606,
+          34581,
+          1155,
+          126,
+          28743,
+          19071,
+          37024,
+          1627
+        ],
+        "candidate_count": 60928,
+        "updates": 952,
+        "mixed_batch_indices": [
+          192,
+          257,
+          374,
+          413,
+          457,
+          458,
+          489,
+          498,
+          516,
+          521,
+          527,
+          528,
+          880,
+          881,
+          882,
+          916,
+          950
+        ],
+        "mixed_batch_count": 17,
+        "segments": [
+          {
+            "regime": 0,
+            "name": "daytime\u00b7clear",
+            "start_candidate": 0,
+            "stop_candidate": 12296,
+            "count": 12296,
+            "start_update": 0.0,
+            "stop_update": 192.125
+          },
+          {
+            "regime": 1,
+            "name": "daytime\u00b7partly cloudy",
+            "start_candidate": 12296,
+            "stop_candidate": 16509,
+            "count": 4213,
+            "start_update": 192.125,
+            "stop_update": 257.953125
+          },
+          {
+            "regime": 2,
+            "name": "daytime\u00b7overcast",
+            "start_candidate": 16509,
+            "stop_candidate": 23973,
+            "count": 7464,
+            "start_update": 257.953125,
+            "stop_update": 374.578125
+          },
+          {
+            "regime": 3,
+            "name": "daytime\u00b7rainy",
+            "start_candidate": 23973,
+            "stop_candidate": 26465,
+            "count": 2492,
+            "start_update": 374.578125,
+            "stop_update": 413.515625
+          },
+          {
+            "regime": 4,
+            "name": "daytime\u00b7snowy",
+            "start_candidate": 26465,
+            "stop_candidate": 29300,
+            "count": 2835,
+            "start_update": 413.515625,
+            "stop_update": 457.8125
+          },
+          {
+            "regime": 5,
+            "name": "daytime\u00b7foggy",
+            "start_candidate": 29300,
+            "stop_candidate": 29347,
+            "count": 47,
+            "start_update": 457.8125,
+            "stop_update": 458.546875
+          },
+          {
+            "regime": 6,
+            "name": "dawn/dusk\u00b7clear",
+            "start_candidate": 29347,
+            "stop_candidate": 31326,
+            "count": 1979,
+            "start_update": 458.546875,
+            "stop_update": 489.46875
+          },
+          {
+            "regime": 7,
+            "name": "dawn/dusk\u00b7partly cloudy",
+            "start_candidate": 31326,
+            "stop_candidate": 31892,
+            "count": 566,
+            "start_update": 489.46875,
+            "stop_update": 498.3125
+          },
+          {
+            "regime": 8,
+            "name": "dawn/dusk\u00b7overcast",
+            "start_candidate": 31892,
+            "stop_candidate": 33029,
+            "count": 1137,
+            "start_update": 498.3125,
+            "stop_update": 516.078125
+          },
+          {
+            "regime": 9,
+            "name": "dawn/dusk\u00b7rainy",
+            "start_candidate": 33029,
+            "stop_candidate": 33353,
+            "count": 324,
+            "start_update": 516.078125,
+            "stop_update": 521.140625
+          },
+          {
+            "regime": 10,
+            "name": "dawn/dusk\u00b7snowy",
+            "start_candidate": 33353,
+            "stop_candidate": 33786,
+            "count": 433,
+            "start_update": 521.140625,
+            "stop_update": 527.90625
+          },
+          {
+            "regime": 11,
+            "name": "dawn/dusk\u00b7foggy",
+            "start_candidate": 33786,
+            "stop_candidate": 33801,
+            "count": 15,
+            "start_update": 527.90625,
+            "stop_update": 528.140625
+          },
+          {
+            "regime": 12,
+            "name": "night\u00b7clear",
+            "start_candidate": 33801,
+            "stop_candidate": 56358,
+            "count": 22557,
+            "start_update": 528.140625,
+            "stop_update": 880.59375
+          },
+          {
+            "regime": 13,
+            "name": "night\u00b7partly cloudy",
+            "start_candidate": 56358,
+            "stop_candidate": 56407,
+            "count": 49,
+            "start_update": 880.59375,
+            "stop_update": 881.359375
+          },
+          {
+            "regime": 14,
+            "name": "night\u00b7overcast",
+            "start_candidate": 56407,
+            "stop_candidate": 56478,
+            "count": 71,
+            "start_update": 881.359375,
+            "stop_update": 882.46875
+          },
+          {
+            "regime": 15,
+            "name": "night\u00b7rainy",
+            "start_candidate": 56478,
+            "stop_candidate": 58635,
+            "count": 2157,
+            "start_update": 882.46875,
+            "stop_update": 916.171875
+          },
+          {
+            "regime": 16,
+            "name": "night\u00b7snowy",
+            "start_candidate": 58635,
+            "stop_candidate": 60862,
+            "count": 2227,
+            "start_update": 916.171875,
+            "stop_update": 950.96875
+          },
+          {
+            "regime": 17,
+            "name": "night\u00b7foggy",
+            "start_candidate": 60862,
+            "stop_candidate": 60928,
+            "count": 66,
+            "start_update": 950.96875,
+            "stop_update": 952.0
+          }
+        ]
+      },
+      {
+        "epoch": 1,
+        "candidate_order_sha256": "0e62a3497d3acc70e90f5386d3fde66ab092089389138a81a534a68034c4e5a9",
+        "candidate_membership_sha256": "cb4ebca8d213da9f093fd6d32b305fc58265d1ea17973e7858e67997a0e0308c",
+        "dropped_ids": [
+          54727,
+          57385,
+          26639,
+          18373,
+          30143,
+          2793,
+          4107,
+          36939,
+          13036,
+          5967,
+          54891,
+          28800,
+          8226,
+          21069,
+          9673,
+          37929,
+          23112,
+          33621,
+          26317,
+          40397,
+          8840,
+          5068,
+          43843,
+          27192,
+          58249,
+          12190,
+          57587
+        ],
+        "candidate_count": 60928,
+        "updates": 952,
+        "mixed_batch_indices": [
+          192,
+          257,
+          374,
+          413,
+          457,
+          458,
+          489,
+          498,
+          521,
+          527,
+          528,
+          880,
+          881,
+          882,
+          916,
+          950
+        ],
+        "mixed_batch_count": 16,
+        "segments": [
+          {
+            "regime": 0,
+            "name": "daytime\u00b7clear",
+            "start_candidate": 0,
+            "stop_candidate": 12294,
+            "count": 12294,
+            "start_update": 0.0,
+            "stop_update": 192.09375
+          },
+          {
+            "regime": 1,
+            "name": "daytime\u00b7partly cloudy",
+            "start_candidate": 12294,
+            "stop_candidate": 16504,
+            "count": 4210,
+            "start_update": 192.09375,
+            "stop_update": 257.875
+          },
+          {
+            "regime": 2,
+            "name": "daytime\u00b7overcast",
+            "start_candidate": 16504,
+            "stop_candidate": 23967,
+            "count": 7463,
+            "start_update": 257.875,
+            "stop_update": 374.484375
+          },
+          {
+            "regime": 3,
+            "name": "daytime\u00b7rainy",
+            "start_candidate": 23967,
+            "stop_candidate": 26457,
+            "count": 2490,
+            "start_update": 374.484375,
+            "stop_update": 413.390625
+          },
+          {
+            "regime": 4,
+            "name": "daytime\u00b7snowy",
+            "start_candidate": 26457,
+            "stop_candidate": 29294,
+            "count": 2837,
+            "start_update": 413.390625,
+            "stop_update": 457.71875
+          },
+          {
+            "regime": 5,
+            "name": "daytime\u00b7foggy",
+            "start_candidate": 29294,
+            "stop_candidate": 29341,
+            "count": 47,
+            "start_update": 457.71875,
+            "stop_update": 458.453125
+          },
+          {
+            "regime": 6,
+            "name": "dawn/dusk\u00b7clear",
+            "start_candidate": 29341,
+            "stop_candidate": 31321,
+            "count": 1980,
+            "start_update": 458.453125,
+            "stop_update": 489.390625
+          },
+          {
+            "regime": 7,
+            "name": "dawn/dusk\u00b7partly cloudy",
+            "start_candidate": 31321,
+            "stop_candidate": 31887,
+            "count": 566,
+            "start_update": 489.390625,
+            "stop_update": 498.234375
+          },
+          {
+            "regime": 8,
+            "name": "dawn/dusk\u00b7overcast",
+            "start_candidate": 31887,
+            "stop_candidate": 33024,
+            "count": 1137,
+            "start_update": 498.234375,
+            "stop_update": 516.0
+          },
+          {
+            "regime": 9,
+            "name": "dawn/dusk\u00b7rainy",
+            "start_candidate": 33024,
+            "stop_candidate": 33349,
+            "count": 325,
+            "start_update": 516.0,
+            "stop_update": 521.078125
+          },
+          {
+            "regime": 10,
+            "name": "dawn/dusk\u00b7snowy",
+            "start_candidate": 33349,
+            "stop_candidate": 33782,
+            "count": 433,
+            "start_update": 521.078125,
+            "stop_update": 527.84375
+          },
+          {
+            "regime": 11,
+            "name": "dawn/dusk\u00b7foggy",
+            "start_candidate": 33782,
+            "stop_candidate": 33797,
+            "count": 15,
+            "start_update": 527.84375,
+            "stop_update": 528.078125
+          },
+          {
+            "regime": 12,
+            "name": "night\u00b7clear",
+            "start_candidate": 33797,
+            "stop_candidate": 56357,
+            "count": 22560,
+            "start_update": 528.078125,
+            "stop_update": 880.578125
+          },
+          {
+            "regime": 13,
+            "name": "night\u00b7partly cloudy",
+            "start_candidate": 56357,
+            "stop_candidate": 56406,
+            "count": 49,
+            "start_update": 880.578125,
+            "stop_update": 881.34375
+          },
+          {
+            "regime": 14,
+            "name": "night\u00b7overcast",
+            "start_candidate": 56406,
+            "stop_candidate": 56477,
+            "count": 71,
+            "start_update": 881.34375,
+            "stop_update": 882.453125
+          },
+          {
+            "regime": 15,
+            "name": "night\u00b7rainy",
+            "start_candidate": 56477,
+            "stop_candidate": 58635,
+            "count": 2158,
+            "start_update": 882.453125,
+            "stop_update": 916.171875
+          },
+          {
+            "regime": 16,
+            "name": "night\u00b7snowy",
+            "start_candidate": 58635,
+            "stop_candidate": 60862,
+            "count": 2227,
+            "start_update": 916.171875,
+            "stop_update": 950.96875
+          },
+          {
+            "regime": 17,
+            "name": "night\u00b7foggy",
+            "start_candidate": 60862,
+            "stop_candidate": 60928,
+            "count": 66,
+            "start_update": 950.96875,
+            "stop_update": 952.0
+          }
+        ]
+      }
+    ]
+  },
+  "boundary_policy": "concatenate blocks then batch; retain IID membership and dropped tail"
+}

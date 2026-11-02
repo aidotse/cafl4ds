@@ -11,6 +11,7 @@ threads: 4
 seed: 0
 seeds: [0, 1, 2, 3, 4]
 epochs: 2
+stream_order: iid
 max_steps: null
 batch_size: 64
 eval_every: 50

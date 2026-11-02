@@ -683,5 +683,10 @@
     "initial_fixed_panel_features": true,
     "initial_token_entropy": true
   },
-  "phase1_exit_gate_evaluated": false
+  "phase1_exit_gate_evaluated": false,
+  "post_hoc_load_analysis": {
+    "artifact": "load_statistics.json",
+    "source_sha256": "90c39a6016546a06c85368f16ba9a9861e491b3385ba2cbaca2b59e3ae68023a",
+    "analysis_type": "Exploratory load analysis added 2026-10-27; primary outcomes unchanged"
+  }
 }

@@ -13,6 +13,7 @@ from typing import Any
 import numpy as np
 
 from cafl4ds.routing_experiment import ARMS, digest_file, write_json
+from cafl4ds.routing_loads import load_statistics
 
 
 def records(path: Path) -> Iterator[dict[str, Any]]:
@@ -141,21 +142,107 @@ def analyze(output: Path) -> dict[str, Any]:
         training[(seed, arm)] = list(records(root / "training.jsonl"))
     _write_csv(directory / "acceptance_rates.csv", rates)
     grouped = _group_means(endpoints)
+    loads = load_statistics(trajectories, training)
+    write_json(directory / "load_statistics.json", loads)
+    _write_csv(
+        directory / "load_statistics.csv",
+        [{**row, "inactive_steps": json.dumps(row["inactive_steps"])} for row in loads["per_seed"]],
+    )
     report = {
         "arms": grouped,
         "contrasts": comparison["contrasts"],
         "protocol_hash": protocol["protocol_hash"],
         "replicate_unit": "training seed",
         "analysis_source_sha256": digest_file(Path(__file__)),
+        "load_statistics": loads,
     }
     write_json(directory / "summary.json", report)
     shutil.copyfile(Path(__file__), directory / "routing_analysis.py")
+    shutil.copyfile(Path(__file__).with_name("routing_loads.py"), directory / "routing_loads.py")
     _plot_diagnostics(directory, trajectories, training)
     _plot_experts(directory, trajectories)
+    _plot_load_balance(directory, trajectories)
     _plot_acceptance(directory, rates)
     _plot_selection_entropy(output, directory, sorted({r["seed"] for r in runs}))
     _write_report(directory, grouped, comparison["contrasts"], protocol)
+    _append_load_report(directory, loads)
     return report
+
+
+def _append_load_report(directory: Path, loads: dict[str, Any]) -> None:
+    """Add load measures to the generated report without changing primary outcome contrasts."""
+    lines = [
+        "",
+        "## Expert-load analysis (post-hoc)",
+        "",
+        "Means ± sample SD across training seeds. Equal use of four experts gives CV=0 and load entropy=1.",
+        "The trajectory average integrates recorded steps after initialization; it is an interpolated summary.",
+        "",
+        "| Layer | Filter | Endpoint maximum share (%) | Endpoint CV | Endpoint load entropy | Trajectory-mean CV |",
+        "| -- | -- | --: | --: | --: | --: |",
+    ]
+    for layer, arms in loads["summary"].items():
+        for arm in ARMS:
+            stats = arms[arm]
+            cells = [
+                _format_stat(stats, key, scale, digits)
+                for key, scale, digits in (
+                    ("endpoint_max_share", 100, 1),
+                    ("endpoint_cv", 1, 3),
+                    ("endpoint_entropy", 1, 3),
+                    ("time_mean_cv", 1, 3),
+                )
+            ]
+            lines.append(f"| {layer} | {arm} | " + " | ".join(cells) + " |")
+    lines += [
+        "",
+        "Full per-seed, masked-training and paired load contrasts are in load_statistics.csv/json.",
+        "Hard assignment balance differs from both per-token probability entropy and pooled soft probability mass.",
+        "The clean full-image panel and noisy masked training forwards differ in context, augmentation and noise.",
+        "Their contrast does not isolate which of those differences causes the load change.",
+        "",
+        "![Expert-load concentration](load_balance.png)",
+    ]
+    with (directory / "results.md").open("a") as stream:
+        stream.write("\n".join(lines) + "\n")
+
+
+def _plot_load_balance(directory: Path, traces: dict[tuple[int, str], list[dict[str, Any]]]) -> None:
+    """Compare label-invariant load concentration while retaining original per-seed stacked charts."""
+    import matplotlib.pyplot as plt  # noqa: PLC0415
+
+    layers = sorted(
+        key.removesuffix("_load")
+        for key, value in next(iter(traces.values()))[0].items()
+        if key.endswith("_load") and isinstance(value, list)
+    )
+    fig, axes = plt.subplots(2, len(layers), squeeze=False, figsize=(6 * len(layers), 7), constrained_layout=True)
+    colors = {"random": "#566573", "high": "#c0392b", "low": "#2471a3"}
+    for col, layer in enumerate(layers):
+        for arm in ARMS:
+            selected = [[r for r in rows if r["step"] > 0] for (_, policy), rows in traces.items() if policy == arm]
+            steps = [r["step"] for r in selected[0]]
+            for row, metric in enumerate(("cv", "max_share")):
+                probabilities = np.array([[r[layer + "_load"] for r in rows] for rows in selected])
+                values = probabilities.std(-1) / probabilities.mean(-1) if metric == "cv" else probabilities.max(-1)
+                mean = values.mean(0)
+                axes[row, col].plot(steps, mean, color=colors[arm], label=arm)
+                if len(values) > 1:
+                    sem = values.std(0, ddof=1) / np.sqrt(len(values))
+                    axes[row, col].fill_between(steps, mean - sem, mean + sem, color=colors[arm], alpha=0.15)
+        experts = len(selected[0][0][layer + "_load"])
+        axes[0, col].set(title=f"{layer}: load CV", ylim=(0, np.sqrt(experts - 1)), ylabel="Population SD / mean load")
+        axes[1, col].axhline(1 / experts, color="black", linestyle=":", linewidth=1)
+        axes[1, col].set(
+            title=f"{layer}: largest expert share", ylim=(1 / experts, 1), ylabel="Fraction of panel patches"
+        )
+        for ax in axes[:, col]:
+            ax.set_xlabel("Optimizer updates (step zero excluded)")
+            ax.grid(alpha=0.2)
+    axes[0, 0].legend()
+    fig.suptitle("Clean full-image expert loads: mean ±1 SEM across training seeds")
+    fig.savefig(directory / "load_balance.png", dpi=160)
+    plt.close(fig)
 
 
 def _plot_diagnostics(

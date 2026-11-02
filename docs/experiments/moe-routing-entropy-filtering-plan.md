@@ -1,8 +1,12 @@
-# MoE-MAE routing entropy filtering: experiment design
+# WP-M0.1: MoE-MAE routing entropy filtering design
+
+This subexperiment develops and checks the selection vehicle within [WP-M0](latest-results/WP-M0.md). The matched
+regime-blocked follow-up is [WP-M0.2](phase1/WP-M0.2.md). The planned WP-M1 specialization and WP-M2 health-calibration
+packages remain separate goals.
 
 Design agreed and implementation executed on 19 October 2026. This document records the protocol; experiment results
-belong in [WP-M1](phase1/WP-M1.md). The implementation adds the requested full-softmax top-1 gate, entropy admission,
-identity-preserving audit records, and a resumable paired experiment runner.
+belong in [WP-M0.1](phase1/WP-M0.1.md). The implementation adds the requested full-softmax top-1 gate, entropy
+admission, identity-preserving audit records, and a resumable paired experiment runner.
 
 ## Confirmed decisions and remaining questions
 
@@ -57,7 +61,7 @@ feedback between admission, routing, and learning. A broader novelty review is n
 - **The current top-1 implementation must change before this study.** It normalizes selected logits over selected
     experts only, making the top-1 weight identically one. The agreed full-softmax gate preserves reconstruction
     gradients to router parameters. This also scales the expert branch by its selected probability. Apply the same gate
-    to every arm and identify the new semantics in configs/checkpoints; WP-M0 used the earlier gate.
+    to every arm and identify the new semantics in configs/checkpoints; WP-M0.0 used the earlier gate.
 - **Entropy can affect update strength as well as the data diet.** More diffuse distributions can have smaller selected
     probabilities, attenuating expert outputs and gradients. Log selected probability and expert-branch norms so an
     effect is not automatically interpreted as selecting more informative images. At initialization, entropy rankings
@@ -135,7 +139,7 @@ no-capacity-limit/no-token-dropping dispatch; matching gate weights does not imp
 | High-entropy-half | Largest pre-update U_i values | B/2 |
 | Low-entropy-half | Smallest pre-update U_i values | B/2 |
 
-Use an even candidate batch size; provisional B=64 gives 32 training images per update, matching the earlier WP-M0
+Use an even candidate batch size; provisional B=64 gives 32 training images per update, matching the earlier WP-M0.0
 training batch size. Drop the final incomplete candidate batch in this stationary study and report the excluded count.
 Resolve entropy ties by a reproducible random permutation from a dedicated tie-breaking generator. Reject non-finite
 scores as a run failure rather than silently changing the admission rule.
@@ -170,13 +174,13 @@ bias, but must not enter the selector or MAE loss. Persist image IDs, content/or
 membership. Keep clips disjoint if using multiple frames per clip. BDD100K provides varied scene, weather, and
 time-of-day conditions ([dataset paper](https://arxiv.org/abs/1805.04687)).
 
-The [WP-M0 results](WP-M0-warm-well-mae-bdd-results.md) used 61,555 usable training-split images across four retained
+The [WP-M0.0 results](WP-M0-warm-well-mae-bdd-results.md) used 61,555 usable training-split images across four retained
 scenes, including 200 reserved support/query images. This is a restricted usable pool, not all 100,000 nominal dataset
 images. Recheck counts for this study and declare whether those scene restrictions are retained. Use larger fixed
 evaluation panels if feasible; 100 query images give limited precision. Report natural-frequency and balanced scene
 performance separately, and audit acceptance by scene, weather, time of day, and their sufficiently populated groups.
 
-WP-M0 supplies engineering references and measurement recipes, not initial weights for this from-scratch study.
+WP-M0.0 supplies engineering references and measurement recipes, not initial weights for this from-scratch study.
 
 Architecture: existing 64 px MAE, patch size 8, four token-routed experts in blocks 2/3, dense decoder, mask ratio 0.75,
 existing balancing weights and auxiliary coefficient 0.01. These establish small-scale dynamics; confirm any substantive
@@ -185,7 +189,7 @@ result at a larger resolution before interpreting semantic specialization.
 Use repeated epochs with an explicit common epoch/update budget and a fresh shuffle each epoch. With N images and
 candidate batch size 64, each complete epoch has floor(N/64) updates. Report candidate exposures, accepted exposures,
 and unique accepted images separately: an image rejected in one epoch can be accepted in another. Do not silently reuse
-WP-M0's 2,000-update cap as an epoch count. Pin the LR recipe across arms without arm-specific tuning or boundary
+WP-M0.0's 2,000-update cap as an epoch count. Pin the LR recipe across arms without arm-specific tuning or boundary
 restarts. Use the pilot to set and freeze a common horizon before measured seeds. Single-pass experiments are a later
 restriction with their own interpretation.
 
@@ -234,9 +238,9 @@ loss plus starvation supports a harmful association; neither alone proves a spec
     with balancing disabled on a controlled nondegenerate example, and verify the forward output equals the selected
     probability times its expert output. This is the first implementation prerequisite.
 1. **Add reusable metrics.** Put entropy reduction in `cafl4ds/measurements.py`, using `MoEViTEncoder.routing` rather
-    than duplicating the model. Reuse the mathematical convention from WP-M0's runner, but move reusable logic into the
-    package. Return per-token, per-image, and per-layer values explicitly. Raise clear errors for dense/image-routed
-    encoders when a token-routing study is requested.
+    than duplicating the model. Reuse the mathematical convention from WP-M0.0's runner, but move reusable logic into
+    the package. Return per-token, per-image, and per-layer values explicitly. Raise clear errors for
+    dense/image-routed encoders when a token-routing study is requested.
 1. **Add selectors and audit output.** Implement exact random-half and entropy-rank admission behind `Filter.select`,
     configured through Hydra. The current filter interface returns only image tensors and `StreamBatch` carries no
     sample IDs. Add a backward-compatible way to retain stable sample IDs and emit a detached selection record with

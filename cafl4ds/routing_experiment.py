@@ -1,7 +1,7 @@
 """Paired, resumable MoE-MAE image admission experiments and their analysis.
 
-Training sees images and stable integer IDs only. Scene/regime attributes are used
-for fixed evaluation panels and post-decision audits, never to select training data.
+Training sees images and stable integer IDs only. Regime labels may construct a
+blocked stream; labels never enter admission scores or the MAE loss.
 """
 
 from __future__ import annotations
@@ -34,6 +34,7 @@ from cafl4ds.filters.base import FilterContext
 from cafl4ds.filters.routing_entropy import RoutingEntropyHalf, SelectionRecord
 from cafl4ds.health_trust import Backbone, annotate
 from cafl4ds.models.vit import FeedForwardOutput, MoEMlp, MoEViTEncoder
+from cafl4ds.routing_streams import audit_regime_order, regime_blocked_order
 from cafl4ds.ssl.mae import MAE
 
 GATE_SEMANTICS = "full_softmax_before_topk_no_renormalization_v1"
@@ -118,6 +119,7 @@ class CachedRoutingCorpus:
         self.regimes = torch.tensor(self.metadata["era_key"], dtype=torch.long)
         self.scene_names = {int(k): v for k, v in self.metadata["canary_names"].items()}
         self.regime_names = {int(k): v for k, v in self.metadata["regime_names"].items()}
+        self.regime_order = self.metadata["regime_order"]
         self.fingerprint = {"directory": str(directory_path), **complete}
         if len(set(self.names)) != len(self.images) or len(self.labels) != len(self.images):
             raise ValueError("Cache identities must be unique and aligned with images.")
@@ -134,6 +136,7 @@ class SyntheticRoutingCorpus:
         self.images, self.labels, self.regimes = data.images, data.canary, data.era_key
         self.names = [f"synthetic-{i}" for i in range(len(self.images))]
         self.scene_names, self.regime_names = data.canary_names, data.regime_names
+        self.regime_order = data.regime_order
         self.metadata = {"synthetic": True, "n_images": len(self.images)}
         self.fingerprint = {"synthetic": tensor_hash(self.images)}
 
@@ -166,6 +169,48 @@ def epoch_order(train: list[int], seed: int, epoch: int) -> torch.Tensor:
     """Rebuild a full seed/epoch permutation independently of all model and selection RNG."""
     generator = torch.Generator().manual_seed(keyed_seed("data", seed, epoch))
     return torch.tensor(train)[torch.randperm(len(train), generator=generator)]
+
+
+def stream_epoch_order(train: list[int], seed: int, epoch: int, corpus: Corpus, cfg: DictConfig) -> torch.Tensor:
+    """Change only ordering: the retained candidate IDs and excluded tail match the IID control."""
+    order = epoch_order(train, seed, epoch)
+    if cfg.get("stream_order", "iid") == "iid":
+        return order
+    return regime_blocked_order(order, corpus.regimes, corpus.regime_order, int(cfg.batch_size))
+
+
+def write_stream_manifest(cfg: DictConfig, corpus: Corpus, panels: dict[str, list[int]], output: Path) -> None:
+    """Freeze a regime walk before training, verifying membership against each IID epoch."""
+    if cfg.get("stream_order", "iid") == "iid":
+        return
+    seeds: dict[str, Any] = {}
+    for seed in cfg.seeds:
+        epochs = []
+        for epoch in range(int(cfg.epochs)):
+            blocked = stream_epoch_order(panels["train"], int(seed), epoch, corpus, cfg)
+            shuffled = epoch_order(panels["train"], int(seed), epoch)
+            retained = len(blocked) // int(cfg.batch_size) * int(cfg.batch_size)
+            if not torch.equal(blocked[:retained].sort().values, shuffled[:retained].sort().values):
+                raise AssertionError("Regime blocking changed the candidate membership.")
+            if not torch.equal(blocked[retained:], shuffled[retained:]):
+                raise AssertionError("Regime blocking changed the excluded candidate tail.")
+            epochs.append(
+                {
+                    "epoch": epoch,
+                    **audit_regime_order(blocked, corpus.regimes, corpus.regime_names, int(cfg.batch_size)),
+                }
+            )
+        seeds[str(seed)] = epochs
+    write_json(
+        output / "stream_manifest.json",
+        {
+            "order": "regime_blocked",
+            "regime_order": corpus.regime_order,
+            "regime_names": corpus.regime_names,
+            "seeds": seeds,
+            "boundary_policy": "concatenate blocks then batch; retain IID membership and dropped tail",
+        },
+    )
 
 
 def paired_views(
@@ -564,7 +609,7 @@ def run_arm(  # noqa: C901 - one checkpoint transaction owns training, evaluatio
         while step < total_steps:
             epoch, offset = divmod(step, per_epoch)
             if epoch != current_epoch:
-                order, current_epoch = epoch_order(panels["train"], seed, epoch), epoch
+                order, current_epoch = stream_epoch_order(panels["train"], seed, epoch, corpus, cfg), epoch
             ids = order[offset * int(cfg.batch_size) : (offset + 1) * int(cfg.batch_size)]
             images = corpus.images[ids]
             synchronize(device)
@@ -689,6 +734,8 @@ def _validate_config(cfg: DictConfig) -> None:
         raise ValueError("Require unique training seeds and at least one fixed evaluation mask draw.")
     if str(cfg.device) == "mps" and not torch.backends.mps.is_available():
         raise RuntimeError("MPS is unavailable in this execution context; request local GPU access or select CPU.")
+    if cfg.get("stream_order", "iid") not in {"iid", "regime_blocked"}:
+        raise ValueError("stream_order must be iid or regime_blocked.")
 
 
 def run_experiment(cfg: DictConfig, output: Path) -> dict[str, Any]:
@@ -712,6 +759,7 @@ def run_experiment(cfg: DictConfig, output: Path) -> dict[str, Any]:
         Path(__file__).parent / "data" / "streams.py",
         Path(__file__).parent / "data" / "attributes.py",
         Path(__file__).with_name("health_trust.py"),
+        Path(__file__).with_name("routing_streams.py"),
     ]
     source_hashes = {str(path.relative_to(Path(__file__).parent)): digest_file(path) for path in source_files}
     protocol = {
@@ -731,6 +779,7 @@ def run_experiment(cfg: DictConfig, output: Path) -> dict[str, Any]:
         raise ValueError("Output contains a different frozen protocol. Use a fresh directory.")
     write_json(protocol_path, {**protocol, "protocol_hash": protocol_hash})
     OmegaConf.save(cfg, output / "config.yaml", resolve=True)
+    write_stream_manifest(cfg, corpus, panels, output)
     write_json(
         output / "membership.json",
         {

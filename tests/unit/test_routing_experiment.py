@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 import json
 from pathlib import Path
 
@@ -20,6 +21,7 @@ from cafl4ds.routing_experiment import (
     run_arm,
     run_experiment,
 )
+from cafl4ds.routing_order_analysis import compare_ordering
 
 
 def _config() -> DictConfig:
@@ -81,16 +83,20 @@ def test_shared_images_keep_views_and_masks_despite_different_selection_position
 
 
 @pytest.mark.parametrize(
-    "device",
+    "device,stream_order",
     [
-        "cpu",
-        pytest.param("mps", marks=pytest.mark.skipif(not torch.backends.mps.is_available(), reason="MPS unavailable")),
+        ("cpu", "iid"),
+        ("cpu", "regime_blocked"),
+        pytest.param(
+            "mps", "iid", marks=pytest.mark.skipif(not torch.backends.mps.is_available(), reason="MPS unavailable")
+        ),
     ],
 )
-def test_exact_checkpoint_resume_matches_uninterrupted_training(tmp_path: Path, device: str) -> None:
+def test_exact_checkpoint_resume_matches_uninterrupted_training(tmp_path: Path, device: str, stream_order: str) -> None:
     """Restoring selection and optimizer state reproduces learned weights and scientific endpoint metrics."""
     cfg = _config()
     cfg.device = device
+    cfg.stream_order = stream_order
     cfg.threads = 4 if device == "cpu" else 1
     torch.set_num_threads(int(cfg.threads))
     corpus = instantiate(cfg.source)
@@ -111,9 +117,15 @@ def test_exact_checkpoint_resume_matches_uninterrupted_training(tmp_path: Path, 
     assert (tmp_path / "full/training.jsonl").read_text() == (tmp_path / "resume/training.jsonl").read_text()
 
 
-def test_three_arms_share_candidate_order_and_only_train_accepted_images(tmp_path: Path) -> None:
+@pytest.mark.parametrize("stream_order", ["iid", "regime_blocked"])
+def test_three_arms_share_candidate_order_and_only_train_accepted_images(tmp_path: Path, stream_order: str) -> None:
     """All requested arms write complete trajectories and use exactly half the label-free candidates."""
-    comparison = run_experiment(_config(), tmp_path)
+    cfg = _config()
+    cfg.stream_order = stream_order
+    comparison = run_experiment(cfg, tmp_path)
+    if stream_order == "regime_blocked":
+        manifest = json.loads((tmp_path / "stream_manifest.json").read_text())
+        assert manifest["order"] == "regime_blocked" and len(manifest["seeds"]) == 2
     assert len(comparison["runs"]) == 6
     for seed in (0, 1):
         orders, hashes = [], []
@@ -148,5 +160,40 @@ def test_three_arms_share_candidate_order_and_only_train_accepted_images(tmp_pat
         "selection_bias.png",
         "selection_entropy.png",
         "l1_expert_loads.png",
+        "load_balance.png",
+        "load_statistics.csv",
+        "load_statistics.json",
     ):
         assert (tmp_path / "analysis" / name).is_file()
+
+
+def test_regime_vs_iid_comparison_checks_actual_membership_and_renders(tmp_path: Path) -> None:
+    """Two complete, matched small ensembles exercise the saved-data comparison without a BDD dependency."""
+    cfg = _config()
+    cfg.seeds = [0]
+    cfg.stream_order = "iid"
+    run_experiment(cfg, tmp_path / "iid")
+    cfg.stream_order = "regime_blocked"
+    run_experiment(cfg, tmp_path / "blocked")
+    result = compare_ordering(tmp_path / "blocked", tmp_path / "iid")
+    assert result["verification"]["matched_actual_candidate_membership_each_epoch"]
+    for name in (
+        "order_comparison.json",
+        "order_comparison.csv",
+        "order_comparison.png",
+        "stream_timeline.png",
+        "regime_acceptance.csv",
+    ):
+        assert (tmp_path / "blocked" / "analysis" / name).is_file()
+    with (tmp_path / "blocked" / "analysis" / "regime_acceptance.csv").open() as stream:
+        admissions = list(csv.DictReader(stream))
+    for arm in ("random", "high", "low"):
+        group = [row for row in admissions if row["arm"] == arm]
+        assert sum(int(row["accepted"]) for row in group) * 2 == sum(int(row["candidate"]) for row in group)
+        assert all(0 <= float(row["rate"]) <= 1 for row in group)
+    path = tmp_path / "blocked" / "seed_0" / "random" / "selection.jsonl"
+    rows = [json.loads(line) for line in path.read_text().splitlines()]
+    rows[0]["sample_ids"][0] = -1
+    path.write_text("\n".join(json.dumps(row) for row in rows) + "\n")
+    with pytest.raises(ValueError, match="stream manifest"):
+        compare_ordering(tmp_path / "blocked", tmp_path / "iid")

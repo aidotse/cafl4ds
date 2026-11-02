@@ -1,6 +1,10 @@
-# WP-M1: routing entropy filtering during MoE-MAE training
+# WP-M0.1: routing entropy filtering during MoE-MAE training
 
 ## Motivation
+
+This is a **WP-M0 subexperiment** that validates the live-selection vehicle and supplies a shuffled reference; see the
+[WP-M0 summary](../latest-results/WP-M0.md). It does not fulfill the planned WP-M1 regime-specialization study or WP-M2
+health-signal calibration.
 
 The selector changes the images the model learns from, and the adapting model changes future selection scores. This
 stationary BDD reference measures how that feedback affects routing and representation quality. It addresses the
@@ -48,9 +52,10 @@ exposures. These are post-decision attribute audits, not label-based selection. 
 remain complementary after their models diverge.
 
 At the endpoint every expert receives patch assignments on the fixed reference panel and in the last 200 training
-updates. Earlier full-image loads show temporary concentration, especially under high-entropy selection. RankMe is lower
-under entropy filtering than random at the endpoint, but that movement alone does not establish collapse or
-representation damage. Scene-probe uncertainty and the trust annotations remain relevant to that interpretation.
+updates. This establishes activity, not balanced allocation: some high-entropy runs retain a majority expert at the
+endpoint, as quantified in the load analysis below. RankMe is lower under entropy filtering than random at the endpoint,
+but that movement alone does not establish collapse or representation damage. Scene-probe uncertainty and the trust
+annotations remain relevant to that interpretation.
 
 The mean full-versus-four-mask-average rank correlations are 0.875, 0.965 and 0.911 for random, high and low. The
 corresponding selected-half overlaps are 88.1%, 95.0% and 87.5%. This supports full-image scoring as a useful reference
@@ -67,6 +72,78 @@ Intervals condition on one fixed data/evaluation split and describe training-see
 variation over possible evaluation panels. Five seeds, small images and a short horizon limit the conclusion. A
 frozen-scoring ablation is still needed to isolate feedback from a different fixed data diet.
 
+### Expert loads: layers 2 and 3
+
+*Post-hoc analysis added 27 October 2026; the original training protocol and primary contrasts are unchanged.*
+
+The [layer 2](artifacts/WP-M1/l2_expert_loads.png) and [layer 3](artifacts/WP-M1/l3_expert_loads.png) charts show **hard
+top-1 patch assignment shares** on the same 200 full images at every evaluation: 12,800 patch assignments per layer,
+excluding CLS. Indices 2 and 3 are zero-based encoder blocks. These are clean, unmasked diagnostic forwards, rather than
+the noisy masked forwards used for training. Equal use would assign 25% of patches to each of four experts.
+
+To summarize concentration without averaging arbitrary expert identities, compute the largest expert share, load CV
+(population SD divided by mean share), and normalized entropy of the hard assignment histogram. Balanced loads have CV=0
+and load entropy=1. Compute each scalar within a seed before averaging across seeds. The following values are seed mean
+± sample SD; **largest share does not refer to the same expert ID across seeds or layers**.
+
+| Layer | Filter | Endpoint largest share (%) | Endpoint load CV | Endpoint load entropy | Trajectory-mean CV |
+| -- | -- | -: | -: | -: | -: |
+| 2 | Random | 39.0 ± 4.0 | 0.359 ± 0.085 | 0.953 ± 0.023 | 0.376 ± 0.014 |
+| 2 | High entropy | 48.5 ± 13.2 | 0.623 ± 0.250 | 0.854 ± 0.088 | 0.669 ± 0.097 |
+| 2 | Low entropy | 39.1 ± 7.2 | 0.430 ± 0.136 | 0.923 ± 0.047 | 0.427 ± 0.047 |
+| 3 | Random | 33.3 ± 2.2 | 0.303 ± 0.113 | 0.958 ± 0.032 | 0.370 ± 0.059 |
+| 3 | High entropy | 43.6 ± 9.3 | 0.505 ± 0.172 | 0.906 ± 0.059 | 0.687 ± 0.142 |
+| 3 | Low entropy | 34.6 ± 4.7 | 0.314 ± 0.147 | 0.954 ± 0.037 | 0.461 ± 0.051 |
+
+Trajectory means use trapezoidal integration from update 50 to 1,904. This excludes the shared random-initialization
+read at zero and weights the 41 post-initialization observations by their step spacing. It is an interpolated summary,
+not a continuous observation between checkpoints. Brackets below are descriptive 95% paired t intervals across five
+seeds. These additional load contrasts are exploratory and are not multiplicity-adjusted.
+
+| Contrast | Layer 2 trajectory-mean CV difference | Layer 3 trajectory-mean CV difference |
+| -- | -: | -: |
+| High minus random | +0.293 [+0.172, +0.415] | +0.316 [+0.110, +0.523] |
+| Low minus random | +0.051 [−0.016, +0.118] | +0.090 [−0.005, +0.185] |
+
+**High-entropy admission increases concentration over the observed training trajectory in every seed, in both layers.**
+It is not just one isolated spike. Endpoint estimates are less settled: the paired endpoint-CV intervals include zero in
+both layers (layer 2: −0.133 to +0.663; layer 3: −0.064 to +0.469). Low-entropy admission's differences from random
+remain uncertain for both trajectory-mean and endpoint CV.
+
+The charts also show why a single endpoint is insufficient. The largest post-initialization concentration under
+high-entropy admission is 81.4% in layer 2 (seed 3, update 200) and **91.3% in layer 3** (seed 4, update 350). The
+corresponding largest observed peaks across random runs are 64.7% and 62.8%; low-entropy peaks reach 74.3% and 81.0%.
+These are descriptive maxima across sampled checkpoints, not independent replicates or measured durations. Layer 3 has a
+more balanced mean endpoint than layer 2 in every arm, but can still have the stronger transient concentration.
+
+Concentration does not always disappear by the end. High-entropy runs finish with one expert holding a majority in two
+of five layer-2 runs (seeds 1 and 3) and one layer-3 run (seed 3). Low entropy has one layer-2 endpoint majority; random
+has none in either layer. Nevertheless, all four experts have positive endpoint loads. Only two post-initialization
+panel reads contain an expert with zero patches: high-entropy seed 0, layer 3, update 150; and high-entropy seed 3,
+layer 2, update 200. The same experts receive panel patches again later. The checkpoint cadence does not establish how
+long either zero-load episode lasted.
+
+**Actual training assignments are much more evenly distributed.** Across all recorded updates, no expert has zero
+visible-patch assignments in either layer. The mean per-update training CVs are 0.104/0.126/0.101 in layer 2 and
+0.107/0.123/0.105 in layer 3 for random/high/low. Pooling counts over the whole run gives mean CVs of 0.010/0.030/0.005
+and 0.014/0.020/0.011 respectively. Even the largest pooled training share in any seed/arm/layer is below 28%. Pooling
+can hide temporal changes, which is why both pooled and per-update statistics are retained. Each training update
+contributes 512 visible-patch assignments per layer; the diagnostic panel contributes 12,800. Batch sampling itself
+contributes to variation in the per-update CV. The auxiliary loss regularizes training-batch soft importance and
+expected noisy load, including CLS, rather than the clean panel's deterministic patch counts. Masking, augmentation,
+accepted-image composition and router noise all differ from the clean panel forwards; this comparison does not isolate
+their individual effects. It therefore does not establish that batch balancing failed or that an expert stopped
+learning.
+
+The load charts answer a different question from the selection entropy. At the high-entropy seed-1 layer-2 endpoint, one
+expert receives 63.8% of hard assignments but only 28.6% of mean soft probability mass. Diffuse probabilities can still
+produce a persistent argmax winner. High mean per-token router entropy is therefore compatible with a skewed hard-load
+histogram. Unequal loads also do not establish semantic specialization: the charts count allocations, not what each
+expert represents. Higher clean-panel imbalance co-occurs with the reconstruction penalty, but this study does not
+establish that the imbalance caused the penalty.
+
+![Label-invariant load concentration across seeds](artifacts/WP-M1/load_balance.png)
+
 ![Learning and routing trajectories](artifacts/WP-M1/learning_curves.png)
 
 ![Candidate versus admitted entropy](artifacts/WP-M1/selection_entropy.png)
@@ -81,7 +158,7 @@ over MoE layers and patch tokens. Full-image scoring is deterministic; masked-vi
 
 The top-1 gate retains the selected expert's full-softmax probability as its output weight, without renormalization.
 Reconstruction therefore trains the router. Batch importance/load balancing remains active with auxiliary coefficient
-0.01. The earlier WP-M0 selected-only-softmax gate had different semantics; its numbers are not a matched control.
+0.01. The earlier WP-M0.0 selected-only-softmax gate had different semantics; its numbers are not a matched control.
 
 Each arm starts from the same random encoder and decoder within each seed. Seeds 0–4 are independent training
 replicates. The architecture uses 64 px images, patch size 8, width 96, depth 4, four experts in encoder blocks 2/3, a
@@ -93,7 +170,7 @@ accepted images. Each complete epoch has 952 updates and drops 27 trailing candi
 updates, scores 121,856 candidate exposures, and trains on 60,928 accepted exposures. An image rejected in one epoch can
 be admitted in the next. The primary device is CPU with four threads, selected by throughput before measured runs.
 
-The source is the verified WP-M0 BDD train cache: 61,555 usable images with defined scene, weather and time-of-day
+The source is the verified WP-M0.0 BDD train cache: 61,555 usable images with defined scene, weather and time-of-day
 attributes, retaining four scenes with at least 100 images. These restrictions are shared across arms. The pool is not
 the nominal full 100,000-image dataset. Reserve 50 support and 50 query images per scene, plus 200 independent
 natural-frequency query images, using split seed 1729. All three panels are excluded from training.
@@ -124,6 +201,9 @@ original batch size 64 and two complete epochs. Initial weights and complete can
 all three arms for every measured seed.
 
 ## Artifacts and reproduction
+
+This subexperiment was previously documented as WP-M1. Saved artifacts retain `artifacts/WP-M1/` and the `WP-M1-v1`
+schema identifier for traceability; those historical names refer to WP-M0.1, not the planned WP-M1 package.
 
 The [design](../moe-routing-entropy-filtering-plan.md) records decisions and interpretive limits. The runner is
 [`scripts/run_routing_experiment.py`](../../../scripts/run_routing_experiment.py), with business logic in
@@ -161,8 +241,13 @@ The tracked, compact artifact set is in [`artifacts/WP-M1/`](artifacts/WP-M1/):
     routing, performance, mask sensitivity, accepted-image coverage and component timings.
 - [`acceptance_rates.csv`](artifacts/WP-M1/acceptance_rates.csv): per-seed scene/weather/time acceptance counts and
     rates.
+- [`load_statistics.csv`](artifacts/WP-M1/load_statistics.csv) and
+    [`load_statistics.json`](artifacts/WP-M1/load_statistics.json): post-hoc per-seed/per-layer concentration,
+    trajectory summaries, masked-training counts and paired load contrasts. The JSON records definitions and the
+    analysis-source hash. Reproduce with the existing analyzer; no new training is needed.
 - Learning, selection-entropy, selection-bias and gate-diagnostic figures, plus per-seed expert-load figures for
     [block 2](artifacts/WP-M1/l2_expert_loads.png) and [block 3](artifacts/WP-M1/l3_expert_loads.png).
+    [`load_balance.png`](artifacts/WP-M1/load_balance.png) summarizes concentration without aligning expert IDs.
 
 ## Interpretation limits
 

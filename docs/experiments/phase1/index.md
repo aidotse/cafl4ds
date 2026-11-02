@@ -165,14 +165,21 @@ rest still show as single study rows.
 | P1.5 | Initialization × pressure regime map + downstream corroboration | Motivation: two cross-cutting checks the exit gate needs. First, the coupling may be **regime-specific** — from-scratch is degradation-sensitive, while a fully-pretrained backbone sits in a good basin and can *mask* collapse into a false negative; sweep init {from-scratch, lightly-pretrained, fully-pretrained} against the pressure knobs (correlation, LR, model size, horizon, replay on/off) to locate onset and report the init-dependence *as* a finding (failing to form features vs. eroding them). The init/depth dependence is grounded in the **tunnel effect** (Masarczyk 2023): overparameterization + few classes + low resolution lengthen the compressing "tunnel", so from-scratch toy regimes both degrade OOD more and amplify benign rank drop — reinforcing why init is swept and STL-10 is smoke-test only. Second, **downstream corroboration** — confirm the health-metric degradation tracks a real downstream drop (probe / kNN / few-shot), so we have moved the patient, not just the thermometer ([risks.md](../../project-plan/risks.md)). Read a metric **suite**, not one needle: RankMe is necessary-but-not-sufficient (Garrido 2022), and a 260-model comparison (Arputharaj et al., TMLR 2026) finds **intrinsic dimension** the most reliable single label-free downstream proxy — with a concrete estimator in IdEst (ICML 2026) — a candidate corroboration signal, though its reliability too is moderated by architecture/objective. For MAE specifically, weight the **fine-tune** probe: label-free probing can understate MAE forgetting (fine-tuning reflects it better), so kNN / linear alone may read false health. Cross-cuts P1.3 / P1.4 rather than standing alone. | 🔲 **Not started** |
 | P1.6 | Parallel tracks — FL infrastructure + health-monitor seed | Motivation: two tracks the plan starts in parallel from Phase 1. The FL infrastructure (FedAvg + client simulation) is built now so the FL science can slot in right after the Phase-2 centralized reference; the health monitor is seeded once Phase 1 confirms degradation exists (its required input) so it is ready for the Phase-3 closed loop. Enablement, not a Go/No-Go leg. | 🔲 **Not started** |
 
-## Supplementary MoE references
+## Supplementary MoE groundwork — WP-M0
 
-These work packages provide stationary MoE references. They do not replace the correlated-stream studies or their exit
-gates above.
+These are subexperiments within **WP-M0: an MoE backbone in the loop**, the shared groundwork in the
+[MoE work-package goals](https://docs.google.com/document/d/1h1MxKhs0Bz2-21CArZ0lvcU2ZnvEaOoquVsFrt76FzY/edit). The
+[WP-M0 summary](../latest-results/WP-M0.md) records what they establish and what the parent package still requires.
+Completed subexperiments do not mean WP-M0 is complete, and do not replace the Phase-1 exit gates above.
+
+WP-M1 remains the planned regime-specialization study; WP-M2 remains the planned calibration of routing as a health
+surface. The filtering references below prepare the experimental vehicle for those questions.
 
 | ID | Study | What it establishes | Status |
 | -- | -- | -- | -- |
-| WP-M1 | Routing entropy filtering | Motivation: measure how live high/low-entropy admission changes routing and representation quality relative to random-half selection on shuffled BDD. | ✅ **Complete** (high-entropy admission changes routing and worsens reconstruction; scene-probe benefit unresolved; [summary](../latest-results/WP-M1.md), [method](WP-M1.md)) |
+| WP-M0.0 | Native MAE warm-well comparison | Motivation: validate a native MoE vehicle against active- and total-parameter-matched dense references, with expert-activity and harness checks. | ✅ **Runs complete** (partial parity support; most wells cap-limited; [summary](../latest-results/WP-M0.0.md), [results](../WP-M0-warm-well-mae-bdd-results.md), [plan](../WP-M0-warm-well-mae-bdd-plan.md)) |
+| WP-M0.1 | Routing entropy filtering | Motivation: measure how live high/low-entropy admission changes routing and representation quality relative to random-half selection on shuffled BDD. | ✅ **Complete** (high-entropy admission concentrates clean expert loads and worsens reconstruction; training assignments stay broadly distributed; scene-probe benefit unresolved; [summary](../latest-results/WP-M0.1.md), [method](WP-M0.1.md)) |
+| WP-M0.2 | Regime-blocked routing entropy filtering | Motivation: isolate the effect of contiguous time-of-day × weather blocks while matching the WP-M0.1 data, budget, seeds, filters and evaluation. | ✅ **Complete** (both filters worsen reconstruction and concentrate clean loads; low entropy's penalty widens versus shuffling; [summary](../latest-results/WP-M0.2.md), [method](WP-M0.2.md)) |
 
 ## Artifacts
 

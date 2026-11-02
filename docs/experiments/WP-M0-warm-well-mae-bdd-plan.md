@@ -1,4 +1,7 @@
-# WP-M0: MAE/BDD native warm-well comparison
+# WP-M0.0: MAE/BDD native warm-well comparison
+
+This is the warm-well subexperiment within WP-M0, not the entire work package. See the
+[WP-M0 summary](latest-results/WP-M0.md) for the sibling experiments and remaining package requirements.
 
 This is an execution and analysis plan, not an experiment result. It is grounded in the
 [MoE work packages](https://docs.google.com/document/d/1h1MxKhs0Bz2-21CArZ0lvcU2ZnvEaOoquVsFrt76FzY/edit) and the

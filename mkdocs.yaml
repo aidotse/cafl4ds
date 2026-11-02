@@ -65,6 +65,10 @@ nav:
       - P1.0.0: experiments/latest-results/P1.0.0.md
       - P1.0.1: experiments/latest-results/P1.0.1.md
       - P1.0.2: experiments/latest-results/P1.0.2.md
+      - WP-M0 Shared MoE groundwork: experiments/latest-results/WP-M0.md
+      - WP-M0.0 Native MAE warm-well comparison: experiments/latest-results/WP-M0.0.md
+      - WP-M0.1 Shuffled routing entropy filtering: experiments/latest-results/WP-M0.1.md
+      - WP-M0.2 Regime-blocked routing entropy filtering: experiments/latest-results/WP-M0.2.md
 
   - Phase 0:
       - experiments/phase0/index.md
@@ -98,6 +102,11 @@ nav:
       - P1.0.0 Open loop instrumentation (P0 integration): experiments/phase1/P1.0.0.md
       - P1.0.1 Open loop instrumentation (same-seed vs. shared-iterator): experiments/phase1/P1.0.1.md
       - P1.0.2 Open loop instrumentation (deployment prototype de-risker): experiments/phase1/P1.0.2.md
+      - WP-M0.0 Native MAE warm-well plan: experiments/WP-M0-warm-well-mae-bdd-plan.md
+      - WP-M0.0 Native MAE warm-well results: experiments/WP-M0-warm-well-mae-bdd-results.md
+      - WP-M0.1 Routing entropy filtering design: experiments/moe-routing-entropy-filtering-plan.md
+      - WP-M0.1 Shuffled routing entropy filtering: experiments/phase1/WP-M0.1.md
+      - WP-M0.2 Regime-blocked routing entropy filtering: experiments/phase1/WP-M0.2.md
 
   - Audits:
       - P0.2 (collapse mode): experiments/audits/P0.2.md
