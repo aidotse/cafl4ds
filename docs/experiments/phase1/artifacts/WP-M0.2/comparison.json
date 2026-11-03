@@ -1,5 +1,5 @@
 {
-  "experiment": "WP-M2",
+  "experiment": "WP-M0.2",
   "raw_directory": "outputs/moe_routing_entropy_regime_2026-10-27",
   "arms": {
     "random": {

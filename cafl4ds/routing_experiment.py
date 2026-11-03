@@ -101,7 +101,7 @@ class CachedRoutingCorpus:
     """Read and verify the existing identity-preserving BDD cache without modifying it."""
 
     def __init__(self, directory: str, verify_hashes: bool = True) -> None:
-        """Open a WP-M0 cache; verification binds image contents to its recorded provenance."""
+        """Open a WP-M0.0 cache; verification binds image contents to its recorded provenance."""
         directory_path = Path(directory).resolve()
         complete = json.loads((directory_path / "complete.json").read_text())
         if not complete.get("complete"):

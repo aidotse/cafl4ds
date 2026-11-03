@@ -20,5 +20,5 @@ checks establish integration, not full convergence, forgetting protection or com
 The native MAE vehicle runs and supports some parity claims; convergence and the remaining parity comparisons are
 unresolved.
 
-See the [results and artifacts](../WP-M0-warm-well-mae-bdd-results.md) and
-[execution plan](../WP-M0-warm-well-mae-bdd-plan.md).
+See the [results and artifacts](../WP-M0.0-warm-well-mae-bdd-results.md) and
+[execution plan](../WP-M0.0-warm-well-mae-bdd-plan.md).

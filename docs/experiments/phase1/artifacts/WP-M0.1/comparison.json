@@ -1,5 +1,5 @@
 {
-  "schema": "WP-M1-v1",
+  "schema": "WP-M0.1-v1",
   "raw_directory": "outputs/moe_routing_entropy_2026-10-19",
   "protocol_hash": "a34eaad9948a5229ce71a95f266d71691a37a3afb19deef99a5613ac4c0871c8",
   "replicate_unit": "training seed",

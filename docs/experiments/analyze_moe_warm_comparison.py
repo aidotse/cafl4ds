@@ -1,4 +1,4 @@
-"""Analyze seed-level WP-M0 MAE/BDD results and export scientific figures."""
+"""Analyze seed-level WP-M0.0 MAE/BDD results and export scientific figures."""
 
 from __future__ import annotations
 
@@ -283,7 +283,7 @@ def main():
     save_figure(fig, directory, "training_cost")
 
     lines = [
-        "# WP-M0 MAE/BDD native warm-well results",
+        "# WP-M0.0: MAE/BDD native warm-well results",
         "",
         "All 15 primary runs completed 2,000 optimizer updates on MPS.",
         "",

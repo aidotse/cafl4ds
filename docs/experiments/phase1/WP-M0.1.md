@@ -76,10 +76,10 @@ frozen-scoring ablation is still needed to isolate feedback from a different fix
 
 *Post-hoc analysis added 27 October 2026; the original training protocol and primary contrasts are unchanged.*
 
-The [layer 2](artifacts/WP-M1/l2_expert_loads.png) and [layer 3](artifacts/WP-M1/l3_expert_loads.png) charts show **hard
-top-1 patch assignment shares** on the same 200 full images at every evaluation: 12,800 patch assignments per layer,
-excluding CLS. Indices 2 and 3 are zero-based encoder blocks. These are clean, unmasked diagnostic forwards, rather than
-the noisy masked forwards used for training. Equal use would assign 25% of patches to each of four experts.
+The [layer 2](artifacts/WP-M0.1/l2_expert_loads.png) and [layer 3](artifacts/WP-M0.1/l3_expert_loads.png) charts show
+**hard top-1 patch assignment shares** on the same 200 full images at every evaluation: 12,800 patch assignments per
+layer, excluding CLS. Indices 2 and 3 are zero-based encoder blocks. These are clean, unmasked diagnostic forwards,
+rather than the noisy masked forwards used for training. Equal use would assign 25% of patches to each of four experts.
 
 To summarize concentration without averaging arbitrary expert identities, compute the largest expert share, load CV
 (population SD divided by mean share), and normalized entropy of the hard assignment histogram. Balanced loads have CV=0
@@ -142,13 +142,13 @@ histogram. Unequal loads also do not establish semantic specialization: the char
 expert represents. Higher clean-panel imbalance co-occurs with the reconstruction penalty, but this study does not
 establish that the imbalance caused the penalty.
 
-![Label-invariant load concentration across seeds](artifacts/WP-M1/load_balance.png)
+![Label-invariant load concentration across seeds](artifacts/WP-M0.1/load_balance.png)
 
-![Learning and routing trajectories](artifacts/WP-M1/learning_curves.png)
+![Learning and routing trajectories](artifacts/WP-M0.1/learning_curves.png)
 
-![Candidate versus admitted entropy](artifacts/WP-M1/selection_entropy.png)
+![Candidate versus admitted entropy](artifacts/WP-M0.1/selection_entropy.png)
 
-![Attribute acceptance rates](artifacts/WP-M1/selection_bias.png)
+![Attribute acceptance rates](artifacts/WP-M0.1/selection_bias.png)
 
 ## Method
 
@@ -202,8 +202,8 @@ all three arms for every measured seed.
 
 ## Artifacts and reproduction
 
-This subexperiment was previously documented as WP-M1. Saved artifacts retain `artifacts/WP-M1/` and the `WP-M1-v1`
-schema identifier for traceability; those historical names refer to WP-M0.1, not the planned WP-M1 package.
+Promoted artifacts use `artifacts/WP-M0.1/` and the `WP-M0.1-v1` comparison schema identifier. Archived raw outputs and
+frozen provenance retain their recorded paths and contents.
 
 The [design](../moe-routing-entropy-filtering-plan.md) records decisions and interpretive limits. The runner is
 [`scripts/run_routing_experiment.py`](../../../scripts/run_routing_experiment.py), with business logic in
@@ -231,23 +231,23 @@ interrupted command resumes the same frozen protocol; changed data/config/code r
 Pilot outputs are in `outputs/moe_routing_entropy_pilot_2026-10-19/`; resource trials are in
 `outputs/moe_routing_throughput_2026-10-19/` and `outputs/moe_routing_cpu_throughput_2026-10-19/`.
 
-The tracked, compact artifact set is in [`artifacts/WP-M1/`](artifacts/WP-M1/):
+The tracked, compact artifact set is in [`artifacts/WP-M0.1/`](artifacts/WP-M0.1/):
 
-- [`comparison.json`](artifacts/WP-M1/comparison.json): seed means/SDs, paired effects, pairing checks and raw-run
+- [`comparison.json`](artifacts/WP-M0.1/comparison.json): seed means/SDs, paired effects, pairing checks and raw-run
     pointer.
-- [`protocol_summary.json`](artifacts/WP-M1/protocol_summary.json): frozen configuration, source/data hashes, panel
+- [`protocol_summary.json`](artifacts/WP-M0.1/protocol_summary.json): frozen configuration, source/data hashes, panel
     counts and engineering validation. Full per-image membership remains in the raw output.
-- [`seed_summary.csv`](artifacts/WP-M1/seed_summary.csv): one row per training seed and filter, including B5 gains,
+- [`seed_summary.csv`](artifacts/WP-M0.1/seed_summary.csv): one row per training seed and filter, including B5 gains,
     routing, performance, mask sensitivity, accepted-image coverage and component timings.
-- [`acceptance_rates.csv`](artifacts/WP-M1/acceptance_rates.csv): per-seed scene/weather/time acceptance counts and
+- [`acceptance_rates.csv`](artifacts/WP-M0.1/acceptance_rates.csv): per-seed scene/weather/time acceptance counts and
     rates.
-- [`load_statistics.csv`](artifacts/WP-M1/load_statistics.csv) and
-    [`load_statistics.json`](artifacts/WP-M1/load_statistics.json): post-hoc per-seed/per-layer concentration,
+- [`load_statistics.csv`](artifacts/WP-M0.1/load_statistics.csv) and
+    [`load_statistics.json`](artifacts/WP-M0.1/load_statistics.json): post-hoc per-seed/per-layer concentration,
     trajectory summaries, masked-training counts and paired load contrasts. The JSON records definitions and the
     analysis-source hash. Reproduce with the existing analyzer; no new training is needed.
 - Learning, selection-entropy, selection-bias and gate-diagnostic figures, plus per-seed expert-load figures for
-    [block 2](artifacts/WP-M1/l2_expert_loads.png) and [block 3](artifacts/WP-M1/l3_expert_loads.png).
-    [`load_balance.png`](artifacts/WP-M1/load_balance.png) summarizes concentration without aligning expert IDs.
+    [block 2](artifacts/WP-M0.1/l2_expert_loads.png) and [block 3](artifacts/WP-M0.1/l3_expert_loads.png).
+    [`load_balance.png`](artifacts/WP-M0.1/load_balance.png) summarizes concentration without aligning expert IDs.
 
 ## Interpretation limits
 

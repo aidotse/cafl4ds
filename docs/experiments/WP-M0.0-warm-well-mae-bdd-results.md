@@ -1,7 +1,7 @@
 # WP-M0.0: MAE/BDD native warm-well results
 
-This is the warm-well subexperiment within WP-M0; see the [WP-M0 summary](latest-results/WP-M0.md). The existing
-plan/results filenames, artifact paths and raw-run identifiers are retained for traceability.
+This is the warm-well subexperiment within WP-M0; see the [WP-M0 summary](latest-results/WP-M0.md). Promoted artifacts
+use `artifacts/WP-M0.0/`. Archived raw-run paths and frozen provenance retain their recorded names and contents.
 
 All 15 primary runs completed 2,000 optimizer updates on MPS.
 
@@ -74,18 +74,18 @@ loose sanity checks do not establish parity or forgetting protection.
 - The deployment smoke uses an endpoint checkpoint when seed 0 has no certified plateau. Its Tier-A memory-flat check is
     not enabled; finite signals, channel completeness, and trust completeness are checked.
 
-![Learning curves](artifacts/WP-M0-mae-bdd-native/learning_curves.png)
+![Learning curves](artifacts/WP-M0.0/learning_curves.png)
 
-![Paired differences](artifacts/WP-M0-mae-bdd-native/paired_differences.png)
+![Paired differences](artifacts/WP-M0.0/paired_differences.png)
 
-![Expert loads](artifacts/WP-M0-mae-bdd-native/expert_loads.png)
+![Expert loads](artifacts/WP-M0.0/expert_loads.png)
 
-![Training cost](artifacts/WP-M0-mae-bdd-native/training_cost.png)
+![Training cost](artifacts/WP-M0.0/training_cost.png)
 
 ## Reproduce and inspect
 
 The execution runner is [run_moe_warm_comparison.py](run_moe_warm_comparison.py); the analyzer is
-[analyze_moe_warm_comparison.py](analyze_moe_warm_comparison.py). The [original plan](WP-M0-warm-well-mae-bdd-plan.md)
+[analyze_moe_warm_comparison.py](analyze_moe_warm_comparison.py). The [original plan](WP-M0.0-warm-well-mae-bdd-plan.md)
 defines the experiment.
 
 ```bash
@@ -98,5 +98,4 @@ and code/runtime provenance are saved under `outputs/wp_m0_mae_bdd_mps_2026-10-0
 `--output` directory; complete-run markers otherwise reuse results. Binary checkpoints and the large data cache are not
 tracked by Git.
 
-[Per-seed summary](artifacts/WP-M0-mae-bdd-native/seed_summary.csv) ·
-[Paired statistics](artifacts/WP-M0-mae-bdd-native/comparison.json).
+[Per-seed summary](artifacts/WP-M0.0/seed_summary.csv) · [Paired statistics](artifacts/WP-M0.0/comparison.json).

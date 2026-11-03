@@ -1,4 +1,4 @@
-"""Reproducible WP-M0 native MAE/BDD warm-well experiment and integration check.
+"""Reproducible WP-M0.0 native MAE/BDD warm-well experiment and integration check.
 
 Run with the repository Python environment and explicit MPS access. This research runner
 keeps observations outside the production training interfaces and persists every result.
@@ -732,7 +732,7 @@ def run_arm(source, membership, output, arm, seed, steps, pilot=False):
     }
     write_json(directory / "warm_summary.json", summary)
     trust = {
-        k: {"status": "candidate", "provenance": "WP-M0 descriptive routing readout"}
+        k: {"status": "candidate", "provenance": "WP-M0.0 descriptive routing readout"}
         for k in health[-1]
         if any(k.startswith(p) for p in ("route_", "dead_", "min_expert", "near_starved", "expert_", "masked_dead"))
     }
@@ -839,7 +839,7 @@ def smoke(source, membership, output, arm):
     monitor = RoutingMonitor(eval_sets=stream.eval_sets, knn_k=20)
     started = time.perf_counter()
     live = harness.run_stream_arm(
-        name=f"wp_m0_{arm}_live",
+        name=f"wp_m0_0_{arm}_live",
         role="live",
         method=method,
         stream=stream,
@@ -876,8 +876,8 @@ def smoke(source, membership, output, arm):
             {
                 "mode": "quality",
                 "status": "candidate",
-                "caveat": "Descriptive WP-M0 routing; no positive-control calibration",
-                "provenance": "WP-M0",
+                "caveat": "Descriptive WP-M0.0 routing; no positive-control calibration",
+                "provenance": "WP-M0.0",
             }
         ]
     deploy_corpus.write_corpus(
@@ -886,7 +886,7 @@ def smoke(source, membership, output, arm):
         era_names=stream.era_names,
         composition=stream.era_composition(),
         manifest={
-            "study": "WP-M0",
+            "study": "WP-M0.0",
             "arm": arm,
             "well": str(path),
             "certified_well": selection["selected_step"] is not None,
@@ -923,7 +923,7 @@ def provenance(output):
         result = subprocess.run(args, cwd=ROOT, capture_output=True, text=True, check=True)
         (directory / name).write_text(result.stdout)
     shutil.copyfile(__file__, directory / Path(__file__).name)
-    shutil.copyfile(ROOT / "docs/experiments/WP-M0-warm-well-mae-bdd-plan.md", directory / "plan.md")
+    shutil.copyfile(ROOT / "docs/experiments/WP-M0.0-warm-well-mae-bdd-plan.md", directory / "plan.md")
     write_json(
         directory / "environment.json",
         {

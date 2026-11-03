@@ -174,11 +174,12 @@ bias, but must not enter the selector or MAE loss. Persist image IDs, content/or
 membership. Keep clips disjoint if using multiple frames per clip. BDD100K provides varied scene, weather, and
 time-of-day conditions ([dataset paper](https://arxiv.org/abs/1805.04687)).
 
-The [WP-M0.0 results](WP-M0-warm-well-mae-bdd-results.md) used 61,555 usable training-split images across four retained
-scenes, including 200 reserved support/query images. This is a restricted usable pool, not all 100,000 nominal dataset
-images. Recheck counts for this study and declare whether those scene restrictions are retained. Use larger fixed
-evaluation panels if feasible; 100 query images give limited precision. Report natural-frequency and balanced scene
-performance separately, and audit acceptance by scene, weather, time of day, and their sufficiently populated groups.
+The [WP-M0.0 results](WP-M0.0-warm-well-mae-bdd-results.md) used 61,555 usable training-split images across four
+retained scenes, including 200 reserved support/query images. This is a restricted usable pool, not all 100,000 nominal
+dataset images. Recheck counts for this study and declare whether those scene restrictions are retained. Use larger
+fixed evaluation panels if feasible; 100 query images give limited precision. Report natural-frequency and balanced
+scene performance separately, and audit acceptance by scene, weather, time of day, and their sufficiently populated
+groups.
 
 WP-M0.0 supplies engineering references and measurement recipes, not initial weights for this from-scratch study.
 

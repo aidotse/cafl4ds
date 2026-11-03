@@ -63,11 +63,11 @@ mean widening is 7.37 points [−5.66, +20.41], with an uncertain direction. The
 sensitivity of low-entropy admission in this setting. They do not establish an effect shared by all possible regime
 walks.
 
-![Matched ordering comparison](artifacts/WP-M2/order_comparison.png)
+![Matched ordering comparison](artifacts/WP-M0.2/order_comparison.png)
 
 ### Expert loads: layers 2 and 3
 
-The [layer 2](artifacts/WP-M2/l2_expert_loads.png) and [layer 3](artifacts/WP-M2/l3_expert_loads.png) plots retain
+The [layer 2](artifacts/WP-M0.2/l2_expert_loads.png) and [layer 3](artifacts/WP-M0.2/l3_expert_loads.png) plots retain
 per-seed expert identities. They count hard top-1 patch assignments on the same 200 clean full images: 12,800 patches
 per layer, excluding CLS. The layer indices are zero-based encoder blocks. Equal allocation across four experts gives
 25% each, load CV=0 and normalized histogram entropy=1. These statistics differ from the mean per-token probability
@@ -114,14 +114,14 @@ includes CLS and regularizes soft importance and expected noisy load. Clean-pane
 establish failure of balancing, semantic specialization, or persistent loss of expert learning. Its co-occurrence with
 worse reconstruction does not establish causation.
 
-![Expert-load concentration](artifacts/WP-M2/load_balance.png)
+![Expert-load concentration](artifacts/WP-M0.2/load_balance.png)
 
 ### Selection and view sensitivity
 
 Large regimes have almost exactly half their exposures admitted under every policy. For example, pooled daytime-clear
 and night-clear admission are approximately 50% in all arms. Rare boundary regimes can differ: daytime-foggy has just
 470 candidate exposures across all seed/epoch combinations, with 50.6%/59.4%/39.1% admitted by random/high/low. The
-[joint-regime table](artifacts/WP-M2/regime_acceptance.csv) retains every regime separately. This constrains the
+[joint-regime table](artifacts/WP-M0.2/regime_acceptance.csv) retains every regime separately. This constrains the
 interpretation: the reconstruction penalty remains even when selection cannot substantially change the large regimes'
 relative frequencies. Within-regime selection and its interaction with model adaptation remain coupled.
 
@@ -211,8 +211,8 @@ boundaries and epoch resets. Frozen training source hashes match the completed r
 
 ## Artifacts and reproduction
 
-This subexperiment was previously documented as WP-M2. Saved artifacts retain `artifacts/WP-M2/` and the `WP-M2`
-experiment identifier for traceability; those historical names refer to WP-M0.2, not the planned WP-M2 package.
+Promoted artifacts use `artifacts/WP-M0.2/` and the `WP-M0.2` experiment identifier. Archived raw outputs and frozen
+provenance retain their recorded paths and contents.
 
 ```bash
 UV_CACHE_DIR=/private/tmp/cafl4ds-routing-uv uv run --no-sync python scripts/run_routing_experiment.py --config-name routing_regime_experiment
@@ -233,7 +233,7 @@ The analyzer writes the same performance, entropy, selection and load statistics
 `stream_timeline.png`, plus joint-regime `regime_acceptance.csv`. Original shuffled results are read as the reference
 and are not overwritten.
 
-Promoted artifacts are under [`artifacts/WP-M2/`](artifacts/WP-M2/). `comparison.json` contains seed-level aggregate
+Promoted artifacts are under [`artifacts/WP-M0.2/`](artifacts/WP-M0.2/). `comparison.json` contains seed-level aggregate
 statistics, paired contrasts, load statistics, matched order effects and verification; it omits raw arrays and training
 traces. `protocol_summary.json` keeps the frozen configuration, source hashes and panel counts. `reference_check.json`
 and `stream_manifest.json` retain the matching controls and exact stream schedule. CSVs contain seed endpoints,
