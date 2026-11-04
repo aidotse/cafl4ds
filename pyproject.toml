@@ -45,6 +45,11 @@ gaudi = [
 ]
 
 [dependency-groups]
+analysis = [
+    "marimo>=0.18.0",
+    "matplotlib>=3.9",
+]
+
 # Local dev tooling (not shipped with the package)
 # Install with: `uv sync --group agent`
 agent = [
@@ -179,6 +184,8 @@ select = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
+# marimo cells use generated dependency signatures, cell-local imports and display expressions.
+"notebooks/*.py" = ["ANN001", "ANN202", "B018", "INP001", "PLC0415"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -218,7 +225,8 @@ DEP003 = ["PIL"]
 # pyarrow is a dev/analysis extra: deploy_corpus.py imports it lazily and skips the parquet twin
 # gracefully when it is absent (health.csv is the portable primary), so it stays out of the wheel's
 # runtime requirements — see cafl4ds/deploy_corpus.py:_maybe_write_parquet.
-DEP004 = ["pytest", "pyarrow"]
+# marimo and matplotlib are provided by the optional analysis dependency group.
+DEP004 = ["pytest", "pyarrow", "marimo", "matplotlib"]
 
 
 # --- Tasks: Quality gate ----------------------------------------------------------------------------------------------
