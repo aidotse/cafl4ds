@@ -7,7 +7,8 @@ probes. Minutes, not hours. Writes ``dose_pilot.json`` into the run dir and prin
 
 Example (Gaudi node; the drive's diet knobs, so the probes are the drive's)::
 
-    ./scripts/run_gaudi_dev.sh -m $BDD -m /mnt/cifar100 gaudi-env-cafl4ds:latest 0 python scripts/dose_pilot.py \\
+    ./scripts/run_gaudi_dev.sh -m $BDD -m /mnt/pr_2018_scaleout_workdir/cafl4ds/data/cifar100 \\
+        gaudi-env-cafl4ds:latest 0 python scripts/dose_pilot.py \\
         $DIET backbone=je well=wells/p110_deep/je_o0.0.pt \\
         'doses=[reinit:1,reinit:2,reinit:4,noise:12:0.25,noise:12:0.5]'
 """

@@ -10,3 +10,6 @@ noise: 0.3
 regime_tint: 0.15
 long_tail: true
 seed: ${seed}
+# P1.2.5: synthetic boxes and a drivable grid (the stand-in for BDD's geometry labels); the grid is the patch grid
+geometry: false
+drivable_grid: 4

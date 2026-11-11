@@ -23,6 +23,7 @@ from __future__ import annotations
 from typing import cast
 
 import torch
+import torch.nn.functional as F  # noqa: N812 - conventional alias
 from torch import nn
 
 
@@ -241,18 +242,33 @@ class TinyViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is Any witho
             if isinstance(m, nn.Conv2d):
                 m.reset_parameters()
 
-    def _embed_patches(self, imgs: torch.Tensor) -> torch.Tensor:
+    def _embed_patches(self, imgs: torch.Tensor, resize: bool = True) -> torch.Tensor:
         """Convolutional patch embedding, adding the patch positional encodings.
+
+        An input whose patch grid differs from the built one (DINO's 96 px local crops, P1.2.5) gets the
+        positional encodings bicubically interpolated to its grid, as DINO's own ViT does.
 
         Args:
             imgs: Images ``[B, C, H, W]``.
+            resize: Unused here; subclasses that resize their inputs skip the resize when ``False``.
 
         Returns:
             Patch tokens ``[B, N, embed_dim]`` with positional embeddings added (the ``cls``
             token and its position are handled by the callers).
         """
-        x = self.patch_embed(imgs).flatten(2).transpose(1, 2)  # [B, N, D]
-        return cast(torch.Tensor, x + self.pos_embed[:, 1:, :])
+        grid = self.patch_embed(imgs)  # [B, D, h, w]
+        x = grid.flatten(2).transpose(1, 2)  # [B, N, D]
+        pos = self.pos_embed[:, 1:, :]
+        if x.shape[1] != self.num_patches:
+            side = self.grid_size
+            pos = F.interpolate(
+                pos.reshape(1, side, side, -1).permute(0, 3, 1, 2),
+                size=grid.shape[-2:],
+                mode="bicubic",
+                align_corners=False,
+            )
+            pos = pos.permute(0, 2, 3, 1).reshape(1, x.shape[1], -1)
+        return cast(torch.Tensor, x + pos)
 
     @staticmethod
     def random_masking(x: torch.Tensor, mask_ratio: float) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
@@ -280,7 +296,7 @@ class TinyViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is Any witho
         return x_kept, mask, ids_restore
 
     def forward_encoder(
-        self, imgs: torch.Tensor, mask_ratio: float = 0.0
+        self, imgs: torch.Tensor, mask_ratio: float = 0.0, resize: bool = True
     ) -> tuple[torch.Tensor, torch.Tensor | None, torch.Tensor | None]:
         """Run the transformer over the (optionally masked) patch sequence.
 
@@ -288,13 +304,15 @@ class TinyViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is Any witho
             imgs: Images ``[B, C, H, W]``.
             mask_ratio: Fraction of patches to mask before encoding (MAE). ``0`` disables
                 masking and processes the full sequence (joint-embedding / measurement).
+            resize: Passed to :meth:`_embed_patches` — ``False`` keeps a subclass from resizing the input to its
+                build size, so a smaller crop runs at its own resolution (DINO's local crops).
 
         Returns:
             A tuple ``(tokens, mask, ids_restore)``. ``tokens`` is ``[B, 1 + N_keep, d]``
             (final-normed, ``cls`` token first). ``mask`` and ``ids_restore`` are ``[B, N]``
             when ``mask_ratio > 0`` and ``None`` otherwise.
         """
-        x = self._embed_patches(imgs)
+        x = self._embed_patches(imgs, resize=resize)
         mask: torch.Tensor | None = None
         ids_restore: torch.Tensor | None = None
         if mask_ratio > 0.0:
@@ -309,6 +327,10 @@ class TinyViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is Any witho
         """Return the full-sequence tokens ``[B, 1 + N, d]`` (unmasked)."""
         tokens, _, _ = self.forward_encoder(imgs, mask_ratio=0.0)
         return tokens
+
+    def tokens(self, imgs: torch.Tensor) -> torch.Tensor:
+        """The final-normed tokens ``[B, 1 + N, d]`` (``cls`` first), on the encoder's device — the readout surface."""
+        return self.forward(imgs.to(self.pos_embed.device))
 
     def embed(self, imgs: torch.Tensor) -> torch.Tensor:
         """Return a pooled ``[B, embed_dim]`` representation (mean of the patch tokens).

@@ -88,9 +88,12 @@ lens:
 # The recovery pass: >0 runs this many stationary well-pool batches from `resume.checkpoint` instead
 # of the drive (the short IID pass after a drive, read as savings).
 recovery_steps: null
+# Stop the drive after this many batches (P1.2.5 Part E's short collapse drives). The schedules (DINO's teacher
+# momentum, any lr schedule, fractional checkpoint_steps) still span the full drive: these are its first steps.
+max_steps: null
 
 # BDD sizing (data=bdd). bdd_root points at the canonical download; max_images caps the load.
-bdd_root: /mnt/bdd100k
+bdd_root: /mnt/pr_2018_scaleout_workdir/cafl4ds/data/bdd100k
 max_images: null
 max_train_per_regime: null
 

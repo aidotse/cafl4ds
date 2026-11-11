@@ -11,6 +11,15 @@ Few-shot rows are averaged over their paired label draws first.
   on the end of the walk, plus Δ at every saved checkpoint.
 * ``mode=p124`` — P1.2.4's attribution verdict per off-domain control
   (:func:`cafl4ds.adaptation.attribution_verdict`), and the confirmed recipe against the best frozen floor.
+* ``mode=p125`` — P1.2.5's reads per init against its own frozen floor: the gate (with the seed-level test
+  beside the bootstrap, and whether the ``cls`` readout reverses it), breadth over the task panel, the
+  time-to-payoff curve, the walk-vs-IID secondary and the attribution controls; then which DINO arm carries
+  forward to P1.3, and the claim level.
+* ``mode=p125f`` — P1.2.5's Part F (exploratory): per arm, Δ against the floor within time-of-day and weather
+  slices at every walk checkpoint, the IID end per slice, and window contrasts (a slice's change between two
+  checkpoints, or its difference from another slice's); optionally each task's frequency in BDD-train.
+* ``mode=p125g`` — P1.2.5's Part G: each unprotected arm read as ``p125`` reads its arms, the recipe contrast
+  (protected − unprotected) at every checkpoint, and the every-rung curve of the re-read confirmation drives.
 
 Writes ``<root>/adaptation_report.json`` and prints the tables. CPU only; cap ``threads`` beside HPU jobs.
 
@@ -27,6 +36,7 @@ from typing import Any
 
 import hydra
 import numpy as np
+import torch
 from hydra.utils import to_absolute_path
 from loguru import logger
 from omegaconf import DictConfig
@@ -52,6 +62,8 @@ class Ladder:
         tasks = [k.split("|", 1)[1] for k in pool.files if k.startswith("labels|")]
         self.pos = {t: pool[f"pos|{t}"] if f"pos|{t}" in pool.files else np.arange(self.query.size) for t in tasks}
         self.labels = {t: pool[f"labels|{t}"][self.pos[t]] for t in tasks}
+        # the per-patch task's patches per class per query frame (P1.2.5)
+        self.counts = {k.split("|", 1)[1]: pool[k] for k in pool.files if k.startswith("counts|")}
         self.summary = json.loads((path / "summary.json").read_text(encoding="utf-8"))
         self._cache: dict[str, Any] = {}
 
@@ -283,6 +295,437 @@ def p124(config: DictConfig, root: Path) -> dict[str, Any]:
     return report
 
 
+def _bacc_rows(ladder: Ladder, rows: np.ndarray, task: str) -> np.ndarray:
+    """Each row's balanced accuracy (patch-level for the per-patch task)."""
+    if adaptation.is_patch_task(task):
+        return np.array([adaptation.patch_balanced_accuracy(r, ladder.counts[task]) for r in rows])
+    return np.array([adaptation.balanced_accuracy(r, ladder.labels[task]) for r in rows])
+
+
+def _versus_floor(
+    ladder: Ladder, adapted: list[str], floor: str, task: str, key: str, config: DictConfig
+) -> dict[str, Any] | None:
+    """Δ (adapted − floor): the bootstrap (it decides) and the seed-level one-sample *t*-test beside it."""
+    rows, ref = ladder.rows(adapted, key), ladder.rows([floor], key)
+    if rows is None or ref is None:
+        return None
+    if adaptation.is_patch_task(task):
+        boot = adaptation.bootstrap_delta_patches(
+            rows, ref[0], ladder.counts[task], n_boot=int(config.n_boot), seed=int(config.seed)
+        )
+    else:
+        boot = adaptation.bootstrap_delta(
+            rows, ref, ladder.labels[task], n_boot=int(config.n_boot), seed=int(config.seed)
+        )
+    out: dict[str, Any] = {**boot}
+    if rows.shape[0] > 1:
+        out["seed_level"] = adaptation.seed_ttest(
+            _bacc_rows(ladder, rows, task), float(_bacc_rows(ladder, ref, task)[0])
+        )
+    return out
+
+
+def _between_arms(
+    first: tuple[Ladder, list[str]], second: tuple[Ladder, list[str]], task: str, key: str, config: DictConfig
+) -> dict[str, Any] | None:
+    """First − second, both adapted: the two-sample bootstrap and the one-sided Welch test beside it (image tasks)."""
+    a, b = first[0].rows(first[1], key), second[0].rows(second[1], key)
+    if a is None or b is None or adaptation.is_patch_task(task):
+        return None
+    out: dict[str, Any] = adaptation.bootstrap_contrast(
+        a, b, first[0].labels[task], n_boot=int(config.n_boot), seed=int(config.seed)
+    )
+    if a.shape[0] > 1 and b.shape[0] > 1:
+        out["seed_level"] = adaptation.seed_welch(_bacc_rows(first[0], a, task), _bacc_rows(second[0], b, task))
+    return out
+
+
+def _holm_both(contrasts: dict[str, dict[str, Any]], alpha: float) -> dict[str, Any]:
+    """Holm over the family by the bootstrap (the decision) and by the seed-level test, and whether they disagree."""
+    boot = adaptation.holm({t: c["p_one_sided"] for t, c in contrasts.items()}, alpha)
+    seed = (
+        adaptation.holm({t: c["seed_level"]["p_one_sided"] for t, c in contrasts.items()}, alpha)
+        if all("seed_level" in c for c in contrasts.values())
+        else None
+    )
+    return {"bootstrap": boot, "seed_level": seed, "disagree": seed is not None and seed != boot}
+
+
+def _checkpoint_order(ladder: Ladder) -> list[str]:
+    """The walk's checkpoint suffixes in drive order (``t00100`` …, then ``end``)."""
+    suffixes = {
+        m.group(1) for p in ladder.path.glob("walk_s*_*.npz") if (m := re.match(r"walk_s\d+_(\w+)\.npz", p.name))
+    }
+    return sorted(suffixes, key=lambda s: (s == "end", int(s[1:]) if s != "end" else 0))
+
+
+def _walk_vs_iid(config: DictConfig, ladder: Ladder, ends: list[str], iid: list[str]) -> dict[str, Any]:
+    """P1.2.1's secondary under the confirmed recipe: walk end against IID end, pooled and per stratum."""
+    secondary: dict[str, Any] = {}
+    names = ladder.summary.get("stratum_names", {})
+    for task in config.gate_tasks:
+        labels, stratum = ladder.labels[task], ladder.stratum[ladder.pos[task]]
+        for rung in ("knn", "linear"):
+            key = f"{task}|{rung}"
+            walk_rows, iid_rows = ladder.rows(ends, key), ladder.rows(iid, key)
+            entry: dict[str, Any] = {"pooled": _between_arms((ladder, ends), (ladder, iid), task, key, config)}
+            if walk_rows is None or iid_rows is None:
+                secondary[key] = entry
+                continue
+            for sid in np.unique(stratum):
+                keep = stratum == sid
+                if np.unique(labels[keep]).size == np.unique(labels).size:
+                    entry[names.get(str(int(sid)), str(int(sid)))] = adaptation.bootstrap_contrast(
+                        walk_rows[:, keep],
+                        iid_rows[:, keep],
+                        labels[keep],
+                        n_boot=int(config.n_boot),
+                        seed=int(config.seed),
+                    )
+            secondary[key] = entry
+    return secondary
+
+
+def _curve(config: DictConfig, ladder: Ladder, tasks: list[str]) -> dict[str, Any]:
+    """Δ against the floor at each walk checkpoint, per task: kNN and linear, and every other rung read there.
+
+    Time to payoff is the first checkpoint whose linear Δ has its lower bound above zero.
+    """
+    floor, seeds = str(config.p125.floor_name), range(int(config.n_seeds))
+    curve: dict[str, Any] = {}
+    for task in tasks:
+        points: dict[str, Any] = {}
+        for suffix in _checkpoint_order(ladder):
+            names = [f"walk_s{s}_{suffix}" for s in seeds if ladder.has(f"walk_s{s}_{suffix}")]
+            reads = {r: _versus_floor(ladder, names, floor, task, f"{task}|{r}", config) for r in config.curve_rungs}
+            points[suffix] = {r: c for r, c in reads.items() if c is not None or r in ("knn", "linear")}
+        payoff = next((s for s, pt in points.items() if pt["linear"] is not None and pt["linear"]["lo"] > 0), None)
+        curve[task] = {"points": points, "time_to_payoff": payoff}
+    return curve
+
+
+def _p125_arm(config: DictConfig, ladder: Ladder, arm: str) -> dict[str, Any]:
+    """One init's reads against its own frozen floor: the gate, breadth, the curve and the walk-vs-IID secondary."""
+    p = config.p125
+    floor, seeds = str(p.floor_name), range(int(config.n_seeds))
+    ends = [f"walk_s{s}_end" for s in seeds]
+    iid = [f"iid_s{s}_end" for s in range(int(config.n_iid_seeds)) if ladder.has(f"iid_s{s}_end")]
+    alpha = float(config.alpha)
+    out: dict[str, Any] = {}
+
+    gate_contrasts: dict[str, dict[str, Any]] = {}
+    for task in config.gate_tasks:
+        gate_contrasts[task] = {}
+        for rung in config.rungs:
+            for at in ("", "@cls"):
+                result = _versus_floor(ladder, ends, floor, task, f"{task}|{rung}{at}", config)
+                if result is not None:
+                    gate_contrasts[task][f"{rung}{at}"] = result
+    primary = str(p.primary_rung)
+    gate = adaptation.gate_verdict(
+        {t: {r: c for r, c in rungs.items() if "@" not in r} for t, rungs in gate_contrasts.items()},
+        primary,
+        delta_floor=float(config.delta_floor),
+        alpha=alpha,
+    )
+    gate["tests"] = _holm_both({t: gate_contrasts[t][primary] for t in config.gate_tasks}, alpha)
+    gate["cls_reverses"] = {
+        t: bool(np.sign(rungs[f"{primary}@cls"]["delta"]) != np.sign(rungs[primary]["delta"]))
+        for t, rungs in gate_contrasts.items()
+        if f"{primary}@cls" in rungs
+    }
+    out["gate"], out["gate_contrasts"] = gate, gate_contrasts
+
+    panel = [t for t in p.panel if t in ladder.labels]
+    breadth: dict[str, dict[str, dict[str, Any]]] = {}
+    for t in panel:
+        reads = {r: _versus_floor(ladder, ends, floor, t, f"{t}|{r}", config) for r in ("linear", "knn")}
+        breadth[t] = {r: c for r, c in reads.items() if c is not None}
+    family = {t: rungs["linear"] for t, rungs in breadth.items() if "linear" in rungs}
+    tests = _holm_both(family, alpha) if family else {"bootstrap": {}, "seed_level": None, "disagree": False}
+    gains = sum(tests["bootstrap"].values())
+    out["breadth"] = {
+        "tasks": breadth,
+        "tests": tests,
+        "gains": gains,
+        "of": len(family),
+        "most": gains > len(family) / 2,
+    }
+
+    out["curve"] = _curve(config, ladder, [*config.gate_tasks, *panel])
+
+    if iid:
+        out["walk_vs_iid"] = _walk_vs_iid(config, ladder, ends, iid)
+    return out
+
+
+def _p125_attribution(config: DictConfig, ladder: Ladder, controls: dict[str, int]) -> dict[str, Any]:
+    """P1.2.4's attribution under the confirmed recipe: D_c = the BDD IID arm − each control's arm, per gate task."""
+    iid = [f"iid_s{s}_end" for s in range(int(config.p125.n_attribution_iid))]
+    rung = str(config.p125.primary_rung)
+    per_control: dict[str, Any] = {}
+    for control, n in controls.items():
+        arms = [f"{control}_s{s}_end" for s in range(int(n))]
+        reads = {t: _between_arms((ladder, iid), (ladder, arms), t, f"{t}|{rung}", config) for t in config.gate_tasks}
+        tasks = {t: c for t, c in reads.items() if c is not None}
+        if len(tasks) != len(reads):
+            raise ValueError(f"missing {rung} reads for the {control} contrast in {ladder.path}.")
+        verdict = adaptation.attribution_verdict(
+            tasks, generic_ceiling=float(config.p125.generic_ceiling), alpha=float(config.alpha)
+        )
+        per_control[control] = {**verdict, "tests": _holm_both(tasks, float(config.alpha)), "tasks": tasks}
+    return {
+        "controls": per_control,
+        "claim": adaptation.weakest_attribution([c["verdict"] for c in per_control.values()]) if per_control else None,
+    }
+
+
+def _carry_forward(config: DictConfig, ladders: dict[str, Ladder], arms: dict[str, Any]) -> dict[str, Any]:
+    """Which DINO arm becomes P1.3's JE vehicle (the rule fixed in P1.2.5's design).
+
+    One passing arm carries forward. If both pass, DINO-init DINO does, unless the two-sample contrast
+    (SimSiam − DINO, primary rung) excludes zero in SimSiam's favour on at least one gate task and in DINO's
+    favour on none. If neither passes, the MAE-init hybrid stays.
+    """
+    dino, simsiam = str(config.p125.dino_arm), str(config.p125.simsiam_arm)
+    passing = [a for a in (dino, simsiam) if a in arms and arms[a]["gate"]["verdict"] == adaptation.PASS]
+    if not passing:
+        return {"vehicle": str(config.p125.fallback_vehicle), "passing": [], "contrast": None}
+    if len(passing) == 1:
+        return {"vehicle": passing[0], "passing": passing, "contrast": None}
+    ends = [f"walk_s{s}_end" for s in range(int(config.n_seeds))]
+    rung = str(config.p125.primary_rung)
+    contrast = {
+        t: _between_arms((ladders[simsiam], ends), (ladders[dino], ends), t, f"{t}|{rung}", config)
+        for t in config.gate_tasks
+    }
+    for_simsiam = any(c is not None and c["lo"] > 0 for c in contrast.values())
+    for_dino = any(c is not None and c["hi"] < 0 for c in contrast.values())
+    return {"vehicle": simsiam if for_simsiam and not for_dino else dino, "passing": passing, "contrast": contrast}
+
+
+def p125(config: DictConfig, root: Path) -> dict[str, Any]:
+    """P1.2.5's pre-registered reads (docs/experiments/phase1/P1.2.5.md), per init, then the claim.
+
+    Every arm's ladder (``<root>/ladder/<arm>``) holds its frozen floor (``p125.floor_name``), the walk's
+    checkpoints (``walk_s<k>_<t>``), its IID ends and, where run, the attribution controls' ends. Every ladder
+    must have read the same query frames.
+    """
+    p = config.p125
+    ladders = {str(a): Ladder(root / "ladder" / str(a)) for a in p.arms if (root / "ladder" / str(a)).is_dir()}
+    first = next(iter(ladders.values()))
+    for ladder in ladders.values():
+        _check_aligned(first, ladder)
+    arms = {a: _p125_arm(config, ladder, a) for a, ladder in ladders.items()}
+    for arm, controls in (p.get("attribution") or {}).items():
+        if arm in ladders:
+            arms[arm]["attribution"] = _p125_attribution(config, ladders[arm], dict(controls))
+    carry = _carry_forward(config, ladders, arms)
+    dino_arms = [a for a in (str(p.dino_arm), str(p.simsiam_arm)) if a in arms]
+    passing = [a for a in dino_arms if arms[a]["gate"]["verdict"] == adaptation.PASS]
+    if passing:
+        broadest = max(passing, key=lambda a: arms[a]["breadth"]["gains"])
+        level = "Strong" if arms[broadest]["breadth"]["most"] else "Qualified"
+        claim: dict[str, str | None] = {"level": level, "backbone": broadest}
+    else:
+        claim = {"level": "Weak", "backbone": None}
+    floors = {}
+    for name, path in (p.get("reference_floors") or {}).items():
+        ref = Ladder(Path(to_absolute_path(str(path))))
+        _check_aligned(first, ref)
+        floors[str(name)] = {k: v["pooled"] for k, v in ref.summary["encoders"][str(name)]["bacc"].items()}
+    return {"arms": arms, "carry_forward": carry, "claim": claim, "reference_floors": floors}
+
+
+def _recipe_contrast(config: DictConfig, first: Ladder, second: Ladder) -> dict[str, Any]:
+    """First − second (two adapted arms, same start) at every checkpoint both read, per task and rung.
+
+    At the end, the primary rung over the gate tasks is tested with Holm; everything else is descriptive.
+    """
+    _check_aligned(first, second)
+    seeds = range(int(config.n_seeds))
+    tasks = [t for t in [*config.gate_tasks, *config.p125.panel] if t in first.labels]
+    rungs = [f"{r}{at}" for r in config.curve_rungs for at in ("", "@cls")]
+    points: dict[str, Any] = {}
+    shared = set(_checkpoint_order(second))
+    for suffix in [s for s in _checkpoint_order(first) if s in shared]:
+        names = [f"walk_s{s}_{suffix}" for s in seeds]
+        points[suffix] = {}
+        for task in tasks:
+            reads = {r: _between_arms((first, names), (second, names), task, f"{task}|{r}", config) for r in rungs}
+            points[suffix][task] = {r: c for r, c in reads.items() if c is not None}
+    primary = str(config.p125.primary_rung)
+    end = {t: points["end"][t][primary] for t in config.gate_tasks if primary in points.get("end", {}).get(t, {})}
+    return {"points": points, "tests": _holm_both(end, float(config.alpha)) if end else None}
+
+
+def p125g(config: DictConfig, root: Path) -> dict[str, Any]:
+    """P1.2.5's Part G: the protections ablation, and the fine-tune rungs through the drive.
+
+    Each unprotected arm (``<root>/ladder/<arm>``) is read as Part A–D read theirs; beside it, the recipe contrast
+    (protected − unprotected) at every checkpoint; and the curve, every rung, of each re-read confirmation drive
+    (``<root>/<p125g.ft_dir>/<arm>``).
+    """
+    g = config.p125g
+    out: dict[str, Any] = {"arms": {}, "recipe": {}, "curve": {}}
+    for arm in g.arms:
+        ladder = Ladder(root / "ladder" / str(arm))
+        out["arms"][str(arm)] = _p125_arm(config, ladder, str(arm))
+        controls = (g.get("attribution") or {}).get(str(arm))
+        if controls:
+            out["arms"][str(arm)]["attribution"] = _p125_attribution(config, ladder, dict(controls))
+    for unprotected, protected in (g.get("pairs") or {}).items():
+        out["recipe"][str(unprotected)] = {
+            "protected": str(protected),
+            **_recipe_contrast(
+                config, Ladder(root / "ladder" / str(protected)), Ladder(root / "ladder" / str(unprotected))
+            ),
+        }
+    for arm in g.ft_arms:
+        ladder = Ladder(root / str(g.ft_dir) / str(arm))
+        out["curve"][str(arm)] = _curve(config, ladder, [t for t in config.gate_tasks if t in ladder.labels])
+    return out
+
+
+def _slice_mask(ladder: Ladder, task: str, spec: str) -> np.ndarray:
+    """Frames of ``task`` in slice ``spec``: ``tod:<time of day>``, ``regime:<time of day>·<weather>``, ``all``."""
+    if spec == "all":
+        return np.ones(ladder.pos[task].size, dtype=bool)
+    kind, name = spec.split(":", 1)
+    if kind == "tod":
+        names = {v: int(k) for k, v in ladder.summary["stratum_names"].items()}
+        return ladder.stratum[ladder.pos[task]] == names[name]
+    if kind == "regime":
+        names = {v: int(k) for k, v in ladder.summary["regime_names"].items()}
+        return ladder.regime[ladder.pos[task]] == names[name]
+    raise ValueError(f"unknown slice {spec!r}; expected 'all', 'tod:<name>' or 'regime:<name>'.")
+
+
+def _slice_ok(labels: np.ndarray, keep: np.ndarray, all_classes: np.ndarray, min_per_class: int) -> bool:
+    return all((labels[keep] == c).sum() >= min_per_class for c in all_classes)
+
+
+def _partf_arm(config: DictConfig, ladder: Ladder, tasks: list[str]) -> dict[str, Any]:
+    """Part F2 for one arm: Δ vs the floor per slice at every walk checkpoint, the IID end, and the window contrasts.
+
+    A window contrast is a signed sum of within-slice changes between two walk checkpoints of the same seeds
+    (:func:`cafl4ds.adaptation.bootstrap_combination`): e.g. tracking = the night slice at the end minus at step 846.
+    """
+    pf = config.p125f
+    seeds, floor = range(int(config.n_seeds)), [str(pf.floor_name)]
+    iid = [f"iid_s{s}_end" for s in range(int(config.n_iid_seeds)) if ladder.has(f"iid_s{s}_end")]
+    suffixes = _checkpoint_order(ladder)
+    nb, sd, mpc = int(config.n_boot), int(config.seed), int(pf.min_per_class)
+    out: dict[str, Any] = {}
+    for task in tasks:
+        labels = ladder.labels[task]
+        classes = np.unique(labels)
+        masks = {s: _slice_mask(ladder, task, s) for s in ["all", *pf.slices]}
+        usable = {s: m for s, m in masks.items() if _slice_ok(labels, m, classes, mpc)}
+        entry: dict[str, Any] = {
+            "n_frames": int(labels.size),
+            "n_positive": int((labels == 1).sum()) if classes.size == 2 else None,
+            "slice_sizes": {s: int(m.sum()) for s, m in masks.items()},
+        }
+        for rung in pf.rungs:
+            key = f"{task}|{rung}"
+            ref = ladder.rows(floor, key)
+            if ref is None:
+                continue
+            walk = {sfx: ladder.rows([f"walk_s{s}_{sfx}" for s in seeds], key) for sfx in suffixes}
+            curve = {
+                s: {
+                    sfx: adaptation.bootstrap_delta(w[:, m], ref[:, m], labels[m], n_boot=nb, seed=sd)
+                    for sfx, w in walk.items()
+                    if w is not None
+                }
+                for s, m in usable.items()
+            }
+            iid_rows = ladder.rows(iid, key) if iid else None
+            end = walk.get("end")
+            iid_read: dict[str, Any] = {}
+            if iid_rows is not None and end is not None:
+                for s, m in usable.items():
+                    iid_read[s] = {
+                        "iid_vs_floor": adaptation.bootstrap_delta(
+                            iid_rows[:, m], ref[:, m], labels[m], n_boot=nb, seed=sd
+                        ),
+                        "walk_vs_iid": adaptation.bootstrap_contrast(
+                            end[:, m], iid_rows[:, m], labels[m], n_boot=nb, seed=sd
+                        ),
+                    }
+            windows: dict[str, Any] = {}
+            for name, win in pf.windows.items():
+                a, b = walk.get(str(win["from"])), walk.get(str(win["to"]))
+                terms = [(1.0, s) for s in win["slices"]] + [(-1.0, s) for s in win.get("against", [])]
+                if a is None or b is None or any(s not in usable for _, s in terms):
+                    windows[name] = None
+                    continue
+                parts = [
+                    (w, (b - a)[:, masks[s]], labels[masks[s]]) for w, s in terms
+                ]  # each term: the same seeds' change, within its slice
+                windows[name] = adaptation.bootstrap_combination(parts, n_boot=nb, seed=sd)
+                windows[name]["terms"] = {
+                    s: adaptation.bootstrap_combination(
+                        [(1.0, (b - a)[:, masks[s]], labels[masks[s]])], n_boot=nb, seed=sd
+                    )["delta"]
+                    for _, s in terms
+                }
+            entry[rung] = {"curve": curve, "iid": iid_read, "windows": windows}
+        out[task] = entry
+    return out
+
+
+def _train_frequency(config: DictConfig, tasks: list[str]) -> dict[str, float]:
+    """Each task's positive share over BDD-train frames of the study's scenes (the pool the drive samples from)."""
+    pf = config.p125f
+    records = json.loads(Path(to_absolute_path(str(pf.train_labels))).read_text(encoding="utf-8"))
+    scenes, frame = set(pf.scenes), float(pf.frame_area)
+    boxes, categories = [], []
+    for rec in records:
+        attrs = rec.get("attributes") or {}
+        if attrs.get("scene") not in scenes or "undefined" in (attrs.get("timeofday"), attrs.get("weather")):
+            continue
+        frame_boxes = [
+            (str(b["category"]), (b["box2d"]["x2"] - b["box2d"]["x1"]) * (b["box2d"]["y2"] - b["box2d"]["y1"]) / frame)
+            for b in rec.get("labels") or []
+            if isinstance(b.get("box2d"), dict)
+        ]
+        boxes.append(frame_boxes)
+        counts: dict[str, int] = {}
+        for c, _ in frame_boxes:
+            counts[c] = counts.get(c, 0) + 1
+        categories.append(counts)
+    n = len(boxes)
+    zeros = torch.zeros(n, dtype=torch.long)  # a label-only pool: no images are read
+    pool = adaptation.HeldOutPool(zeros, zeros, zeros, zeros, categories=categories, boxes=boxes)
+    return {t: float((adaptation.task_labels(pool, t).numpy() == 1).mean()) for t in tasks} | {"n_frames": float(n)}
+
+
+def p125f(config: DictConfig, root: Path) -> dict[str, Any]:
+    """P1.2.5's Part F (exploratory, no pass bar): F2's regime windows on every arm, and F1's end-of-drive table.
+
+    Reads ``<root>/<p125f.ladder_dir>/<arm>``. With ``p125f.train_labels`` set, also each task's frequency in
+    BDD-train, for F1's gain-against-frequency read.
+    """
+    pf = config.p125f
+    ladders = {str(a): Ladder(root / str(pf.ladder_dir) / str(a)) for a in pf.arms}
+    first = next(iter(ladders.values()))
+    for ladder in ladders.values():
+        _check_aligned(first, ladder)
+    tasks = [str(t) for t in pf.tasks] if pf.tasks else list(first.labels)
+    readable = [t for t in tasks if (first.labels[t] == 1).sum() >= int(pf.min_positive)]
+    report: dict[str, Any] = {
+        "tasks": tasks,
+        "read": readable,
+        "skipped": {t: int((first.labels[t] == 1).sum()) for t in tasks if t not in readable},
+        "arms": {a: _partf_arm(config, ladder, readable) for a, ladder in ladders.items()},
+    }
+    if pf.get("train_labels"):
+        report["train_frequency"] = _train_frequency(config, readable)
+    return report
+
+
 def _walk_position(segments: list[dict[str, Any]], step: int) -> int:
     """The walk leg (era index) that delivered batch ``step - 1`` — the last one a checkpoint before ``step`` saw."""
     seen = [seg["era_index"] for seg in segments if seg["start_step"] <= max(step - 1, 0)]
@@ -360,25 +803,41 @@ def _print_p120(report: dict[str, Any]) -> None:
                             print(f"    {g:9s} {frame:7s} Δ {c['delta']:+.3f} {ci} p {c['p_one_sided']:.3f}")
 
 
+def _print_report(mode: str, report: dict[str, Any]) -> None:
+    """Print the mode's summary lines."""
+    if mode == "p120":
+        _print_p120(report)
+    elif mode == "p124":
+        print(json.dumps(report, indent=2))
+    elif mode == "p125f":
+        print(f"read {len(report['read'])} tasks; skipped (positives < min): {report['skipped']}")
+    elif mode == "p125g":
+        for arm, entry in report["arms"].items():
+            print(f"{arm}: {entry['gate']['verdict']} (breadth {entry['breadth']['gains']}/{entry['breadth']['of']})")
+        for arm, entry in report["recipe"].items():
+            print(f"{entry['protected']} − {arm}, end: {entry['tests']}")
+    elif mode == "p125":
+        for arm, entry in report["arms"].items():
+            print(f"{arm}: {entry['gate']['verdict']} (breadth {entry['breadth']['gains']}/{entry['breadth']['of']})")
+        print(f"carry forward: {report['carry_forward']['vehicle']}; claim: {report['claim']}")
+    else:
+        for bb, entry in report.items():
+            print(f"{bb}: {entry['gate']}")
+
+
 def run(config: DictConfig) -> dict[str, Any]:
     """Run the configured analysis and write the report (Hydra-free core)."""
     root = Path(to_absolute_path(str(config.root)))
-    modes = {"p120": p120, "p121": p121, "p124": p124}
+    modes = {"p120": p120, "p121": p121, "p124": p124, "p125": p125, "p125f": p125f, "p125g": p125g}
     if str(config.mode) not in modes:
         raise ValueError(f"mode must be one of {sorted(modes)}; got {config.mode!r}.")
     with threadpool_limits(int(config.threads)):
         report = modes[str(config.mode)](config, root)
-    out = root / "adaptation_report.json"
+    out = root / str(config.get("report") or "adaptation_report.json")
     out.write_text(
         json.dumps({"mode": str(config.mode), "n_boot": int(config.n_boot), **report}, indent=2), encoding="utf-8"
     )
-    if config.mode == "p120":
-        _print_p120(report)
-    elif config.mode == "p124":
-        print(json.dumps(report, indent=2))
-    else:
-        for bb, entry in report.items():
-            print(f"{bb}: {entry['gate']}")
+    _print_report(str(config.mode), report)
     logger.info(f"wrote {out}")
     return report
 

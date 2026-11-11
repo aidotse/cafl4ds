@@ -4,7 +4,7 @@
 # Fetched from https://dl.fbaipublicfiles.com/dino/dino_vitbase16_pretrain/dino_vitbase16_pretrain.pth
 # (sha256 bf34ad0f424b9029b593e8dc3ed553bf26e88bcba0d32bf3e62a6209cb64c85e); mount its directory on the Gaudi node.
 _target_: cafl4ds.models.vit_mae_pretrained.MAEPretrainedViTEncoder
-state_dict_path: /home/mauricio/data/weights/dino_vitbase16_pretrain.pth
+state_dict_path: /mnt/pr_2018_scaleout_workdir/cafl4ds/data/weights/dino_vitbase16_pretrain.pth
 img_size: 224
 patch_size: 16
 embed_dim: 768

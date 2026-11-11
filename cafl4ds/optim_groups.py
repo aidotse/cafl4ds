@@ -12,6 +12,9 @@ rate and AdamW's decoupled decay pulls every pretrained weight toward zero. Fine
 
 With neither option the result is a single group equal to ``method.parameters()``, so a drive that
 does not ask for groups is unchanged.
+
+The trained backbone is ``encoder`` for every method but DINO, whose ``encoder`` is its frozen moving-average
+teacher (the encoder read) and whose ``student`` trains; both prefixes count as the backbone here.
 """
 
 from __future__ import annotations
@@ -22,19 +25,20 @@ from typing import Any
 from torch import nn
 
 _NO_DECAY_NAMES = ("pos_embed", "cls_token", "mask_token")
-_BLOCK = re.compile(r"^encoder\.blocks\.(\d+)\.")
+_BACKBONES = ("encoder.", "student.")
+_BLOCK = re.compile(r"^(?:encoder|student)\.blocks\.(\d+)\.")
 
 
 def layer_id(name: str, depth: int) -> int:
     """The layer a method parameter belongs to, counted from the input.
 
-    0 for the encoder's embeddings, ``i + 1`` for its block ``i``, and ``depth + 1`` for the encoder's
-    final norm and everything outside the encoder.
+    0 for the backbone's embeddings, ``i + 1`` for its block ``i``, and ``depth + 1`` for the backbone's
+    final norm and everything outside it (the backbone is ``encoder``, or DINO's ``student``).
     """
     match = _BLOCK.match(name)
     if match:
         return int(match.group(1)) + 1
-    if name.startswith("encoder.") and not name.startswith("encoder.norm."):
+    if name.startswith(_BACKBONES) and not name.split(".", 1)[1].startswith("norm."):
         return 0
     return depth + 1
 

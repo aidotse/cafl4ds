@@ -75,7 +75,10 @@ class TrustEntry:
         }
 
 
-_JE_METHODS = frozenset({"simsiam", "simsiam_collapse", "barlow", "barlow_collapse"})
+# DINO (P1.2.5) is a joint-embedding method; its two collapse switches name the method as the ablations do.
+_JE_METHODS = frozenset(
+    {"simsiam", "simsiam_collapse", "barlow", "barlow_collapse", "dino", "dino_nocenter", "dino_nosharpen"}
+)
 
 
 def backbone_family(method_name: str) -> Backbone:

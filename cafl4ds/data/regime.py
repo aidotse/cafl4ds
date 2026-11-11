@@ -377,6 +377,7 @@ class RegimeStream:
         # generator — and every reservation after it — is unchanged.
         self._selection_sets: EvalSets | None = None
         self._selection_indices: list[int] = []
+        self._selection_split: tuple[torch.Tensor, torch.Tensor] | None = None
         if select_support_per_canary > 0:
             sel_support, sel_query, train_mask = _reserve_probes(
                 canary, None, select_support_per_canary, select_query_per_canary, reserve_generator, train_mask
@@ -386,6 +387,7 @@ class RegimeStream:
                 probe_query=EvalSet(self._images[sel_query], canary[sel_query]),
             )
             self._selection_indices = torch.cat([sel_support, sel_query]).tolist()
+            self._selection_split = (sel_support, sel_query)
         self._eval_sets = EvalSets(
             probe_support=EvalSet(
                 self._images[support], canary[support], stratum[support] if stratum is not None else None
@@ -567,6 +569,15 @@ class RegimeStream:
         would then look like degradation.
         """
         return self._selection_sets
+
+    @property
+    def selection_indices(self) -> tuple[torch.Tensor, torch.Tensor] | None:
+        """The selection set's ``(support, query)`` indices into the source (``None`` if off).
+
+        Lets a reader rebuild the set from the source with every label it carries (P1.2.5 reads its whole
+        task panel there), not only the scene :attr:`selection_sets` holds.
+        """
+        return self._selection_split
 
     @property
     def eval_sets(self) -> EvalSets:

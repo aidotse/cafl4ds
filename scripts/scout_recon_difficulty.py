@@ -10,7 +10,7 @@ warmed on task A (frozen encoder, as in the harness decoder-first phase A), then
 domain at that fixed decoder state (norm_pix_loss=True, the training setting; 8 mask draws averaged).
 
 Run in the Gaudi container (reuses the harness mounts):
-    ./scripts/run_gaudi_dev.sh -m /mnt/cifar100 -m /mnt/imagenette -m /home/mauricio/data \
+    ./scripts/run_gaudi_dev.sh -m /mnt/pr_2018_scaleout_workdir/cafl4ds/data \
         gaudi-env-cafl4ds:latest 0 python scripts/scout_recon_difficulty.py
 """
 
@@ -28,7 +28,7 @@ from cafl4ds.models.vit_mae_pretrained import MAEPretrainedViTEncoder
 from cafl4ds.ssl.factory import build_mae
 from cafl4ds.ssl.mae import MAE
 
-CKPT = "/mnt/cifar100/mae_pretrain_vit_base.pth"
+CKPT = "/mnt/pr_2018_scaleout_workdir/cafl4ds/data/cifar100/mae_pretrain_vit_base.pth"
 WARM_EPOCHS = 12
 BS = 64
 MASK_DRAWS = 8
@@ -76,9 +76,11 @@ def main() -> None:
     side = int(round(encoder.num_patches**0.5)) * encoder.patch_size
     logger.info(f"encoder native side = {side}px")
 
-    img_a, _ = ImagenetteSource(root="/mnt/imagenette/imagenette2-320", img_size=224, max_per_class=300).load()
-    img_e, _ = EuroSATSource(root="/home/mauricio/data", img_size=64, max_per_class=300).load()
-    img_d = _load_dtd("/home/mauricio/data/dtd", 224, 600)
+    img_a, _ = ImagenetteSource(
+        root="/mnt/pr_2018_scaleout_workdir/cafl4ds/data/imagenette/imagenette2-320", img_size=224, max_per_class=300
+    ).load()
+    img_e, _ = EuroSATSource(root="/mnt/pr_2018_scaleout_workdir/cafl4ds/data", img_size=64, max_per_class=300).load()
+    img_d = _load_dtd("/mnt/pr_2018_scaleout_workdir/cafl4ds/data/dtd", 224, 600)
     logger.info(f"loaded imagenette={img_a.shape[0]} eurosat={img_e.shape[0]} dtd={img_d.shape[0]}")
 
     # Warm the decoder on task A (freeze the encoder) — the phase-B-start condition.

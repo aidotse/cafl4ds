@@ -87,6 +87,16 @@ class TorchvisionViTEncoder(nn.Module):  # type: ignore[misc]  # nn.Module is An
         x = F.interpolate(imgs, size=_VIT_INPUT, mode="bilinear", align_corners=False)
         return (x - self._mean) / self._std
 
+    def tokens(self, imgs: torch.Tensor) -> torch.Tensor:
+        """The final-normed tokens ``[B, 1 + 196, 768]`` (class token first) — the readout surface (P1.2.5).
+
+        torchvision's own forward, stopped before it keeps the class token: patchify, prepend the class token,
+        then the encoder (positions, blocks and the final LayerNorm).
+        """
+        x = self.vit._process_input(self._prep(imgs.to(self._mean.device)))
+        x = torch.cat([self.vit.class_token.expand(x.shape[0], -1, -1), x], dim=1)
+        return self.vit.encoder(x)
+
     def embed(self, imgs: torch.Tensor) -> torch.Tensor:
         """Pooled class-token embedding ``[B, embed_dim]`` (gradient-enabled).
 

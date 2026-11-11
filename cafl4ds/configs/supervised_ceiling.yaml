@@ -20,7 +20,7 @@ batch_size: 64
 seed: 0
 device: cpu
 
-bdd_root: /mnt/bdd100k
+bdd_root: /mnt/pr_2018_scaleout_workdir/cafl4ds/data/bdd100k
 max_images: null
 max_train_per_regime: null
 

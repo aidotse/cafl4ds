@@ -24,7 +24,7 @@ Examples:
 import copy
 import json
 import sys
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any
@@ -125,6 +125,8 @@ def _branch_stream(
         fed = branch.recovery_batches(stream, int(recovery)) if recovery else branch.ResumedStream(stream, start)
     elif recovery:
         raise ValueError("recovery_steps needs resume.checkpoint (the state to recover from).")
+    if config.get("max_steps"):  # P1.2.5 Part E: the drive's first steps, its schedules still set by the full drive
+        fed = branch.TruncatedStream(fed, int(config.max_steps))
     legs = config.get("checkpoint_legs")
     if legs:
         steps = [] if str(legs) == "final" or recovery else [s for s in stream.leg_boundary_steps if s > start]
@@ -134,6 +136,13 @@ def _branch_stream(
             steps = [s for s in chosen if s > start]
         fed = CheckpointingStream(fed, method, steps, out_dir / "checkpoints" / f"s{config.seed}")
     return fed, record
+
+
+def _well_frames(stream: RegimeStream) -> Iterator[torch.Tensor]:
+    """The well's frames in batches — the unlabelled pool a method primes on before step 0 (built only if consumed)."""
+    images = stream.labelled_pool("well").images
+    if len(images):
+        yield from images.split(stream.batch_size)
 
 
 def _run_live(
@@ -158,6 +167,10 @@ def _run_live(
             f"{method.name!r} ({backbone_family(method.name).value}) — check the backbone override."
         )
     stream = instantiate(config.stream, source=source)
+    method.set_horizon(len(stream))  # DINO's teacher momentum is scheduled over the drive
+    if not (config.get("well") or config.get("resume", {}).get("checkpoint")):  # a resumed state carries its own
+        with torch.random.fork_rng():  # the estimate's crops must not shift the drive's RNG draws
+            method.to(torch.device(str(config.device))).prime(_well_frames(stream))
     # P1.2.4's off-domain drives resume a BDD well on another source, whose split cannot match: the one
     # deliberate exception (resume_check_split=false).
     for path in {

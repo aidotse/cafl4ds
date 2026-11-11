@@ -4,7 +4,7 @@
 # `state_dict_path` is host-fetched and bind-mounted; override on the CLI to the container-visible
 # path (e.g. the data dir). Pair with `training_mode=ssl` (MAE) + `pretrained_encoder=true`.
 _target_: cafl4ds.models.vit_mae_pretrained.MAEPretrainedViTEncoder
-state_dict_path: /mnt/cifar100/mae_pretrain_vit_base.pth
+state_dict_path: /mnt/pr_2018_scaleout_workdir/cafl4ds/data/cifar100/mae_pretrain_vit_base.pth
 img_size: 224
 patch_size: 16
 embed_dim: 768

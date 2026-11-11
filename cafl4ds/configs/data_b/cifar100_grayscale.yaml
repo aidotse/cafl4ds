@@ -3,7 +3,7 @@
 # reader FALSE-FIRES on an output shift the representation shrugs off (grayscale ⊂ color) — a
 # probe-vs-recon divergence check on the label-free reader P0.3.6/P0.3.7 crowned as trustworthy.
 _target_: cafl4ds.data.sources.CIFAR100Source
-root: /mnt/cifar100
+root: /mnt/pr_2018_scaleout_workdir/cafl4ds/data/cifar100
 split: train
 img_size: 32
 max_per_class: ${max_per_class}

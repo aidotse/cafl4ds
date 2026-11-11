@@ -3,7 +3,7 @@
 # ImageNet-sourced, so a replay control can actually protect it. Native photos; the ViT-B encoder
 # upsamples img_size -> 224. Download imagenette2-320.tgz from fast.ai and extract under root.
 _target_: cafl4ds.data.sources.ImagenetteSource
-root: /mnt/imagenette/imagenette2-320
+root: /mnt/pr_2018_scaleout_workdir/cafl4ds/data/imagenette/imagenette2-320
 split: train
 img_size: 160
 max_per_class: ${max_per_class}

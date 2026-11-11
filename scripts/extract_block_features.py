@@ -24,7 +24,8 @@ reproduce the rows the existing record describes, so the features on disk stay i
 
 Example (Gaudi node; the drive's diet knobs, so the probes are the drive's)::
 
-    ./scripts/run_gaudi_dev.sh -m $BDD -m /mnt/cifar100 gaudi-env-cafl4ds:latest 0 \\
+    ./scripts/run_gaudi_dev.sh -m $BDD -m /mnt/pr_2018_scaleout_workdir/cafl4ds/data/cifar100 \\
+        gaudi-env-cafl4ds:latest 0 \\
         python scripts/extract_block_features.py $DIET backbone=mae well=wells/p110_deep/mae_o0.0.pt \\
         'lens.drives=[outputs/p110_deep/warm/mae_o0.0_iid]' 'lens.branches=[outputs/p111/branch/mae_iid_noise1.0]' \\
         hydra.run.dir=outputs/p112/features_mae

@@ -87,12 +87,14 @@ class OffDomainSource(AttributeSource):
         pixel_dtype: str = "uint8",
         cache_dir: str | None = None,
         workers: int = 8,
+        subset: int | None = None,
+        subset_seed: int = 0,
     ) -> None:
         """Configure the source.
 
         Args:
             archive: The image archive (COCO's ``train2017.zip``, Places' ``train_256_places365standard.tar``).
-            n_images: Images drawn at random from the eligible set.
+            n_images: Images drawn at random from the eligible set (and the decode cache's size).
             exclude: The street / road content left out (COCO category names; Places category paths).
             crop_aspect: The centre-crop aspect (width / height) applied before the square squash.
             img_size: Side length of the square output.
@@ -100,14 +102,23 @@ class OffDomainSource(AttributeSource):
             pixel_dtype: ``"uint8"`` (as the BDD caches) or ``"float32"`` in ``[0, 1]``.
             cache_dir: Save / reuse the decode here (``None`` = off).
             workers: Decode processes.
+            subset: Keep only this many of the ``n_images``, drawn by ``subset_seed`` (sorted order) — P1.2.5
+                re-matches the controls to a shorter drive from the existing cache, whose archive is gone.
+                The placeholder canary is reassigned over the kept images. ``None`` (default) keeps all.
+            subset_seed: The subset draw's seed.
 
         Raises:
-            ValueError: If ``pixel_dtype`` is unknown or ``n_images`` is not positive.
+            ValueError: If ``pixel_dtype`` is unknown, ``n_images`` is not positive, or ``subset`` is not in
+                ``[1, n_images]``.
         """
         if pixel_dtype not in ("float32", "uint8"):
             raise ValueError(f"pixel_dtype must be 'float32' or 'uint8'; got {pixel_dtype!r}.")
         if n_images <= 0:
             raise ValueError(f"n_images must be positive; got {n_images}.")
+        if subset is not None and not 0 < subset <= n_images:
+            raise ValueError(f"subset must be in [1, n_images={n_images}]; got {subset}.")
+        self.subset = subset
+        self.subset_seed = int(subset_seed)
         self.archive = Path(archive)
         self.n_images = int(n_images)
         self.exclude = sorted(str(e) for e in exclude)
@@ -164,7 +175,23 @@ class OffDomainSource(AttributeSource):
                     torch.save(self._cache, partial)
                     partial.replace(path)
                     logger.info(f"{self.name}: cached the decode at {path}")
+            if self.subset is not None:
+                self._cache = self._keep_subset(self._cache)
         return self._cache
+
+    def _keep_subset(self, data: AttributedImages) -> AttributedImages:
+        """The ``subset`` images drawn by ``subset_seed``, in sorted order, with the placeholder canary reassigned."""
+        keep = np.sort(np.random.default_rng(self.subset_seed).choice(self.n_images, size=self.subset, replace=False))
+        n = int(keep.size)
+        logger.info(f"{self.name}: kept a {n}-image subset (seed {self.subset_seed}) of {self.n_images}")
+        return AttributedImages(
+            images=data.images[torch.from_numpy(keep)],
+            era_key=torch.zeros(n, dtype=torch.long),
+            canary=torch.arange(n, dtype=torch.long) % 2,
+            regime_order=data.regime_order,
+            regime_names=data.regime_names,
+            canary_names=data.canary_names,
+        )
 
     def _decode(self) -> AttributedImages:
         members = self.selected()

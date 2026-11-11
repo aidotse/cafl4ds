@@ -34,7 +34,7 @@ seed: 0
 device: cpu
 epochs: 40
 eval_every_epochs: 1
-data_root: /mnt/stl10
+data_root: /mnt/pr_2018_scaleout_workdir/cafl4ds/data/stl10
 max_per_class: null
 max_train_per_class: null
 

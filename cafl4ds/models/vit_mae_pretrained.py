@@ -105,16 +105,17 @@ class MAEPretrainedViTEncoder(TinyViTEncoder):
             raise ValueError(f"MAE ViT-B load mismatch: missing={list(missing)} unexpected={list(unexpected)}")
         logger.info(f"loaded MAE-pretrained ViT-B/16 encoder from {path}")
 
-    def _embed_patches(self, imgs: torch.Tensor) -> torch.Tensor:
+    def _embed_patches(self, imgs: torch.Tensor, resize: bool = True) -> torch.Tensor:
         """Resize to the ViT-B input size + ImageNet-normalize, then embed patches (base impl).
 
         Overrides the base so every path (``forward_encoder`` for masked training *and* ``embed``
         for the probes/drift) sees the pretraining input contract — the harness stays free to feed
-        native-resolution ``[0, 1]`` images.
+        native-resolution ``[0, 1]`` images. ``resize=False`` skips the resize (normalization stays),
+        so DINO's 96 px local crops run at their own resolution on interpolated positions.
         """
         imgs = imgs.to(self._mean.device)
-        if imgs.shape[-1] != self._input_size or imgs.shape[-2] != self._input_size:
+        if resize and (imgs.shape[-1] != self._input_size or imgs.shape[-2] != self._input_size):
             imgs = F.interpolate(imgs, size=self._input_size, mode="bilinear", align_corners=False)
         if self._imagenet_norm:
             imgs = (imgs - self._mean) / self._std
-        return super()._embed_patches(imgs)
+        return super()._embed_patches(imgs, resize=resize)

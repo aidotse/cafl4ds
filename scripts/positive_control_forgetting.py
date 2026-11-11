@@ -37,7 +37,7 @@ Examples:
 
     Escalated MAE on the Gaudi HPU (the P0.3.0 fair regime; see docs/developing.md)::
 
-        ./scripts/run_gaudi_dev.sh -m /mnt/stl10 gaudi-env-cafl4ds:latest 0 \
+        ./scripts/run_gaudi_dev.sh -m /mnt/pr_2018_scaleout_workdir/cafl4ds/data/stl10 gaudi-env-cafl4ds:latest 0 \
             python scripts/positive_control_forgetting.py device=hpu \
             encoder.embed_dim=256 encoder.depth=8 encoder.num_heads=8 img_size=64 \
             epochs_a=300 epochs_b=300

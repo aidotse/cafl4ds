@@ -17,7 +17,7 @@ seed: 0
 device: cpu
 threads: 8 # torch + BLAS threads (cap them beside HPU jobs)
 
-bdd_root: /mnt/bdd100k
+bdd_root: /mnt/pr_2018_scaleout_workdir/cafl4ds/data/bdd100k
 max_images: null
 max_train_per_regime: null
 
@@ -31,10 +31,20 @@ pool:
   fit_fraction: 0.4
   seed: 0 # the fit / query split, and the probe-fit subsample — fixed, so every encoder reads the same frames
 
-tasks: [scene] # scene | presence:<category> (e.g. "presence:traffic light")
+tasks: [scene] # scene | weather | presence(_cell):<category> | large_cell:<categories>:<min_area> | drivable (per patch)
 probe_per_class: 500 # each task's probes fit on this many fit-pool frames per class
 knn_k: 20
 blocks: null # P1.2.2's per-block probes: also read the frozen rungs after these encoder blocks (1-based)
+# P1.2.5: what an encoder is read on — embed (its own pooling: the patch mean for the cafl4ds ViTs, cls for the
+# torchvision ViT-B) | mean (the patch-token mean, for every encoder) | cls (the class token). cls_rungs adds frozen
+# rungs on the class token beside it (keys <task>|<rung>@cls).
+readout: embed
+cls_rungs: false
+patch: # the per-patch task (drivable): seed-fixed frames with a drivable map, every patch of each read
+  fit_frames: 500 # the probes fit on patches of this many fit frames ...
+  per_class: 10000 # ... up to this many patches per class
+  query_frames: 1000 # scored on every patch of this many query frames
+  knn: true # also the per-patch kNN (the slow read: every query patch against the support)
 
 fewshot:
   enabled: false # per-encoder `fewshot:` in the encoder list overrides this
@@ -59,6 +69,7 @@ screen: # mode=screen (P1.2.0 part 4), on the first encoder (B5)
   ceiling_steps: 1900 # ~20 epochs over 2 x 1,500 frames at batch 32
   max_overlap: 0.60 # eligible only if scene + time of day predict the task at most this well
   min_headroom: 0.0 # ... and its headroom (full-label ceiling − B5 linear) is at least this
+  max_tasks: null # the panel: up to this many eligible candidates, by headroom (null = all; `choice` is the first)
 
 # The encoders: [{name, kind: pretrained | random | well | checkpoint, path?, fewshot?}], plus encoders_file.
 encoders:

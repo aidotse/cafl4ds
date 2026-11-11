@@ -20,6 +20,7 @@ runs untouched:
 
 from __future__ import annotations
 
+import itertools
 from collections.abc import Iterable, Iterator
 
 import torch
@@ -59,6 +60,33 @@ class ResumedStream:
     def __iter__(self) -> Iterator[StreamBatch]:
         """Yield the wrapped stream's batches from ``start`` on."""
         return (batch for batch in self.stream if batch.step >= self.start)
+
+
+class TruncatedStream:
+    """A stream wrapper that stops after ``n_steps`` batches — the drive's opening, on the full drive's schedules."""
+
+    def __init__(self, stream: Iterable[StreamBatch], n_steps: int) -> None:
+        """Wrap ``stream``.
+
+        Args:
+            stream: The drive stream (sized).
+            n_steps: How many of its batches to deliver.
+
+        Raises:
+            ValueError: If ``n_steps`` is not positive.
+        """
+        if n_steps <= 0:
+            raise ValueError(f"n_steps must be > 0; got {n_steps}.")
+        self.stream = stream
+        self.n_steps = n_steps
+
+    def __len__(self) -> int:
+        """The batches delivered."""
+        return min(len(self.stream), self.n_steps)  # type: ignore[arg-type]
+
+    def __iter__(self) -> Iterator[StreamBatch]:
+        """Yield the wrapped stream's first ``n_steps`` batches."""
+        return itertools.islice(self.stream, self.n_steps)
 
 
 def recovery_batches(stream: RegimeStream, n_steps: int) -> list[StreamBatch]:

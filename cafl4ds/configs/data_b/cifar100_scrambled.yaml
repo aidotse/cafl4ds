@@ -3,7 +3,7 @@
 # Same cross-dataset harness as P0.3.6 (task A = imagenette); only the phase-B distribution changes,
 # to attempt the genuine (savings < 1) pole the near-IID color-CIFAR fire never reached.
 _target_: cafl4ds.data.sources.CIFAR100Source
-root: /mnt/cifar100
+root: /mnt/pr_2018_scaleout_workdir/cafl4ds/data/cifar100
 split: train
 img_size: 32
 max_per_class: ${max_per_class}

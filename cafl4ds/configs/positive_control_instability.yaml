@@ -63,7 +63,7 @@ lr_sweep: [0.1, 0.3, 1.0, 3.0, 10.0, 30.0]
 # the tiny-MAE transient (steps 0-2 all > 1, then it drops below the steady band by step 3).
 init_skip: 3
 
-data_root: /mnt/stl10
+data_root: /mnt/pr_2018_scaleout_workdir/cafl4ds/data/stl10
 max_per_class: null # use the full STL-10 train split
 max_train_per_class: null # no training cap
 

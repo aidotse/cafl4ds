@@ -1,0 +1,39 @@
+# @package _global_
+# backbone = DINO's own objective (P1.2.5; cafl4ds/ssl/dino.py), resumed intact from the official full training
+# checkpoint — student, teacher and both heads — so no heads are settled; the centre, absent from the released
+# checkpoint, is estimated before step 0 (DINO.prime). Pair with
+# encoder=vit_b16_dino: the read encoder is the teacher, and the checkpoint's teacher must equal it bit for bit.
+# A joint-embedding method, so the monitor reads the JE vector, with the teacher head's bottleneck as `_proj`.
+# The collapse switches (Part E): ssl.centering=false | ssl.sharpening=false.
+family: je
+ssl:
+  _target_: cafl4ds.ssl.dino.build_dino
+  # https://dl.fbaipublicfiles.com/dino/dino_vitbase16_pretrain/dino_vitbase16_pretrain_full_checkpoint.pth
+  # (sha256 491ec6200b350dd7d532cea1b040846cbc1b4ae038299331168fdd3e0361e262; holds student + teacher only, no args
+  # or centre — see P1.2.5.md); mount its directory on the Gaudi node.
+  checkpoint: /mnt/pr_2018_scaleout_workdir/cafl4ds/data/weights/dino_vitbase16_pretrain_full_checkpoint.pth
+  out_dim: 65536 # head shape: overridden by the checkpoint's own args when one is loaded
+  hidden_dim: 2048
+  bottleneck_dim: 256
+  use_bn: false
+  norm_last_layer: true
+  # The released run's own settings (its args.txt), so the drive continues where that run stopped.
+  global_size: 224 # two global crops
+  global_scale: [0.25, 1.0]
+  local_size: 96 # ten local crops, run at their own resolution
+  local_scale: [0.05, 0.25]
+  n_local: 10
+  student_temp: 0.1
+  teacher_temp: 0.07 # where the run's 0.04 -> 0.07 warmup ended
+  center_momentum: 0.9
+  teacher_momentum: 0.996 # ramped to 1 over the drive (DINO's cosine schedule)
+  centering: true
+  sharpening: true
+monitor:
+  _target_: cafl4ds.monitor.HealthMonitor
+  knn_k: 20
+  run_knn: true
+  run_linear: true
+  run_alignment: true
+  align_seed: 0
+  drift_surfaces: true

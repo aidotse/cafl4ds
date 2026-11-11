@@ -19,3 +19,10 @@ cache_dir: null
 scenes: null
 # squash (default: the 16:9 frame resized straight to a square) | center_crop (aspect kept, sides dropped)
 resize_mode: squash
+# P1.2.5's geometry labels (both off by default, and then the decode cache key is unchanged):
+# `boxes` keeps every box's frame share (needs box2d in the labels file); `drivable_dir` reads BDD's drivable-area
+# label-id maps, pooled to a `drivable_grid` square (the encoder's patch grid).
+labels_file: null # the attributes JSON (null = <bdd_root>/labels/bdd100k_labels_images_<split>.json)
+boxes: false
+drivable_dir: null
+drivable_grid: 14

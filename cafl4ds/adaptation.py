@@ -8,7 +8,8 @@ the reader (``scripts/read_adaptation.py``) wires together:
   into a fit pool (probes and fine-tunes train on class-balanced subsamples of it) and a query set
   (every reading scores it);
 * the **tasks** — the scene canary, and binary object-presence tasks from BDD's per-image category
-  counts (the secondary, higher-headroom readout);
+  counts (the secondary, higher-headroom readout); P1.2.5 adds large-object presence from box areas and a
+  **per-patch** task (is each patch mostly drivable?), read on patch tokens and scored per patch;
 * the **ladder** — frozen kNN and linear probes, and a few-shot fine-tune of the encoder plus a
   linear head, each returning *per-image correctness* so a contrast can resample images;
 * the **contrast** — Δ = adapted − reference in **balanced accuracy** (mean per-class recall), with
@@ -20,6 +21,7 @@ the reader (``scripts/read_adaptation.py``) wires together:
 from __future__ import annotations
 
 import copy
+import math
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
@@ -35,6 +37,10 @@ WEATHER = "weather"
 WEATHER_CLASSES = ("clear", "rainy", "snowy")  # BDD's unambiguous, well-populated weathers
 PRESENCE_PREFIX = "presence:"
 PRESENCE_CELL_PREFIX = "presence_cell:"
+LARGE_CELL_PREFIX = "large_cell:"
+SIZE_CELL_PREFIX = "size_cell:"
+DRIVABLE = "drivable"  # the per-patch task: is each patch mostly (> half) drivable area?
+_CELL_BALANCED = (PRESENCE_CELL_PREFIX, LARGE_CELL_PREFIX, SIZE_CELL_PREFIX)
 _ENCODE_CHUNK = 128  # a ViT-B/16 at 224 px: features are read in chunks, then probed on CPU
 
 
@@ -50,6 +56,8 @@ class HeldOutPool:
         categories: Per-image object-category counts (BDD's labels), or ``None`` when absent.
         stratum_names: Name per stratum id.
         regime_names: Name per regime id.
+        boxes: Per-image ``(category, frame share)`` boxes, or ``None`` when absent (P1.2.5's large objects).
+        drivable: Per-image drivable share of each patch-grid cell ``[N, g, g]`` (``NaN`` = no map), or ``None``.
     """
 
     images: torch.Tensor
@@ -59,10 +67,17 @@ class HeldOutPool:
     categories: list[dict[str, int]] | None = None
     stratum_names: dict[int, str] = field(default_factory=dict)
     regime_names: dict[int, str] = field(default_factory=dict)
+    boxes: list[list[tuple[str, float]]] | None = None
+    drivable: torch.Tensor | None = None
 
     def __len__(self) -> int:
         """The number of frames."""
         return int(self.scene.shape[0])
+
+
+def is_patch_task(task: str) -> bool:
+    """Whether ``task`` is labelled per patch (read on patch tokens) rather than per frame."""
+    return task == DRIVABLE
 
 
 def task_labels(pool: HeldOutPool, task: str) -> torch.Tensor:
@@ -74,9 +89,16 @@ def task_labels(pool: HeldOutPool, task: str) -> torch.Tensor:
     * ``"presence:<category>"`` / ``"presence_cell:<category>"`` — 1 if any box of the category. The
       ``_cell`` form uses the same labels; :func:`task_indices` then balances them within each
       (scene × time-of-day) cell, so scene and time of day carry no information about the label.
+    * ``"large_cell:<category>[,<category>...]:<min_area>"`` — 1 if any box of those categories covers at
+      least ``min_area`` of the frame (e.g. ``large_cell:car,bus,truck:0.02``), cell-balanced as above.
+    * ``"size_cell:<category>:<min_area>:<max_area>"`` — P1.2.5's Part F size bins: 1 if the frame's *largest* box
+      of the category has a frame share in ``[min_area, max_area)``, 0 if the frame has no box of it, ``-1`` if its
+      largest box falls outside the bin; cell-balanced as above.
+    * ``"drivable"`` — the per-patch task; per frame, 0 where it has a drivable map and ``-1`` where not
+      (its patch labels are :func:`patch_labels`).
 
     Raises:
-        ValueError: If the task is unknown, or a presence task is asked of a pool with no categories.
+        ValueError: If the task is unknown or malformed, or asks for labels the pool does not carry.
     """
     if task == SCENE:
         return pool.scene
@@ -84,6 +106,8 @@ def task_labels(pool: HeldOutPool, task: str) -> torch.Tensor:
         weather = {rid: name.split("·")[-1] for rid, name in pool.regime_names.items()}
         code = {w: i for i, w in enumerate(WEATHER_CLASSES)}
         return torch.tensor([code.get(weather.get(int(r), ""), -1) for r in pool.regime], dtype=torch.long)
+    if task == DRIVABLE or task.startswith((LARGE_CELL_PREFIX, SIZE_CELL_PREFIX)):
+        return _geometry_labels(pool, task)
     for prefix in (PRESENCE_PREFIX, PRESENCE_CELL_PREFIX):
         if task.startswith(prefix):
             if pool.categories is None:
@@ -91,20 +115,67 @@ def task_labels(pool: HeldOutPool, task: str) -> torch.Tensor:
             category = task[len(prefix) :]
             return torch.tensor([int(c.get(category, 0) > 0) for c in pool.categories], dtype=torch.long)
     raise ValueError(
-        f"unknown task {task!r}; expected {SCENE!r}, {WEATHER!r}, '{PRESENCE_PREFIX}<category>' or "
-        f"'{PRESENCE_CELL_PREFIX}<category>'."
+        f"unknown task {task!r}; expected {SCENE!r}, {WEATHER!r}, {DRIVABLE!r}, '{PRESENCE_PREFIX}<category>', "
+        f"'{PRESENCE_CELL_PREFIX}<category>', '{LARGE_CELL_PREFIX}<categories>:<min_area>' or "
+        f"'{SIZE_CELL_PREFIX}<category>:<min_area>:<max_area>'."
     )
+
+
+def _geometry_labels(pool: HeldOutPool, task: str) -> torch.Tensor:
+    """:func:`task_labels` for P1.2.5's geometry tasks (``drivable``, ``large_cell:…``, ``size_cell:…``)."""
+    if task == DRIVABLE:
+        if pool.drivable is None:
+            raise ValueError(f"task {task!r} needs drivable-area maps; this pool has none.")
+        has_map = ~torch.isnan(pool.drivable.flatten(1)).any(dim=1)
+        return torch.where(has_map, 0, -1).long()
+    if pool.boxes is None:
+        raise ValueError(f"task {task!r} needs per-image box areas; this pool has none.")
+    if task.startswith(SIZE_CELL_PREFIX):
+        return _size_labels(pool.boxes, task)
+    spec = task[len(LARGE_CELL_PREFIX) :].rsplit(":", 1)
+    if len(spec) != 2:
+        raise ValueError(f"task {task!r} must read '{LARGE_CELL_PREFIX}<categories>:<min_area>'.")
+    wanted, min_area = set(spec[0].split(",")), float(spec[1])
+    return torch.tensor(
+        [int(any(c in wanted and a >= min_area for c, a in boxes)) for boxes in pool.boxes], dtype=torch.long
+    )
+
+
+def _size_labels(boxes: list[list[tuple[str, float]]], task: str) -> torch.Tensor:
+    """``size_cell:<category>:<min_area>:<max_area>`` labels: the largest box's bin, no box, or neither (``-1``)."""
+    spec = task[len(SIZE_CELL_PREFIX) :].rsplit(":", 2)
+    if len(spec) != 3:
+        raise ValueError(f"task {task!r} must read '{SIZE_CELL_PREFIX}<category>:<min_area>:<max_area>'.")
+    category, low, high = spec[0], float(spec[1]), float(spec[2])
+    if not 0.0 <= low < high:
+        raise ValueError(f"task {task!r} needs 0 <= min_area < max_area.")
+    out = []
+    for frame in boxes:
+        areas = [a for c, a in frame if c == category]
+        if not areas:
+            out.append(0)
+        else:
+            out.append(1 if low <= max(areas) < high else -1)
+    return torch.tensor(out, dtype=torch.long)
+
+
+def patch_labels(pool: HeldOutPool) -> torch.Tensor:
+    """The per-patch task's labels ``[N, g * g]``: 1 where a patch is mostly (> ½) drivable, ``-1`` without a map."""
+    if pool.drivable is None:
+        raise ValueError("the per-patch task needs drivable-area maps; this pool has none.")
+    share = pool.drivable.flatten(1)
+    return torch.where(torch.isnan(share), -1, (share > 0.5).long()).long()
 
 
 def task_indices(pool: HeldOutPool, task: str, candidates: np.ndarray, seed: int) -> np.ndarray:
     """The frames of ``candidates`` the task uses.
 
-    Those labelled (``>= 0``); for ``presence_cell`` tasks, further balanced — equal positives and
-    negatives drawn within every (scene × time-of-day) cell.
+    Those labelled (``>= 0``); for ``presence_cell``, ``large_cell`` and ``size_cell`` tasks, further balanced — equal
+    positives and negatives drawn within every (scene × time-of-day) cell.
     """
     labels = task_labels(pool, task).numpy()
     keep = candidates[labels[candidates] >= 0]
-    if not task.startswith(PRESENCE_CELL_PREFIX):
+    if not task.startswith(_CELL_BALANCED):
         return keep
     rng = np.random.default_rng(seed)
     cells = pool.scene.numpy() * 1000 + pool.stratum.numpy()
@@ -172,6 +243,124 @@ def encode_blocks(encoder: nn.Module, images: torch.Tensor, device: str, blocks:
         for handle in handles:
             handle.remove()
     return {b: torch.cat(parts).numpy() for b, parts in captured.items()}
+
+
+class Readout(nn.Module):  # type: ignore[misc]  # nn.Module is Any without torch stubs (mypy hook env)
+    """An encoder read on a chosen pooling of its final tokens: the patch-token ``mean`` or the ``cls`` token.
+
+    P1.2.5 reads every encoder on both. An encoder's own ``embed`` is the mean for the cafl4ds ViTs and the
+    ``cls`` token for the torchvision ViT-B, so this wrapper is how each is read on the other. Every encoder it
+    wraps exposes ``tokens(imgs) -> [B, 1 + N, d]`` (final-normed, ``cls`` first).
+    """
+
+    def __init__(self, encoder: nn.Module, readout: str) -> None:
+        """Wrap ``encoder`` to read its ``readout`` (``"mean"`` or ``"cls"``)."""
+        super().__init__()
+        if readout not in ("mean", "cls"):
+            raise ValueError(f"readout must be 'mean' or 'cls'; got {readout!r}.")
+        self.encoder = encoder
+        self.readout = readout
+        self.embed_dim = int(encoder.embed_dim)
+
+    @property
+    def blocks(self) -> nn.ModuleList:
+        """The wrapped encoder's blocks (for the per-block probes)."""
+        return self.encoder.blocks
+
+    def tokens(self, imgs: torch.Tensor) -> torch.Tensor:
+        """The wrapped encoder's final tokens."""
+        return self.encoder.tokens(imgs)
+
+    def embed(self, imgs: torch.Tensor) -> torch.Tensor:
+        """The chosen pooling of the final tokens ``[B, d]``."""
+        tokens = self.encoder.tokens(imgs)
+        return tokens[:, 0] if self.readout == "cls" else tokens[:, 1:].mean(dim=1)
+
+
+def encode_readouts(encoder: nn.Module, images: torch.Tensor, device: str) -> dict[str, np.ndarray]:
+    """Both poolings of the final tokens, ``{"mean": [N, d], "cls": [N, d]}``, in one pass (as :func:`encode`)."""
+    was_training = encoder.training
+    encoder.eval()
+    parts: dict[str, list[torch.Tensor]] = {"mean": [], "cls": []}
+    try:
+        with torch.no_grad():
+            for chunk in images.split(_ENCODE_CHUNK):
+                tokens = encoder.tokens(as_float(chunk).to(device)).float().cpu()
+                parts["mean"].append(tokens[:, 1:].mean(dim=1))
+                parts["cls"].append(tokens[:, 0])
+    finally:
+        encoder.train(was_training)
+    return {k: torch.cat(v).numpy() for k, v in parts.items()}
+
+
+def encode_patches(encoder: nn.Module, images: torch.Tensor, device: str) -> np.ndarray:
+    """Patch tokens ``[N, P, d]`` (``cls`` dropped, float16 to halve the memory), as :func:`encode`."""
+    was_training = encoder.training
+    encoder.eval()
+    try:
+        with torch.no_grad():
+            parts = [
+                encoder.tokens(as_float(chunk).to(device))[:, 1:].half().cpu() for chunk in images.split(_ENCODE_CHUNK)
+            ]
+    finally:
+        encoder.train(was_training)
+    return torch.cat(parts).numpy()
+
+
+def patch_counts(labels: np.ndarray) -> np.ndarray:
+    """Patches per class per frame ``[N, 2]`` of per-patch labels ``[N, P]`` (``-1`` patches not counted)."""
+    return np.stack([(labels == c).sum(axis=1) for c in (0, 1)], axis=1).astype(np.float32)
+
+
+def patch_correctness(
+    tokens: np.ndarray,
+    labels: np.ndarray,
+    fit: np.ndarray,
+    query: np.ndarray,
+    knn_k: int,
+    per_class: int,
+    seed: int,
+    rungs: tuple[str, ...] = ("knn", "linear"),
+) -> dict[str, np.ndarray]:
+    """The frozen per-patch kNN and linear probes, fit on ``fit``'s patches, as correct-patch counts per query frame.
+
+    The probes fit on up to ``per_class`` patches of each class drawn (``seed``) from the ``fit`` frames, and
+    score every labelled patch of the ``query`` frames. ``tokens`` / ``labels`` are ``[N, P, d]`` / ``[N, P]``,
+    indexed by ``fit`` and ``query``. ``rungs`` picks the probes (the kNN over every query patch is the slow one).
+
+    Returns:
+        ``rung -> [len(query), 2]``, the correct patches of each class (0, 1) per query frame; with
+        :func:`patch_counts` they give the patch-level balanced accuracy (:func:`patch_balanced_accuracy`).
+    """
+    if tokens.shape[1] != labels.shape[1]:
+        raise ValueError(
+            f"{tokens.shape[1]} patch tokens per frame but {labels.shape[1]} patch labels: the label grid "
+            "must be the encoder's patch grid (data.drivable_grid)."
+        )
+    dim = tokens.shape[-1]
+    xs, ys = tokens[fit].reshape(-1, dim), labels[fit].reshape(-1)
+    keep = balanced_indices(ys, np.flatnonzero(ys >= 0), per_class, seed)
+    xq, yq = tokens[query].reshape(-1, dim), labels[query].reshape(-1)
+    valid = yq >= 0
+    frame = np.repeat(np.arange(query.size), labels.shape[1])[valid]
+    identity: Callable[[torch.Tensor], torch.Tensor] = lambda x: x  # noqa: E731 — features are pre-encoded
+    support = (torch.from_numpy(xs[keep].astype(np.float32)), torch.from_numpy(ys[keep]))
+    target = (torch.from_numpy(xq[valid].astype(np.float32)), torch.from_numpy(yq[valid]))
+    out = {}
+    for rung in rungs:
+        if rung == "knn":
+            pred, truth = measurements.knn_predict(identity, support, target, k=knn_k)
+        else:
+            pred, truth = measurements.linear_predict(identity, support, target)
+        counts = np.zeros((query.size, 2), dtype=np.float32)
+        np.add.at(counts, (frame, truth), (pred == truth).astype(np.float32))
+        out[rung] = counts
+    return out
+
+
+def patch_balanced_accuracy(correct: np.ndarray, counts: np.ndarray) -> float:
+    """Patch-level balanced accuracy from per-frame correct-patch counts ``[N, 2]`` and patch counts ``[N, 2]``."""
+    return float(np.mean(correct.sum(axis=0) / counts.sum(axis=0)))
 
 
 def frozen_correctness(
@@ -254,6 +443,69 @@ def fine_tune_predict(
     model.eval()
     with torch.no_grad():
         preds = [model(as_float(chunk).to(device)).argmax(dim=1).cpu() for chunk in query_images.split(_ENCODE_CHUNK)]
+    return torch.cat(preds).numpy()
+
+
+class _PatchClassifier(nn.Module):  # type: ignore[misc]  # nn.Module is Any without torch stubs (mypy hook env)
+    """An encoder with a linear head on every patch token."""
+
+    def __init__(self, encoder: nn.Module, num_classes: int) -> None:
+        super().__init__()
+        self.encoder = encoder
+        self.head = nn.Linear(int(encoder.embed_dim), num_classes)
+
+    def forward(self, imgs: torch.Tensor) -> torch.Tensor:
+        return self.head(self.encoder.tokens(imgs)[:, 1:])  # [B, P, classes]
+
+
+def fine_tune_patch_predict(
+    encoder: nn.Module,
+    train_images: torch.Tensor,
+    train_labels: torch.Tensor,
+    query_images: torch.Tensor,
+    recipe: FineTuneRecipe,
+    *,
+    seed: int,
+    device: str,
+) -> np.ndarray:
+    """The per-patch version of :func:`fine_tune_predict`: a copy of ``encoder`` plus a linear head on every patch.
+
+    ``train_labels`` is ``[n, P]`` (``-1`` patches ignored). Batches are drawn uniformly (both classes share
+    frames), the loss is weighted by inverse class frequency (the read is balanced accuracy), and a horizontal
+    flip mirrors the label grid with the image.
+
+    Returns:
+        Per-patch predictions on the query ``[n_query, P]``.
+    """
+    generator = torch.Generator().manual_seed(seed)
+    torch.manual_seed(seed)  # the head's init
+    model = _PatchClassifier(copy.deepcopy(encoder), 2).to(device)
+    model.train()
+    optimizer = torch.optim.AdamW(
+        [
+            {"params": model.encoder.parameters(), "lr": recipe.lr},
+            {"params": model.head.parameters(), "lr": recipe.lr * recipe.head_lr_mult},
+        ],
+        weight_decay=recipe.weight_decay,
+    )
+    schedule = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=recipe.steps)
+    counts = torch.stack([(train_labels == c).sum() for c in (0, 1)]).float()
+    loss_fn = nn.CrossEntropyLoss(weight=(counts.sum() / (2 * counts.clamp(min=1))).to(device), ignore_index=-1)
+    side = int(round(train_labels.shape[1] ** 0.5))
+    for _ in range(recipe.steps):
+        batch = torch.randint(train_labels.shape[0], (recipe.batch_size,), generator=generator)
+        imgs, labels = as_float(train_images[batch]), train_labels[batch].view(-1, side, side)
+        flip = torch.rand(imgs.shape[0], generator=generator) < 0.5
+        imgs = torch.where(flip[:, None, None, None], imgs.flip(-1), imgs)
+        labels = torch.where(flip[:, None, None], labels.flip(-1), labels).reshape(imgs.shape[0], -1)
+        optimizer.zero_grad()
+        loss = loss_fn(model(imgs.to(device)).flatten(0, 1), labels.flatten().to(device))
+        loss.backward()
+        optimizer.step()
+        schedule.step()
+    model.eval()
+    with torch.no_grad():
+        preds = [model(as_float(chunk).to(device)).argmax(dim=2).cpu() for chunk in query_images.split(_ENCODE_CHUNK)]
     return torch.cat(preds).numpy()
 
 
@@ -370,6 +622,194 @@ def bootstrap_contrast(
         "n_seeds_second": float(arms[1].shape[0]),
         "n_images": float(labels.shape[0]),
     }
+
+
+def bootstrap_combination(
+    terms: list[tuple[float, np.ndarray, np.ndarray]],
+    *,
+    n_boot: int = 4000,
+    seed: int = 0,
+) -> dict[str, float]:
+    """A signed sum of balanced accuracies over disjoint image slices, bootstrapped over shared seeds and images.
+
+    P1.2.5's Part F reads change *within a slice* (e.g. the night frames' Δ at the walk's end minus at step 846)
+    and differences of such changes between slices (rainy minus clear). Balanced accuracy is linear in per-image
+    correctness, so a change between two checkpoints of the same seed is the balanced accuracy of their
+    per-image difference; each term carries such a row per seed. The statistic is
+    ``mean over seeds of sum_i weight_i * bacc(rows_i[seed])``.
+
+    Each resample draws the seeds once with replacement, shared by every term (the terms' rows are the same
+    seeds' runs), and the images with replacement within each class *of each term* (the slices are disjoint
+    frames; within a term the draw is shared by everything its row was differenced from).
+
+    Args:
+        terms: ``(weight, rows [S, N_i], labels [N_i])`` per slice; every ``rows`` has the same ``S``.
+        n_boot: Number of bootstrap resamples.
+        seed: Bootstrap RNG seed.
+
+    Returns:
+        As :func:`bootstrap_delta` (``n_images`` sums the terms' images).
+    """
+    if not terms:
+        raise ValueError("bootstrap_combination needs at least one term.")
+    rows = [np.atleast_2d(np.asarray(r, dtype=np.float64)) for _, r, _ in terms]
+    n_seeds = rows[0].shape[0]
+    if any(r.shape[0] != n_seeds for r in rows):
+        raise ValueError("every term must carry the same seeds.")
+    if any(r.shape[1] != lab.shape[0] for r, (_, _, lab) in zip(rows, terms, strict=True)):
+        raise ValueError("each term's rows and labels must share the image axis.")
+    rng = np.random.default_rng(seed)
+    total = np.zeros((n_boot, n_seeds))
+    point = 0.0
+    for (weight, _, labels), row in zip(terms, rows, strict=True):
+        classes = np.unique(labels)
+        recall = np.zeros((n_boot, n_seeds))
+        for cls in classes:
+            members = np.flatnonzero(labels == cls)
+            weights = rng.multinomial(members.size, np.full(members.size, 1.0 / members.size), size=n_boot)
+            recall += weights @ row[:, members].T / members.size
+        total += float(weight) * recall / classes.size
+        point += float(weight) * float(np.mean([balanced_accuracy(r, labels) for r in row]))
+    draw = rng.integers(0, n_seeds, size=(n_boot, n_seeds))
+    stats = np.take_along_axis(total, draw, axis=1).mean(axis=1)
+    return {
+        "delta": point,
+        "lo": float(np.quantile(stats, 0.025)),
+        "hi": float(np.quantile(stats, 0.975)),
+        "p_one_sided": float((1 + np.sum(stats <= 0)) / (1 + n_boot)),
+        "n_seeds": float(n_seeds),
+        "n_images": float(sum(lab.shape[0] for _, _, lab in terms)),
+    }
+
+
+def bootstrap_delta_patches(
+    adapted: np.ndarray,
+    reference: np.ndarray,
+    counts: np.ndarray,
+    *,
+    n_boot: int = 4000,
+    seed: int = 0,
+) -> dict[str, float]:
+    """:func:`bootstrap_delta` for the per-patch task: Δ in patch-level balanced accuracy.
+
+    The resampled unit is still the query frame — patches of one frame are not independent — so each resample
+    draws frames with replacement (every frame holds patches of both classes, so there is no class stratum)
+    and each class's recall is its correct patches over its patches, summed over the drawn frames. Seeds are
+    drawn with replacement as in :func:`bootstrap_delta`; the frame draw is shared by both encoders (paired).
+
+    Args:
+        adapted: Correct patches per class per frame ``[S, N, 2]`` (or ``[N, 2]`` for one seed).
+        reference: The same for the frozen reference, ``[N, 2]`` (or ``[S_r, N, 2]``, averaged).
+        counts: Patches per class per frame ``[N, 2]`` (:func:`patch_counts`).
+        n_boot: Number of bootstrap resamples.
+        seed: Bootstrap RNG seed.
+
+    Returns:
+        As :func:`bootstrap_delta` (``n_images`` counts query frames).
+    """
+    adapted = np.asarray(adapted, dtype=np.float64)
+    adapted = adapted[None] if adapted.ndim == 2 else adapted
+    reference = np.asarray(reference, dtype=np.float64)
+    reference = reference.mean(axis=0) if reference.ndim == 3 else reference
+    counts = np.asarray(counts, dtype=np.float64)
+    if adapted.shape[1:] != counts.shape or reference.shape != counts.shape:
+        raise ValueError("adapted, reference and counts must share the [frame, class] axes.")
+    rng = np.random.default_rng(seed)
+    n_seeds, n_frames = adapted.shape[0], counts.shape[0]
+    weights = rng.multinomial(n_frames, np.full(n_frames, 1.0 / n_frames), size=n_boot).astype(np.float64)
+    totals = weights @ counts  # [B, 2]
+    bacc_adapted = (np.einsum("bn,snc->bsc", weights, adapted) / totals[:, None, :]).mean(axis=2)  # [B, S]
+    bacc_reference = ((weights @ reference) / totals).mean(axis=1)
+    seed_draw = rng.integers(0, n_seeds, size=(n_boot, n_seeds))
+    deltas = np.take_along_axis(bacc_adapted, seed_draw, axis=1).mean(axis=1) - bacc_reference
+    point = float(
+        np.mean([patch_balanced_accuracy(row, counts) for row in adapted]) - patch_balanced_accuracy(reference, counts)
+    )
+    return {
+        "delta": point,
+        "lo": float(np.quantile(deltas, 0.025)),
+        "hi": float(np.quantile(deltas, 0.975)),
+        "p_one_sided": float((1 + np.sum(deltas <= 0)) / (1 + n_boot)),
+        "n_seeds": float(n_seeds),
+        "n_images": float(n_frames),
+    }
+
+
+def _betainc(a: float, b: float, x: float) -> float:
+    """The regularized incomplete beta function I_x(a, b), by its continued fraction (Numerical Recipes 6.4)."""
+    if x <= 0.0 or x >= 1.0:
+        return 0.0 if x <= 0.0 else 1.0
+    if x > (a + 1.0) / (a + b + 2.0):  # the fraction converges fast only below the mean; use the symmetry
+        return 1.0 - _betainc(b, a, 1.0 - x)
+    front = math.exp(math.lgamma(a + b) - math.lgamma(a) - math.lgamma(b) + a * math.log(x) + b * math.log1p(-x)) / a
+    tiny = 1e-300
+    c, d = 1.0, 1.0 - (a + b) * x / (a + 1.0)
+    d = 1.0 / (d if abs(d) > tiny else tiny)
+    result = d
+    for m in range(1, 300):
+        for numerator in (
+            m * (b - m) * x / ((a + 2 * m - 1) * (a + 2 * m)),
+            -(a + m) * (a + b + m) * x / ((a + 2 * m) * (a + 2 * m + 1)),
+        ):
+            d = 1.0 + numerator * d
+            d = 1.0 / (d if abs(d) > tiny else tiny)
+            c = 1.0 + numerator / c
+            c = c if abs(c) > tiny else tiny
+            result *= c * d
+        if abs(c * d - 1.0) < 1e-14:
+            break
+    return front * result
+
+
+def t_upper_tail(t: float, df: float) -> float:
+    """P(T > t) for Student's t with ``df`` degrees of freedom (``df`` may be fractional, as Welch's)."""
+    tail = 0.5 * _betainc(df / 2.0, 0.5, df / (df + t * t))
+    return tail if t > 0 else 1.0 - tail
+
+
+def _t_result(mean: float, se: float, df: float, n: float) -> dict[str, float]:
+    if se == 0.0:  # every seed agrees: the sign alone decides
+        return {
+            "mean": mean,
+            "t": math.copysign(math.inf, mean) if mean else 0.0,
+            "df": df,
+            "p_one_sided": float(mean <= 0),
+            "n": n,
+        }
+    t = mean / se
+    return {"mean": mean, "t": t, "df": df, "p_one_sided": t_upper_tail(t, df), "n": n}
+
+
+def seed_ttest(per_seed: np.ndarray, reference: float) -> dict[str, float]:
+    """The seed-level test beside :func:`bootstrap_delta`: a one-sample *t*-test that the per-seed Δ exceeds 0.
+
+    Args:
+        per_seed: Each seed's balanced accuracy.
+        reference: The frozen reference's balanced accuracy.
+
+    Returns:
+        The mean Δ, ``t``, ``df``, the one-sided ``p_one_sided`` and the seed count ``n``.
+    """
+    delta = np.asarray(per_seed, dtype=np.float64) - reference
+    if delta.size < 2:
+        raise ValueError("a seed-level test needs at least two seeds.")
+    return _t_result(
+        float(delta.mean()), float(delta.std(ddof=1) / math.sqrt(delta.size)), delta.size - 1.0, delta.size
+    )
+
+
+def seed_welch(first: np.ndarray, second: np.ndarray) -> dict[str, float]:
+    """The seed-level test beside :func:`bootstrap_contrast`: one-sided Welch that ``first``'s seeds read higher.
+
+    Returns:
+        As :func:`seed_ttest`, with Welch–Satterthwaite ``df`` and ``n`` the first arm's seeds.
+    """
+    a, b = np.asarray(first, dtype=np.float64), np.asarray(second, dtype=np.float64)
+    if a.size < 2 or b.size < 2:
+        raise ValueError("Welch's test needs at least two seeds per arm.")
+    va, vb = a.var(ddof=1) / a.size, b.var(ddof=1) / b.size
+    df = (va + vb) ** 2 / (va**2 / (a.size - 1) + vb**2 / (b.size - 1)) if va + vb > 0 else a.size + b.size - 2.0
+    return _t_result(float(a.mean() - b.mean()), float(math.sqrt(va + vb)), float(df), a.size)
 
 
 def holm(p_values: dict[str, float], alpha: float) -> dict[str, bool]:
