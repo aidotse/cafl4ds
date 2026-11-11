@@ -1,0 +1,59 @@
+{
+  "pool": {
+    "kind": "heldout",
+    "n_fit": 3501,
+    "n_query": 5252
+  },
+  "readout": "mean",
+  "n_query_by_task": {
+    "scene": 5252,
+    "presence_cell:traffic light": 2958,
+    "weather": 4087,
+    "large_cell:car,bus,truck:0.02": 3434,
+    "presence_cell:bus": 1314,
+    "presence_cell:pedestrian": 2996
+  },
+  "stratum_names": {
+    "0": "daytime",
+    "1": "dawn/dusk",
+    "2": "night"
+  },
+  "encoders": {
+    "dino": {
+      "spec": {
+        "name": "dino",
+        "kind": "pretrained"
+      },
+      "bacc": {
+        "scene|knn": 0.6364,
+        "scene|linear": 0.6431,
+        "scene|knn@cls": 0.6877,
+        "scene|linear@cls": 0.6453,
+        "scene|ft10": 0.5376,
+        "scene|ft100": 0.686,
+        "presence_cell:traffic light|knn": 0.5974,
+        "presence_cell:traffic light|linear": 0.6247,
+        "presence_cell:traffic light|knn@cls": 0.6447,
+        "presence_cell:traffic light|linear@cls": 0.6362,
+        "presence_cell:traffic light|ft10": 0.5269,
+        "presence_cell:traffic light|ft100": 0.6323,
+        "weather|knn": 0.6847,
+        "weather|linear": 0.772,
+        "weather|knn@cls": 0.6476,
+        "weather|linear@cls": 0.7921,
+        "large_cell:car,bus,truck:0.02|knn": 0.7624,
+        "large_cell:car,bus,truck:0.02|linear": 0.8276,
+        "large_cell:car,bus,truck:0.02|knn@cls": 0.8276,
+        "large_cell:car,bus,truck:0.02|linear@cls": 0.834,
+        "presence_cell:bus|knn": 0.5205,
+        "presence_cell:bus|linear": 0.5594,
+        "presence_cell:bus|knn@cls": 0.5502,
+        "presence_cell:bus|linear@cls": 0.554,
+        "presence_cell:pedestrian|knn": 0.6338,
+        "presence_cell:pedestrian|linear": 0.6292,
+        "presence_cell:pedestrian|knn@cls": 0.6442,
+        "presence_cell:pedestrian|linear@cls": 0.6315
+      }
+    }
+  }
+}

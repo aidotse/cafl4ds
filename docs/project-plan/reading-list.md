@@ -84,4 +84,9 @@ in full in [novelty.md](novelty.md).*
 - **Control / replay `[EXT]`:** Deep Generative Replay (Shin 2017) · Brain-inspired replay (van de Ven 2020) ·
     DeepInversion (Yin 2020).
 - **FL `[STD]`:** FedAvg (McMahan 2017) · FedProx (Li 2020) · Marfoq (2023) · Scaleout FedN.
+- **Continued SSL pretraining on the target domain (context for the horizon question):** HPT (Reed 2022) — continuing
+    MoCo-v2 from ImageNet weights on BDD beats either alone for detection, converges in ~5k steps and overfits beyond,
+    *but over many epochs of one fixed set, not a stream bringing new regimes* · ExPLoRA (Khanna 2025) — continued
+    DINOv2 gains most where the domain gap is large · S3PT (Wozniak 2025) — DINO's centring clashes with driving scenes'
+    class imbalance (confirmed on our setup in P1.2.5).
 - **Datasets:** STL-10 (Coates 2011) · BDD100K (Yu 2020) · nuScenes (Caesar 2020) · ZOD.

@@ -3,8 +3,8 @@
 # held-out ladder re-read on the three canary scenes (the first read kept parking lot: outputs/p120/v1_4scene/).
 set -u
 cd /home/mauricio/projects/cafl4ds
-TRAIN=/home/mauricio/data/bdd100k; OUT=outputs/p120
-run() { card=$1; shift; ./scripts/run_gaudi_dev.sh -m $TRAIN -m /mnt/cifar100 gaudi-env-cafl4ds:latest $card "$@"; }
+TRAIN=/mnt/pr_2018_scaleout_workdir/cafl4ds/data/bdd100k; OUT=outputs/p120
+run() { card=$1; shift; ./scripts/run_gaudi_dev.sh -m $TRAIN -m /mnt/pr_2018_scaleout_workdir/cafl4ds/data/cifar100 gaudi-env-cafl4ds:latest $card "$@"; }
 SCENES='data.scenes=["city street",highway,residential]'
 POOL="data=bdd bdd_root=$TRAIN data.min_canary_count=50 data.pixel_dtype=uint8 data.cache_dir=/workspace/outputs/cache \
  device=hpu img_size=224 encoder=vit_b16_mae pool.split=train pool.max_images=14000 threads=8"

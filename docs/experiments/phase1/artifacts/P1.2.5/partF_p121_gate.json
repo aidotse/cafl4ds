@@ -1,0 +1,1525 @@
+{
+  "read": [
+    "scene",
+    "presence_cell:traffic light"
+  ],
+  "skipped": {},
+  "arms": {
+    "je": {
+      "scene": {
+        "n_frames": 5252,
+        "n_positive": null,
+        "slice_sizes": {
+          "all": 5252,
+          "tod:daytime": 2545,
+          "tod:dawn/dusk": 412,
+          "tod:night": 2295,
+          "regime:daytime\u00b7clear": 1067,
+          "regime:daytime\u00b7partly cloudy": 381,
+          "regime:daytime\u00b7overcast": 617,
+          "regime:daytime\u00b7rainy": 240,
+          "regime:daytime\u00b7snowy": 238,
+          "regime:night\u00b7clear": 1959,
+          "regime:night\u00b7rainy": 162,
+          "regime:night\u00b7snowy": 155
+        },
+        "knn": {
+          "curve": {
+            "all": {
+              "t00100": {
+                "delta": 0.0132,
+                "lo": -0.0038,
+                "hi": 0.0304
+              },
+              "t00437": {
+                "delta": 0.0291,
+                "lo": 0.01,
+                "hi": 0.0486
+              },
+              "t00874": {
+                "delta": 0.0296,
+                "lo": 0.0106,
+                "hi": 0.0484
+              },
+              "t01311": {
+                "delta": 0.0086,
+                "lo": -0.0125,
+                "hi": 0.0297
+              },
+              "end": {
+                "delta": -0.0133,
+                "lo": -0.0324,
+                "hi": 0.0056
+              }
+            },
+            "tod:daytime": {
+              "t00100": {
+                "delta": 0.017,
+                "lo": -0.0078,
+                "hi": 0.0402
+              },
+              "t00437": {
+                "delta": 0.0283,
+                "lo": 0.0034,
+                "hi": 0.053
+              },
+              "t00874": {
+                "delta": 0.0255,
+                "lo": 0.0009,
+                "hi": 0.0505
+              },
+              "t01311": {
+                "delta": 0.0095,
+                "lo": -0.0165,
+                "hi": 0.0346
+              },
+              "end": {
+                "delta": -0.0123,
+                "lo": -0.0381,
+                "hi": 0.0137
+              }
+            },
+            "tod:dawn/dusk": {
+              "t00100": {
+                "delta": 0.0417,
+                "lo": -0.0114,
+                "hi": 0.0969
+              },
+              "t00437": {
+                "delta": 0.0621,
+                "lo": -0.001,
+                "hi": 0.1276
+              },
+              "t00874": {
+                "delta": 0.0579,
+                "lo": -0.0046,
+                "hi": 0.1229
+              },
+              "t01311": {
+                "delta": 0.0408,
+                "lo": -0.0305,
+                "hi": 0.1112
+              },
+              "end": {
+                "delta": 0.0191,
+                "lo": -0.0504,
+                "hi": 0.0913
+              }
+            },
+            "tod:night": {
+              "t00100": {
+                "delta": -0.0119,
+                "lo": -0.0393,
+                "hi": 0.0159
+              },
+              "t00437": {
+                "delta": 0.0033,
+                "lo": -0.0278,
+                "hi": 0.0345
+              },
+              "t00874": {
+                "delta": 0.0118,
+                "lo": -0.0221,
+                "hi": 0.0456
+              },
+              "t01311": {
+                "delta": -0.0178,
+                "lo": -0.0524,
+                "hi": 0.0164
+              },
+              "end": {
+                "delta": -0.0449,
+                "lo": -0.0782,
+                "hi": -0.0105
+              }
+            }
+          },
+          "windows": {
+            "tracking": {
+              "delta": -0.0567,
+              "lo": -0.0841,
+              "hi": -0.0301,
+              "terms": {
+                "tod:night": -0.0567
+              }
+            },
+            "forgetting": {
+              "delta": -0.0378,
+              "lo": -0.0532,
+              "hi": -0.0225,
+              "terms": {
+                "tod:daytime": -0.0378
+              }
+            },
+            "pooled_late": {
+              "delta": -0.0429,
+              "lo": -0.056,
+              "hi": -0.0302,
+              "terms": {
+                "all": -0.0429
+              }
+            },
+            "weather_rainy": {
+              "delta": -0.0065,
+              "lo": -0.0719,
+              "hi": 0.0602,
+              "terms": {
+                "regime:daytime\u00b7rainy": -0.0063,
+                "regime:daytime\u00b7clear": 0.0002
+              }
+            },
+            "weather_snowy": {
+              "delta": -0.0226,
+              "lo": -0.0832,
+              "hi": 0.0414,
+              "terms": {
+                "regime:daytime\u00b7snowy": -0.0224,
+                "regime:daytime\u00b7clear": 0.0002
+              }
+            },
+            "night_rainy": null,
+            "night_snowy": null
+          },
+          "iid": {
+            "all": {
+              "iid_vs_floor": {
+                "delta": 0.0171,
+                "lo": -0.0059,
+                "hi": 0.0447
+              },
+              "walk_vs_iid": {
+                "delta": -0.0304,
+                "lo": -0.0529,
+                "hi": -0.0088
+              }
+            }
+          }
+        },
+        "linear": {
+          "curve": {
+            "all": {
+              "t00100": {
+                "delta": -0.0092,
+                "lo": -0.0263,
+                "hi": 0.0075
+              },
+              "t00437": {
+                "delta": 0.013,
+                "lo": -0.0033,
+                "hi": 0.0285
+              },
+              "t00874": {
+                "delta": 0.028,
+                "lo": 0.0129,
+                "hi": 0.0439
+              },
+              "t01311": {
+                "delta": 0.0274,
+                "lo": 0.0119,
+                "hi": 0.0425
+              },
+              "end": {
+                "delta": 0.0252,
+                "lo": 0.0084,
+                "hi": 0.0412
+              }
+            },
+            "tod:daytime": {
+              "t00100": {
+                "delta": 0.0007,
+                "lo": -0.0198,
+                "hi": 0.0213
+              },
+              "t00437": {
+                "delta": 0.018,
+                "lo": -0.003,
+                "hi": 0.0381
+              },
+              "t00874": {
+                "delta": 0.0286,
+                "lo": 0.0088,
+                "hi": 0.0482
+              },
+              "t01311": {
+                "delta": 0.02,
+                "lo": -0.0007,
+                "hi": 0.0398
+              },
+              "end": {
+                "delta": 0.0205,
+                "lo": -0.0002,
+                "hi": 0.0395
+              }
+            },
+            "tod:dawn/dusk": {
+              "t00100": {
+                "delta": -0.0447,
+                "lo": -0.1021,
+                "hi": 0.0085
+              },
+              "t00437": {
+                "delta": -0.0058,
+                "lo": -0.0523,
+                "hi": 0.0406
+              },
+              "t00874": {
+                "delta": 0.0137,
+                "lo": -0.0376,
+                "hi": 0.0659
+              },
+              "t01311": {
+                "delta": 0.0261,
+                "lo": -0.0268,
+                "hi": 0.0774
+              },
+              "end": {
+                "delta": 0.0364,
+                "lo": -0.0128,
+                "hi": 0.0888
+              }
+            },
+            "tod:night": {
+              "t00100": {
+                "delta": -0.0228,
+                "lo": -0.0575,
+                "hi": 0.0115
+              },
+              "t00437": {
+                "delta": 0.0017,
+                "lo": -0.0284,
+                "hi": 0.0334
+              },
+              "t00874": {
+                "delta": 0.0261,
+                "lo": -0.0022,
+                "hi": 0.0543
+              },
+              "t01311": {
+                "delta": 0.0297,
+                "lo": 0.0019,
+                "hi": 0.0589
+              },
+              "end": {
+                "delta": 0.0171,
+                "lo": -0.0133,
+                "hi": 0.0476
+              }
+            }
+          },
+          "windows": {
+            "tracking": {
+              "delta": -0.0091,
+              "lo": -0.034,
+              "hi": 0.0151,
+              "terms": {
+                "tod:night": -0.0091
+              }
+            },
+            "forgetting": {
+              "delta": -0.0081,
+              "lo": -0.0229,
+              "hi": 0.0071,
+              "terms": {
+                "tod:daytime": -0.0081
+              }
+            },
+            "pooled_late": {
+              "delta": -0.0028,
+              "lo": -0.0141,
+              "hi": 0.008,
+              "terms": {
+                "all": -0.0028
+              }
+            },
+            "weather_rainy": {
+              "delta": -0.0077,
+              "lo": -0.0615,
+              "hi": 0.042,
+              "terms": {
+                "regime:daytime\u00b7rainy": 0.006,
+                "regime:daytime\u00b7clear": 0.0136
+              }
+            },
+            "weather_snowy": {
+              "delta": -0.0013,
+              "lo": -0.0498,
+              "hi": 0.0471,
+              "terms": {
+                "regime:daytime\u00b7snowy": 0.0123,
+                "regime:daytime\u00b7clear": 0.0136
+              }
+            },
+            "night_rainy": null,
+            "night_snowy": null
+          },
+          "iid": {
+            "all": {
+              "iid_vs_floor": {
+                "delta": 0.028,
+                "lo": 0.0115,
+                "hi": 0.044
+              },
+              "walk_vs_iid": {
+                "delta": -0.0028,
+                "lo": -0.0187,
+                "hi": 0.0116
+              }
+            }
+          }
+        }
+      },
+      "presence_cell:traffic light": {
+        "n_frames": 2958,
+        "n_positive": 1479,
+        "slice_sizes": {
+          "all": 2958,
+          "tod:daytime": 1458,
+          "tod:dawn/dusk": 242,
+          "tod:night": 1258,
+          "regime:daytime\u00b7clear": 603,
+          "regime:daytime\u00b7partly cloudy": 204,
+          "regime:daytime\u00b7overcast": 374,
+          "regime:daytime\u00b7rainy": 134,
+          "regime:daytime\u00b7snowy": 141,
+          "regime:night\u00b7clear": 1078,
+          "regime:night\u00b7rainy": 84,
+          "regime:night\u00b7snowy": 84
+        },
+        "knn": {
+          "curve": {
+            "all": {
+              "t00100": {
+                "delta": 0.0091,
+                "lo": -0.006,
+                "hi": 0.0241
+              },
+              "t00437": {
+                "delta": 0.0105,
+                "lo": -0.0072,
+                "hi": 0.027
+              },
+              "t00874": {
+                "delta": 0.0037,
+                "lo": -0.0156,
+                "hi": 0.0218
+              },
+              "t01311": {
+                "delta": 0.0128,
+                "lo": -0.0085,
+                "hi": 0.0333
+              },
+              "end": {
+                "delta": 0.0059,
+                "lo": -0.0148,
+                "hi": 0.0266
+              }
+            },
+            "tod:daytime": {
+              "t00100": {
+                "delta": 0.0147,
+                "lo": -0.0055,
+                "hi": 0.0343
+              },
+              "t00437": {
+                "delta": 0.017,
+                "lo": -0.0063,
+                "hi": 0.0414
+              },
+              "t00874": {
+                "delta": 0.0181,
+                "lo": -0.0091,
+                "hi": 0.045
+              },
+              "t01311": {
+                "delta": 0.0267,
+                "lo": -0.003,
+                "hi": 0.0557
+              },
+              "end": {
+                "delta": 0.0199,
+                "lo": -0.0097,
+                "hi": 0.0491
+              }
+            },
+            "tod:dawn/dusk": {
+              "t00100": {
+                "delta": 0.0223,
+                "lo": -0.0356,
+                "hi": 0.0835
+              },
+              "t00437": {
+                "delta": 0.0256,
+                "lo": -0.0438,
+                "hi": 0.0959
+              },
+              "t00874": {
+                "delta": 0.0066,
+                "lo": -0.0678,
+                "hi": 0.0818
+              },
+              "t01311": {
+                "delta": 0.0397,
+                "lo": -0.0331,
+                "hi": 0.1132
+              },
+              "end": {
+                "delta": 0.0124,
+                "lo": -0.0587,
+                "hi": 0.086
+              }
+            },
+            "tod:night": {
+              "t00100": {
+                "delta": 0.0002,
+                "lo": -0.0232,
+                "hi": 0.0234
+              },
+              "t00437": {
+                "delta": 0.0002,
+                "lo": -0.0266,
+                "hi": 0.028
+              },
+              "t00874": {
+                "delta": -0.0135,
+                "lo": -0.0421,
+                "hi": 0.0149
+              },
+              "t01311": {
+                "delta": -0.0084,
+                "lo": -0.0391,
+                "hi": 0.0215
+              },
+              "end": {
+                "delta": -0.0116,
+                "lo": -0.0417,
+                "hi": 0.0178
+              }
+            }
+          },
+          "windows": {
+            "tracking": {
+              "delta": 0.0019,
+              "lo": -0.0281,
+              "hi": 0.0305,
+              "terms": {
+                "tod:night": 0.0019
+              }
+            },
+            "forgetting": {
+              "delta": 0.0018,
+              "lo": -0.0257,
+              "hi": 0.027,
+              "terms": {
+                "tod:daytime": 0.0018
+              }
+            },
+            "pooled_late": {
+              "delta": 0.0022,
+              "lo": -0.018,
+              "hi": 0.0226,
+              "terms": {
+                "all": 0.0022
+              }
+            },
+            "weather_rainy": {
+              "delta": 0.0117,
+              "lo": -0.0662,
+              "hi": 0.0959,
+              "terms": {
+                "regime:daytime\u00b7rainy": 0.0129,
+                "regime:daytime\u00b7clear": 0.0012
+              }
+            },
+            "weather_snowy": {
+              "delta": 0.0114,
+              "lo": -0.0615,
+              "hi": 0.0787,
+              "terms": {
+                "regime:daytime\u00b7snowy": 0.0126,
+                "regime:daytime\u00b7clear": 0.0012
+              }
+            },
+            "night_rainy": {
+              "delta": 0.0,
+              "lo": -0.0788,
+              "hi": 0.0769,
+              "terms": {
+                "regime:night\u00b7rainy": 0.0008,
+                "regime:night\u00b7clear": 0.0008
+              }
+            },
+            "night_snowy": {
+              "delta": -0.0355,
+              "lo": -0.1149,
+              "hi": 0.0459,
+              "terms": {
+                "regime:night\u00b7snowy": -0.0347,
+                "regime:night\u00b7clear": 0.0008
+              }
+            }
+          },
+          "iid": {
+            "all": {
+              "iid_vs_floor": {
+                "delta": 0.015,
+                "lo": -0.0062,
+                "hi": 0.0341
+              },
+              "walk_vs_iid": {
+                "delta": -0.0091,
+                "lo": -0.0291,
+                "hi": 0.0113
+              }
+            }
+          }
+        },
+        "linear": {
+          "curve": {
+            "all": {
+              "t00100": {
+                "delta": 0.0099,
+                "lo": -0.0086,
+                "hi": 0.0286
+              },
+              "t00437": {
+                "delta": 0.0249,
+                "lo": 0.0069,
+                "hi": 0.0427
+              },
+              "t00874": {
+                "delta": 0.0308,
+                "lo": 0.0115,
+                "hi": 0.0502
+              },
+              "t01311": {
+                "delta": 0.0366,
+                "lo": 0.0181,
+                "hi": 0.0551
+              },
+              "end": {
+                "delta": 0.0404,
+                "lo": 0.0218,
+                "hi": 0.061
+              }
+            },
+            "tod:daytime": {
+              "t00100": {
+                "delta": 0.0107,
+                "lo": -0.0166,
+                "hi": 0.0377
+              },
+              "t00437": {
+                "delta": 0.0203,
+                "lo": -0.0075,
+                "hi": 0.0473
+              },
+              "t00874": {
+                "delta": 0.0258,
+                "lo": -0.0015,
+                "hi": 0.0527
+              },
+              "t01311": {
+                "delta": 0.034,
+                "lo": 0.0059,
+                "hi": 0.0621
+              },
+              "end": {
+                "delta": 0.0357,
+                "lo": 0.0075,
+                "hi": 0.0628
+              }
+            },
+            "tod:dawn/dusk": {
+              "t00100": {
+                "delta": 0.0008,
+                "lo": -0.0653,
+                "hi": 0.0678
+              },
+              "t00437": {
+                "delta": 0.0207,
+                "lo": -0.0496,
+                "hi": 0.0901
+              },
+              "t00874": {
+                "delta": 0.0174,
+                "lo": -0.0521,
+                "hi": 0.0851
+              },
+              "t01311": {
+                "delta": 0.0099,
+                "lo": -0.0645,
+                "hi": 0.0794
+              },
+              "end": {
+                "delta": 0.014,
+                "lo": -0.0587,
+                "hi": 0.086
+              }
+            },
+            "tod:night": {
+              "t00100": {
+                "delta": 0.0107,
+                "lo": -0.0165,
+                "hi": 0.0375
+              },
+              "t00437": {
+                "delta": 0.0312,
+                "lo": 0.0049,
+                "hi": 0.0582
+              },
+              "t00874": {
+                "delta": 0.0393,
+                "lo": 0.0087,
+                "hi": 0.0692
+              },
+              "t01311": {
+                "delta": 0.0447,
+                "lo": 0.0165,
+                "hi": 0.0727
+              },
+              "end": {
+                "delta": 0.0509,
+                "lo": 0.0231,
+                "hi": 0.08
+              }
+            }
+          },
+          "windows": {
+            "tracking": {
+              "delta": 0.0116,
+              "lo": -0.0127,
+              "hi": 0.0361,
+              "terms": {
+                "tod:night": 0.0116
+              }
+            },
+            "forgetting": {
+              "delta": 0.0099,
+              "lo": -0.0096,
+              "hi": 0.0302,
+              "terms": {
+                "tod:daytime": 0.0099
+              }
+            },
+            "pooled_late": {
+              "delta": 0.0095,
+              "lo": -0.006,
+              "hi": 0.0264,
+              "terms": {
+                "all": 0.0095
+              }
+            },
+            "weather_rainy": {
+              "delta": -0.0037,
+              "lo": -0.0831,
+              "hi": 0.079,
+              "terms": {
+                "regime:daytime\u00b7rainy": 0.0012,
+                "regime:daytime\u00b7clear": 0.0049
+              }
+            },
+            "weather_snowy": {
+              "delta": -0.0033,
+              "lo": -0.0773,
+              "hi": 0.0706,
+              "terms": {
+                "regime:daytime\u00b7snowy": 0.0016,
+                "regime:daytime\u00b7clear": 0.0049
+              }
+            },
+            "night_rainy": {
+              "delta": -0.0217,
+              "lo": -0.0966,
+              "hi": 0.0494,
+              "terms": {
+                "regime:night\u00b7rainy": -0.0155,
+                "regime:night\u00b7clear": 0.0062
+              }
+            },
+            "night_snowy": {
+              "delta": 0.0142,
+              "lo": -0.0767,
+              "hi": 0.1052,
+              "terms": {
+                "regime:night\u00b7snowy": 0.0204,
+                "regime:night\u00b7clear": 0.0062
+              }
+            }
+          },
+          "iid": {
+            "all": {
+              "iid_vs_floor": {
+                "delta": 0.0394,
+                "lo": 0.0172,
+                "hi": 0.0611
+              },
+              "walk_vs_iid": {
+                "delta": 0.0009,
+                "lo": -0.0183,
+                "hi": 0.0206
+              }
+            }
+          }
+        }
+      }
+    },
+    "mae": {
+      "scene": {
+        "n_frames": 5252,
+        "n_positive": null,
+        "slice_sizes": {
+          "all": 5252,
+          "tod:daytime": 2545,
+          "tod:dawn/dusk": 412,
+          "tod:night": 2295,
+          "regime:daytime\u00b7clear": 1067,
+          "regime:daytime\u00b7partly cloudy": 381,
+          "regime:daytime\u00b7overcast": 617,
+          "regime:daytime\u00b7rainy": 240,
+          "regime:daytime\u00b7snowy": 238,
+          "regime:night\u00b7clear": 1959,
+          "regime:night\u00b7rainy": 162,
+          "regime:night\u00b7snowy": 155
+        },
+        "knn": {
+          "curve": {
+            "all": {
+              "t00100": {
+                "delta": -0.0324,
+                "lo": -0.0451,
+                "hi": -0.0198
+              },
+              "t00437": {
+                "delta": -0.0403,
+                "lo": -0.0545,
+                "hi": -0.0266
+              },
+              "t00874": {
+                "delta": -0.0477,
+                "lo": -0.0622,
+                "hi": -0.034
+              },
+              "t01311": {
+                "delta": -0.0554,
+                "lo": -0.0699,
+                "hi": -0.0414
+              },
+              "end": {
+                "delta": -0.0565,
+                "lo": -0.0716,
+                "hi": -0.0414
+              }
+            },
+            "tod:daytime": {
+              "t00100": {
+                "delta": -0.033,
+                "lo": -0.0491,
+                "hi": -0.0162
+              },
+              "t00437": {
+                "delta": -0.0409,
+                "lo": -0.0583,
+                "hi": -0.0234
+              },
+              "t00874": {
+                "delta": -0.0511,
+                "lo": -0.0688,
+                "hi": -0.0329
+              },
+              "t01311": {
+                "delta": -0.0586,
+                "lo": -0.0767,
+                "hi": -0.0401
+              },
+              "end": {
+                "delta": -0.0583,
+                "lo": -0.0763,
+                "hi": -0.0401
+              }
+            },
+            "tod:dawn/dusk": {
+              "t00100": {
+                "delta": -0.0465,
+                "lo": -0.0969,
+                "hi": 0.0041
+              },
+              "t00437": {
+                "delta": -0.0364,
+                "lo": -0.0866,
+                "hi": 0.0145
+              },
+              "t00874": {
+                "delta": -0.037,
+                "lo": -0.0902,
+                "hi": 0.0184
+              },
+              "t01311": {
+                "delta": -0.0539,
+                "lo": -0.109,
+                "hi": 0.0023
+              },
+              "end": {
+                "delta": -0.0499,
+                "lo": -0.1055,
+                "hi": 0.0063
+              }
+            },
+            "tod:night": {
+              "t00100": {
+                "delta": -0.0341,
+                "lo": -0.0566,
+                "hi": -0.0116
+              },
+              "t00437": {
+                "delta": -0.0468,
+                "lo": -0.0738,
+                "hi": -0.0203
+              },
+              "t00874": {
+                "delta": -0.0556,
+                "lo": -0.0828,
+                "hi": -0.0295
+              },
+              "t01311": {
+                "delta": -0.062,
+                "lo": -0.0881,
+                "hi": -0.0357
+              },
+              "end": {
+                "delta": -0.0687,
+                "lo": -0.098,
+                "hi": -0.0397
+              }
+            }
+          },
+          "windows": {
+            "tracking": {
+              "delta": -0.0131,
+              "lo": -0.0353,
+              "hi": 0.0089,
+              "terms": {
+                "tod:night": -0.0131
+              }
+            },
+            "forgetting": {
+              "delta": -0.0072,
+              "lo": -0.0176,
+              "hi": 0.0029,
+              "terms": {
+                "tod:daytime": -0.0072
+              }
+            },
+            "pooled_late": {
+              "delta": -0.0088,
+              "lo": -0.0189,
+              "hi": 0.0007,
+              "terms": {
+                "all": -0.0088
+              }
+            },
+            "weather_rainy": {
+              "delta": -0.0015,
+              "lo": -0.0457,
+              "hi": 0.0415,
+              "terms": {
+                "regime:daytime\u00b7rainy": -0.0079,
+                "regime:daytime\u00b7clear": -0.0064
+              }
+            },
+            "weather_snowy": {
+              "delta": -0.0158,
+              "lo": -0.0581,
+              "hi": 0.0241,
+              "terms": {
+                "regime:daytime\u00b7snowy": -0.0222,
+                "regime:daytime\u00b7clear": -0.0064
+              }
+            },
+            "night_rainy": null,
+            "night_snowy": null
+          },
+          "iid": {
+            "all": {
+              "iid_vs_floor": {
+                "delta": -0.052,
+                "lo": -0.0669,
+                "hi": -0.0377
+              },
+              "walk_vs_iid": {
+                "delta": -0.0045,
+                "lo": -0.0148,
+                "hi": 0.005
+              }
+            }
+          }
+        },
+        "linear": {
+          "curve": {
+            "all": {
+              "t00100": {
+                "delta": -0.0211,
+                "lo": -0.0364,
+                "hi": -0.0054
+              },
+              "t00437": {
+                "delta": -0.0389,
+                "lo": -0.0545,
+                "hi": -0.0225
+              },
+              "t00874": {
+                "delta": -0.0445,
+                "lo": -0.0612,
+                "hi": -0.0278
+              },
+              "t01311": {
+                "delta": -0.0441,
+                "lo": -0.0609,
+                "hi": -0.0276
+              },
+              "end": {
+                "delta": -0.0431,
+                "lo": -0.06,
+                "hi": -0.0263
+              }
+            },
+            "tod:daytime": {
+              "t00100": {
+                "delta": -0.0281,
+                "lo": -0.0481,
+                "hi": -0.0093
+              },
+              "t00437": {
+                "delta": -0.0454,
+                "lo": -0.0663,
+                "hi": -0.0245
+              },
+              "t00874": {
+                "delta": -0.0523,
+                "lo": -0.0732,
+                "hi": -0.0315
+              },
+              "t01311": {
+                "delta": -0.0527,
+                "lo": -0.0755,
+                "hi": -0.0304
+              },
+              "end": {
+                "delta": -0.0468,
+                "lo": -0.0701,
+                "hi": -0.0238
+              }
+            },
+            "tod:dawn/dusk": {
+              "t00100": {
+                "delta": -0.0201,
+                "lo": -0.0723,
+                "hi": 0.0327
+              },
+              "t00437": {
+                "delta": -0.0351,
+                "lo": -0.0809,
+                "hi": 0.0113
+              },
+              "t00874": {
+                "delta": -0.0518,
+                "lo": -0.1117,
+                "hi": 0.0107
+              },
+              "t01311": {
+                "delta": -0.0437,
+                "lo": -0.0983,
+                "hi": 0.0113
+              },
+              "end": {
+                "delta": -0.0521,
+                "lo": -0.1082,
+                "hi": 0.0059
+              }
+            },
+            "tod:night": {
+              "t00100": {
+                "delta": -0.0203,
+                "lo": -0.0509,
+                "hi": 0.011
+              },
+              "t00437": {
+                "delta": -0.0352,
+                "lo": -0.0644,
+                "hi": -0.0047
+              },
+              "t00874": {
+                "delta": -0.0334,
+                "lo": -0.0647,
+                "hi": -0.0004
+              },
+              "t01311": {
+                "delta": -0.0352,
+                "lo": -0.0641,
+                "hi": -0.0055
+              },
+              "end": {
+                "delta": -0.043,
+                "lo": -0.0737,
+                "hi": -0.0109
+              }
+            }
+          },
+          "windows": {
+            "tracking": {
+              "delta": -0.0096,
+              "lo": -0.0362,
+              "hi": 0.0174,
+              "terms": {
+                "tod:night": -0.0096
+              }
+            },
+            "forgetting": {
+              "delta": 0.0055,
+              "lo": -0.0126,
+              "hi": 0.0237,
+              "terms": {
+                "tod:daytime": 0.0055
+              }
+            },
+            "pooled_late": {
+              "delta": 0.0014,
+              "lo": -0.0115,
+              "hi": 0.0151,
+              "terms": {
+                "all": 0.0014
+              }
+            },
+            "weather_rainy": {
+              "delta": 0.0154,
+              "lo": -0.039,
+              "hi": 0.0689,
+              "terms": {
+                "regime:daytime\u00b7rainy": 0.005,
+                "regime:daytime\u00b7clear": -0.0104
+              }
+            },
+            "weather_snowy": {
+              "delta": -0.0026,
+              "lo": -0.0589,
+              "hi": 0.059,
+              "terms": {
+                "regime:daytime\u00b7snowy": -0.013,
+                "regime:daytime\u00b7clear": -0.0104
+              }
+            },
+            "night_rainy": null,
+            "night_snowy": null
+          },
+          "iid": {
+            "all": {
+              "iid_vs_floor": {
+                "delta": -0.0537,
+                "lo": -0.0712,
+                "hi": -0.0367
+              },
+              "walk_vs_iid": {
+                "delta": 0.0106,
+                "lo": -0.0031,
+                "hi": 0.0251
+              }
+            }
+          }
+        }
+      },
+      "presence_cell:traffic light": {
+        "n_frames": 2958,
+        "n_positive": 1479,
+        "slice_sizes": {
+          "all": 2958,
+          "tod:daytime": 1458,
+          "tod:dawn/dusk": 242,
+          "tod:night": 1258,
+          "regime:daytime\u00b7clear": 603,
+          "regime:daytime\u00b7partly cloudy": 204,
+          "regime:daytime\u00b7overcast": 374,
+          "regime:daytime\u00b7rainy": 134,
+          "regime:daytime\u00b7snowy": 141,
+          "regime:night\u00b7clear": 1078,
+          "regime:night\u00b7rainy": 84,
+          "regime:night\u00b7snowy": 84
+        },
+        "knn": {
+          "curve": {
+            "all": {
+              "t00100": {
+                "delta": -0.0083,
+                "lo": -0.0208,
+                "hi": 0.0043
+              },
+              "t00437": {
+                "delta": -0.0105,
+                "lo": -0.0245,
+                "hi": 0.0028
+              },
+              "t00874": {
+                "delta": -0.0099,
+                "lo": -0.0233,
+                "hi": 0.0032
+              },
+              "t01311": {
+                "delta": -0.0059,
+                "lo": -0.0198,
+                "hi": 0.0072
+              },
+              "end": {
+                "delta": -0.0083,
+                "lo": -0.0223,
+                "hi": 0.0053
+              }
+            },
+            "tod:daytime": {
+              "t00100": {
+                "delta": -0.0078,
+                "lo": -0.0239,
+                "hi": 0.0085
+              },
+              "t00437": {
+                "delta": -0.01,
+                "lo": -0.0294,
+                "hi": 0.0089
+              },
+              "t00874": {
+                "delta": -0.0044,
+                "lo": -0.0239,
+                "hi": 0.0143
+              },
+              "t01311": {
+                "delta": 0.0023,
+                "lo": -0.017,
+                "hi": 0.0211
+              },
+              "end": {
+                "delta": -0.001,
+                "lo": -0.0196,
+                "hi": 0.0169
+              }
+            },
+            "tod:dawn/dusk": {
+              "t00100": {
+                "delta": -0.0008,
+                "lo": -0.0372,
+                "hi": 0.0397
+              },
+              "t00437": {
+                "delta": 0.0074,
+                "lo": -0.0405,
+                "hi": 0.0554
+              },
+              "t00874": {
+                "delta": -0.0033,
+                "lo": -0.0504,
+                "hi": 0.0463
+              },
+              "t01311": {
+                "delta": -0.0041,
+                "lo": -0.0496,
+                "hi": 0.0413
+              },
+              "end": {
+                "delta": 0.019,
+                "lo": -0.0298,
+                "hi": 0.0694
+              }
+            },
+            "tod:night": {
+              "t00100": {
+                "delta": -0.0103,
+                "lo": -0.0316,
+                "hi": 0.0108
+              },
+              "t00437": {
+                "delta": -0.0145,
+                "lo": -0.0361,
+                "hi": 0.0067
+              },
+              "t00874": {
+                "delta": -0.0176,
+                "lo": -0.0383,
+                "hi": 0.0024
+              },
+              "t01311": {
+                "delta": -0.0157,
+                "lo": -0.038,
+                "hi": 0.0059
+              },
+              "end": {
+                "delta": -0.0221,
+                "lo": -0.0447,
+                "hi": -0.0002
+              }
+            }
+          },
+          "windows": {
+            "tracking": {
+              "delta": -0.0045,
+              "lo": -0.0178,
+              "hi": 0.0095,
+              "terms": {
+                "tod:night": -0.0045
+              }
+            },
+            "forgetting": {
+              "delta": 0.0034,
+              "lo": -0.0112,
+              "hi": 0.0167,
+              "terms": {
+                "tod:daytime": 0.0034
+              }
+            },
+            "pooled_late": {
+              "delta": 0.0016,
+              "lo": -0.0091,
+              "hi": 0.0116,
+              "terms": {
+                "all": 0.0016
+              }
+            },
+            "weather_rainy": {
+              "delta": 0.0116,
+              "lo": -0.0338,
+              "hi": 0.0565,
+              "terms": {
+                "regime:daytime\u00b7rainy": 0.0174,
+                "regime:daytime\u00b7clear": 0.0058
+              }
+            },
+            "weather_snowy": {
+              "delta": -0.0153,
+              "lo": -0.0553,
+              "hi": 0.0262,
+              "terms": {
+                "regime:daytime\u00b7snowy": -0.0095,
+                "regime:daytime\u00b7clear": 0.0058
+              }
+            },
+            "night_rainy": {
+              "delta": -0.0292,
+              "lo": -0.071,
+              "hi": 0.0161,
+              "terms": {
+                "regime:night\u00b7rainy": -0.0335,
+                "regime:night\u00b7clear": -0.0043
+              }
+            },
+            "night_snowy": {
+              "delta": 0.006,
+              "lo": -0.0508,
+              "hi": 0.0652,
+              "terms": {
+                "regime:night\u00b7snowy": 0.0016,
+                "regime:night\u00b7clear": -0.0043
+              }
+            }
+          },
+          "iid": {
+            "all": {
+              "iid_vs_floor": {
+                "delta": -0.0114,
+                "lo": -0.0255,
+                "hi": 0.0032
+              },
+              "walk_vs_iid": {
+                "delta": 0.0031,
+                "lo": -0.0084,
+                "hi": 0.0139
+              }
+            }
+          }
+        },
+        "linear": {
+          "curve": {
+            "all": {
+              "t00100": {
+                "delta": -0.0025,
+                "lo": -0.0205,
+                "hi": 0.016
+              },
+              "t00437": {
+                "delta": -0.0078,
+                "lo": -0.0268,
+                "hi": 0.011
+              },
+              "t00874": {
+                "delta": -0.0085,
+                "lo": -0.0279,
+                "hi": 0.0116
+              },
+              "t01311": {
+                "delta": -0.0172,
+                "lo": -0.0364,
+                "hi": 0.0026
+              },
+              "end": {
+                "delta": -0.0115,
+                "lo": -0.0297,
+                "hi": 0.007
+              }
+            },
+            "tod:daytime": {
+              "t00100": {
+                "delta": -0.0151,
+                "lo": -0.0432,
+                "hi": 0.0132
+              },
+              "t00437": {
+                "delta": -0.0147,
+                "lo": -0.0429,
+                "hi": 0.013
+              },
+              "t00874": {
+                "delta": -0.0248,
+                "lo": -0.0516,
+                "hi": 0.0022
+              },
+              "t01311": {
+                "delta": -0.0198,
+                "lo": -0.0479,
+                "hi": 0.0086
+              },
+              "end": {
+                "delta": -0.0121,
+                "lo": -0.0387,
+                "hi": 0.0152
+              }
+            },
+            "tod:dawn/dusk": {
+              "t00100": {
+                "delta": -0.0008,
+                "lo": -0.0678,
+                "hi": 0.0661
+              },
+              "t00437": {
+                "delta": -0.0099,
+                "lo": -0.081,
+                "hi": 0.062
+              },
+              "t00874": {
+                "delta": -0.0256,
+                "lo": -0.0934,
+                "hi": 0.0438
+              },
+              "t01311": {
+                "delta": -0.0281,
+                "lo": -0.1008,
+                "hi": 0.0455
+              },
+              "end": {
+                "delta": -0.0256,
+                "lo": -0.0959,
+                "hi": 0.0446
+              }
+            },
+            "tod:night": {
+              "t00100": {
+                "delta": 0.0118,
+                "lo": -0.017,
+                "hi": 0.0409
+              },
+              "t00437": {
+                "delta": 0.0005,
+                "lo": -0.0281,
+                "hi": 0.0286
+              },
+              "t00874": {
+                "delta": 0.0138,
+                "lo": -0.0162,
+                "hi": 0.0439
+              },
+              "t01311": {
+                "delta": -0.0122,
+                "lo": -0.042,
+                "hi": 0.0173
+              },
+              "end": {
+                "delta": -0.0081,
+                "lo": -0.037,
+                "hi": 0.021
+              }
+            }
+          },
+          "windows": {
+            "tracking": {
+              "delta": -0.0219,
+              "lo": -0.0426,
+              "hi": -0.0017,
+              "terms": {
+                "tod:night": -0.0219
+              }
+            },
+            "forgetting": {
+              "delta": 0.0128,
+              "lo": -0.0049,
+              "hi": 0.0299,
+              "terms": {
+                "tod:daytime": 0.0128
+              }
+            },
+            "pooled_late": {
+              "delta": -0.003,
+              "lo": -0.0166,
+              "hi": 0.0106,
+              "terms": {
+                "all": -0.003
+              }
+            },
+            "weather_rainy": {
+              "delta": 0.0091,
+              "lo": -0.0703,
+              "hi": 0.0912,
+              "terms": {
+                "regime:daytime\u00b7rainy": -0.0062,
+                "regime:daytime\u00b7clear": -0.0153
+              }
+            },
+            "weather_snowy": {
+              "delta": -0.014,
+              "lo": -0.085,
+              "hi": 0.0522,
+              "terms": {
+                "regime:daytime\u00b7snowy": -0.0293,
+                "regime:daytime\u00b7clear": -0.0153
+              }
+            },
+            "night_rainy": {
+              "delta": -0.0005,
+              "lo": -0.069,
+              "hi": 0.0697,
+              "terms": {
+                "regime:night\u00b7rainy": 0.0041,
+                "regime:night\u00b7clear": 0.0046
+              }
+            },
+            "night_snowy": {
+              "delta": -0.0205,
+              "lo": -0.1019,
+              "hi": 0.0655,
+              "terms": {
+                "regime:night\u00b7snowy": -0.0159,
+                "regime:night\u00b7clear": 0.0046
+              }
+            }
+          },
+          "iid": {
+            "all": {
+              "iid_vs_floor": {
+                "delta": -0.0245,
+                "lo": -0.0444,
+                "hi": -0.0047
+              },
+              "walk_vs_iid": {
+                "delta": 0.013,
+                "lo": -0.0015,
+                "hi": 0.0279
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

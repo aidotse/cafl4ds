@@ -1,0 +1,31 @@
+{
+  "steps": 592,
+  "plateaued": true,
+  "init_loss": -0.7267618615645915,
+  "final_loss": -0.9311688429117203,
+  "competence_trace": [
+    {
+      "step": 0.0,
+      "loss": null,
+      "knn_acc": 0.5348148148148149,
+      "linear_acc": 0.6229629629629629
+    },
+    {
+      "step": 500.0,
+      "loss": -0.8493888228423894,
+      "knn_acc": 0.5348148148148149,
+      "linear_acc": 0.6229629629629629
+    },
+    {
+      "step": 592.0,
+      "loss": -0.9208739371299743,
+      "knn_acc": 0.5348148148148149,
+      "linear_acc": 0.6229629629629629
+    }
+  ],
+  "encoder_unchanged": true,
+  "measurement": {
+    "knn_acc": 0.504444420337677,
+    "linear_acc": 0.6344444155693054
+  }
+}

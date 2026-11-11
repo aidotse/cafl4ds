@@ -1,0 +1,132 @@
+{
+  "encoder": {
+    "name": "b5",
+    "kind": "pretrained"
+  },
+  "readout": "mean",
+  "rule": {
+    "reference": "scene",
+    "candidates": [
+      "presence_cell:bus",
+      "presence_cell:truck",
+      "presence_cell:pedestrian",
+      "large_cell:car,bus,truck:0.02",
+      "weather",
+      "drivable"
+    ],
+    "ceiling_per_class": 1500,
+    "ceiling_steps": 1900,
+    "max_overlap": 0.6,
+    "min_headroom": 0.05,
+    "max_tasks": 4
+  },
+  "tasks": {
+    "scene": {
+      "n_fit": 5565,
+      "n_query": 8347,
+      "class_share": {
+        "0": 0.6259734036180664,
+        "1": 0.26296873128069964,
+        "2": 0.11105786510123397
+      },
+      "overlap": 1.0,
+      "b5_knn": 0.6301326751708984,
+      "b5_linear": 0.6182848215103149,
+      "b5_ft100": 0.6811556954408521,
+      "ceiling": 0.7127206052122741,
+      "headroom": 0.09443578370195915
+    },
+    "presence_cell:bus": {
+      "n_fit": 1314,
+      "n_query": 2172,
+      "class_share": {
+        "0": 0.5,
+        "1": 0.5
+      },
+      "overlap": 0.5,
+      "b5_knn": 0.5400552749633789,
+      "b5_linear": 0.5400552153587341,
+      "b5_ft100": 0.5612338858195212,
+      "ceiling": 0.638121546961326,
+      "headroom": 0.09806633160259182
+    },
+    "presence_cell:truck": {
+      "n_fit": 3038,
+      "n_query": 4444,
+      "class_share": {
+        "0": 0.5,
+        "1": 0.5
+      },
+      "overlap": 0.5,
+      "b5_knn": 0.5423042178153992,
+      "b5_linear": 0.5405040383338928,
+      "b5_ft100": 0.5617311731173117,
+      "ceiling": 0.6185868586858686,
+      "headroom": 0.07808282035197578
+    },
+    "presence_cell:pedestrian": {
+      "n_fit": 3034,
+      "n_query": 4708,
+      "class_share": {
+        "0": 0.5,
+        "1": 0.5
+      },
+      "overlap": 0.5,
+      "b5_knn": 0.6316907405853271,
+      "b5_linear": 0.6066269874572754,
+      "b5_ft100": 0.6481166808269612,
+      "ceiling": 0.6983857264231096,
+      "headroom": 0.0917587389658342
+    },
+    "large_cell:car,bus,truck:0.02": {
+      "n_fit": 3584,
+      "n_query": 5356,
+      "class_share": {
+        "0": 0.5,
+        "1": 0.5
+      },
+      "overlap": 0.5,
+      "b5_knn": 0.7722181081771851,
+      "b5_linear": 0.8187080025672913,
+      "b5_ft100": 0.8728528752800598,
+      "ceiling": 0.9191560866318147,
+      "headroom": 0.10044808406452344
+    },
+    "weather": {
+      "n_fit": 4307,
+      "n_query": 6449,
+      "class_share": {
+        "0": 0.7824468909908513,
+        "1": 0.10311676228872693,
+        "2": 0.11443634672042177
+      },
+      "overlap": 0.4023313522338867,
+      "b5_knn": 0.7125293612480164,
+      "b5_linear": 0.73378986120224,
+      "b5_ft100": 0.7840921446633619,
+      "ceiling": 0.8381715674684037,
+      "headroom": 0.10438170626616372
+    },
+    "drivable": {
+      "n_fit": 500,
+      "n_query": 1000,
+      "class_share": {
+        "0": 0.8227449059486389,
+        "1": 0.17725510895252228
+      },
+      "overlap": 0.520526647567749,
+      "b5_knn": 0.9295171499252319,
+      "b5_linear": 0.9256812334060669,
+      "b5_ft100": null,
+      "ceiling": 0.9385477304458618,
+      "headroom": 0.012866497039794922
+    }
+  },
+  "choice": "weather",
+  "panel": [
+    "weather",
+    "large_cell:car,bus,truck:0.02",
+    "presence_cell:bus",
+    "presence_cell:pedestrian"
+  ]
+}

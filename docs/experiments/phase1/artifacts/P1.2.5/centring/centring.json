@@ -1,0 +1,43 @@
+{
+  "n": 1024,
+  "seed": 0,
+  "teacher_temp": 0.07,
+  "sets": {
+    "bdd": {
+      "entropy_own_center": 10.736231803894043,
+      "entropy_no_center": 3.835104465484619,
+      "entropy_bdd_center": 10.736231803894043,
+      "uniform_entropy": 11.090354888959125,
+      "top_prototypes_used": 373,
+      "top_prototypes_used_no_center": 183,
+      "cls_mean_pairwise_cosine": 0.5515582590503606
+    },
+    "coco": {
+      "entropy_own_center": 4.265464782714844,
+      "entropy_no_center": 3.441866636276245,
+      "entropy_bdd_center": 4.26472806930542,
+      "uniform_entropy": 11.090354888959125,
+      "top_prototypes_used": 871,
+      "top_prototypes_used_no_center": 852,
+      "cls_mean_pairwise_cosine": 0.11802674192580857
+    },
+    "places365": {
+      "entropy_own_center": 5.149908065795898,
+      "entropy_no_center": 3.7273550033569336,
+      "entropy_bdd_center": 5.286808490753174,
+      "uniform_entropy": 11.090354888959125,
+      "top_prototypes_used": 1014,
+      "top_prototypes_used_no_center": 938,
+      "cls_mean_pairwise_cosine": 0.15459278621093725
+    },
+    "imagenette": {
+      "entropy_own_center": 3.293201446533203,
+      "entropy_no_center": 2.7409794330596924,
+      "entropy_bdd_center": 4.417157173156738,
+      "uniform_entropy": 11.090354888959125,
+      "top_prototypes_used": 450,
+      "top_prototypes_used_no_center": 428,
+      "cls_mean_pairwise_cosine": 0.11331909359492913
+    }
+  }
+}

@@ -5,8 +5,8 @@
 set -u
 cd /home/mauricio/projects/cafl4ds
 SCENES='data.scenes=["city street",highway,residential]'
-TRAIN=/home/mauricio/data/bdd100k; BDD=/mnt/pr_2018_scaleout_workdir/bdd100k; OUT=outputs/p121
-run() { card=$1; shift; ./scripts/run_gaudi_dev.sh -m $TRAIN -m $BDD -m /mnt/cifar100 gaudi-env-cafl4ds:latest $card "$@"; }
+TRAIN=/mnt/pr_2018_scaleout_workdir/cafl4ds/data/bdd100k; BDD=/mnt/pr_2018_scaleout_workdir/cafl4ds/data/bdd100k; OUT=outputs/p121
+run() { card=$1; shift; ./scripts/run_gaudi_dev.sh -m $BDD -m /mnt/pr_2018_scaleout_workdir/cafl4ds/data/cifar100 gaudi-env-cafl4ds:latest $card "$@"; }
 DIET="data=bdd data.split=train data.min_canary_count=50 data.pixel_dtype=uint8 data.cache_dir=/workspace/outputs/cache bdd_root=$TRAIN device=hpu img_size=224 \
  encoder=vit_b16_mae stream.support_per_canary=100 stream.query_per_canary=100 stream.stratify_canary=true \
  stream.well_fraction=0.05 stream.select_support_per_canary=150 stream.select_query_per_canary=150"

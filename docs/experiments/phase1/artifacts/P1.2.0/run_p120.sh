@@ -3,8 +3,8 @@
 # then the canary-pool reads for both backbones.
 set -u
 cd /home/mauricio/projects/cafl4ds
-TRAIN=/home/mauricio/data/bdd100k; BDD=/mnt/pr_2018_scaleout_workdir/bdd100k; OUT=outputs/p120
-run() { card=$1; shift; ./scripts/run_gaudi_dev.sh -m $TRAIN -m $BDD -m /mnt/cifar100 gaudi-env-cafl4ds:latest $card "$@"; }
+TRAIN=/mnt/pr_2018_scaleout_workdir/cafl4ds/data/bdd100k; BDD=/mnt/pr_2018_scaleout_workdir/cafl4ds/data/bdd100k; OUT=outputs/p120
+run() { card=$1; shift; ./scripts/run_gaudi_dev.sh -m $BDD -m /mnt/pr_2018_scaleout_workdir/cafl4ds/data/cifar100 gaudi-env-cafl4ds:latest $card "$@"; }
 POOL="data=bdd bdd_root=$TRAIN data.min_canary_count=50 device=hpu img_size=224 encoder=vit_b16_mae \
  pool.split=train pool.max_images=14000 threads=8"
 TASKS='tasks=[scene,"presence:traffic light","presence:pedestrian","presence:truck"]'

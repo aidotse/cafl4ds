@@ -1,0 +1,44 @@
+- {name: floor, kind: well, path: wells/p125/mae_je_heads.pt}
+- {name: walk_s0_t00100, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s1/step00100.pt, fewshot: false}
+- {name: walk_s0_t00212, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s1/step00212.pt, fewshot: false}
+- {name: walk_s0_t00423, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s1/step00423.pt, fewshot: false}
+- {name: walk_s0_t00846, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s1/step00846.pt, fewshot: false}
+- {name: walk_s0_t01269, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s1/step01269.pt, fewshot: false}
+- {name: walk_s0_end, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s1/final.pt, fewshot: true}
+- {name: walk_s1_t00100, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s2/step00100.pt, fewshot: false}
+- {name: walk_s1_t00212, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s2/step00212.pt, fewshot: false}
+- {name: walk_s1_t00423, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s2/step00423.pt, fewshot: false}
+- {name: walk_s1_t00846, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s2/step00846.pt, fewshot: false}
+- {name: walk_s1_t01269, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s2/step01269.pt, fewshot: false}
+- {name: walk_s1_end, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s2/final.pt, fewshot: true}
+- {name: walk_s2_t00100, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s3/step00100.pt, fewshot: false}
+- {name: walk_s2_t00212, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s3/step00212.pt, fewshot: false}
+- {name: walk_s2_t00423, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s3/step00423.pt, fewshot: false}
+- {name: walk_s2_t00846, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s3/step00846.pt, fewshot: false}
+- {name: walk_s2_t01269, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s3/step01269.pt, fewshot: false}
+- {name: walk_s2_end, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s3/final.pt, fewshot: true}
+- {name: walk_s3_t00100, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s4/step00100.pt, fewshot: false}
+- {name: walk_s3_t00212, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s4/step00212.pt, fewshot: false}
+- {name: walk_s3_t00423, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s4/step00423.pt, fewshot: false}
+- {name: walk_s3_t00846, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s4/step00846.pt, fewshot: false}
+- {name: walk_s3_t01269, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s4/step01269.pt, fewshot: false}
+- {name: walk_s3_end, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s4/final.pt, fewshot: true}
+- {name: walk_s4_t00100, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s5/step00100.pt, fewshot: false}
+- {name: walk_s4_t00212, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s5/step00212.pt, fewshot: false}
+- {name: walk_s4_t00423, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s5/step00423.pt, fewshot: false}
+- {name: walk_s4_t00846, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s5/step00846.pt, fewshot: false}
+- {name: walk_s4_t01269, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s5/step01269.pt, fewshot: false}
+- {name: walk_s4_end, kind: checkpoint, path: outputs/p125/drive/mae_je_walk/checkpoints/s5/final.pt, fewshot: true}
+- {name: iid_s0_end, kind: checkpoint, path: outputs/p125/drive/mae_je_iid/checkpoints/s1/final.pt}
+- {name: iid_s1_end, kind: checkpoint, path: outputs/p125/drive/mae_je_iid/checkpoints/s2/final.pt}
+- {name: iid_s2_end, kind: checkpoint, path: outputs/p125/drive/mae_je_iid/checkpoints/s3/final.pt}
+- {name: iid_s3_end, kind: checkpoint, path: outputs/p125/drive/mae_je_iid/checkpoints/s4/final.pt}
+- {name: iid_s4_end, kind: checkpoint, path: outputs/p125/drive/mae_je_iid/checkpoints/s5/final.pt}
+- {name: coco_s0_end, kind: checkpoint, path: outputs/p125/offdomain/drive/coco/checkpoints/s0/final.pt}
+- {name: coco_s1_end, kind: checkpoint, path: outputs/p125/offdomain/drive/coco/checkpoints/s1/final.pt}
+- {name: coco_s2_end, kind: checkpoint, path: outputs/p125/offdomain/drive/coco/checkpoints/s2/final.pt}
+- {name: places365_s0_end, kind: checkpoint, path: outputs/p125/offdomain/drive/places365/checkpoints/s0/final.pt}
+- {name: places365_s1_end, kind: checkpoint, path: outputs/p125/offdomain/drive/places365/checkpoints/s1/final.pt}
+- {name: places365_s2_end, kind: checkpoint, path: outputs/p125/offdomain/drive/places365/checkpoints/s2/final.pt}
+- {name: places365_s3_end, kind: checkpoint, path: outputs/p125/offdomain/drive/places365/checkpoints/s3/final.pt}
+- {name: places365_s4_end, kind: checkpoint, path: outputs/p125/offdomain/drive/places365/checkpoints/s4/final.pt}

@@ -1,7 +1,7 @@
 #!/bin/bash
 # P1.1.1 overnight queue — one worker per card (card 0 JE, card 1 MAE). Every arm resumes or drives
 # from the P1.1.0 deep overlap-0 wells / leg checkpoints, on the P1.1.0 deep diet.
-BDD=/mnt/pr_2018_scaleout_workdir/bdd100k; OUT=outputs/p111; P110=outputs/p110_deep
+BDD=/mnt/pr_2018_scaleout_workdir/cafl4ds/data/bdd100k; OUT=outputs/p111; P110=outputs/p110_deep
 DIET="data=bdd data.split=val data.min_canary_count=50 bdd_root=$BDD device=hpu img_size=224 encoder=vit_b16_mae \
  stream.support_per_canary=45 stream.query_per_canary=45 stream.stratify_canary=true stream.well_fraction=0.5 \
  stream.select_support_per_canary=150 stream.select_query_per_canary=150 stream.well_overlap=0.0 \
@@ -10,7 +10,7 @@ START=65   # the night·clear leg opens here; ~54 steps of drive remain after th
 run() { card=$1; name=$2; shift 2
   if [ -f $OUT/$name/corpus/manifest.json ]; then echo "$(date +%F\ %T) skip $name (done)" >> $OUT/logs/progress.txt; return; fi
   echo "$(date +%F\ %T) start $name (card $card)" >> $OUT/logs/progress.txt
-  ./scripts/run_gaudi_dev.sh -m $BDD -m /mnt/cifar100 gaudi-env-cafl4ds:latest $card \
+  ./scripts/run_gaudi_dev.sh -m $BDD -m /mnt/pr_2018_scaleout_workdir/cafl4ds/data/cifar100 gaudi-env-cafl4ds:latest $card \
     python scripts/run_deploy_harness.py $DIET "$@" hydra.run.dir=$OUT/$name > $OUT/logs/$(echo $name | tr / _).log 2>&1
   echo "$(date +%F\ %T) end $name rc=$?" >> $OUT/logs/progress.txt
 }
