@@ -5,6 +5,28 @@ All notable changes to this project are documented in this file.
 This file is managed by [Commitizen](https://commitizen-tools.github.io/commitizen/) and is updated automatically on
 each `poe bump` (driven by [Conventional Commits](https://www.conventionalcommits.org/)). Do not edit it by hand.
 
+## v0.31.0 (2026-11-12)
+
+### Feat
+
+- P1.2.5 — DINO's objective, P1.2.5's tasks and analyses (Parts A-G), data on the project share
+- P1.2.4 attribution verdict and the p124 analysis (per-control attribution, confirmed recipe vs the best floor)
+- COCO and Places365 off-domain sources for P1.2.4's attribution controls
+- P1.2.2/P1.2.4 recipe levers and arm-choosing reads
+- vit_b16_dino encoder config (P1.2.4's stronger frozen floor)
+- analyze_adaptation p121 secondary reads - walk vs IID, per stratum, by regime relation
+- read_adaptation / analyze_adaptation align subset tasks to their own query frames
+- P1.2.0 extended screen - weather and cell-balanced presence tasks, scene whitelist, center-crop
+- BDD100KSource cache_dir - reuse a deterministic decode across runs
+- P1.2.1 engineering - uint8 BDD frames, chosen-step checkpoints, gate verdict and analysis
+- read_adaptation fewshot.tasks restricts the fine-tune rungs to chosen tasks
+- P1.2.0 readout ladder, adapted-vs-B5 bootstrap, settled-head warm-up
+
+### Fix
+
+- **ci**: declare threadpoolctl; seed test_p125's fake ladders by name, not temp path
+- P1.2.5 Part G results; DINO fine-tunes train the encoder; P1.2 closed (Qualified)
+
 ## v0.30.0 (2026-11-12)
 
 ### Feat
