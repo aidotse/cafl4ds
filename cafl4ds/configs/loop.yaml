@@ -24,7 +24,7 @@ device: cpu
 eval_every: 5
 
 # Data sizing (kept small for CPU; raise for the HPU runs).
-data_root: /mnt/stl10 # shared STL-10 (torchvision layout); override for a local copy
+data_root: /mnt/pr_2018_scaleout_workdir/cafl4ds/data/stl10 # shared STL-10 (torchvision layout); override for a local copy
 max_per_class: 120 # cap images loaded per class from the source
 max_train_per_class: 80 # cap training images per class after held-out reservations
 

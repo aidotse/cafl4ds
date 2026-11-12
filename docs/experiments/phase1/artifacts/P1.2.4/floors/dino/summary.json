@@ -1,0 +1,94 @@
+{
+  "pool": {
+    "kind": "heldout",
+    "n_fit": 3501,
+    "n_query": 5252
+  },
+  "n_query_by_task": {
+    "scene": 5252,
+    "presence_cell:traffic light": 2958
+  },
+  "stratum_names": {
+    "0": "daytime",
+    "1": "dawn/dusk",
+    "2": "night"
+  },
+  "regime_names": {
+    "0": "daytime\u00b7clear",
+    "1": "daytime\u00b7partly cloudy",
+    "2": "daytime\u00b7overcast",
+    "3": "daytime\u00b7rainy",
+    "4": "daytime\u00b7snowy",
+    "5": "daytime\u00b7foggy",
+    "6": "dawn/dusk\u00b7clear",
+    "7": "dawn/dusk\u00b7partly cloudy",
+    "8": "dawn/dusk\u00b7overcast",
+    "9": "dawn/dusk\u00b7rainy",
+    "10": "dawn/dusk\u00b7snowy",
+    "11": "dawn/dusk\u00b7foggy",
+    "12": "night\u00b7clear",
+    "13": "night\u00b7partly cloudy",
+    "14": "night\u00b7overcast",
+    "15": "night\u00b7rainy",
+    "16": "night\u00b7snowy",
+    "17": "night\u00b7foggy"
+  },
+  "encoders": {
+    "dino": {
+      "spec": {
+        "name": "dino",
+        "kind": "pretrained"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.6364298462867737,
+          "daytime": 0.6155336499214172,
+          "dawn/dusk": 0.6504896283149719,
+          "night": 0.6144393086433411
+        },
+        "scene|linear": {
+          "pooled": 0.6432957053184509,
+          "daytime": 0.6479116082191467,
+          "dawn/dusk": 0.6528255939483643,
+          "night": 0.6148155331611633
+        },
+        "scene|ft10": {
+          "pooled": 0.5326749682426453,
+          "daytime": 0.5159029364585876,
+          "dawn/dusk": 0.5533002018928528,
+          "night": 0.5289923548698425
+        },
+        "scene|ft100": {
+          "pooled": 0.6890546679496765,
+          "daytime": 0.6837189197540283,
+          "dawn/dusk": 0.7474375367164612,
+          "night": 0.6618248820304871
+        },
+        "presence_cell:traffic light|knn": {
+          "pooled": 0.5973630547523499,
+          "daytime": 0.5733882188796997,
+          "dawn/dusk": 0.5661157369613647,
+          "night": 0.6311606168746948
+        },
+        "presence_cell:traffic light|linear": {
+          "pooled": 0.6244083642959595,
+          "daytime": 0.6131687164306641,
+          "dawn/dusk": 0.6611570119857788,
+          "night": 0.6303656697273254
+        },
+        "presence_cell:traffic light|ft10": {
+          "pooled": 0.5210727453231812,
+          "daytime": 0.5292637944221497,
+          "dawn/dusk": 0.5110192894935608,
+          "night": 0.5135135054588318
+        },
+        "presence_cell:traffic light|ft100": {
+          "pooled": 0.6462699770927429,
+          "daytime": 0.6314586400985718,
+          "dawn/dusk": 0.5881543159484863,
+          "night": 0.674615740776062
+        }
+      }
+    }
+  }
+}

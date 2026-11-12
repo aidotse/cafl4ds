@@ -5,11 +5,11 @@ print_usage() {
     echo "Usage: $0 [OPTIONS] <image_name> <device_id> [command...]"
     echo ""
     echo "Options:"
-    echo "  -m, --mount <path>   Read-only bind mount for data/models (e.g., /mnt/stl10 or /host:/container). Repeatable."
+    echo "  -m, --mount <path>   Read-only bind mount for data/models (e.g., /mnt/pr_2018_scaleout_workdir/cafl4ds/data/stl10 or /host:/container). Repeatable."
     echo "  -r, --root           Run as root (disables default user mapping)"
     echo "  -h, --help           Show this help message and exit"
     echo ""
-    echo "Example: $0 -m /mnt/stl10 --root my_image all bash"
+    echo "Example: $0 -m /mnt/pr_2018_scaleout_workdir/cafl4ds/data/stl10 --root my_image all bash"
 }
 
 
@@ -81,12 +81,12 @@ fi
 
 # Read-only bind mounts for data/models that live OUTSIDE the repo (the repo itself is always mounted
 # at /workspace) are opted in via one or more -m/--mount flags, accumulated into DATA_FLAGS above:
-#   -m /mnt/stl10                     -> mounts /mnt/stl10 at the same path, read-only
+#   -m /mnt/pr_2018_scaleout_workdir/cafl4ds/data/stl10                     -> mounts /mnt/pr_2018_scaleout_workdir/cafl4ds/data/stl10 at the same path, read-only
 #   -m /host/models:/workspace/models -> explicit `host:container[:opts]` spec, used as-is
 #   -m /mnt -m /home/me/data          -> several dirs (e.g. root-owned /mnt + a writable dataset dir)
 # None given (default) -> no extra mount. Example:
-#   ./scripts/run_gaudi_dev.sh -m /mnt/stl10 <image> 0 \
-#       python scripts/run_loop.py device=hpu data_root=/mnt/stl10
+#   ./scripts/run_gaudi_dev.sh -m /mnt/pr_2018_scaleout_workdir/cafl4ds/data/stl10 <image> 0 \
+#       python scripts/run_loop.py device=hpu data_root=/mnt/pr_2018_scaleout_workdir/cafl4ds/data/stl10
 
 # Run as the host user (not root) so files the container writes into the mounted repo are owned
 # by you, not root. The image has no passwd entry for your uid and Habana's backend autoload calls

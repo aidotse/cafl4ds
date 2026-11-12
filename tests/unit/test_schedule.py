@@ -8,7 +8,7 @@ linearly to the base LR over the warmup fraction, then follows a half-cosine dow
 import pytest
 import torch
 
-from cafl4ds.schedule import warmup_cosine_schedule
+from cafl4ds.schedule import warmup_constant_schedule, warmup_cosine_schedule
 
 _BASE_LR = 0.1
 
@@ -58,3 +58,19 @@ def test_invalid_args_raise() -> None:
         warmup_cosine_schedule(opt, 0)
     with pytest.raises(ValueError):
         warmup_cosine_schedule(opt, 10, warmup_frac=1.0)
+
+
+def test_warmup_constant_ramps_then_holds_the_base_lr() -> None:
+    """The warmup arm's schedule ramps linearly over its warmup, then stays flat at the base LR."""
+    param = torch.nn.Parameter(torch.zeros(1))
+    opt = torch.optim.SGD([param], lr=_BASE_LR)
+    sched = warmup_constant_schedule(opt, 100, warmup_frac=0.1)
+    seen = []
+    for _ in range(100):
+        seen.append(opt.param_groups[0]["lr"])
+        opt.step()
+        sched.step()
+    assert seen[0] == pytest.approx(0.1 * _BASE_LR) and seen[4] == pytest.approx(0.5 * _BASE_LR)
+    assert all(lr == pytest.approx(_BASE_LR) for lr in seen[9:])
+    with pytest.raises(ValueError):
+        warmup_constant_schedule(opt, 10, warmup_frac=1.0)

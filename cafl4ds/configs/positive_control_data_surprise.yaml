@@ -81,7 +81,7 @@ monitor:
   run_linear: false
   run_alignment: false
 
-data_root: /mnt/stl10
+data_root: /mnt/pr_2018_scaleout_workdir/cafl4ds/data/stl10
 max_per_class: null
 
 # The two-sided change-point gate, read at `lr_op`.

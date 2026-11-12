@@ -1,0 +1,8 @@
+- {name: b5, kind: well, path: wells/p121/je_heads.pt}
+- {name: base, kind: checkpoint, path: outputs/p121/drive/je_walk/checkpoints/s0/final.pt}
+- {name: cosine, kind: checkpoint, path: outputs/p124/drive/cosine/checkpoints/s0/final.pt}
+- {name: ema, kind: checkpoint, path: outputs/p124/drive/ema/checkpoints/s0/final.pt}
+- {name: lr_third, kind: checkpoint, path: outputs/p124/drive/lr_third/checkpoints/s0/final.pt}
+- {name: lr_x3, kind: checkpoint, path: outputs/p124/drive/lr_x3/checkpoints/s0/final.pt}
+- {name: protect, kind: checkpoint, path: outputs/p124/drive/protect/checkpoints/s0/final.pt}
+- {name: ema_avg, kind: checkpoint, path: outputs/p124/drive/ema/checkpoints/s0/ema_final.pt}

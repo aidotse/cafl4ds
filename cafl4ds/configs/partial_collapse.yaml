@@ -26,7 +26,7 @@
 #   (fast network-free smoke: append `data=synthetic img_size=16 epochs=6 \
 #     stream.support_per_class=8 stream.query_per_class=8 stream.era_eval_per_class=5`)
 #   (on the Gaudi HPU, inside the container — see docs/developing.md:
-#     ./scripts/run_gaudi_dev.sh -m /mnt/stl10 gaudi-env-cafl4ds:latest 0 \
+#     ./scripts/run_gaudi_dev.sh -m /mnt/pr_2018_scaleout_workdir/cafl4ds/data/stl10 gaudi-env-cafl4ds:latest 0 \
 #       python scripts/partial_collapse.py sweep.knob=blend seed=0 device=hpu)
 defaults:
   - encoder: tiny # SAME tiny ViT as P0.1/P0.2 — no capacity scale-up
@@ -58,7 +58,7 @@ device: cpu
 epochs: 40 # the horizon a healthy SimSiam needs to reach its stable non-collapsed regime
 eval_every_epochs: 5 # probes are expensive; the ladder reads FINAL geometry/accuracy, so thin the cadence
 
-data_root: /mnt/stl10
+data_root: /mnt/pr_2018_scaleout_workdir/cafl4ds/data/stl10
 max_per_class: null
 max_train_per_class: null
 

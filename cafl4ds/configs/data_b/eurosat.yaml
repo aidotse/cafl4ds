@@ -5,6 +5,6 @@
 # Download once with torchvision.datasets.EuroSAT(root=..., download=True); mount the dir into the
 # Gaudi container at the same path with an extra `-m` (it lives outside root-owned /mnt).
 _target_: cafl4ds.data.sources.EuroSATSource
-root: /home/mauricio/data
+root: /mnt/pr_2018_scaleout_workdir/cafl4ds/data
 img_size: 64
 max_per_class: ${max_per_class}

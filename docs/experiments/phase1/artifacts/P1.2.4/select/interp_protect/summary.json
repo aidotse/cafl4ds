@@ -1,0 +1,89 @@
+{
+  "pool": {
+    "kind": "selection",
+    "n_fit": 450,
+    "n_query": 450
+  },
+  "n_query_by_task": {
+    "scene": 450
+  },
+  "stratum_names": {},
+  "regime_names": {},
+  "encoders": {
+    "protect_a0.25": {
+      "spec": {
+        "name": "protect_a0.25",
+        "kind": "interp",
+        "alpha": 0.25,
+        "a": {
+          "kind": "well",
+          "path": "wells/p121/je_heads.pt"
+        },
+        "b": {
+          "kind": "checkpoint",
+          "path": "outputs/p124/drive/protect/checkpoints/s0/final.pt"
+        }
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.48222222924232483,
+          "0": 0.48222222924232483
+        },
+        "scene|linear": {
+          "pooled": 0.5755555629730225,
+          "0": 0.5755555629730225
+        }
+      }
+    },
+    "protect_a0.5": {
+      "spec": {
+        "name": "protect_a0.5",
+        "kind": "interp",
+        "alpha": 0.5,
+        "a": {
+          "kind": "well",
+          "path": "wells/p121/je_heads.pt"
+        },
+        "b": {
+          "kind": "checkpoint",
+          "path": "outputs/p124/drive/protect/checkpoints/s0/final.pt"
+        }
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5155555605888367,
+          "0": 0.5155555605888367
+        },
+        "scene|linear": {
+          "pooled": 0.597777783870697,
+          "0": 0.597777783870697
+        }
+      }
+    },
+    "protect_a0.75": {
+      "spec": {
+        "name": "protect_a0.75",
+        "kind": "interp",
+        "alpha": 0.75,
+        "a": {
+          "kind": "well",
+          "path": "wells/p121/je_heads.pt"
+        },
+        "b": {
+          "kind": "checkpoint",
+          "path": "outputs/p124/drive/protect/checkpoints/s0/final.pt"
+        }
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5066666603088379,
+          "0": 0.5066666603088379
+        },
+        "scene|linear": {
+          "pooled": 0.6111111044883728,
+          "0": 0.6111111044883728
+        }
+      }
+    }
+  }
+}

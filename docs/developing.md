@@ -52,12 +52,12 @@ The project root is mounted at `/workspace` (the container's workdir), so pass p
 #### Mounting data / models
 
 The launcher hardcodes no dataset path. Datasets and model caches usually live *outside* the repo (e.g. STL-10 on the
-shared drive at `/mnt/stl10`), so bind them in with the optional `-m` flag:
+project share at `/mnt/pr_2018_scaleout_workdir/cafl4ds/data/stl10`), so bind them in with the optional `-m` flag:
 
 ```bash
 # Bare host path -> mounted read-only at the SAME path in the container (config defaults resolve unchanged):
-./scripts/run_gaudi_dev.sh -m /mnt/stl10 gaudi-env-cafl4ds:latest 0 \
-    python scripts/run_loop.py device=hpu data_root=/mnt/stl10
+./scripts/run_gaudi_dev.sh -m /mnt/pr_2018_scaleout_workdir/cafl4ds/data/stl10 gaudi-env-cafl4ds:latest 0 \
+    python scripts/run_loop.py device=hpu data_root=/mnt/pr_2018_scaleout_workdir/cafl4ds/data/stl10
 
 # Explicit `host:container[:opts]` spec -> used verbatim (mount a model dir somewhere specific):
 ./scripts/run_gaudi_dev.sh -m /host/models:/workspace/models gaudi-env-cafl4ds:latest 0 bash

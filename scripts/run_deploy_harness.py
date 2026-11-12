@@ -24,7 +24,7 @@ Examples:
 import copy
 import json
 import sys
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any
@@ -36,12 +36,12 @@ from hydra.utils import instantiate, to_absolute_path
 from loguru import logger
 from omegaconf import DictConfig, OmegaConf
 
-from cafl4ds import branch, deploy, deploy_corpus, harness, warmup
+from cafl4ds import branch, deploy, deploy_corpus, harness, optim_groups, warmup
 from cafl4ds.data.attributes import AttributeSource
 from cafl4ds.data.regime import RegimeStream
 from cafl4ds.data.streams import StreamBatch
 from cafl4ds.health_trust import CANARY_SIGNALS, DEFAULT_LABEL_FREE_SIGNALS, Backbone, backbone_family
-from cafl4ds.leg_checkpoints import CheckpointingStream
+from cafl4ds.leg_checkpoints import AveragingStream, CheckpointingStream
 from cafl4ds.monitor import HealthMonitor, group_key
 from cafl4ds.ssl.base import SSLMethod, apply_encoder_init
 
@@ -90,7 +90,8 @@ def _branch_stream(
     ``recovery_steps``, runs the recovery pass over the well's stationary pool. A branch reads the
     canary just before and just after the damage (identical at dose 0), so the immediate dent is on
     record and every dose consumes the same RNG. ``checkpoint_legs`` saves every remaining leg
-    boundary (``true``) or only the end state (``final``).
+    boundary (``true``), only the end state (``final``), or before each ``checkpoint_steps`` step and at
+    the end (``steps``).
     """
     resume: DictConfig = config.get("resume") or OmegaConf.create({})
     damage: DictConfig = config.get("damage") or OmegaConf.create({})
@@ -124,11 +125,24 @@ def _branch_stream(
         fed = branch.recovery_batches(stream, int(recovery)) if recovery else branch.ResumedStream(stream, start)
     elif recovery:
         raise ValueError("recovery_steps needs resume.checkpoint (the state to recover from).")
+    if config.get("max_steps"):  # P1.2.5 Part E: the drive's first steps, its schedules still set by the full drive
+        fed = branch.TruncatedStream(fed, int(config.max_steps))
     legs = config.get("checkpoint_legs")
     if legs:
         steps = [] if str(legs) == "final" or recovery else [s for s in stream.leg_boundary_steps if s > start]
+        if str(legs) == "steps":  # P1.2.1: a handful of chosen steps — a long drive has too many legs to keep
+            # a value in (0, 1) is a fraction of the drive's batches (its exact length is known only here)
+            chosen = [round(float(s) * len(stream)) if 0 < float(s) < 1 else int(s) for s in config.checkpoint_steps]
+            steps = [s for s in chosen if s > start]
         fed = CheckpointingStream(fed, method, steps, out_dir / "checkpoints" / f"s{config.seed}")
     return fed, record
+
+
+def _well_frames(stream: RegimeStream) -> Iterator[torch.Tensor]:
+    """The well's frames in batches — the unlabelled pool a method primes on before step 0 (built only if consumed)."""
+    images = stream.labelled_pool("well").images
+    if len(images):
+        yield from images.split(stream.batch_size)
 
 
 def _run_live(
@@ -153,7 +167,15 @@ def _run_live(
             f"{method.name!r} ({backbone_family(method.name).value}) — check the backbone override."
         )
     stream = instantiate(config.stream, source=source)
-    for path in {str(p) for p in (config.get("well"), config.get("anchor")) if p}:
+    method.set_horizon(len(stream))  # DINO's teacher momentum is scheduled over the drive
+    if not (config.get("well") or config.get("resume", {}).get("checkpoint")):  # a resumed state carries its own
+        with torch.random.fork_rng():  # the estimate's crops must not shift the drive's RNG draws
+            method.to(torch.device(str(config.device))).prime(_well_frames(stream))
+    # P1.2.4's off-domain drives resume a BDD well on another source, whose split cannot match: the one
+    # deliberate exception (resume_check_split=false).
+    for path in {
+        str(p) for p in (config.get("well"), config.get("anchor")) if p and config.get("resume_check_split", True)
+    }:
         warmup.check_split(to_absolute_path(path), stream.split_fingerprint())
     logger.info(
         f"deploy '{name}': backbone={method.name}, order={stream.order}, {stream.num_eras} eras, "
@@ -164,19 +186,41 @@ def _run_live(
         with torch.random.fork_rng():  # building the anchor must not shift the arm's RNG draws
             monitor.anchor_drift(_anchor_method(config))
     fed, branched = _branch_stream(config, stream, method, monitor, out_dir)
+    if config.get("ema"):  # P1.2.4: a weight average beside the drive, saved as checkpoints/s<seed>/ema_final.pt
+        fed = AveragingStream(
+            fed, method, float(config.ema), out_dir / "checkpoints" / f"s{config.seed}" / "ema_final.pt"
+        )
+    optimizer = _optimizer(config, method)
+    schedule = config.get("schedule")
     arm = harness.run_stream_arm(
         name=f"{name}_live",
         role="live",
         method=method,
         stream=fed,
-        optimizer=instantiate(config.optim, params=method.parameters()),
+        optimizer=optimizer,
         selection_filter=instantiate(config.filter),
         monitor=monitor,
         out_dir=out_dir,
         eval_every=config.eval_every,
+        scheduler=instantiate(schedule, optimizer=optimizer, total_steps=len(stream)) if schedule else None,
         device=config.device,
     )
     return arm, stream, branched
+
+
+def _optimizer(config: DictConfig, method: SSLMethod) -> torch.optim.Optimizer:
+    """The live arm's optimizer: one group, or P1.2.2's protections (``param_groups``) when asked for."""
+    groups = config.get("param_groups") or {}
+    if groups.get("layer_decay") is None and not groups.get("no_decay"):
+        return instantiate(config.optim, params=method.parameters())
+    params = optim_groups.param_groups(
+        method,
+        lr=float(config.optim.lr),
+        weight_decay=float(config.optim.weight_decay),
+        layer_decay=groups.get("layer_decay"),
+        no_decay=bool(groups.get("no_decay")),
+    )
+    return instantiate(config.optim, _partial_=True)(params)  # plain dicts: instantiate would wrap them in DictConfig
 
 
 def _probe_query_counts(stream: RegimeStream) -> dict[str, int]:

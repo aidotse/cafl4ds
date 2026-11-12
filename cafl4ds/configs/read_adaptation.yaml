@@ -1,0 +1,78 @@
+# P1.2 readout ladder — score encoders (B5, a random init, wells, drive checkpoints) on a held-out pool:
+# frozen kNN / linear probes and a few-shot fine-tune, saved as per-image correctness for the
+# adapted-vs-frozen bootstrap (cafl4ds/adaptation.py). See scripts/read_adaptation.py.
+#
+#   uv run python scripts/read_adaptation.py data=bdd bdd_root=/abs/path encoder=vit_b16_mae img_size=224 \
+#     device=hpu backbone=mae encoders_file=encoders.yaml
+defaults:
+  - encoder: tiny
+  - backbone: je # the SSL family a `well` / `checkpoint` encoder was saved from
+  - data: attr_synthetic # attribute source: attr_synthetic | bdd
+  - stream: regime # only read with pool.kind=canary
+  - _self_
+
+img_size: 32
+batch_size: 32
+seed: 0
+device: cpu
+threads: 8 # torch + BLAS threads (cap them beside HPU jobs)
+
+bdd_root: /mnt/pr_2018_scaleout_workdir/cafl4ds/data/bdd100k
+max_images: null
+max_train_per_regime: null
+
+mode: read # read | select_lr | screen
+
+pool:
+  kind: heldout # heldout (frames no encoder trained on, split into fit / query) | canary (the stream's probes) |
+  # selection (the stream's train-side selection set — P1.2.2 / P1.2.4 choose recipes here, never on val)
+  split: null # heldout: the BDD split to read (null = the data config's)
+  max_images: null # heldout: the first N attribute-valid frames
+  fit_fraction: 0.4
+  seed: 0 # the fit / query split, and the probe-fit subsample — fixed, so every encoder reads the same frames
+
+tasks: [scene] # scene | weather | presence(_cell):<category> | large_cell:<categories>:<min_area> | drivable (per patch)
+probe_per_class: 500 # each task's probes fit on this many fit-pool frames per class
+knn_k: 20
+blocks: null # P1.2.2's per-block probes: also read the frozen rungs after these encoder blocks (1-based)
+# P1.2.5: what an encoder is read on — embed (its own pooling: the patch mean for the cafl4ds ViTs, cls for the
+# torchvision ViT-B) | mean (the patch-token mean, for every encoder) | cls (the class token). cls_rungs adds frozen
+# rungs on the class token beside it (keys <task>|<rung>@cls).
+readout: embed
+cls_rungs: false
+patch: # the per-patch task (drivable): seed-fixed frames with a drivable map, every patch of each read
+  fit_frames: 500 # the probes fit on patches of this many fit frames ...
+  per_class: 10000 # ... up to this many patches per class
+  query_frames: 1000 # scored on every patch of this many query frames
+  knn: true # also the per-patch kNN (the slow read: every query patch against the support)
+
+fewshot:
+  enabled: false # per-encoder `fewshot:` in the encoder list overrides this
+  ks: [10, 100] # labels per class
+  tasks: null # the tasks to fine-tune on (null = every task; frozen rungs always read them all)
+  draws: 3 # label draws per k (draw d = the same frames for every encoder)
+  lr: 3.0e-5 # the encoder's lr (fixed on B5 by mode=select_lr)
+  head_lr_mult: 10.0
+  weight_decay: 0.05
+  steps: 150
+  batch_size: 32
+  # mode=select_lr: the grid, scored on the first encoder at select_k against val_per_class reserved frames
+  lr_grid: [1.0e-5, 3.0e-5, 1.0e-4]
+  select_k: 100
+  select_task: scene
+  val_per_class: 200
+
+screen: # mode=screen (P1.2.0 part 4), on the first encoder (B5)
+  reference: scene # read beside the candidates for comparison; never chosen
+  candidates: ["presence:traffic light", "presence:pedestrian", "presence:truck"]
+  ceiling_per_class: 1500
+  ceiling_steps: 1900 # ~20 epochs over 2 x 1,500 frames at batch 32
+  max_overlap: 0.60 # eligible only if scene + time of day predict the task at most this well
+  min_headroom: 0.0 # ... and its headroom (full-label ceiling − B5 linear) is at least this
+  max_tasks: null # the panel: up to this many eligible candidates, by headroom (null = all; `choice` is the first)
+
+# The encoders: [{name, kind: pretrained | random | well | checkpoint, path?, fewshot?}], plus encoders_file.
+encoders:
+  - name: b5
+    kind: pretrained
+encoders_file: null

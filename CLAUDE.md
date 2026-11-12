@@ -64,51 +64,79 @@ Runs behind a token-compression pipeline (RTK shell-hook + Headroom API proxy): 
 
 This is a guide for how to add documentation on new studies or sub-studies. See notes above on `docs/experiments`. See
 \`Explaining your work' below for how to communicate results. There are different levels of granularity at play (here:
-most concise to least concise):
+most concise to least concise): A `phase` is composed of `studies`, which are in turn composed of `substudies`. This
+corresponds to the following docs hierarchy:
 
-- `docs/experiments/phase<ID>/index.md` - the phase landing page: what the *project phase* is about, plus the routing
-    tables. Keep each of its three parts at an **at-a-glance** abstraction — the detail lives one level down, linked.
-    Here is an example for Phase0 (sections may change for other Phases):
+- `docs/experiments/phase<ID>/index.md` - the phase landing page: what the *project phase* is about, plus routing
+    tables. Keep each of its three parts at an **at-a-glance** abstraction: very high level, easily scannable. Use
+    plain, transparent language. This is meant as an executive summary, and the detail lives in the levels below,
+    linked. The individual components of an index file are:
 
-    - a **Studies** table (example: for Phase0, each study / row corresponds to failure modes). Its last column is a
-        *link* to that study's executive summary (next bullet) fronted by a one-line verdict; columns stay to a scannable
-        clause each.
-    - a **Sub-studies** table (rows = sub-studies). Keep the style uniform: the "What it establishes" cell opens with
-        `Motivation:`, and the Status cell follows `<marker> **<label>** (<finding>)` — marker ∈ ✅ / ✅\* / 🟡 / 🔲, label ∈
-        `Complete` / `Runs complete` / `Designed, awaiting runs`.
+    - **Goal from the project plan** - a short summary of how this project phase fits into the larger project plan.
+
+    - an **Executive Summary** of the whole Phase; it's a placeholder until all studies in the phase are complete, or the
+        user requests for it.
+
+    - **Methodology** - a summary of the overarching methodology used, from the perspective of the whole phase rather than
+        that of any single study or substudy. Do not dive into too much detail, that's reserved for each individual study.
+
+    - the **Exit Gate**: the criteria by which we consider this phase complete ("what questions must we answer here?")
+
+    - a **Studies** table, effectively an index into all substudies in this phase. All columns stay to a scannable clause
+        each. Studies and their sub-studies share this same table. A study appears as a single `P1.x` row until its work
+        begins; once it is broken down, that row is **replaced** by its `P1.x.y` sub-study rows (so nothing is stated at
+        both levels). Sub-study rows follow the conventions below. The columns are:
+
+        - **ID** - e.g. Px.y.z, the identifier of the substudy.
+        - **Study / sub-study** - A short title for the study or sub-study in question, wrapped as a link to its longer
+            summary in `latest-results/`. Marked with the type of work done in the study or substudy, one of `engineering`,
+            `analysis`, `new substudy`, `wording`, `new runs`, `other`.
+        - **What it does** - a summary of the intent ("what are we testing or hoping to achieve?"), not overly verbose or
+            technical. Keep the style uniform: cell opens with `Motivation:`.
+        - **Status / Outcome** - follows `<marker> **<label>** (<finding>)` — marker ∈ ✅ / ✅\* / 🟡 / 🔲, label ∈ `Complete` /
+            `Runs complete` / `Designed, awaiting runs`. A very high level summary of the findings.
+
     - an **Artifacts** section holding only the *general* conventions (per-harness `comparison.json` schema, the promotion
         / slimming policy). The per-sub-study listings live in each detail doc, see below.
 
+    - **Handover** - a summary of the information that is especially pertinent for future project studies and phases.
+
 - `docs/experiments/latest-results/<study ID>.md` (e.g. `P0.6.md`) - a study-wide **executive summary**, for a reader
-    who may not know the project and does not want to dig. Plain, transparent language (plainer than the index tables),
-    ≲ 100 lines, exactly three subsections: **The value proposition**, **Results**, **The one-line takeaway**. It sits
-    one level above the sub-study summaries and is the target of the Failure-Modes "Summary" link.
+    who may not know the project and does not want to dig. Plain, transparent language, ≲ 100 lines, exactly three
+    subsections: **The value proposition**, **Results**, **The one-line takeaway**. It sits one level above the
+    sub-study summaries.
 
 - `docs/experiments/latest-results/<substudy ID>.md` (e.g. `P0.6.0.md`)- a *concise* summary of the results / what was
     achieved in the particular substudy. Avoid too many details (in particular: NO results numbers); this is a brief
-    take-away from the study.
+    take-away from the study and is the target of the links from the index above. It, in turn links to the detail doc
+    one level down in `phase<ID>/<substudy ID>.md`.
 
 - `docs/experiments/phase<ID>/<substudy ID>.md` - a detailed, *but not overly verbose or repetitive* description of the
     sub study, including outputs, and key quantitative results. Includes (roughly) a brief section for the motivation,
     the methodology and findings, any interesting insights, a dedicated `Artifacts` section (the per-sub-study artifact
     listing: which runs back its numbers, and the slim schema each was promoted to), and how to run the experiments. Do
-    not mention progress or status here (unless results change an existing verdict), that goes in
-    `docs/experiments/latest-results/<substudy ID>.md`.
+    not mention progress or status here (unless results change an existing verdict), that goes in the top-level index
+    file.
 
 When we say something like "update the docs", this means going through each of these levels for the relevant study /
-substudy and checking them for completeness and accuracy against the latest results. In addition, this implies verifying
-that the substudy's 'Handover to Phase ...' section in the relevant `index.md` are complete and accurate as well.
+substudy and checking them for completeness, consistency, and accuracy against the latest results, as well as making
+sure that all other sections that depend on these (like the other sections in the index) are also synced and up to date.
 
 ### Writing audits
 
 Audits (`docs/experiments/audits/<ID>.md`) are peer-review-style critiques of a completed study or sub-study group. They
-review *conclusions, not arithmetic* — spot-check the numbers against the artifacts, then judge whether each claim is
-earned. They double as a remediation record: findings get fixed, and the audit tracks where each one landed. Follow this
-formula:
+judge whether each claim / conclusion is earned. They double as a remediation record: findings get fixed, and the audit
+tracks where each one landed. Follow this formula:
 
 - **Language.** Compact but accessible — the same style as *Explaining your work* below (one idea per sentence, signpost
     the logic, unpack a term before leaning on it). Keep every load-bearing number; cut the padding, not the content. No
     wall-of-text paragraphs.
+
+- **Code audit.** First, run a comprehensive audit of the code used in the study or sub-study - if the code is buggy,
+    then reviewing conclusions is moot. Conclude this review with an assessment of which claims are affected, if any,
+    and a remediation plan to run before the rest of the audit proceeds.
+
+Next, proceed with the main body of the audit:
 
 - **Sections, in order.**
 
@@ -117,9 +145,9 @@ formula:
     - **Verdict** — the headline judgment, as *found*. End with one sentence on where it lands *after* remediation (e.g.
         "all points remediated; the ✅ ends up stronger").
     - **Strengths** — a short bullet list, so the criticism is calibrated (what the work got right).
-    - **Grouped findings** — lettered sections (A, B, C, …) by *kind* — e.g. over-claims, internal tensions, structural
-        gaps, conclusions the data supports but the docs missed, and a code-validity check of the premise. Number the
-        points within (A1, A2, …).
+    - **Grouped findings** — lettered sections (A, B, C, …) by *kind*: over-claims, internal tensions, structural gaps,
+        conclusions the data supports but the docs missed, and a code-validity check i.e. the output of the code audit
+        mentioned above. Number the points within (A1, A2, …).
     - **Disposition** — the final lettered section: the decision of record after every remediation, plus the hand-off
         recommendation. This *is* the bottom line — do not also keep a separate summary table or "bottom line" paragraph
         (that is scaffolding; remove it once the audit is worked through).
@@ -127,22 +155,26 @@ formula:
 - **Each numbered point is a triple** — a three-bullet sub-list under a bold one-line title:
 
     - **Issue** — what the audit found (the as-found observation; keep it to the claim, tight).
-    - **Remediation** — what to do, tagged with the work type: `[wording]` (doc edit) / `[analysis]` (post-hoc, no runs) /
-        `[engineering]` (build + confirm) / `[new runs]` (re-run an *existing* config, e.g. seed replication — the results
-        land in the substudy docs, usually *in-place* in the existing substudy: confirming results append a line to its
-        conclusions, differing results revise its text; a substantial follow-up arc — a new lever plus its own finding —
-        is instead promoted to its own doc, as with `[new substudy]`) / `[new substudy]` (a genuinely new vehicle/study
-        warranting its own doc) / `[decision]` (needs an architectural call) / `[defer → Phase-1]`.
-    - **Conclusion** — the outcome after remediation, led by a bold *verdict label* so a reviewer reads the valence at a
-        glance. Use a small, consistent set: *resolved — strengthens the ✅* (addressed, and the result reinforces the
-        study), *new supporting finding* (the data supported a favourable conclusion the docs had missed), *corrected* (a
-        stated claim was wrong and revised — append "— net favourable" or "— claim downgraded" to state the direction),
-        *clarified — no verdict change* (wording sharpened or an overstatement trimmed), *valid concern — carried to
-        Phase-1* (a real limitation, honestly deferred — not fixable now). **The audit is not the home of the results:**
-        when a remediation produces experimental findings (`[new runs]`, `[new substudy]`, or an `[analysis]` that yields
-        new numbers), those findings live in the substudy docs (the `latest-results` distillate + the phase detail doc, or
-        a new substudy doc if the arc warrants one); the Conclusion carries only the verdict label, a one-line outcome,
-        and a **pointer** to where it landed — never the seed tables or derivations themselves.
+    - **Remediation** — recommendation on how to fix, tagged with the work type: `[wording]` (doc edit) / `[analysis]`
+        (post-hoc, no runs) / `[engineering]` (build + confirm) / `[new runs]` (re-run an *existing* config, e.g. seed
+        replication — the results land in the substudy docs, usually *in-place* in the existing substudy: confirming
+        results append a line to its conclusions, differing results revise its text; a substantial follow-up arc — a new
+        lever plus its own finding — is instead promoted to its own doc, as with `[new substudy]`) / `[new substudy]` (a
+        genuinely new vehicle/study warranting its own doc) / `[decision]` (needs an architectural call) /
+        `[defer → Phase-<ID>]`.
+    - **Conclusion** — the outcome after remediation, a placeholder until the remediation is actually implemented and
+        agreed upon by the user. Led by a bold *verdict label* so a reviewer reads the valence at a glance. Use a small,
+        consistent set: *resolved — strengthens the ✅* (addressed, and the result reinforces the study), *new supporting
+        finding* (the data supported a favourable conclusion the docs had missed), *corrected* (a stated claim was wrong
+        and revised — append "— net favourable" or "— claim downgraded" to state the direction), *clarified — no verdict
+        change* (wording sharpened or an overstatement trimmed), *valid concern — carried to Phase-<ID>* (a real
+        limitation, honestly deferred — not fixable now).
+
+- **The audit is not the home of the results:** when a remediation produces experimental findings (`[new runs]`,
+    `[new substudy]`, or an `[analysis]` that yields new numbers), those findings are folded back into thethe substudy
+    docs (the `latest-results` distillate + the phase detail doc, or a new substudy doc if the arc warrants one); the
+    Conclusion carries only the verdict label, a one-line outcome, and a **pointer** to where it landed — never raw
+    numbers or results directly (other than in summary).
 
 ## Explaining your work
 
@@ -166,6 +198,14 @@ Concretely, in explanatory passages:
 This is about clarity and flow, **not** length: do not pad, repeat, or add filler, and never drop information content to
 hit the style. For a direct factual answer, a status line, or a yes/no, stay short — the guidance above is for the
 explanatory paragraphs, where following along matters more than compression.
+
+### Response Formatting
+
+This applies only to conversations in the terminal.
+
+Most terminal applications have difficulties rendering markdown, hence reading long responses can be tedious if there is
+no highlighting to orient the reader. Therefore, please rely on `raw text` whenever you want to highlight something in
+your response: section titles, and any boldface or italics text.
 
 ## Mandates
 

@@ -17,6 +17,7 @@ lets the whole rig — and its Tier-A wiring check — run from a fresh clone wi
 
 from __future__ import annotations
 
+import hashlib
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -37,12 +38,18 @@ _WEATHER_RANK = {"clear": 0, "partly cloudy": 1, "overcast": 2, "rainy": 3, "sno
 _UNKNOWN_ATTRS = frozenset({"undefined", "", None})
 
 
+def as_float(images: torch.Tensor) -> torch.Tensor:
+    """Frames as ``float32`` in ``[0, 1]`` — uint8 frames divided by 255, float frames unchanged."""
+    return images.float().div_(255) if images.dtype == torch.uint8 else images
+
+
 @dataclass(frozen=True)
 class AttributedImages:
     """Loaded images with the diet's two attribute axes and the default shift-walk order.
 
     Attributes:
-        images: Image batch ``[N, C, H, W]`` (``float32`` in ``[0, 1]``).
+        images: Image batch ``[N, C, H, W]`` (``float32`` in ``[0, 1]``, or ``uint8`` in ``[0, 255]`` when a
+            source holds compact frames — :func:`as_float` converts).
         era_key: Integer regime id per image ``[N]`` — the axis the diet orders eras on.
         canary: Integer canary label per image ``[N]`` — the orthogonal probe axis.
         regime_order: Regime ids in the default shift-walk order (a stream may override it).
@@ -56,6 +63,10 @@ class AttributedImages:
             on the *earlier* regimes separately from the later ones (a forgetting read). ``None``
             when the source defines no strata.
         stratum_names: Human-readable name per stratum id (empty when ``stratum`` is ``None``).
+        object_boxes: Optional per-image boxes as ``(category, area)`` pairs, ``area`` the share of the frame
+            the box covers (P1.2.5's large-object task). ``None`` unless the source was asked for them.
+        drivable: Optional per-image drivable-area share of each patch-grid cell ``[N, g, g]`` (P1.2.5's
+            per-patch task); ``NaN`` where a frame has no drivable map. ``None`` unless asked for.
     """
 
     images: torch.Tensor
@@ -67,6 +78,8 @@ class AttributedImages:
     object_categories: list[dict[str, int]] | None = None
     stratum: torch.Tensor | None = None
     stratum_names: dict[int, str] = field(default_factory=dict)
+    object_boxes: list[list[tuple[str, float]]] | None = None
+    drivable: torch.Tensor | None = None
 
 
 class AttributeSource(ABC):
@@ -104,6 +117,8 @@ class SyntheticAttributeSource(AttributeSource):
         regime_tint: float = 0.15,
         long_tail: bool = True,
         seed: int = 0,
+        geometry: bool = False,
+        drivable_grid: int = 4,
     ) -> None:
         """Configure the synthetic attributed source.
 
@@ -117,6 +132,9 @@ class SyntheticAttributeSource(AttributeSource):
             regime_tint: Magnitude of the per-regime additive tint (0 disables the shift).
             long_tail: If set, later regimes get geometrically fewer images (rare conditions).
             seed: RNG seed for reproducibility.
+            geometry: Also give every image boxes (``car`` / ``bus``, random areas) and a drivable grid
+                (the rows below a canary-dependent horizon) — the stand-in for BDD's geometry labels.
+            drivable_grid: The drivable grid's side (the encoder's patch grid).
         """
         self._num_regimes = num_regimes
         self._num_canary = num_canary_classes
@@ -127,12 +145,26 @@ class SyntheticAttributeSource(AttributeSource):
         self.regime_tint = regime_tint
         self.long_tail = long_tail
         self.seed = seed
+        self.geometry = geometry
+        self.drivable_grid = drivable_grid
         self._cache: AttributedImages | None = None
 
     @property
     def num_canary_classes(self) -> int:
         """The configured canary-class count."""
         return self._num_canary
+
+    def _geometry(self, canary: torch.Tensor) -> tuple[list[list[tuple[str, float]]], torch.Tensor]:
+        """Synthetic boxes and drivable grids: a car of random area on every image, a bus on half of them."""
+        g = torch.Generator().manual_seed(self.seed + 1)
+        boxes: list[list[tuple[str, float]]] = []
+        for _ in range(canary.shape[0]):
+            areas = (0.05 * torch.rand(2, generator=g)).tolist()
+            boxes.append([("car", areas[0])] + ([("bus", areas[1])] if torch.rand(1, generator=g).item() < 0.5 else []))
+        side = self.drivable_grid
+        rows = torch.arange(side).view(1, side, 1).expand(canary.shape[0], side, side)
+        horizon = (side // 2 + canary % 2).view(-1, 1, 1)  # drivable below a canary-dependent horizon
+        return boxes, (rows >= horizon).float()
 
     def load(self) -> AttributedImages:
         """Generate the attributed images.
@@ -160,17 +192,22 @@ class SyntheticAttributeSource(AttributeSource):
                 era_key.append(torch.full((keep,), r, dtype=torch.long))
                 canary.append(torch.full((keep,), k, dtype=torch.long))
         era_keys = torch.cat(era_key)
+        canaries = torch.cat(canary)
         # Strata: the early and late halves of the walk (the synthetic stand-in for BDD's timeofday).
         late = (era_keys >= (self._num_regimes + 1) // 2).long()
+        boxes, drivable = self._geometry(canaries) if self.geometry else (None, None)
         self._cache = AttributedImages(
             images=torch.cat(images),
             era_key=era_keys,
-            canary=torch.cat(canary),
+            canary=canaries,
             regime_order=list(range(self._num_regimes)),
             regime_names={r: f"regime{r}" for r in range(self._num_regimes)},
             canary_names={k: f"canary{k}" for k in range(self._num_canary)},
+            object_categories=[_count_boxes(b) for b in boxes] if boxes is not None else None,
             stratum=late,
             stratum_names={0: "early", 1: "late"},
+            object_boxes=boxes,
+            drivable=drivable,
         )
         return self._cache
 
@@ -198,6 +235,13 @@ class BDD100KSource(AttributeSource):
         images_dir: str | None = None,
         labels_file: str | None = None,
         min_canary_count: int = 0,
+        pixel_dtype: str = "float32",
+        cache_dir: str | None = None,
+        scenes: list[str] | None = None,
+        resize_mode: str = "squash",
+        boxes: bool = False,
+        drivable_dir: str | None = None,
+        drivable_grid: int = 14,
     ) -> None:
         """Configure the BDD100K source.
 
@@ -213,7 +257,44 @@ class BDD100KSource(AttributeSource):
                 attribute-valid images. Real BDD has a long scene tail (e.g. ``tunnel`` ≈ a handful of
                 frames) that cannot support a balanced held-out probe; this keeps the canary to
                 probeable classes. ``0`` (default) keeps every observed scene — no change.
+            pixel_dtype: How decoded frames are held: ``"float32"`` in ``[0, 1]`` (default), or
+                ``"uint8"`` in ``[0, 255]`` — a quarter of the memory (BDD train at 224 px: ~10.5 GB
+                instead of ~42 GB). :class:`~cafl4ds.data.regime.RegimeStream` converts uint8 frames to
+                float on indexing (``/ 255``, bit-identical to the float32 decode).
+
+            cache_dir: If set, the decoded frames and attributes are saved here on first load and reused by
+                every later run with the same split, size, image cap, scene filter, labels file and dtype — a
+                BDD-train decode at 224 px takes ~35 min, a cached load seconds. The decode is deterministic,
+                so a cached load is identical to a fresh one.
+
+            scenes: If set, keep only frames of these scenes (the canary classes), applied before
+                ``min_canary_count``. P1.2 pins the three canary scenes so train and val agree: BDD train
+                has 378 parking-lot frames (enough to pass a count filter), val only 49.
+            resize_mode: ``"squash"`` (default) resizes the 16:9 frame straight to a square, narrowing
+                it 1.78x horizontally; ``"center_crop"`` keeps the aspect ratio — resize the short side,
+                then crop the centre square, dropping the frame's sides (the ImageNet evaluation
+                convention). P1.2.0 compares the two on the frozen baseline.
+            boxes: Also keep every box as ``(category, area)``, ``area`` its share of the native frame
+                (:attr:`AttributedImages.object_boxes`; needs a labels file with ``box2d``).
+            drivable_dir: A directory of BDD's drivable-area label-id maps (``<name>_drivable_id.png``, searched
+                recursively; ids 0 background, 1 direct, 2 alternative — checked
+                against BDD val's polygons, P1.2.5). Each frame's drivable share (direct or
+                alternative) is pooled to a ``drivable_grid`` square grid, cropped as the frame is
+                (:attr:`AttributedImages.drivable`). ``None`` (default) reads none.
+            drivable_grid: The drivable grid's side — the encoder's patch grid (14 for ViT-B/16 at 224 px).
+
+        Raises:
+            ValueError: If ``pixel_dtype`` is neither ``"float32"`` nor ``"uint8"``, or ``resize_mode``
+                is unknown.
         """
+        if resize_mode not in ("squash", "center_crop"):
+            raise ValueError(f"resize_mode must be 'squash' or 'center_crop'; got {resize_mode!r}.")
+        self.scenes = list(scenes) if scenes else None
+        self.resize_mode = resize_mode
+        if pixel_dtype not in ("float32", "uint8"):
+            raise ValueError(f"pixel_dtype must be 'float32' or 'uint8'; got {pixel_dtype!r}.")
+        self.pixel_dtype = pixel_dtype
+        self.cache_dir = cache_dir
         self.bdd_root = bdd_root
         self.split = split
         self.img_size = img_size
@@ -221,6 +302,9 @@ class BDD100KSource(AttributeSource):
         self._images_dir = images_dir
         self._labels_file = labels_file
         self.min_canary_count = min_canary_count
+        self.boxes = boxes
+        self.drivable_dir = drivable_dir
+        self.drivable_grid = drivable_grid
         self._num_canary = 0  # set on load (number of observed scenes)
         self._cache: AttributedImages | None = None
 
@@ -255,8 +339,70 @@ class BDD100KSource(AttributeSource):
             ValueError: If no image survives attribute filtering.
         """
         if self._cache is None:
-            self._cache = self._decode()
+            self._cache = self._load_or_decode()
         return self._cache
+
+    def _cache_path(self) -> Path | None:
+        """The on-disk decode cache for this configuration (``None`` when caching is off)."""
+        if not self.cache_dir:
+            return None
+        _, labels_file = self._paths()
+        stat = labels_file.stat()
+        parts: list[object] = [
+            self.split,
+            self.img_size,
+            self.max_images,
+            self.min_canary_count,
+            self.pixel_dtype,
+            self.scenes,
+            self.resize_mode,
+            str(labels_file.resolve()),
+            stat.st_size,
+            int(stat.st_mtime),
+        ]
+        # The geometry options join the key only when set, so every earlier cache keeps its name.
+        if self.boxes:
+            parts.append("boxes")
+        if self.drivable_dir:
+            parts.append(["drivable", str(Path(self.drivable_dir).resolve()), self.drivable_grid])
+        key = json.dumps(parts)
+        digest = hashlib.sha256(key.encode()).hexdigest()[:16]
+        return Path(self.cache_dir) / f"bdd_{self.split}_{self.img_size}px_{self.pixel_dtype}_{digest}.pt"
+
+    def _load_or_decode(self) -> AttributedImages:
+        """Load the decode from the on-disk cache when present; otherwise decode (and cache if configured)."""
+        path = self._cache_path()
+        if path is not None and path.is_file():
+            data: AttributedImages = torch.load(path, weights_only=False)
+            self._num_canary = len(data.canary_names)
+            logger.info(f"BDD100KSource: loaded {data.canary.shape[0]} cached images from {path}")
+            return data
+        data = self._decode()
+        if path is not None:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            partial = path.with_suffix(".partial")
+            torch.save(data, partial)
+            partial.replace(path)  # atomic: a concurrent reader never sees a half-written cache
+            logger.info(f"BDD100KSource: cached the decode at {path}")
+        return data
+
+    def _filter_scenes(
+        self, valid: list[tuple[Path, tuple[str, str], str, dict[str, int]]]
+    ) -> list[tuple[Path, tuple[str, str], str, dict[str, int]]]:
+        """Apply the ``scenes`` whitelist, then the ``min_canary_count`` rare-scene drop."""
+        if self.scenes is not None:
+            valid = [v for v in valid if v[2] in self.scenes]
+        if self.min_canary_count > 0:
+            valid = _drop_rare_scenes(valid, self.min_canary_count)
+        return valid
+
+    def _resize_transform(self) -> transforms.Compose:
+        """PIL frame -> uint8 ``[3, img_size, img_size]``, by ``resize_mode`` (squash, or aspect-kept centre crop)."""
+        if self.resize_mode == "squash":
+            steps = [transforms.Resize((self.img_size, self.img_size))]
+        else:  # center_crop: short side to img_size, then the centre square
+            steps = [transforms.Resize(self.img_size), transforms.CenterCrop(self.img_size)]
+        return transforms.Compose([*steps, transforms.PILToTensor()])
 
     def _decode(self) -> AttributedImages:
         """Parse the attribute records and decode the referenced images (the uncached work)."""
@@ -274,6 +420,7 @@ class BDD100KSource(AttributeSource):
         records = json.loads(labels_file.read_text(encoding="utf-8"))
         # Collect (path, regime-tuple, scene, category-counts) for every attribute-valid, present image.
         valid: list[tuple[Path, tuple[str, str], str, dict[str, int]]] = []
+        box_pixels: dict[Path, list[tuple[str, float]]] = {}
         for rec in records:
             attrs = rec.get("attributes", {})
             timeofday, weather, scene = attrs.get("timeofday"), attrs.get("weather"), attrs.get("scene")
@@ -283,13 +430,13 @@ class BDD100KSource(AttributeSource):
             if not path.is_file():
                 continue
             valid.append((path, (timeofday, weather), scene, _count_categories(rec)))
+            box_pixels[path] = _box_pixel_areas(rec) if self.boxes else []
             if self.max_images is not None and len(valid) >= self.max_images:
                 break
         if not valid:
             raise ValueError(f"no attribute-valid BDD100K images found under {images_dir}")
 
-        if self.min_canary_count > 0:
-            valid = _drop_rare_scenes(valid, self.min_canary_count)
+        valid = self._filter_scenes(valid)
 
         regime_order, regime_id, regime_names = _rank_regimes({r for _, r, _, _ in valid})
         scene_id, canary_names = _index_scenes({s for _, _, s, _ in valid})
@@ -299,21 +446,26 @@ class BDD100KSource(AttributeSource):
         timeofdays = sorted({r[0] for _, r, _, _ in valid}, key=lambda t: (_TIMEOFDAY_RANK.get(t, 99), t))
         stratum_id = {t: i for i, t in enumerate(timeofdays)}
 
-        resize = transforms.Compose([transforms.Resize((self.img_size, self.img_size)), transforms.ToTensor()])
-        imgs, era_key, canary, stratum, categories = [], [], [], [], []
-        for path, regime, scene, cats in valid:
+        # Decode as uint8 into one preallocated tensor (no list-then-stack copy); ToTensor's float is this / 255.
+        resize = self._resize_transform()
+        frames = torch.empty((len(valid), 3, self.img_size, self.img_size), dtype=torch.uint8)
+        era_key, canary, stratum, categories = [], [], [], []
+        frame_areas: list[float] = []
+        for i, (path, regime, scene, cats) in enumerate(valid):
             with Image.open(path) as im:
-                imgs.append(resize(im.convert("RGB")))
+                frames[i] = resize(im.convert("RGB"))
+                frame_areas.append(float(im.width * im.height))
             era_key.append(regime_id[regime])
             canary.append(scene_id[scene])
             stratum.append(stratum_id[regime[0]])
             categories.append(cats)
+        boxes, drivable = self._geometry([v[0] for v in valid], box_pixels, frame_areas)
         logger.info(
-            f"BDD100KSource: loaded {len(imgs)} images ({self.split}) at {self.img_size}px "
+            f"BDD100KSource: loaded {len(valid)} images ({self.split}) at {self.img_size}px ({self.pixel_dtype}) "
             f"over {len(regime_order)} regimes, {len(scene_id)} scenes"
         )
         return AttributedImages(
-            images=torch.stack(imgs),
+            images=frames if self.pixel_dtype == "uint8" else frames.float().div_(255),
             era_key=torch.tensor(era_key, dtype=torch.long),
             canary=torch.tensor(canary, dtype=torch.long),
             regime_order=regime_order,
@@ -322,7 +474,73 @@ class BDD100KSource(AttributeSource):
             object_categories=categories,
             stratum=torch.tensor(stratum, dtype=torch.long),
             stratum_names={i: t for t, i in stratum_id.items()},
+            object_boxes=boxes,
+            drivable=drivable,
         )
+
+    def _geometry(
+        self, paths: list[Path], box_pixels: dict[Path, list[tuple[str, float]]], frame_areas: list[float]
+    ) -> tuple[list[list[tuple[str, float]]] | None, torch.Tensor | None]:
+        """The asked-for geometry per frame: box frame shares, and the pooled drivable grid (``NaN`` = no map).
+
+        Raises:
+            ValueError: If boxes are asked of a labels file with no ``box2d`` geometry (BDD val's legacy file).
+        """
+        if self.boxes and not any(box_pixels.values()):
+            raise ValueError(f"boxes=True, but {self._paths()[1]} carries no box2d geometry.")
+        boxes = (
+            [[(c, a / area) for c, a in box_pixels[p]] for p, area in zip(paths, frame_areas, strict=True)]
+            if self.boxes
+            else None
+        )
+        if not self.drivable_dir:
+            return boxes, None
+        maps = _drivable_maps(Path(self.drivable_dir))
+        drivable = torch.full((len(paths), self.drivable_grid, self.drivable_grid), float("nan"))
+        for i, path in enumerate(paths):
+            if path.stem in maps:
+                drivable[i] = self._drivable_share(maps[path.stem])
+        return boxes, drivable
+
+    def _drivable_share(self, path: Path) -> torch.Tensor:
+        """A label-id map's drivable share (direct or alternative, ids ≥ 1) per grid cell, cropped as the frame is."""
+        with Image.open(path) as im:
+            ids = transforms.PILToTensor()(im)[0]  # [H, W] label ids
+        mask = (ids >= 1).float()[None, None]
+        if self.resize_mode == "center_crop":  # the frame's centre square (resize-then-crop keeps the same region)
+            h, w = mask.shape[-2:]
+            side = min(h, w)
+            top, left = (h - side) // 2, (w - side) // 2
+            mask = mask[..., top : top + side, left : left + side]
+        return F.adaptive_avg_pool2d(mask, self.drivable_grid)[0, 0]
+
+
+def _drivable_maps(root: Path) -> dict[str, Path]:
+    """Image stem -> its drivable-area label-id map, for every ``<stem>_drivable_id.png`` under ``root``."""
+    if not root.is_dir():
+        raise FileNotFoundError(f"drivable-area maps not found at {root}.")
+    return {p.name.removesuffix("_drivable_id.png"): p for p in root.rglob("*_drivable_id.png")}
+
+
+def _box_pixel_areas(record: dict[str, object]) -> list[tuple[str, float]]:
+    """``(category, area in pixels)`` for every box with ``box2d`` geometry in a BDD label record."""
+    out = []
+    labels = record.get("labels")
+    for box in labels if isinstance(labels, list) else []:
+        geometry = box.get("box2d") if isinstance(box, dict) else None
+        if isinstance(geometry, dict):
+            width = max(0.0, float(geometry["x2"]) - float(geometry["x1"]))
+            height = max(0.0, float(geometry["y2"]) - float(geometry["y1"]))
+            out.append((str(box.get("category")), width * height))
+    return out
+
+
+def _count_boxes(boxes: list[tuple[str, float]]) -> dict[str, int]:
+    """A ``category -> count`` map over ``(category, area)`` boxes."""
+    counts: dict[str, int] = {}
+    for category, _ in boxes:
+        counts[category] = counts.get(category, 0) + 1
+    return counts
 
 
 def _rank_regimes(regimes: set[tuple[str, str]]) -> tuple[list[int], dict[tuple[str, str], int], dict[int, str]]:

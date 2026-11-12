@@ -10,7 +10,7 @@
 # so there is nothing to forget. The fair regime ESCALATES the MAE on the Gaudi HPU (bigger ViT,
 # larger img, long horizon) until task A is genuinely learned and then demonstrably craters:
 #
-#   ./scripts/run_gaudi_dev.sh -m /mnt/stl10 gaudi-env-cafl4ds:latest 0 \
+#   ./scripts/run_gaudi_dev.sh -m /mnt/pr_2018_scaleout_workdir/cafl4ds/data/stl10 gaudi-env-cafl4ds:latest 0 \
 #       python scripts/positive_control_forgetting.py device=hpu \
 #       encoder.embed_dim=256 encoder.depth=8 encoder.num_heads=8 img_size=64 epochs_a=300 epochs_b=300
 defaults:
@@ -115,7 +115,7 @@ query_per_class: 60
 # (reads forgetting through MAE's own objective; the transfer probe has little headroom at toy scale).
 recon_masks: 8
 
-data_root: /mnt/stl10
+data_root: /mnt/pr_2018_scaleout_workdir/cafl4ds/data/stl10
 max_per_class: null # use the full STL-10 train split (~500/class)
 
 # The numeric pass criterion (P0.3.0-calibrated). The HARD gate rests on the transfer-probe

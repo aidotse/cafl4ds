@@ -1,0 +1,662 @@
+{
+  "pool": {
+    "kind": "canary",
+    "n_fit": 405,
+    "n_query": 405
+  },
+  "stratum_names": {
+    "0": "daytime",
+    "1": "dawn/dusk",
+    "2": "night"
+  },
+  "regime_names": {},
+  "encoders": {
+    "b5": {
+      "spec": {
+        "name": "b5",
+        "kind": "pretrained"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.49629631638526917,
+          "daytime": 0.5185185074806213,
+          "dawn/dusk": 0.4888888895511627,
+          "night": 0.4814814627170563
+        },
+        "scene|linear": {
+          "pooled": 0.6320987939834595,
+          "daytime": 0.6370370984077454,
+          "dawn/dusk": 0.614814817905426,
+          "night": 0.644444465637207
+        },
+        "scene|ft10": {
+          "pooled": 0.5053498148918152,
+          "daytime": 0.5111111402511597,
+          "dawn/dusk": 0.5012345910072327,
+          "night": 0.5037037134170532
+        },
+        "scene|ft100": {
+          "pooled": 0.6609054207801819,
+          "daytime": 0.6271604895591736,
+          "dawn/dusk": 0.6864197850227356,
+          "night": 0.6691358089447021
+        }
+      }
+    },
+    "random": {
+      "spec": {
+        "name": "random",
+        "kind": "random"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.4395061731338501,
+          "daytime": 0.4740740954875946,
+          "dawn/dusk": 0.4296296536922455,
+          "night": 0.414814829826355
+        },
+        "scene|linear": {
+          "pooled": 0.43703702092170715,
+          "daytime": 0.4592592716217041,
+          "dawn/dusk": 0.42222222685813904,
+          "night": 0.4296296536922455
+        },
+        "scene|ft10": {
+          "pooled": 0.3572016656398773,
+          "daytime": 0.3432098925113678,
+          "dawn/dusk": 0.36049386858940125,
+          "night": 0.3679012060165405
+        },
+        "scene|ft100": {
+          "pooled": 0.4279835522174835,
+          "daytime": 0.42222222685813904,
+          "dawn/dusk": 0.41234567761421204,
+          "night": 0.4493827521800995
+        }
+      }
+    },
+    "je_well": {
+      "spec": {
+        "name": "je_well",
+        "kind": "well",
+        "path": "wells/p110_deep/je_o0.0.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5283951163291931,
+          "daytime": 0.5111111402511597,
+          "dawn/dusk": 0.4962962865829468,
+          "night": 0.5777778029441833
+        },
+        "scene|linear": {
+          "pooled": 0.6320987343788147,
+          "daytime": 0.6000000238418579,
+          "dawn/dusk": 0.6592592597007751,
+          "night": 0.6370370388031006
+        },
+        "scene|ft10": {
+          "pooled": 0.502057671546936,
+          "daytime": 0.4716049134731293,
+          "dawn/dusk": 0.5012345910072327,
+          "night": 0.5333333015441895
+        },
+        "scene|ft100": {
+          "pooled": 0.6353909373283386,
+          "daytime": 0.5975308418273926,
+          "dawn/dusk": 0.674074113368988,
+          "night": 0.63456791639328
+        }
+      }
+    },
+    "je_walk_s0_mid": {
+      "spec": {
+        "name": "je_walk_s0_mid",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00060.pt",
+        "fewshot": false
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5333333611488342,
+          "daytime": 0.5111111402511597,
+          "dawn/dusk": 0.5185185074806213,
+          "night": 0.5703703761100769
+        },
+        "scene|linear": {
+          "pooled": 0.6098765730857849,
+          "daytime": 0.614814817905426,
+          "dawn/dusk": 0.6000000238418579,
+          "night": 0.614814817905426
+        }
+      }
+    },
+    "je_walk_s0_end": {
+      "spec": {
+        "name": "je_walk_s0_end",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5111110806465149,
+          "daytime": 0.5185185074806213,
+          "dawn/dusk": 0.4888888895511627,
+          "night": 0.5259259343147278
+        },
+        "scene|linear": {
+          "pooled": 0.6419753432273865,
+          "daytime": 0.6296296715736389,
+          "dawn/dusk": 0.6296296715736389,
+          "night": 0.6666666865348816
+        },
+        "scene|ft10": {
+          "pooled": 0.4757201671600342,
+          "daytime": 0.4395062029361725,
+          "dawn/dusk": 0.5111110806465149,
+          "night": 0.4765431880950928
+        },
+        "scene|ft100": {
+          "pooled": 0.6189301013946533,
+          "daytime": 0.604938268661499,
+          "dawn/dusk": 0.6493827700614929,
+          "night": 0.6024691462516785
+        }
+      }
+    },
+    "je_walk_s1_mid": {
+      "spec": {
+        "name": "je_walk_s1_mid",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00060.pt",
+        "fewshot": false
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5061728358268738,
+          "daytime": 0.4740740954875946,
+          "dawn/dusk": 0.46666666865348816,
+          "night": 0.5777778029441833
+        },
+        "scene|linear": {
+          "pooled": 0.6123456954956055,
+          "daytime": 0.6518518328666687,
+          "dawn/dusk": 0.5407407879829407,
+          "night": 0.6444444060325623
+        }
+      }
+    },
+    "je_walk_s1_end": {
+      "spec": {
+        "name": "je_walk_s1_end",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5037036538124084,
+          "daytime": 0.46666669845581055,
+          "dawn/dusk": 0.4888888895511627,
+          "night": 0.5555555820465088
+        },
+        "scene|linear": {
+          "pooled": 0.5999999642372131,
+          "daytime": 0.5851852297782898,
+          "dawn/dusk": 0.5703703761100769,
+          "night": 0.644444465637207
+        },
+        "scene|ft10": {
+          "pooled": 0.5078189373016357,
+          "daytime": 0.4790123403072357,
+          "dawn/dusk": 0.5456790328025818,
+          "night": 0.4987654387950897
+        },
+        "scene|ft100": {
+          "pooled": 0.6246913075447083,
+          "daytime": 0.5999999642372131,
+          "dawn/dusk": 0.6320987343788147,
+          "night": 0.6419753432273865
+        }
+      }
+    },
+    "je_walk_s2_mid": {
+      "spec": {
+        "name": "je_walk_s2_mid",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00060.pt",
+        "fewshot": false
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5012345910072327,
+          "daytime": 0.5111111402511597,
+          "dawn/dusk": 0.46666666865348816,
+          "night": 0.5259259343147278
+        },
+        "scene|linear": {
+          "pooled": 0.6074073910713196,
+          "daytime": 0.5851852297782898,
+          "dawn/dusk": 0.6074073910713196,
+          "night": 0.6296296715736389
+        }
+      }
+    },
+    "je_walk_s2_end": {
+      "spec": {
+        "name": "je_walk_s2_end",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5333333015441895,
+          "daytime": 0.5333333611488342,
+          "dawn/dusk": 0.5703703761100769,
+          "night": 0.49629631638526917
+        },
+        "scene|linear": {
+          "pooled": 0.6074073910713196,
+          "daytime": 0.6074073910713196,
+          "dawn/dusk": 0.614814817905426,
+          "night": 0.6000000238418579
+        },
+        "scene|ft10": {
+          "pooled": 0.4880658686161041,
+          "daytime": 0.4493827819824219,
+          "dawn/dusk": 0.5432098507881165,
+          "night": 0.47160494327545166
+        },
+        "scene|ft100": {
+          "pooled": 0.6090534925460815,
+          "daytime": 0.5975309014320374,
+          "dawn/dusk": 0.6172839999198914,
+          "night": 0.6123456954956055
+        }
+      }
+    },
+    "je_walk_s3_mid": {
+      "spec": {
+        "name": "je_walk_s3_mid",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/step00060.pt",
+        "fewshot": false
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5086419582366943,
+          "daytime": 0.4740740954875946,
+          "dawn/dusk": 0.49629631638526917,
+          "night": 0.5555555820465088
+        },
+        "scene|linear": {
+          "pooled": 0.5975309014320374,
+          "daytime": 0.6000000238418579,
+          "dawn/dusk": 0.5703703761100769,
+          "night": 0.6222222447395325
+        }
+      }
+    },
+    "je_walk_s3_end": {
+      "spec": {
+        "name": "je_walk_s3_end",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5308641791343689,
+          "daytime": 0.5407407879829407,
+          "dawn/dusk": 0.49629631638526917,
+          "night": 0.5555555820465088
+        },
+        "scene|linear": {
+          "pooled": 0.5975309014320374,
+          "daytime": 0.6666666865348816,
+          "dawn/dusk": 0.5407407283782959,
+          "night": 0.5851852297782898
+        },
+        "scene|ft10": {
+          "pooled": 0.5259259343147278,
+          "daytime": 0.5061728954315186,
+          "dawn/dusk": 0.5703703761100769,
+          "night": 0.5012345910072327
+        },
+        "scene|ft100": {
+          "pooled": 0.6098765730857849,
+          "daytime": 0.5975309014320374,
+          "dawn/dusk": 0.6395061612129211,
+          "night": 0.5925925970077515
+        }
+      }
+    },
+    "je_walk_s4_mid": {
+      "spec": {
+        "name": "je_walk_s4_mid",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/step00060.pt",
+        "fewshot": false
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5629629492759705,
+          "daytime": 0.5555555820465088,
+          "dawn/dusk": 0.5777778029441833,
+          "night": 0.5555555820465088
+        },
+        "scene|linear": {
+          "pooled": 0.6271604895591736,
+          "daytime": 0.5925925970077515,
+          "dawn/dusk": 0.7037037014961243,
+          "night": 0.5851852297782898
+        }
+      }
+    },
+    "je_walk_s4_end": {
+      "spec": {
+        "name": "je_walk_s4_end",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5604938268661499,
+          "daytime": 0.5777778029441833,
+          "dawn/dusk": 0.6000000238418579,
+          "night": 0.503703773021698
+        },
+        "scene|linear": {
+          "pooled": 0.6444444060325623,
+          "daytime": 0.6370370388031006,
+          "dawn/dusk": 0.644444465637207,
+          "night": 0.6518518924713135
+        },
+        "scene|ft10": {
+          "pooled": 0.4798353910446167,
+          "daytime": 0.4444444179534912,
+          "dawn/dusk": 0.4814814627170563,
+          "night": 0.5135802626609802
+        },
+        "scene|ft100": {
+          "pooled": 0.6312757134437561,
+          "daytime": 0.614814817905426,
+          "dawn/dusk": 0.6469135880470276,
+          "night": 0.6320987343788147
+        }
+      }
+    },
+    "je_iid_s0_mid": {
+      "spec": {
+        "name": "je_iid_s0_mid",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00060.pt",
+        "fewshot": false
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.4938271939754486,
+          "daytime": 0.49629631638526917,
+          "dawn/dusk": 0.43703708052635193,
+          "night": 0.5481481552124023
+        },
+        "scene|linear": {
+          "pooled": 0.5876542925834656,
+          "daytime": 0.5851852297782898,
+          "dawn/dusk": 0.5629629492759705,
+          "night": 0.614814817905426
+        }
+      }
+    },
+    "je_iid_s0_end": {
+      "spec": {
+        "name": "je_iid_s0_end",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5432098507881165,
+          "daytime": 0.5185185074806213,
+          "dawn/dusk": 0.5407407879829407,
+          "night": 0.5703703761100769
+        },
+        "scene|linear": {
+          "pooled": 0.6000000238418579,
+          "daytime": 0.6222222447395325,
+          "dawn/dusk": 0.5703703761100769,
+          "night": 0.6074074506759644
+        },
+        "scene|ft10": {
+          "pooled": 0.49629631638526917,
+          "daytime": 0.4641975164413452,
+          "dawn/dusk": 0.5061728358268738,
+          "night": 0.5185185074806213
+        },
+        "scene|ft100": {
+          "pooled": 0.6238682866096497,
+          "daytime": 0.5728394985198975,
+          "dawn/dusk": 0.674074113368988,
+          "night": 0.6246913075447083
+        }
+      }
+    },
+    "je_iid_s1_mid": {
+      "spec": {
+        "name": "je_iid_s1_mid",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00060.pt",
+        "fewshot": false
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.4938271939754486,
+          "daytime": 0.4740740954875946,
+          "dawn/dusk": 0.4592592716217041,
+          "night": 0.5481481552124023
+        },
+        "scene|linear": {
+          "pooled": 0.5925925374031067,
+          "daytime": 0.5851852297782898,
+          "dawn/dusk": 0.5777778029441833,
+          "night": 0.614814817905426
+        }
+      }
+    },
+    "je_iid_s1_end": {
+      "spec": {
+        "name": "je_iid_s1_end",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5308642387390137,
+          "daytime": 0.49629631638526917,
+          "dawn/dusk": 0.5185185074806213,
+          "night": 0.5777778029441833
+        },
+        "scene|linear": {
+          "pooled": 0.565432071685791,
+          "daytime": 0.555555522441864,
+          "dawn/dusk": 0.5777778029441833,
+          "night": 0.5629629492759705
+        },
+        "scene|ft10": {
+          "pooled": 0.48559674620628357,
+          "daytime": 0.46172842383384705,
+          "dawn/dusk": 0.4790123403072357,
+          "night": 0.5160493850708008
+        },
+        "scene|ft100": {
+          "pooled": 0.6123456954956055,
+          "daytime": 0.575308620929718,
+          "dawn/dusk": 0.6296296119689941,
+          "night": 0.6320987343788147
+        }
+      }
+    },
+    "je_iid_s2_mid": {
+      "spec": {
+        "name": "je_iid_s2_mid",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00060.pt",
+        "fewshot": false
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5135802626609802,
+          "daytime": 0.4888888895511627,
+          "dawn/dusk": 0.49629631638526917,
+          "night": 0.5555555820465088
+        },
+        "scene|linear": {
+          "pooled": 0.6222222447395325,
+          "daytime": 0.6518518924713135,
+          "dawn/dusk": 0.614814817905426,
+          "night": 0.6000000238418579
+        }
+      }
+    },
+    "je_iid_s2_end": {
+      "spec": {
+        "name": "je_iid_s2_end",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5061728358268738,
+          "daytime": 0.5111111402511597,
+          "dawn/dusk": 0.49629631638526917,
+          "night": 0.5111110806465149
+        },
+        "scene|linear": {
+          "pooled": 0.614814817905426,
+          "daytime": 0.6074073910713196,
+          "dawn/dusk": 0.6222222447395325,
+          "night": 0.614814817905426
+        },
+        "scene|ft10": {
+          "pooled": 0.5045267939567566,
+          "daytime": 0.5012345910072327,
+          "dawn/dusk": 0.5333333611488342,
+          "night": 0.4790123701095581
+        },
+        "scene|ft100": {
+          "pooled": 0.6288065910339355,
+          "daytime": 0.6074073910713196,
+          "dawn/dusk": 0.6641975045204163,
+          "night": 0.614814817905426
+        }
+      }
+    },
+    "je_iid_s3_mid": {
+      "spec": {
+        "name": "je_iid_s3_mid",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/step00060.pt",
+        "fewshot": false
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5407407283782959,
+          "daytime": 0.5333333611488342,
+          "dawn/dusk": 0.5037037134170532,
+          "night": 0.5851852297782898
+        },
+        "scene|linear": {
+          "pooled": 0.595061719417572,
+          "daytime": 0.6518518924713135,
+          "dawn/dusk": 0.5407407283782959,
+          "night": 0.5925925970077515
+        }
+      }
+    },
+    "je_iid_s3_end": {
+      "spec": {
+        "name": "je_iid_s3_end",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5209876894950867,
+          "daytime": 0.5037037134170532,
+          "dawn/dusk": 0.4888888895511627,
+          "night": 0.5703703761100769
+        },
+        "scene|linear": {
+          "pooled": 0.5925925970077515,
+          "daytime": 0.5777778029441833,
+          "dawn/dusk": 0.614814817905426,
+          "night": 0.585185170173645
+        },
+        "scene|ft10": {
+          "pooled": 0.5028806328773499,
+          "daytime": 0.4641975462436676,
+          "dawn/dusk": 0.5111110806465149,
+          "night": 0.5333333015441895
+        },
+        "scene|ft100": {
+          "pooled": 0.61810702085495,
+          "daytime": 0.5975308418273926,
+          "dawn/dusk": 0.6320988535881042,
+          "night": 0.6246913075447083
+        }
+      }
+    },
+    "je_iid_s4_mid": {
+      "spec": {
+        "name": "je_iid_s4_mid",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/step00060.pt",
+        "fewshot": false
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5259259343147278,
+          "daytime": 0.4814814627170563,
+          "dawn/dusk": 0.5259259343147278,
+          "night": 0.5703703761100769
+        },
+        "scene|linear": {
+          "pooled": 0.6296296715736389,
+          "daytime": 0.6666666865348816,
+          "dawn/dusk": 0.6296296715736389,
+          "night": 0.5925926566123962
+        }
+      }
+    },
+    "je_iid_s4_end": {
+      "spec": {
+        "name": "je_iid_s4_end",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5234568119049072,
+          "daytime": 0.5111111402511597,
+          "dawn/dusk": 0.503703773021698,
+          "night": 0.5555555820465088
+        },
+        "scene|linear": {
+          "pooled": 0.5728395581245422,
+          "daytime": 0.5777778029441833,
+          "dawn/dusk": 0.5481482148170471,
+          "night": 0.5925926566123962
+        },
+        "scene|ft10": {
+          "pooled": 0.4995884895324707,
+          "daytime": 0.4543209969997406,
+          "dawn/dusk": 0.5135802626609802,
+          "night": 0.5308641791343689
+        },
+        "scene|ft100": {
+          "pooled": 0.6230452656745911,
+          "daytime": 0.5876543521881104,
+          "dawn/dusk": 0.6493827700614929,
+          "night": 0.6320987343788147
+        }
+      }
+    }
+  }
+}

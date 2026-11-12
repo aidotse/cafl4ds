@@ -15,10 +15,12 @@ import zipfile
 from pathlib import Path
 from types import ModuleType
 
+import numpy as np
 import pytest
 import torch
 from hydra import compose, initialize_config_dir
 from hydra.core.global_hydra import GlobalHydra
+from hydra.utils import instantiate
 from omegaconf import DictConfig, OmegaConf
 
 from cafl4ds.measurements import rankme
@@ -446,3 +448,346 @@ def test_bdd_legacy_labels_merges_per_image_jsons_into_the_legacy_format(tmp_pat
     assert records == [{"name": "a.jpg", "attributes": attrs, "labels": [{"category": "bicycle", "box2d": {}}]}]
     check = script.compare(records, [{"name": "a.jpg", "attributes": attrs, "labels": [{"category": "bicycle"}]}])
     assert check["missing"] == check["attribute_mismatches"] == check["box_count_mismatches"] == 0
+
+
+def test_warm_well_freeze_encoder_trains_only_the_heads_then_resume_unfreezes(tmp_path: Path) -> None:
+    """P1.2's settled-head start: a frozen-encoder warm-up leaves the encoder bit-identical.
+
+    Resuming it with the encoder trainable then moves the encoder from exactly that state.
+    """
+    script = _load_script("warm_well")
+    heads = tmp_path / "heads.pt"
+    steps = ["warmup.window=2", "warmup.min_steps=2", "warmup.max_steps=4", "warmup.stop=budget"]
+    script.warm(_compose("warm_well", [*_P11_DIET, *steps, "warmup.freeze_encoder=true", f"well_out={heads}"]))
+    trace = json.loads(heads.with_suffix(".trace.json").read_text())
+    assert trace["encoder_unchanged"] is True
+    torch.manual_seed(0)  # warm() seeds from config.seed=0, so a fresh build reproduces the start
+    fresh = _compose("warm_well", [*_P11_DIET, f"well_out={tmp_path / 'x.pt'}"])
+    start = instantiate(fresh.ssl, encoder=instantiate(fresh.encoder)).state_dict()
+    settled = torch.load(heads)
+    enc = [k for k in start if k.startswith("encoder.")]
+    head = [k for k in start if not k.startswith("encoder.") and start[k].is_floating_point()]
+    assert all(torch.equal(start[k], settled[k]) for k in enc)
+    assert any(not torch.equal(start[k], settled[k]) for k in head)
+
+    resumed = tmp_path / "resumed.pt"
+    script.warm(_compose("warm_well", [*_P11_DIET, *steps, f"resume_well={heads}", f"well_out={resumed}"]))
+    moved = torch.load(resumed)
+    assert any(not torch.equal(settled[k], moved[k]) for k in enc)
+
+
+def test_read_adaptation_reads_the_ladder_and_saves_per_image_correctness(tmp_path: Path) -> None:
+    """The reader scores B5, a random init and a saved well on frozen + few-shot rungs, on both pools."""
+    well_out = tmp_path / "je_well.pt"
+    _load_script("warm_well").warm(_compose("warm_well", [*_P11_DIET, "warmup.max_steps=2", f"well_out={well_out}"]))
+    script = _load_script("read_adaptation")
+    encoders = [
+        "+encoders=[{name:b5,kind:pretrained},{name:rand,kind:random},"
+        f"{{name:well,kind:well,path:'{well_out}',fewshot:false}}]"
+    ]
+    common = [
+        *_P11_DIET,
+        "probe_per_class=6",
+        "fewshot.enabled=true",
+        "fewshot.ks=[2]",
+        "fewshot.draws=2",
+        "fewshot.steps=3",
+        "threads=1",
+        "~encoders",
+        *encoders,
+    ]
+    summary = script.run(_compose("read_adaptation", [*common, "pool.fit_fraction=0.5"]), tmp_path / "heldout")
+    assert set(summary["encoders"]) == {"b5", "rand", "well"}
+    b5 = np.load(tmp_path / "heldout" / "b5.npz")
+    pool = np.load(tmp_path / "heldout" / "pool.npz")
+    assert b5["scene|linear"].shape == (1, pool["query_index"].size)
+    assert b5["scene|ft2"].shape == (2, pool["query_index"].size)
+    assert "scene|ft2" not in np.load(tmp_path / "heldout" / "well.npz")
+    canary = script.run(_compose("read_adaptation", [*common, "pool.kind=canary"]), tmp_path / "canary")
+    assert canary["pool"]["n_fit"] == canary["pool"]["n_query"]
+
+    lr = script.run(
+        _compose(
+            "read_adaptation",
+            [
+                *common,
+                "mode=select_lr",
+                "fewshot.lr_grid=[1e-4,1e-3]",
+                "fewshot.select_k=2",
+                "fewshot.val_per_class=2",
+                "pool.fit_fraction=0.8",
+            ],
+        ),
+        tmp_path / "lr",
+    )
+    assert lr["best_lr"] in (1e-4, 1e-3)
+
+
+def test_p121_drive_from_a_settled_head_well_saves_chosen_steps_and_reads_on_the_ladder(tmp_path: Path) -> None:
+    """P1.2.1's wiring: a settled-head well, a drive checkpointing only the chosen steps, the reader on them."""
+    heads = tmp_path / "heads.pt"
+    warm = [*_P11_DIET, "warmup.window=2", "warmup.min_steps=2", "warmup.max_steps=3", "warmup.freeze_encoder=true"]
+    _load_script("warm_well").warm(_compose("warm_well", [*warm, f"well_out={heads}"]))
+    drive = [*_P11_DIET, "eval_every=4", f"well={heads}", "checkpoint_legs=steps", "checkpoint_steps=[2,0.5]"]
+    _load_script("run_deploy_harness").run_deploy(_compose("deploy", drive), tmp_path / "drive")
+    index = json.loads((tmp_path / "drive" / "checkpoints" / "s0" / "index.json").read_text())
+    files = [e["file"] for e in index]  # step 2, the drive's halfway batch, and the end
+    assert files[0] == "step00002.pt" and files[-1] == "final.pt" and len(files) == 3
+    assert index[1]["batches_seen"] > 2
+
+    ckpt = tmp_path / "drive" / "checkpoints" / "s0"
+    encoders = (
+        f"+encoders=[{{name:b5,kind:well,path:'{heads}'}},{{name:end,kind:checkpoint,path:'{ckpt / 'final.pt'}'}}]"
+    )
+    summary = _load_script("read_adaptation").run(
+        _compose("read_adaptation", [*_P11_DIET, "probe_per_class=6", "threads=1", "~encoders", encoders]),
+        tmp_path / "read",
+    )
+    assert set(summary["encoders"]) == {"b5", "end"}
+
+
+def test_p122_recipe_arms_drive_and_read_on_the_selection_set(tmp_path: Path) -> None:
+    """P1.2.2 / P1.2.4 wiring: a drive with every recipe lever on, then the reads that choose between arms.
+
+    The drive runs a warmup schedule, the fine-tuning protections and an EMA; the reader scores it on the
+    selection set, interpolated with its start, and per block.
+    """
+    heads = tmp_path / "heads.pt"
+    select = ["stream.select_support_per_canary=3", "stream.select_query_per_canary=3"]
+    warm = [*_P11_DIET, *select, "warmup.max_steps=2", "warmup.freeze_encoder=true"]
+    _load_script("warm_well").warm(_compose("warm_well", [*warm, f"well_out={heads}"]))
+    arms = ["schedule=warmup_constant", "param_groups.layer_decay=0.75", "param_groups.no_decay=true", "ema=0.9"]
+    drive = [*_P11_DIET, *select, "eval_every=4", f"well={heads}", "checkpoint_legs=final", *arms]
+    _load_script("run_deploy_harness").run_deploy(_compose("deploy", drive), tmp_path / "drive")
+    ckpt = tmp_path / "drive" / "checkpoints" / "s0"
+    assert (ckpt / "final.pt").is_file() and (ckpt / "ema_final.pt").is_file()
+
+    end = {"kind": "checkpoint", "path": str(ckpt / "final.pt")}
+    encoders = [
+        {"name": "b5", "kind": "well", "path": str(heads)},
+        {"name": "end", **end},
+        {"name": "ema", "kind": "checkpoint", "path": str(ckpt / "ema_final.pt")},
+        {"name": "mid", "kind": "interp", "a": {"kind": "well", "path": str(heads)}, "b": end, "alpha": 0.5},
+        {"name": "at_end", "kind": "interp", "a": {"kind": "well", "path": str(heads)}, "b": end, "alpha": 1.0},
+    ]
+    listed = tmp_path / "encoders.yaml"
+    OmegaConf.save(OmegaConf.create(encoders), listed)
+    read = [*_P11_DIET, *select, "pool.kind=selection", "probe_per_class=3", "threads=1", "blocks=[1,4]"]
+    summary = _load_script("read_adaptation").run(
+        _compose("read_adaptation", [*read, "~encoders", f"encoders_file={listed}"]), tmp_path / "read"
+    )
+    assert summary["pool"]["n_fit"] == summary["pool"]["n_query"] > 0  # 3 + 3 per scene
+    assert {"scene|linear@block01", "scene|knn@block04"} <= set(summary["encoders"]["end"]["bacc"])
+    same = [np.load(tmp_path / "read" / f"{n}.npz")["scene|linear"] for n in ("end", "at_end")]
+    np.testing.assert_array_equal(*same)
+
+
+def _fake_ladder(path: Path, names: list[str], gain: dict[str, float], n: int = 300) -> None:
+    """A reader output dir: pool metadata plus per-encoder correctness at accuracy 0.6 + ``gain[name]``."""
+    rng = np.random.default_rng(len(str(path)))
+    path.mkdir(parents=True)
+    labels = rng.integers(0, 3, n)
+    np.savez(
+        path / "pool.npz",
+        query_index=np.arange(n),
+        stratum=rng.integers(0, 2, n),
+        regime=rng.integers(0, 2, n),
+        **{"labels|scene": labels},
+    )
+    summary = {"stratum_names": {"0": "day", "1": "night"}, "regime_names": {"0": "day·clear", "1": "night·clear"}}
+    (path / "summary.json").write_text(json.dumps(summary))
+    for name in names:
+        p = 0.6 + gain.get(name, 0.0)
+        frozen = {f"scene|{r}": (rng.random((1, n)) < p).astype(np.float32) for r in ("knn", "linear")}
+        ft = {f"scene|ft{k}": (rng.random((3, n)) < p).astype(np.float32) for k in (10, 100)}
+        np.savez(path / f"{name}.npz", **frozen, **({} if name.endswith("_mid") else ft))
+
+
+def test_analyze_adaptation_reads_p120_contrasts_and_the_p121_gate(tmp_path: Path) -> None:
+    """The analysis pairs encoders on one query set, reports both framings, and calls the gate."""
+    script = _load_script("analyze_adaptation")
+    drives = [f"{bb}_{o}_s{s}_{pt}" for o in ("walk", "iid") for s in (0, 1) for pt in ("mid", "end") for bb in ("je",)]
+    _fake_ladder(tmp_path / "p120" / "ladder" / "je", ["b5", "random", "je_well", *drives], {"je_well": 0.1})
+    p120 = script.run(
+        OmegaConf.create(
+            {
+                "mode": "p120",
+                "root": str(tmp_path / "p120"),
+                "n_boot": 200,
+                "seed": 0,
+                "threads": 1,
+                "n_seeds": 2,
+                "backbones": ["je"],
+                "pools": ["ladder", "canary"],
+            }
+        )
+    )
+    linear = p120["ladder"]["je"]["scene|linear"]
+    assert linear["vs_b5"]["well"]["delta"] > 0.05 and linear["vs_well"]["walk_end"]["delta"] < -0.05
+    assert "ft100" not in str(p120["ladder"]["je"].get("scene|ft100", {}).get("vs_b5", {}).get("walk_mid"))
+
+    names = ["b5", *[f"walk_s{s}_{t}" for s in range(3) for t in ("t00100", "end")], "iid_s0_end", "iid_s1_end"]
+    _fake_ladder(tmp_path / "p121" / "ladder" / "je", names, {f"walk_s{s}_end": 0.12 for s in range(3)}, n=2000)
+    corpus = tmp_path / "p121" / "drive" / "je_walk" / "corpus"
+    corpus.mkdir(parents=True)
+    legs = [
+        {"era_index": 0, "era_name": "day·clear", "start_step": 0, "end_step": 149},
+        {"era_index": 1, "era_name": "night·clear", "start_step": 150, "end_step": 299},
+    ]
+    (corpus / "segments.json").write_text(json.dumps({"segments": legs}))
+    p121 = script.run(
+        OmegaConf.create(
+            {
+                "mode": "p121",
+                "root": str(tmp_path / "p121"),
+                "n_boot": 300,
+                "seed": 0,
+                "threads": 1,
+                "n_seeds": 3,
+                "n_iid_seeds": 2,
+                "backbones": ["je"],
+                "tasks": ["scene"],
+                "gate_tasks": ["scene"],
+                "alpha": 0.025,
+                "rungs": ["knn", "linear", "ft10", "ft100"],
+                "primary": {"je": "linear"},
+                "delta_floor": 0.02,
+                "b5_name": "b5",
+            }
+        )
+    )
+    assert p121["je"]["gate"]["verdict"] == "PASS"
+    assert set(p121["je"]["trajectory"]) == {"end", "t00100"}
+    secondary = p121["je"]["secondary"]
+    assert secondary["walk_vs_iid"]["scene|linear"]["delta"] > 0.05  # the walk ends 0.12 up, the IID seeds flat
+    by_regime = secondary["by_regime"]["scene|linear"]
+    assert by_regime["t00100"]["era"] == 0 and by_regime["t00100"]["left"] is None  # nothing left yet at step 100
+    assert (
+        by_regime["end"]["era"] == 1 and by_regime["end"]["left"]["delta"] > 0.05 and by_regime["end"]["ahead"] is None
+    )
+
+
+def test_read_adaptation_screen_reads_reference_and_candidates_and_applies_the_rule(tmp_path: Path) -> None:
+    """The screen scores the reference and each candidate on B5 and applies overlap + headroom bars."""
+    script = _load_script("read_adaptation")
+    base = [
+        *_P11_DIET,
+        "mode=screen",
+        "probe_per_class=6",
+        "threads=1",
+        "fewshot.select_k=2",
+        "fewshot.draws=1",
+        "fewshot.steps=2",
+        "screen.ceiling_per_class=4",
+        "screen.ceiling_steps=2",
+        "screen.reference=scene",
+        "screen.candidates=[scene]",
+    ]
+    open_bar = script.run(
+        _compose("read_adaptation", [*base, "screen.max_overlap=1.0", "screen.min_headroom=-1.0"]), tmp_path / "open"
+    )
+    assert set(open_bar["tasks"]) == {"scene"} and open_bar["choice"] == "scene"
+    assert {"overlap", "b5_linear", "b5_ft2", "ceiling", "headroom"} <= set(open_bar["tasks"]["scene"])
+    closed = script.run(_compose("read_adaptation", [*base, "screen.min_headroom=2.0"]), tmp_path / "closed")
+    assert closed["choice"] is None
+
+
+def test_read_and_analyze_align_a_cell_balanced_task_to_its_own_query_frames(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A subset task (presence_cell) is read on its own frames, and the gate analysis pairs it correctly."""
+    from cafl4ds import adaptation  # noqa: PLC0415 — local: only this test builds a pool by hand
+
+    rng = np.random.default_rng(0)
+    n = 240
+    scene = torch.from_numpy(rng.integers(0, 3, n))
+    present = rng.random(n) < np.where(scene.numpy() == 0, 0.7, 0.3)
+    images = torch.rand(n, 3, 16, 16) + torch.from_numpy(present)[:, None, None, None].float()
+    pool = adaptation.HeldOutPool(
+        images=images.clamp(0, 1),
+        scene=scene,
+        stratum=torch.from_numpy(rng.integers(0, 2, n)),
+        regime=torch.zeros(n, dtype=torch.long),
+        categories=[{"car": 1} if p else {} for p in present],
+    )
+    script = _load_script("read_adaptation")
+    fit, query = adaptation.split_pool(n, 0.5, seed=0)
+    monkeypatch.setattr(script, "build_pool", lambda config: (pool, fit, query))
+    names = "[{name:b5,kind:pretrained},{name:walk_s0_end,kind:pretrained},{name:walk_s1_end,kind:pretrained}]"
+    overrides = [
+        "data=attr_synthetic",
+        "img_size=16",
+        "probe_per_class=20",
+        "threads=1",
+        "~encoders",
+        f"+encoders={names}",
+        'tasks=[scene,"presence_cell:car"]',
+    ]
+    summary = script.run(_compose("read_adaptation", overrides), tmp_path / "ladder" / "je")
+    cell = adaptation.task_indices(pool, "presence_cell:car", query, seed=0)
+    assert (
+        summary["n_query_by_task"] == {"scene": query.size, "presence_cell:car": cell.size} and cell.size < query.size
+    )
+    assert np.load(tmp_path / "ladder" / "je" / "b5.npz")["presence_cell:car|linear"].shape == (1, cell.size)
+
+    report = _load_script("analyze_adaptation").run(
+        OmegaConf.create(
+            {
+                "mode": "p121",
+                "root": str(tmp_path),
+                "n_boot": 100,
+                "seed": 0,
+                "threads": 1,
+                "n_seeds": 2,
+                "backbones": ["je"],
+                "tasks": ["scene", "presence_cell:car"],
+                "gate_tasks": ["scene", "presence_cell:car"],
+                "rungs": ["knn", "linear"],
+                "primary": {"je": "linear"},
+                "delta_floor": 0.02,
+                "alpha": 0.05,
+                "b5_name": "b5",
+            }
+        )
+    )
+    contrast = report["je"]["contrasts"]["presence_cell:car"]["linear"]
+    assert contrast["n_images"] == cell.size and contrast["delta"] == pytest.approx(0.0)
+
+
+def test_analyze_adaptation_reads_p124_attribution_and_the_best_floor(tmp_path: Path) -> None:
+    """A control gaining as much as BDD is GENERIC, one gaining nothing STREAM-SPECIFIC; the floor is the best."""
+    n = 3000
+    iid = [f"iid_s{s}_end" for s in range(3)]
+    _fake_ladder(tmp_path / "bdd", ["b5", *iid], dict.fromkeys(iid, 0.1), n=n)
+    controls = [f"{c}_s{s}_end" for c in ("same", "none") for s in range(3)]
+    _fake_ladder(tmp_path / "ctrl", controls, {f"same_s{s}_end": 0.1 for s in range(3)}, n=n)
+    ends = [f"walk_s{s}_end" for s in range(5)]
+    _fake_ladder(tmp_path / "confirm", ends, dict.fromkeys(ends, 0.1), n=n)
+    _fake_ladder(tmp_path / "dino", ["dino"], {"dino": 0.05}, n=n)
+    for d in ("ctrl", "confirm", "dino"):  # one shared query set, as the reader guarantees
+        (tmp_path / d / "pool.npz").write_bytes((tmp_path / "bdd" / "pool.npz").read_bytes())
+    base = _compose("analyze_adaptation", [])
+    OmegaConf.set_struct(base, False)  # the floors map is open (any frozen backbone's name)
+    config = OmegaConf.merge(
+        base,
+        {
+            "mode": "p124",
+            "root": str(tmp_path),
+            "n_boot": 300,
+            "gate_tasks": ["scene"],
+            "p124": {
+                "bdd_ladder": str(tmp_path / "bdd"),
+                "control_ladder": str(tmp_path / "ctrl"),
+                "controls": ["same", "none"],
+                "generic_ceiling": 0.05,
+                "confirm_ladder": str(tmp_path / "confirm"),
+                "floors": {"dino": str(tmp_path / "dino")},
+            },
+        },
+    )
+    report = _load_script("analyze_adaptation").run(config)
+    assert report["attribution"]["none"]["verdict"] == "STREAM-SPECIFIC"
+    assert report["attribution"]["same"]["verdict"] == "GENERIC"
+    assert report["attribution_claim"] == "GENERIC"
+    floor = report["vs_best_floor"]["tasks"]["scene"]
+    assert floor["floor"] == "dino" and floor["delta"] == pytest.approx(0.05, abs=0.03)

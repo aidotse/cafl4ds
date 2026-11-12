@@ -18,7 +18,7 @@ seed: 0
 device: cpu
 epochs: 3 # passes over the IID stream
 
-data_root: /mnt/stl10 # shared STL-10 (torchvision layout); override for a local copy
+data_root: /mnt/pr_2018_scaleout_workdir/cafl4ds/data/stl10 # shared STL-10 (torchvision layout); override for a local copy
 max_per_class: 120
 max_train_per_class: 80
 

@@ -1,0 +1,1 @@
+- {name: decoder_protect, kind: checkpoint, path: outputs/p122/drive/decoder_protect/checkpoints/s0/final.pt}

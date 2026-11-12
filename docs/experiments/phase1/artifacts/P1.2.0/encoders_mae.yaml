@@ -1,0 +1,21 @@
+- {name: mae_well, kind: well, path: wells/p110_deep/mae_o0.0.pt}
+- {name: mae_walk_s0_mid, kind: checkpoint, path: outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00060.pt, fewshot: false}
+- {name: mae_walk_s0_end, kind: checkpoint, path: outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/final.pt}
+- {name: mae_walk_s1_mid, kind: checkpoint, path: outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00060.pt, fewshot: false}
+- {name: mae_walk_s1_end, kind: checkpoint, path: outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/final.pt}
+- {name: mae_walk_s2_mid, kind: checkpoint, path: outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00060.pt, fewshot: false}
+- {name: mae_walk_s2_end, kind: checkpoint, path: outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/final.pt}
+- {name: mae_walk_s3_mid, kind: checkpoint, path: outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/step00060.pt, fewshot: false}
+- {name: mae_walk_s3_end, kind: checkpoint, path: outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/final.pt}
+- {name: mae_walk_s4_mid, kind: checkpoint, path: outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/step00060.pt, fewshot: false}
+- {name: mae_walk_s4_end, kind: checkpoint, path: outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/final.pt}
+- {name: mae_iid_s0_mid, kind: checkpoint, path: outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00060.pt, fewshot: false}
+- {name: mae_iid_s0_end, kind: checkpoint, path: outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/final.pt}
+- {name: mae_iid_s1_mid, kind: checkpoint, path: outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00060.pt, fewshot: false}
+- {name: mae_iid_s1_end, kind: checkpoint, path: outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/final.pt}
+- {name: mae_iid_s2_mid, kind: checkpoint, path: outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00060.pt, fewshot: false}
+- {name: mae_iid_s2_end, kind: checkpoint, path: outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/final.pt}
+- {name: mae_iid_s3_mid, kind: checkpoint, path: outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/step00060.pt, fewshot: false}
+- {name: mae_iid_s3_end, kind: checkpoint, path: outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/final.pt}
+- {name: mae_iid_s4_mid, kind: checkpoint, path: outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/step00060.pt, fewshot: false}
+- {name: mae_iid_s4_end, kind: checkpoint, path: outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/final.pt}

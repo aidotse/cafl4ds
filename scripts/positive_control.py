@@ -36,7 +36,7 @@ Examples:
 
     On the Gaudi HPU (inside the container; see docs/developing.md)::
 
-        ./scripts/run_gaudi_dev.sh -m /mnt/stl10 gaudi-env-cafl4ds:latest 0 \
+        ./scripts/run_gaudi_dev.sh -m /mnt/pr_2018_scaleout_workdir/cafl4ds/data/stl10 gaudi-env-cafl4ds:latest 0 \
             python scripts/positive_control.py device=hpu
 """
 

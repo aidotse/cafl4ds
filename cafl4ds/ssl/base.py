@@ -18,6 +18,7 @@ contaminates the starting point).
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from pathlib import Path
 
 import torch
@@ -53,6 +54,24 @@ class SSLMethod(nn.Module, ABC):  # type: ignore[misc]  # nn.Module is Any witho
 
         Returns:
             A scalar loss tensor with gradient, ready for ``.backward()``.
+        """
+
+    def after_step(self) -> None:
+        """Called once after every optimizer step — a no-op, except for a method with a moving-average target.
+
+        DINO (:mod:`cafl4ds.ssl.dino`) updates its teacher here, from the student the step just moved.
+        """
+
+    def set_horizon(self, total_steps: int) -> None:
+        """Tell the method how many optimizer steps the drive will take — a no-op, except for a scheduled method.
+
+        DINO ramps its teacher momentum over the drive (0.996 → 1, its own schedule).
+        """
+
+    def prime(self, batches: Iterable[torch.Tensor]) -> None:
+        """Set state the start lacks from unlabelled frames, with no gradient, before step 0 — a no-op by default.
+
+        DINO estimates its centre here when its checkpoint holds none; ``batches`` is consumed only if needed.
         """
 
     def per_sample_loss(self, imgs: torch.Tensor) -> torch.Tensor:

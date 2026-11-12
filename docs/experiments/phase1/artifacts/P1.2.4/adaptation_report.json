@@ -1,0 +1,112 @@
+{
+  "mode": "p124",
+  "n_boot": 4000,
+  "attribution": {
+    "coco": {
+      "verdict": "STREAM-SPECIFIC",
+      "holm": {
+        "scene": true,
+        "presence_cell:traffic light": true
+      },
+      "max_upper": 0.049923935091278036,
+      "tasks": {
+        "scene": {
+          "delta": 0.025384990468727886,
+          "lo": 0.009066575630205806,
+          "hi": 0.04051366262623056,
+          "p_one_sided": 0.000999750062484379,
+          "n_seeds": 3.0,
+          "n_seeds_second": 3.0,
+          "n_images": 5252.0,
+          "gain_bdd": 0.028021103199918462,
+          "gain_control": 0.0026361127311905763,
+          "share_stream": 0.9059240204647528
+        },
+        "presence_cell:traffic light": {
+          "delta": 0.030876718503493272,
+          "lo": 0.011268875366238437,
+          "hi": 0.049923935091278036,
+          "p_one_sided": 0.000999750062484379,
+          "n_seeds": 3.0,
+          "n_seeds_second": 3.0,
+          "n_images": 2958.0,
+          "gain_bdd": 0.03944106378183454,
+          "gain_control": 0.008564345278341268,
+          "share_stream": 0.7828571428571415
+        }
+      }
+    },
+    "places365": {
+      "verdict": "STREAM-SPECIFIC",
+      "holm": {
+        "scene": true,
+        "presence_cell:traffic light": true
+      },
+      "max_upper": 0.037525354969573876,
+      "tasks": {
+        "scene": {
+          "delta": 0.016699459230790747,
+          "lo": 0.00035369615764209997,
+          "hi": 0.033906259486081676,
+          "p_one_sided": 0.02324418895276181,
+          "n_seeds": 3.0,
+          "n_seeds_second": 3.0,
+          "n_images": 5252.0,
+          "gain_bdd": 0.028021103199918462,
+          "gain_control": 0.011321643969127715,
+          "share_stream": 0.595960091636911
+        },
+        "presence_cell:traffic light": {
+          "delta": 0.017917511832319044,
+          "lo": -0.0023664638269100813,
+          "hi": 0.037525354969573876,
+          "p_one_sided": 0.03899025243689078,
+          "n_seeds": 3.0,
+          "n_seeds_second": 3.0,
+          "n_images": 2958.0,
+          "gain_bdd": 0.03944106378183454,
+          "gain_control": 0.021523551949515496,
+          "share_stream": 0.45428571428571235
+        }
+      }
+    }
+  },
+  "attribution_claim": "STREAM-SPECIFIC",
+  "vs_best_floor": {
+    "beats": true,
+    "holm": {
+      "scene": true,
+      "presence_cell:traffic light": false
+    },
+    "tasks": {
+      "scene": {
+        "floor": "dino",
+        "floor_reads": {
+          "b5": 0.6354460120201111,
+          "dino": 0.6432957053184509,
+          "sup": 0.6197020411491394
+        },
+        "delta": 0.030055573028352045,
+        "lo": 0.014650591338602635,
+        "hi": 0.04617110512760019,
+        "p_one_sided": 0.0004998750312421895,
+        "n_seeds": 5.0,
+        "n_images": 5252.0
+      },
+      "presence_cell:traffic light": {
+        "floor": "dino",
+        "floor_reads": {
+          "b5": 0.6064908504486084,
+          "dino": 0.6244083642959595,
+          "sup": 0.623056173324585
+        },
+        "delta": 0.013252197430696389,
+        "lo": -0.0073022312373225455,
+        "hi": 0.03407876943880996,
+        "p_one_sided": 0.1089727568107973,
+        "n_seeds": 5.0,
+        "n_images": 2958.0
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+- {name: b5, kind: well, path: wells/p121/mae_heads.pt}
+- {name: base, kind: checkpoint, path: outputs/p121/drive/mae_walk/checkpoints/s0/final.pt}
+- {name: zero_lr, kind: checkpoint, path: outputs/p122/drive/zero_lr/checkpoints/s0/final.pt}
+- {name: lr_third, kind: checkpoint, path: outputs/p122/drive/lr_third/checkpoints/s0/final.pt}
+- {name: lr_x3, kind: checkpoint, path: outputs/p122/drive/lr_x3/checkpoints/s0/final.pt}
+- {name: warmup, kind: checkpoint, path: outputs/p122/drive/warmup/checkpoints/s0/final.pt}
+- {name: protect, kind: checkpoint, path: outputs/p122/drive/protect/checkpoints/s0/final.pt}

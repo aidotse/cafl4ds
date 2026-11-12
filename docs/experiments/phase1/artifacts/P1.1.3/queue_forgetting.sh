@@ -3,7 +3,7 @@
 # with save_states=true, so each arm's post-A and post-B method can be read per block. One worker per card.
 # Each writes outputs/p113/forgetting/epochsb40_seed<s>/ (comparison.json + states/, ~1.3 GB per seed).
 ARGS="device=hpu training_mode=ssl pretrained_encoder=true skip_phase_a=false decoder_warmup_epochs=30 \
- encoder=vit_b16_mae encoder.state_dict_path=/mnt/cifar100/mae_pretrain_vit_base.pth \
+ encoder=vit_b16_mae encoder.state_dict_path=/mnt/pr_2018_scaleout_workdir/cafl4ds/data/cifar100/mae_pretrain_vit_base.pth \
  ssl=mae ssl.decoder_dim=512 ssl.decoder_depth=8 ssl.decoder_heads=16 \
  data=imagenette data_b=cifar100 max_per_class=260 \
  task_a_classes=[0,1,2,3,4,5,6,7,8,9] task_b_classes=[0,1,2,3,4,5,6,7,8,9] \

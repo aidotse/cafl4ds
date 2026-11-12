@@ -8,12 +8,14 @@ from pathlib import Path
 import pytest
 import torch
 from PIL import Image
+from torchvision import transforms
 
 from cafl4ds.data.attributes import (
     BDD100KSource,
     SyntheticAttributeSource,
     _index_scenes,
     _rank_regimes,
+    as_float,
     resize_images,
 )
 
@@ -221,3 +223,59 @@ def test_bdd_source_raises_on_missing_root(tmp_path: Path) -> None:
     """A missing image directory is a clear FileNotFoundError, not an opaque crash."""
     with pytest.raises(FileNotFoundError, match="BDD100K images not found"):
         BDD100KSource(str(tmp_path / "nope")).load()
+
+
+def test_bdd_source_uint8_frames_match_the_float_decode_bit_for_bit(tmp_path: Path) -> None:
+    """``pixel_dtype=uint8`` holds a quarter of the memory; as_float recovers the float32 decode exactly."""
+    records: list[dict[str, object]] = [
+        {"name": "a.jpg", "attributes": {"timeofday": "daytime", "weather": "clear", "scene": "highway"}},
+        {"name": "b.jpg", "attributes": {"timeofday": "night", "weather": "rainy", "scene": "city street"}},
+    ]
+    _write_bdd_fixture(tmp_path, records)
+    reference = BDD100KSource(str(tmp_path), img_size=16).load().images
+    compact = BDD100KSource(str(tmp_path), img_size=16, pixel_dtype="uint8").load().images
+    assert reference.dtype == torch.float32 and compact.dtype == torch.uint8
+    assert torch.equal(as_float(compact), reference)
+    legacy = transforms.Compose([transforms.Resize((16, 16)), transforms.ToTensor()])
+    with Image.open(tmp_path / "images" / "100k" / "train" / "a.jpg") as im:
+        assert torch.equal(legacy(im.convert("RGB")), reference[0])  # the pre-uint8 decode path
+    with pytest.raises(ValueError, match="pixel_dtype"):
+        BDD100KSource(str(tmp_path), pixel_dtype="float16")
+
+
+def test_bdd_source_cache_reuses_an_identical_decode_and_keys_on_the_config(tmp_path: Path) -> None:
+    """A cached load equals the fresh decode; a different size is a different cache entry."""
+    records: list[dict[str, object]] = [
+        {"name": "a.jpg", "attributes": {"timeofday": "daytime", "weather": "clear", "scene": "highway"}},
+        {"name": "b.jpg", "attributes": {"timeofday": "night", "weather": "rainy", "scene": "city street"}},
+    ]
+    _write_bdd_fixture(tmp_path / "bdd", records)
+    cache = tmp_path / "cache"
+    fresh = BDD100KSource(str(tmp_path / "bdd"), img_size=16, pixel_dtype="uint8", cache_dir=str(cache)).load()
+    assert len(list(cache.glob("*.pt"))) == 1
+    again = BDD100KSource(str(tmp_path / "bdd"), img_size=16, pixel_dtype="uint8", cache_dir=str(cache))
+    cached = again.load()
+    assert torch.equal(cached.images, fresh.images) and torch.equal(cached.canary, fresh.canary)
+    assert cached.regime_names == fresh.regime_names and again.num_canary_classes == 2
+    BDD100KSource(str(tmp_path / "bdd"), img_size=8, pixel_dtype="uint8", cache_dir=str(cache)).load()
+    assert len(list(cache.glob("*.pt"))) == 2
+
+
+def test_bdd_source_scene_whitelist_and_center_crop(tmp_path: Path) -> None:
+    """``scenes`` keeps only the listed scenes; ``center_crop`` keeps the aspect ratio (sides dropped)."""
+    records: list[dict[str, object]] = [
+        {"name": "a.jpg", "attributes": {"timeofday": "daytime", "weather": "clear", "scene": "highway"}},
+        {"name": "b.jpg", "attributes": {"timeofday": "night", "weather": "rainy", "scene": "parking lot"}},
+    ]
+    _write_bdd_fixture(tmp_path, records)
+    kept = BDD100KSource(str(tmp_path), img_size=16, scenes=["highway"]).load()
+    assert kept.canary.numel() == 1 and kept.canary_names == {0: "highway"}
+    # a frame whose left and right thirds differ from its centre: the crop sees only the centre
+    frame = Image.new("RGB", (48, 16), color=(0, 0, 0))
+    frame.paste((255, 255, 255), (16, 0, 32, 16))
+    frame.save(tmp_path / "images" / "100k" / "train" / "a.jpg", quality=100)
+    crop = BDD100KSource(str(tmp_path), img_size=16, resize_mode="center_crop", scenes=["highway"]).load().images
+    squash = BDD100KSource(str(tmp_path), img_size=16, scenes=["highway"]).load().images
+    assert crop.mean() > 0.9 and squash.mean() < 0.6
+    with pytest.raises(ValueError, match="resize_mode"):
+        BDD100KSource(str(tmp_path), resize_mode="pad")

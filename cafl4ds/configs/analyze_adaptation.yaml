@@ -1,0 +1,91 @@
+# P1.2 analysis — adapted-vs-frozen (B5) contrasts over the readout ladder's per-image correctness
+# (scripts/read_adaptation.py output). See scripts/analyze_adaptation.py.
+#
+#   uv run python scripts/analyze_adaptation.py mode=p120 root=outputs/p120
+mode: p120 # p120 (P1.2.0's descriptive contrasts) | p121 (P1.2.1's gate) | p124 | p125 | p125f | p125g
+root: outputs/p120
+n_boot: 4000
+seed: 0
+threads: 4 # BLAS threads — keep low beside HPU jobs
+n_seeds: 5
+n_iid_seeds: 3 # p121: the IID control's seeds (secondary reads); p125: at most this many, as present
+backbones: [je, mae]
+
+# p120: the reader output dirs under root (each with je/ and mae/ subdirs; B5 + random in je/)
+pools: [ladder, canary]
+
+# p121 — the pre-registered gate (docs/experiments/phase1/P1.2.1.md)
+tasks: [scene, "presence_cell:traffic light"] # every task read and reported
+gate_tasks: [scene, "presence_cell:traffic light"] # co-primary (P1.2.0's extended screen)
+rungs: [knn, linear, ft10, ft100]
+curve_rungs: [knn, linear, ft10, ft100] # p125/p125g: the curve's rungs (each where read)
+primary: { je: linear, mae: ft100 }
+delta_floor: 0.02
+alpha: 0.05 # family-wise one-sided level over the gate tasks (Holm: the better task needs p <= 0.025)
+b5_name: b5 # the settled-head well: its encoder is the off-the-shelf B5, bit for bit
+
+# p124 — P1.2.4's attribution and floor reads (docs/experiments/phase1/P1.2.4.md); root is where the report lands
+p124:
+  rung: linear # JE's primary rung
+  bdd_ladder: outputs/p121/ladder/je # B5 + the BDD IID drive's ends (iid_s<k>_end, n_iid_seeds of them)
+  control_ladder: outputs/p124/offdomain/ladder # <control>_s<k>_end per control
+  controls: [coco, places365]
+  n_control_seeds: 3
+  generic_ceiling: 0.01 # GENERIC: D_c's upper bound below this on every task
+  confirm_ladder: null # the confirmation's val ladder (walk_s<k>_end, n_seeds of them); null skips the floor test
+  floors: {} # name -> ladder dir of each extra frozen floor (read as encoder <name>); B5 comes from bdd_ladder
+
+# p125 — P1.2.5's reads (docs/experiments/phase1/P1.2.5.md); root holds ladder/<arm> per init, each with its frozen
+# floor, walk_s<k>_<t> checkpoints, iid_s<k>_end and any attribution controls' <control>_s<k>_end. Uses n_seeds,
+# n_iid_seeds, gate_tasks, rungs, delta_floor and alpha above.
+p125:
+  arms: [dino_dino, dino_simsiam, mae_je] # the inits read (an absent ladder is skipped)
+  dino_arm: dino_dino
+  simsiam_arm: dino_simsiam
+  fallback_vehicle: mae_je # P1.3's JE vehicle if neither DINO arm passes
+  floor_name: floor # each ladder's frozen floor (B5-DINO; the MAE-init settled-head well)
+  primary_rung: linear # on the mean-pooled readout; `linear@cls` is the secondary readout
+  panel: [] # Part C's screened tasks, recorded in the design doc before any adapted encoder is read
+  attribution: {} # arm -> {control: n_seeds}, e.g. {mae_je: {coco: 3, places365: 5}}
+  n_attribution_iid: 5 # the BDD IID arm's seeds in the attribution contrast
+  generic_ceiling: 0.01
+  reference_floors: {} # name -> ladder dir of a frozen reference read beside (the supervised ViT-B: sup)
+
+# p125g — P1.2.5's Part G (docs/experiments/phase1/P1.2.5.md): the unprotected arms, read as p125 reads its arms, the
+# recipe contrast against each one's protected twin, and the every-rung curve of the re-read confirmation drives. Uses
+# the p125 block (floor, primary rung, panel, attribution IID seeds). Set report=partG.json.
+p125g:
+  arms: [] # the unprotected arms under root/ladder, e.g. [dino_simsiam_np, mae_je_np]
+  attribution: {} # arm -> {control: n_seeds}
+  pairs: {} # unprotected arm -> its protected twin, e.g. {mae_je_np: mae_je}
+  ft_dir: ladder_ft # the re-read confirmation drives (every rung at every checkpoint)
+  ft_arms: [] # e.g. [dino_dino, dino_simsiam, mae_je]
+
+# p125f — P1.2.5's Part F (docs/experiments/phase1/P1.2.5.md; exploratory, no pass bar). root holds <ladder_dir>/<arm>.
+# Writes <root>/<report> (set report=partF_<ladder_dir>.json so adaptation_report.json is kept).
+report: null # the report's file name under root; null -> adaptation_report.json
+p125f:
+  ladder_dir: ladder # ladder (gate + panel tasks) | ladderF (F1's size-binned tasks)
+  arms: [dino_dino, dino_simsiam, mae_je]
+  floor_name: floor
+  tasks: [] # empty: every task the ladder read
+  min_positive: 200 # F1's read rule: a task is read if its cell-balanced query set keeps this many positives
+  min_per_class: 20 # a slice is read if each class keeps this many frames in it
+  rungs: [knn, linear]
+  # time of day; weather within daytime (the walk's weather eras before step 846 are all daytime), then night's
+  slices: ["tod:daytime", "tod:dawn/dusk", "tod:night", "regime:daytime·clear", "regime:daytime·partly cloudy",
+    "regime:daytime·overcast", "regime:daytime·rainy", "regime:daytime·snowy", "regime:night·clear",
+    "regime:night·rainy", "regime:night·snowy"]
+  # each window: a signed sum of within-slice changes between two walk checkpoints (seed-paired)
+  windows:
+    tracking: { from: t00846, to: end, slices: ["tod:night"] } # the slice the stream moves into
+    forgetting: { from: t00846, to: end, slices: ["tod:daytime"] } # the slice the stream left
+    pooled_late: { from: t00846, to: end, slices: [all] } # what the pooled curve shows over the same steps
+    weather_rainy: { from: t00423, to: t00846, slices: ["regime:daytime·rainy"], against: ["regime:daytime·clear"] }
+    weather_snowy: { from: t00423, to: t00846, slices: ["regime:daytime·snowy"], against: ["regime:daytime·clear"] }
+    # the night's rainy/snowy eras (steps 1575-1675), added beside the design's daytime window
+    night_rainy: { from: t01269, to: end, slices: ["regime:night·rainy"], against: ["regime:night·clear"] }
+    night_snowy: { from: t01269, to: end, slices: ["regime:night·snowy"], against: ["regime:night·clear"] }
+  train_labels: null # BDD-train labels (with box2d) for F1's frequency axis
+  scenes: ["city street", highway, residential]
+  frame_area: 921600 # BDD frames are 1280 x 720

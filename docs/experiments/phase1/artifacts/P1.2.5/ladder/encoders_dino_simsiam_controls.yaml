@@ -1,0 +1,10 @@
+- {name: iid_s3_end, kind: checkpoint, path: outputs/p125/drive/dino_simsiam_iid45/checkpoints/s4/final.pt, fewshot: false}
+- {name: iid_s4_end, kind: checkpoint, path: outputs/p125/drive/dino_simsiam_iid45/checkpoints/s5/final.pt, fewshot: false}
+- {name: coco_s0_end, kind: checkpoint, path: /mnt/pr_2018_scaleout_workdir/cafl4ds/outputs/p125/offdomain/dino_simsiam/coco/checkpoints/s0/final.pt, fewshot: false}
+- {name: coco_s1_end, kind: checkpoint, path: /mnt/pr_2018_scaleout_workdir/cafl4ds/outputs/p125/offdomain/dino_simsiam/coco/checkpoints/s1/final.pt, fewshot: false}
+- {name: coco_s2_end, kind: checkpoint, path: /mnt/pr_2018_scaleout_workdir/cafl4ds/outputs/p125/offdomain/dino_simsiam/coco/checkpoints/s2/final.pt, fewshot: false}
+- {name: places365_s0_end, kind: checkpoint, path: /mnt/pr_2018_scaleout_workdir/cafl4ds/outputs/p125/offdomain/dino_simsiam/places365/checkpoints/s0/final.pt, fewshot: false}
+- {name: places365_s1_end, kind: checkpoint, path: /mnt/pr_2018_scaleout_workdir/cafl4ds/outputs/p125/offdomain/dino_simsiam/places365/checkpoints/s1/final.pt, fewshot: false}
+- {name: places365_s2_end, kind: checkpoint, path: /mnt/pr_2018_scaleout_workdir/cafl4ds/outputs/p125/offdomain/dino_simsiam/places365/checkpoints/s2/final.pt, fewshot: false}
+- {name: places365_s3_end, kind: checkpoint, path: /mnt/pr_2018_scaleout_workdir/cafl4ds/outputs/p125/offdomain/dino_simsiam/places365/checkpoints/s3/final.pt, fewshot: false}
+- {name: places365_s4_end, kind: checkpoint, path: /mnt/pr_2018_scaleout_workdir/cafl4ds/outputs/p125/offdomain/dino_simsiam/places365/checkpoints/s4/final.pt, fewshot: false}

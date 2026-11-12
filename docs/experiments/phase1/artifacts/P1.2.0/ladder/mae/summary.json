@@ -1,0 +1,1373 @@
+{
+  "pool": {
+    "kind": "heldout",
+    "n_fit": 5565,
+    "n_query": 8347
+  },
+  "stratum_names": {
+    "0": "daytime",
+    "1": "dawn/dusk",
+    "2": "night"
+  },
+  "regime_names": {
+    "0": "daytime\u00b7clear",
+    "1": "daytime\u00b7partly cloudy",
+    "2": "daytime\u00b7overcast",
+    "3": "daytime\u00b7rainy",
+    "4": "daytime\u00b7snowy",
+    "5": "daytime\u00b7foggy",
+    "6": "dawn/dusk\u00b7clear",
+    "7": "dawn/dusk\u00b7partly cloudy",
+    "8": "dawn/dusk\u00b7overcast",
+    "9": "dawn/dusk\u00b7rainy",
+    "10": "dawn/dusk\u00b7snowy",
+    "11": "dawn/dusk\u00b7foggy",
+    "12": "night\u00b7clear",
+    "13": "night\u00b7partly cloudy",
+    "14": "night\u00b7overcast",
+    "15": "night\u00b7rainy",
+    "16": "night\u00b7snowy",
+    "17": "night\u00b7foggy"
+  },
+  "encoders": {
+    "mae_well": {
+      "spec": {
+        "name": "mae_well",
+        "kind": "well",
+        "path": "wells/p110_deep/mae_o0.0.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5091751217842102,
+          "daytime": 0.49103522300720215,
+          "dawn/dusk": 0.4706376791000366,
+          "night": 0.4579688608646393
+        },
+        "scene|linear": {
+          "pooled": 0.5679494738578796,
+          "daytime": 0.5623736381530762,
+          "dawn/dusk": 0.5630230903625488,
+          "night": 0.541134238243103
+        },
+        "scene|ft10": {
+          "pooled": 0.48938584327697754,
+          "daytime": 0.47628164291381836,
+          "dawn/dusk": 0.46847233176231384,
+          "night": 0.4451007843017578
+        },
+        "scene|ft100": {
+          "pooled": 0.5561838746070862,
+          "daytime": 0.5473581552505493,
+          "dawn/dusk": 0.5661998391151428,
+          "night": 0.5069442391395569
+        },
+        "presence:traffic light|knn": {
+          "pooled": 0.6280490159988403,
+          "daytime": 0.5963664054870605,
+          "dawn/dusk": 0.6148400902748108,
+          "night": 0.6012923121452332
+        },
+        "presence:traffic light|linear": {
+          "pooled": 0.626559853553772,
+          "daytime": 0.6104596853256226,
+          "dawn/dusk": 0.6121574640274048,
+          "night": 0.6153172254562378
+        },
+        "presence:pedestrian|knn": {
+          "pooled": 0.6611242294311523,
+          "daytime": 0.6184460520744324,
+          "dawn/dusk": 0.5839627981185913,
+          "night": 0.6576387286186218
+        },
+        "presence:pedestrian|linear": {
+          "pooled": 0.6446067690849304,
+          "daytime": 0.6245349645614624,
+          "dawn/dusk": 0.5961795449256897,
+          "night": 0.635699987411499
+        },
+        "presence:truck|knn": {
+          "pooled": 0.6251639127731323,
+          "daytime": 0.5204518437385559,
+          "dawn/dusk": 0.5275870561599731,
+          "night": 0.5091474652290344
+        },
+        "presence:truck|linear": {
+          "pooled": 0.5717391967773438,
+          "daytime": 0.5250818133354187,
+          "dawn/dusk": 0.5269514322280884,
+          "night": 0.5120920538902283
+        }
+      }
+    },
+    "mae_walk_s0_mid": {
+      "spec": {
+        "name": "mae_walk_s0_mid",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00060.pt",
+        "fewshot": false
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5068674087524414,
+          "daytime": 0.487424373626709,
+          "dawn/dusk": 0.46522459387779236,
+          "night": 0.45534706115722656
+        },
+        "scene|linear": {
+          "pooled": 0.5586150288581848,
+          "daytime": 0.5692482590675354,
+          "dawn/dusk": 0.5886641144752502,
+          "night": 0.5069893598556519
+        },
+        "presence:traffic light|knn": {
+          "pooled": 0.6288665533065796,
+          "daytime": 0.5993762016296387,
+          "dawn/dusk": 0.6123107075691223,
+          "night": 0.5990139245986938
+        },
+        "presence:traffic light|linear": {
+          "pooled": 0.6304203271865845,
+          "daytime": 0.6205240488052368,
+          "dawn/dusk": 0.6188531517982483,
+          "night": 0.6117935180664062
+        },
+        "presence:pedestrian|knn": {
+          "pooled": 0.6621513366699219,
+          "daytime": 0.619358241558075,
+          "dawn/dusk": 0.5706473588943481,
+          "night": 0.6619836091995239
+        },
+        "presence:pedestrian|linear": {
+          "pooled": 0.6361632943153381,
+          "daytime": 0.6181167364120483,
+          "dawn/dusk": 0.5793682336807251,
+          "night": 0.6301326751708984
+        },
+        "presence:truck|knn": {
+          "pooled": 0.6286712884902954,
+          "daytime": 0.5228801965713501,
+          "dawn/dusk": 0.535469114780426,
+          "night": 0.5101916193962097
+        },
+        "presence:truck|linear": {
+          "pooled": 0.5703784227371216,
+          "daytime": 0.5174190998077393,
+          "dawn/dusk": 0.5469107627868652,
+          "night": 0.5297720432281494
+        }
+      }
+    },
+    "mae_walk_s0_end": {
+      "spec": {
+        "name": "mae_walk_s0_end",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5069432854652405,
+          "daytime": 0.49199891090393066,
+          "dawn/dusk": 0.45514392852783203,
+          "night": 0.45074978470802307
+        },
+        "scene|linear": {
+          "pooled": 0.5643383860588074,
+          "daytime": 0.5640004277229309,
+          "dawn/dusk": 0.5776870846748352,
+          "night": 0.5321340560913086
+        },
+        "scene|ft10": {
+          "pooled": 0.4825327396392822,
+          "daytime": 0.4700899124145508,
+          "dawn/dusk": 0.4643526077270508,
+          "night": 0.4356890916824341
+        },
+        "scene|ft100": {
+          "pooled": 0.5587801337242126,
+          "daytime": 0.5438973307609558,
+          "dawn/dusk": 0.560025155544281,
+          "night": 0.5219834446907043
+        },
+        "presence:traffic light|knn": {
+          "pooled": 0.6227372884750366,
+          "daytime": 0.5913798809051514,
+          "dawn/dusk": 0.6211361289024353,
+          "night": 0.5909221172332764
+        },
+        "presence:traffic light|linear": {
+          "pooled": 0.638275146484375,
+          "daytime": 0.6177427768707275,
+          "dawn/dusk": 0.6206215023994446,
+          "night": 0.6304370760917664
+        },
+        "presence:pedestrian|knn": {
+          "pooled": 0.6595836877822876,
+          "daytime": 0.6188658475875854,
+          "dawn/dusk": 0.5753480195999146,
+          "night": 0.65461266040802
+        },
+        "presence:pedestrian|linear": {
+          "pooled": 0.637304425239563,
+          "daytime": 0.6088722944259644,
+          "dawn/dusk": 0.5894312858581543,
+          "night": 0.6402149200439453
+        },
+        "presence:truck|knn": {
+          "pooled": 0.625373363494873,
+          "daytime": 0.5225617289543152,
+          "dawn/dusk": 0.5213577151298523,
+          "night": 0.5045077800750732
+        },
+        "presence:truck|linear": {
+          "pooled": 0.571752667427063,
+          "daytime": 0.5253618955612183,
+          "dawn/dusk": 0.5403000116348267,
+          "night": 0.5134505033493042
+        }
+      }
+    },
+    "mae_walk_s1_mid": {
+      "spec": {
+        "name": "mae_walk_s1_mid",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00060.pt",
+        "fewshot": false
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5142892003059387,
+          "daytime": 0.4930439889431,
+          "dawn/dusk": 0.4751424789428711,
+          "night": 0.46057090163230896
+        },
+        "scene|linear": {
+          "pooled": 0.561890721321106,
+          "daytime": 0.5667247176170349,
+          "dawn/dusk": 0.5753589272499084,
+          "night": 0.515916645526886
+        },
+        "presence:traffic light|knn": {
+          "pooled": 0.6264620423316956,
+          "daytime": 0.5981723070144653,
+          "dawn/dusk": 0.6284395456314087,
+          "night": 0.5872029066085815
+        },
+        "presence:traffic light|linear": {
+          "pooled": 0.6411818265914917,
+          "daytime": 0.6275111436843872,
+          "dawn/dusk": 0.6247495412826538,
+          "night": 0.624355673789978
+        },
+        "presence:pedestrian|knn": {
+          "pooled": 0.6657739281654358,
+          "daytime": 0.626920223236084,
+          "dawn/dusk": 0.5808290243148804,
+          "night": 0.6611332893371582
+        },
+        "presence:pedestrian|linear": {
+          "pooled": 0.6414684057235718,
+          "daytime": 0.6238467693328857,
+          "dawn/dusk": 0.5843685865402222,
+          "night": 0.625424861907959
+        },
+        "presence:truck|knn": {
+          "pooled": 0.6248458623886108,
+          "daytime": 0.5184354782104492,
+          "dawn/dusk": 0.5205949544906616,
+          "night": 0.5100345015525818
+        },
+        "presence:truck|linear": {
+          "pooled": 0.5685960054397583,
+          "daytime": 0.5315045118331909,
+          "dawn/dusk": 0.508009135723114,
+          "night": 0.5122761726379395
+        }
+      }
+    },
+    "mae_walk_s1_end": {
+      "spec": {
+        "name": "mae_walk_s1_end",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5063044428825378,
+          "daytime": 0.4880061149597168,
+          "dawn/dusk": 0.45413661003112793,
+          "night": 0.45588418841362
+        },
+        "scene|linear": {
+          "pooled": 0.5562832951545715,
+          "daytime": 0.5429490208625793,
+          "dawn/dusk": 0.5673132538795471,
+          "night": 0.543493390083313
+        },
+        "scene|ft10": {
+          "pooled": 0.47759106755256653,
+          "daytime": 0.465544193983078,
+          "dawn/dusk": 0.463349312543869,
+          "night": 0.4299645721912384
+        },
+        "scene|ft100": {
+          "pooled": 0.552119791507721,
+          "daytime": 0.5395842790603638,
+          "dawn/dusk": 0.5387668013572693,
+          "night": 0.5141798257827759
+        },
+        "presence:traffic light|knn": {
+          "pooled": 0.6228952407836914,
+          "daytime": 0.5933308601379395,
+          "dawn/dusk": 0.6299998760223389,
+          "night": 0.5918378829956055
+        },
+        "presence:traffic light|linear": {
+          "pooled": 0.6361825466156006,
+          "daytime": 0.6227550506591797,
+          "dawn/dusk": 0.6354966163635254,
+          "night": 0.616786003112793
+        },
+        "presence:pedestrian|knn": {
+          "pooled": 0.6653463244438171,
+          "daytime": 0.6267582178115845,
+          "dawn/dusk": 0.5731194019317627,
+          "night": 0.6586239337921143
+        },
+        "presence:pedestrian|linear": {
+          "pooled": 0.6403564214706421,
+          "daytime": 0.6177589893341064,
+          "dawn/dusk": 0.5809975862503052,
+          "night": 0.6277706027030945
+        },
+        "presence:truck|knn": {
+          "pooled": 0.6200366616249084,
+          "daytime": 0.5112907886505127,
+          "dawn/dusk": 0.5300025343894958,
+          "night": 0.5086574554443359
+        },
+        "presence:truck|linear": {
+          "pooled": 0.5662747621536255,
+          "daytime": 0.5283589363098145,
+          "dawn/dusk": 0.5101703405380249,
+          "night": 0.5019527077674866
+        }
+      }
+    },
+    "mae_walk_s2_mid": {
+      "spec": {
+        "name": "mae_walk_s2_mid",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00060.pt",
+        "fewshot": false
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5098051428794861,
+          "daytime": 0.48932504653930664,
+          "dawn/dusk": 0.4596311151981354,
+          "night": 0.45868968963623047
+        },
+        "scene|linear": {
+          "pooled": 0.5689765810966492,
+          "daytime": 0.5730136036872864,
+          "dawn/dusk": 0.5566433668136597,
+          "night": 0.5296254754066467
+        },
+        "presence:traffic light|knn": {
+          "pooled": 0.6254075765609741,
+          "daytime": 0.594121515750885,
+          "dawn/dusk": 0.6115113496780396,
+          "night": 0.5948730707168579
+        },
+        "presence:traffic light|linear": {
+          "pooled": 0.633755624294281,
+          "daytime": 0.6194989681243896,
+          "dawn/dusk": 0.6221435070037842,
+          "night": 0.6156579852104187
+        },
+        "presence:pedestrian|knn": {
+          "pooled": 0.6611813306808472,
+          "daytime": 0.6219760775566101,
+          "dawn/dusk": 0.5737811326980591,
+          "night": 0.6502710580825806
+        },
+        "presence:pedestrian|linear": {
+          "pooled": 0.6495413780212402,
+          "daytime": 0.6310689449310303,
+          "dawn/dusk": 0.6161807775497437,
+          "night": 0.6343746185302734
+        },
+        "presence:truck|knn": {
+          "pooled": 0.627259373664856,
+          "daytime": 0.5236103534698486,
+          "dawn/dusk": 0.525425910949707,
+          "night": 0.5067904591560364
+        },
+        "presence:truck|linear": {
+          "pooled": 0.5722581148147583,
+          "daytime": 0.5284990072250366,
+          "dawn/dusk": 0.533562183380127,
+          "night": 0.5127205848693848
+        }
+      }
+    },
+    "mae_walk_s2_end": {
+      "spec": {
+        "name": "mae_walk_s2_end",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5089603066444397,
+          "daytime": 0.49163445830345154,
+          "dawn/dusk": 0.45689404010772705,
+          "night": 0.45703086256980896
+        },
+        "scene|linear": {
+          "pooled": 0.5667212605476379,
+          "daytime": 0.5717533230781555,
+          "dawn/dusk": 0.57686847448349,
+          "night": 0.5218352675437927
+        },
+        "scene|ft10": {
+          "pooled": 0.48778364062309265,
+          "daytime": 0.4762860834598541,
+          "dawn/dusk": 0.48488056659698486,
+          "night": 0.4387017786502838
+        },
+        "scene|ft100": {
+          "pooled": 0.561459481716156,
+          "daytime": 0.5488977432250977,
+          "dawn/dusk": 0.5661880970001221,
+          "night": 0.5253802537918091
+        },
+        "presence:traffic light|knn": {
+          "pooled": 0.6270536184310913,
+          "daytime": 0.5985398292541504,
+          "dawn/dusk": 0.6381793022155762,
+          "night": 0.5925750732421875
+        },
+        "presence:traffic light|linear": {
+          "pooled": 0.6265812516212463,
+          "daytime": 0.6121721863746643,
+          "dawn/dusk": 0.6478587985038757,
+          "night": 0.6103610992431641
+        },
+        "presence:pedestrian|knn": {
+          "pooled": 0.6623797416687012,
+          "daytime": 0.622785210609436,
+          "dawn/dusk": 0.5781197547912598,
+          "night": 0.6553477048873901
+        },
+        "presence:pedestrian|linear": {
+          "pooled": 0.6390727758407593,
+          "daytime": 0.620896577835083,
+          "dawn/dusk": 0.607384979724884,
+          "night": 0.6302160620689392
+        },
+        "presence:truck|knn": {
+          "pooled": 0.6250091791152954,
+          "daytime": 0.5191614627838135,
+          "dawn/dusk": 0.5090261697769165,
+          "night": 0.509757399559021
+        },
+        "presence:truck|linear": {
+          "pooled": 0.5613597631454468,
+          "daytime": 0.510732889175415,
+          "dawn/dusk": 0.5189422965049744,
+          "night": 0.5184044241905212
+        }
+      }
+    },
+    "mae_walk_s3_mid": {
+      "spec": {
+        "name": "mae_walk_s3_mid",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/step00060.pt",
+        "fewshot": false
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.508476734161377,
+          "daytime": 0.48937860131263733,
+          "dawn/dusk": 0.4812030494213104,
+          "night": 0.44948598742485046
+        },
+        "scene|linear": {
+          "pooled": 0.5584438443183899,
+          "daytime": 0.563571035861969,
+          "dawn/dusk": 0.580932080745697,
+          "night": 0.5145359635353088
+        },
+        "presence:traffic light|knn": {
+          "pooled": 0.6243371963500977,
+          "daytime": 0.595049262046814,
+          "dawn/dusk": 0.6211361289024353,
+          "night": 0.5972100496292114
+        },
+        "presence:traffic light|linear": {
+          "pooled": 0.6237748861312866,
+          "daytime": 0.608606219291687,
+          "dawn/dusk": 0.5799544453620911,
+          "night": 0.6102885603904724
+        },
+        "presence:pedestrian|knn": {
+          "pooled": 0.6630357503890991,
+          "daytime": 0.6234859228134155,
+          "dawn/dusk": 0.5743242502212524,
+          "night": 0.6580720543861389
+        },
+        "presence:pedestrian|linear": {
+          "pooled": 0.643693745136261,
+          "daytime": 0.6227567195892334,
+          "dawn/dusk": 0.599975049495697,
+          "night": 0.6398714780807495
+        },
+        "presence:truck|knn": {
+          "pooled": 0.6223330497741699,
+          "daytime": 0.5173699855804443,
+          "dawn/dusk": 0.5068649649620056,
+          "night": 0.504803478717804
+        },
+        "presence:truck|linear": {
+          "pooled": 0.5674041509628296,
+          "daytime": 0.5144815444946289,
+          "dawn/dusk": 0.5648360252380371,
+          "night": 0.5219339728355408
+        }
+      }
+    },
+    "mae_walk_s3_end": {
+      "spec": {
+        "name": "mae_walk_s3_end",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5128004550933838,
+          "daytime": 0.49606791138648987,
+          "dawn/dusk": 0.4825526177883148,
+          "night": 0.4560142755508423
+        },
+        "scene|linear": {
+          "pooled": 0.5734077095985413,
+          "daytime": 0.5683813691139221,
+          "dawn/dusk": 0.5841944813728333,
+          "night": 0.5490188598632812
+        },
+        "scene|ft10": {
+          "pooled": 0.48563817143440247,
+          "daytime": 0.4763866364955902,
+          "dawn/dusk": 0.47684261202812195,
+          "night": 0.44047126173973083
+        },
+        "scene|ft100": {
+          "pooled": 0.5558661818504333,
+          "daytime": 0.5449647307395935,
+          "dawn/dusk": 0.5525539517402649,
+          "night": 0.5142032504081726
+        },
+        "presence:traffic light|knn": {
+          "pooled": 0.6239869594573975,
+          "daytime": 0.5959849953651428,
+          "dawn/dusk": 0.6259485483169556,
+          "night": 0.5891714096069336
+        },
+        "presence:traffic light|linear": {
+          "pooled": 0.6329171657562256,
+          "daytime": 0.6173573732376099,
+          "dawn/dusk": 0.6139258146286011,
+          "night": 0.6151190400123596
+        },
+        "presence:pedestrian|knn": {
+          "pooled": 0.6636060476303101,
+          "daytime": 0.6229062080383301,
+          "dawn/dusk": 0.580167293548584,
+          "night": 0.6556363701820374
+        },
+        "presence:pedestrian|linear": {
+          "pooled": 0.6379601955413818,
+          "daytime": 0.6181240677833557,
+          "dawn/dusk": 0.5784069299697876,
+          "night": 0.6385142207145691
+        },
+        "presence:truck|knn": {
+          "pooled": 0.6251369714736938,
+          "daytime": 0.5230712294578552,
+          "dawn/dusk": 0.5068649649620056,
+          "night": 0.5044520497322083
+        },
+        "presence:truck|linear": {
+          "pooled": 0.5680813789367676,
+          "daytime": 0.519125759601593,
+          "dawn/dusk": 0.5331807732582092,
+          "night": 0.5236252546310425
+        }
+      }
+    },
+    "mae_walk_s4_mid": {
+      "spec": {
+        "name": "mae_walk_s4_mid",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/step00060.pt",
+        "fewshot": false
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5095672011375427,
+          "daytime": 0.4911927282810211,
+          "dawn/dusk": 0.46743905544281006,
+          "night": 0.4521498680114746
+        },
+        "scene|linear": {
+          "pooled": 0.5698601007461548,
+          "daytime": 0.5716874003410339,
+          "dawn/dusk": 0.5745578408241272,
+          "night": 0.5297804474830627
+        },
+        "presence:traffic light|knn": {
+          "pooled": 0.6233665943145752,
+          "daytime": 0.5939546227455139,
+          "dawn/dusk": 0.6211744546890259,
+          "night": 0.5922372341156006
+        },
+        "presence:traffic light|linear": {
+          "pooled": 0.6347371339797974,
+          "daytime": 0.6231583952903748,
+          "dawn/dusk": 0.6216288805007935,
+          "night": 0.6194999814033508
+        },
+        "presence:pedestrian|knn": {
+          "pooled": 0.660126268863678,
+          "daytime": 0.6183355450630188,
+          "dawn/dusk": 0.5839627981185913,
+          "night": 0.6549241542816162
+        },
+        "presence:pedestrian|linear": {
+          "pooled": 0.6400139331817627,
+          "daytime": 0.6134040355682373,
+          "dawn/dusk": 0.6058180928230286,
+          "night": 0.6399099826812744
+        },
+        "presence:truck|knn": {
+          "pooled": 0.6256026029586792,
+          "daytime": 0.5228164792060852,
+          "dawn/dusk": 0.5125858187675476,
+          "night": 0.5066332817077637
+        },
+        "presence:truck|linear": {
+          "pooled": 0.57260662317276,
+          "daytime": 0.5212356448173523,
+          "dawn/dusk": 0.5349605679512024,
+          "night": 0.5116679668426514
+        }
+      }
+    },
+    "mae_walk_s4_end": {
+      "spec": {
+        "name": "mae_walk_s4_end",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5137971043586731,
+          "daytime": 0.49126896262168884,
+          "dawn/dusk": 0.4706580638885498,
+          "night": 0.4636068344116211
+        },
+        "scene|linear": {
+          "pooled": 0.5696932077407837,
+          "daytime": 0.5766696929931641,
+          "dawn/dusk": 0.5909340381622314,
+          "night": 0.5197656154632568
+        },
+        "scene|ft10": {
+          "pooled": 0.48251795768737793,
+          "daytime": 0.46293583512306213,
+          "dawn/dusk": 0.4696303606033325,
+          "night": 0.4522293508052826
+        },
+        "scene|ft100": {
+          "pooled": 0.5525901317596436,
+          "daytime": 0.5409653186798096,
+          "dawn/dusk": 0.5561065077781677,
+          "night": 0.5165121555328369
+        },
+        "presence:traffic light|knn": {
+          "pooled": 0.626142680644989,
+          "daytime": 0.5933228731155396,
+          "dawn/dusk": 0.6241034865379333,
+          "night": 0.6021997928619385
+        },
+        "presence:traffic light|linear": {
+          "pooled": 0.6412354707717896,
+          "daytime": 0.6282083988189697,
+          "dawn/dusk": 0.6386719942092896,
+          "night": 0.6251291036605835
+        },
+        "presence:pedestrian|knn": {
+          "pooled": 0.6671434640884399,
+          "daytime": 0.6226073503494263,
+          "dawn/dusk": 0.5896872282028198,
+          "night": 0.6667103171348572
+        },
+        "presence:pedestrian|linear": {
+          "pooled": 0.6447774171829224,
+          "daytime": 0.617204487323761,
+          "dawn/dusk": 0.6038891077041626,
+          "night": 0.6418542861938477
+        },
+        "presence:truck|knn": {
+          "pooled": 0.6254904270172119,
+          "daytime": 0.518927812576294,
+          "dawn/dusk": 0.5184337496757507,
+          "night": 0.5148870348930359
+        },
+        "presence:truck|linear": {
+          "pooled": 0.5718740224838257,
+          "daytime": 0.5248907208442688,
+          "dawn/dusk": 0.5348334312438965,
+          "night": 0.51378333568573
+        }
+      }
+    },
+    "mae_iid_s0_mid": {
+      "spec": {
+        "name": "mae_iid_s0_mid",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00060.pt",
+        "fewshot": false
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5035533308982849,
+          "daytime": 0.4933466911315918,
+          "dawn/dusk": 0.45600882172584534,
+          "night": 0.43865394592285156
+        },
+        "scene|linear": {
+          "pooled": 0.5676587224006653,
+          "daytime": 0.5719087719917297,
+          "dawn/dusk": 0.5643929839134216,
+          "night": 0.5276712775230408
+        },
+        "presence:traffic light|knn": {
+          "pooled": 0.6202428340911865,
+          "daytime": 0.5884337425231934,
+          "dawn/dusk": 0.6296385526657104,
+          "night": 0.5896292924880981
+        },
+        "presence:traffic light|linear": {
+          "pooled": 0.6272394061088562,
+          "daytime": 0.612356960773468,
+          "dawn/dusk": 0.6219902038574219,
+          "night": 0.6102187037467957
+        },
+        "presence:pedestrian|knn": {
+          "pooled": 0.6626074314117432,
+          "daytime": 0.6268686652183533,
+          "dawn/dusk": 0.5783007740974426,
+          "night": 0.6478002071380615
+        },
+        "presence:pedestrian|linear": {
+          "pooled": 0.6303157806396484,
+          "daytime": 0.608625054359436,
+          "dawn/dusk": 0.5618391036987305,
+          "night": 0.6250625252723694
+        },
+        "presence:truck|knn": {
+          "pooled": 0.6259355545043945,
+          "daytime": 0.5192846059799194,
+          "dawn/dusk": 0.5109331607818604,
+          "night": 0.5123357176780701
+        },
+        "presence:truck|linear": {
+          "pooled": 0.5744550824165344,
+          "daytime": 0.5232139825820923,
+          "dawn/dusk": 0.5179252624511719,
+          "night": 0.5225085020065308
+        }
+      }
+    },
+    "mae_iid_s0_end": {
+      "spec": {
+        "name": "mae_iid_s0_end",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5096948146820068,
+          "daytime": 0.492032915353775,
+          "dawn/dusk": 0.4605773985385895,
+          "night": 0.45300301909446716
+        },
+        "scene|linear": {
+          "pooled": 0.5686428546905518,
+          "daytime": 0.5653934478759766,
+          "dawn/dusk": 0.5879444479942322,
+          "night": 0.5368829369544983
+        },
+        "scene|ft10": {
+          "pooled": 0.48006224632263184,
+          "daytime": 0.46871912479400635,
+          "dawn/dusk": 0.47498857975006104,
+          "night": 0.443389892578125
+        },
+        "scene|ft100": {
+          "pooled": 0.5520133376121521,
+          "daytime": 0.5396440029144287,
+          "dawn/dusk": 0.5525376200675964,
+          "night": 0.5178649425506592
+        },
+        "presence:traffic light|knn": {
+          "pooled": 0.6265479326248169,
+          "daytime": 0.5971769690513611,
+          "dawn/dusk": 0.6381409764289856,
+          "night": 0.5918155908584595
+        },
+        "presence:traffic light|linear": {
+          "pooled": 0.618079662322998,
+          "daytime": 0.6021237373352051,
+          "dawn/dusk": 0.6024559736251831,
+          "night": 0.6014037132263184
+        },
+        "presence:pedestrian|knn": {
+          "pooled": 0.6626927852630615,
+          "daytime": 0.6259795427322388,
+          "dawn/dusk": 0.5882389545440674,
+          "night": 0.6483071446418762
+        },
+        "presence:pedestrian|linear": {
+          "pooled": 0.6428093910217285,
+          "daytime": 0.6207060813903809,
+          "dawn/dusk": 0.5804544687271118,
+          "night": 0.6387579441070557
+        },
+        "presence:truck|knn": {
+          "pooled": 0.6212519407272339,
+          "daytime": 0.5129889845848083,
+          "dawn/dusk": 0.5169082283973694,
+          "night": 0.5066519379615784
+        },
+        "presence:truck|linear": {
+          "pooled": 0.5687826871871948,
+          "daytime": 0.529539167881012,
+          "dawn/dusk": 0.5451309680938721,
+          "night": 0.5045580863952637
+        }
+      }
+    },
+    "mae_iid_s1_mid": {
+      "spec": {
+        "name": "mae_iid_s1_mid",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00060.pt",
+        "fewshot": false
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5124233961105347,
+          "daytime": 0.4980241358280182,
+          "dawn/dusk": 0.4711427688598633,
+          "night": 0.4550882875919342
+        },
+        "scene|linear": {
+          "pooled": 0.5693880915641785,
+          "daytime": 0.5690805315971375,
+          "dawn/dusk": 0.5580336451530457,
+          "night": 0.5416315793991089
+        },
+        "presence:traffic light|knn": {
+          "pooled": 0.626560389995575,
+          "daytime": 0.5930367708206177,
+          "dawn/dusk": 0.6170464754104614,
+          "night": 0.5995193123817444
+        },
+        "presence:traffic light|linear": {
+          "pooled": 0.6348861455917358,
+          "daytime": 0.6202539205551147,
+          "dawn/dusk": 0.6036166548728943,
+          "night": 0.6259471774101257
+        },
+        "presence:pedestrian|knn": {
+          "pooled": 0.6626930236816406,
+          "daytime": 0.6231428980827332,
+          "dawn/dusk": 0.5796241760253906,
+          "night": 0.6569135189056396
+        },
+        "presence:pedestrian|linear": {
+          "pooled": 0.6405845880508423,
+          "daytime": 0.6138785481452942,
+          "dawn/dusk": 0.5861164927482605,
+          "night": 0.6369673013687134
+        },
+        "presence:truck|knn": {
+          "pooled": 0.6196483969688416,
+          "daytime": 0.5150095224380493,
+          "dawn/dusk": 0.5021612048149109,
+          "night": 0.5087960362434387
+        },
+        "presence:truck|linear": {
+          "pooled": 0.572846531867981,
+          "daytime": 0.526813805103302,
+          "dawn/dusk": 0.5514874458312988,
+          "night": 0.5162501335144043
+        }
+      }
+    },
+    "mae_iid_s1_end": {
+      "spec": {
+        "name": "mae_iid_s1_end",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5117992758750916,
+          "daytime": 0.4949950873851776,
+          "dawn/dusk": 0.46971455216407776,
+          "night": 0.45402348041534424
+        },
+        "scene|linear": {
+          "pooled": 0.574032723903656,
+          "daytime": 0.5722331404685974,
+          "dawn/dusk": 0.5923798084259033,
+          "night": 0.5357183814048767
+        },
+        "scene|ft10": {
+          "pooled": 0.4778617322444916,
+          "daytime": 0.4743734300136566,
+          "dawn/dusk": 0.45998135209083557,
+          "night": 0.4242698848247528
+        },
+        "scene|ft100": {
+          "pooled": 0.5516520142555237,
+          "daytime": 0.5357930064201355,
+          "dawn/dusk": 0.5620046257972717,
+          "night": 0.5098292231559753
+        },
+        "presence:traffic light|knn": {
+          "pooled": 0.6286336183547974,
+          "daytime": 0.5968571305274963,
+          "dawn/dusk": 0.6133564114570618,
+          "night": 0.6055253148078918
+        },
+        "presence:traffic light|linear": {
+          "pooled": 0.6362655162811279,
+          "daytime": 0.6340352892875671,
+          "dawn/dusk": 0.6497421264648438,
+          "night": 0.6000913381576538
+        },
+        "presence:pedestrian|knn": {
+          "pooled": 0.6630070209503174,
+          "daytime": 0.6206955909729004,
+          "dawn/dusk": 0.5898058414459229,
+          "night": 0.6549561023712158
+        },
+        "presence:pedestrian|linear": {
+          "pooled": 0.6423814296722412,
+          "daytime": 0.6188458204269409,
+          "dawn/dusk": 0.5753917098045349,
+          "night": 0.6402018666267395
+        },
+        "presence:truck|knn": {
+          "pooled": 0.6219866275787354,
+          "daytime": 0.5153195261955261,
+          "dawn/dusk": 0.49707603454589844,
+          "night": 0.51341712474823
+        },
+        "presence:truck|linear": {
+          "pooled": 0.5768067836761475,
+          "daytime": 0.5277944803237915,
+          "dawn/dusk": 0.5094075798988342,
+          "night": 0.5245140790939331
+        }
+      }
+    },
+    "mae_iid_s2_mid": {
+      "spec": {
+        "name": "mae_iid_s2_mid",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00060.pt",
+        "fewshot": false
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5102443099021912,
+          "daytime": 0.4930923879146576,
+          "dawn/dusk": 0.4688875675201416,
+          "night": 0.4520270824432373
+        },
+        "scene|linear": {
+          "pooled": 0.5635724067687988,
+          "daytime": 0.5715803503990173,
+          "dawn/dusk": 0.5584952235221863,
+          "night": 0.5200439691543579
+        },
+        "presence:traffic light|knn": {
+          "pooled": 0.6245481967926025,
+          "daytime": 0.5976319313049316,
+          "dawn/dusk": 0.6304378509521484,
+          "night": 0.5871888995170593
+        },
+        "presence:traffic light|linear": {
+          "pooled": 0.6296473741531372,
+          "daytime": 0.6128138899803162,
+          "dawn/dusk": 0.6202218532562256,
+          "night": 0.6207146644592285
+        },
+        "presence:pedestrian|knn": {
+          "pooled": 0.6625505685806274,
+          "daytime": 0.6250136494636536,
+          "dawn/dusk": 0.5599850416183472,
+          "night": 0.6549978256225586
+        },
+        "presence:pedestrian|linear": {
+          "pooled": 0.6404702663421631,
+          "daytime": 0.6132082939147949,
+          "dawn/dusk": 0.5787065029144287,
+          "night": 0.6448869109153748
+        },
+        "presence:truck|knn": {
+          "pooled": 0.6228803396224976,
+          "daytime": 0.5205707550048828,
+          "dawn/dusk": 0.5165268182754517,
+          "night": 0.5030750036239624
+        },
+        "presence:truck|linear": {
+          "pooled": 0.5712649822235107,
+          "daytime": 0.5245128273963928,
+          "dawn/dusk": 0.5466564893722534,
+          "night": 0.5163431167602539
+        }
+      }
+    },
+    "mae_iid_s2_end": {
+      "spec": {
+        "name": "mae_iid_s2_end",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5068764686584473,
+          "daytime": 0.48784032464027405,
+          "dawn/dusk": 0.4601130485534668,
+          "night": 0.45580145716667175
+        },
+        "scene|linear": {
+          "pooled": 0.5689149498939514,
+          "daytime": 0.556859016418457,
+          "dawn/dusk": 0.5839909911155701,
+          "night": 0.5480902791023254
+        },
+        "scene|ft10": {
+          "pooled": 0.481352299451828,
+          "daytime": 0.46649453043937683,
+          "dawn/dusk": 0.4508651793003082,
+          "night": 0.45358243584632874
+        },
+        "scene|ft100": {
+          "pooled": 0.5479238033294678,
+          "daytime": 0.5320478677749634,
+          "dawn/dusk": 0.5607922673225403,
+          "night": 0.507990300655365
+        },
+        "presence:traffic light|knn": {
+          "pooled": 0.6236124634742737,
+          "daytime": 0.5957247018814087,
+          "dawn/dusk": 0.630760908126831,
+          "night": 0.5858961343765259
+        },
+        "presence:traffic light|linear": {
+          "pooled": 0.6329902410507202,
+          "daytime": 0.610221266746521,
+          "dawn/dusk": 0.6043776273727417,
+          "night": 0.6347119808197021
+        },
+        "presence:pedestrian|knn": {
+          "pooled": 0.6626931428909302,
+          "daytime": 0.6276724934577942,
+          "dawn/dusk": 0.5765528678894043,
+          "night": 0.6512563228607178
+        },
+        "presence:pedestrian|linear": {
+          "pooled": 0.6418395042419434,
+          "daytime": 0.621821403503418,
+          "dawn/dusk": 0.6018415689468384,
+          "night": 0.6381291151046753
+        },
+        "presence:truck|knn": {
+          "pooled": 0.6208991408348083,
+          "daytime": 0.5173147320747375,
+          "dawn/dusk": 0.5068649649620056,
+          "night": 0.5024836659431458
+        },
+        "presence:truck|linear": {
+          "pooled": 0.5792145729064941,
+          "daytime": 0.5325021147727966,
+          "dawn/dusk": 0.5286040902137756,
+          "night": 0.5302908420562744
+        }
+      }
+    },
+    "mae_iid_s3_mid": {
+      "spec": {
+        "name": "mae_iid_s3_mid",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/step00060.pt",
+        "fewshot": false
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5086715817451477,
+          "daytime": 0.4891839921474457,
+          "dawn/dusk": 0.4472573697566986,
+          "night": 0.4604808986186981
+        },
+        "scene|linear": {
+          "pooled": 0.555694580078125,
+          "daytime": 0.5645347237586975,
+          "dawn/dusk": 0.5887224078178406,
+          "night": 0.4995630085468292
+        },
+        "presence:traffic light|knn": {
+          "pooled": 0.6285079717636108,
+          "daytime": 0.6002939939498901,
+          "dawn/dusk": 0.6362959146499634,
+          "night": 0.5943676233291626
+        },
+        "presence:traffic light|linear": {
+          "pooled": 0.6290757060050964,
+          "daytime": 0.6129370927810669,
+          "dawn/dusk": 0.6139258146286011,
+          "night": 0.620884895324707
+        },
+        "presence:pedestrian|knn": {
+          "pooled": 0.6644046306610107,
+          "daytime": 0.6264614462852478,
+          "dawn/dusk": 0.586372435092926,
+          "night": 0.6569167375564575
+        },
+        "presence:pedestrian|linear": {
+          "pooled": 0.6357643604278564,
+          "daytime": 0.6030033230781555,
+          "dawn/dusk": 0.6169049739837646,
+          "night": 0.6357064843177795
+        },
+        "presence:truck|knn": {
+          "pooled": 0.624278724193573,
+          "daytime": 0.5159648656845093,
+          "dawn/dusk": 0.5136028528213501,
+          "night": 0.5121785998344421
+        },
+        "presence:truck|linear": {
+          "pooled": 0.5720195770263672,
+          "daytime": 0.5279556512832642,
+          "dawn/dusk": 0.5155097842216492,
+          "night": 0.5183672308921814
+        }
+      }
+    },
+    "mae_iid_s3_end": {
+      "spec": {
+        "name": "mae_iid_s3_end",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5061554908752441,
+          "daytime": 0.4874943792819977,
+          "dawn/dusk": 0.45636865496635437,
+          "night": 0.4518698453903198
+        },
+        "scene|linear": {
+          "pooled": 0.5653324723243713,
+          "daytime": 0.5775459408760071,
+          "dawn/dusk": 0.5611073970794678,
+          "night": 0.5161871314048767
+        },
+        "scene|ft10": {
+          "pooled": 0.48328134417533875,
+          "daytime": 0.4692723751068115,
+          "dawn/dusk": 0.4638349115848541,
+          "night": 0.45108285546302795
+        },
+        "scene|ft100": {
+          "pooled": 0.5582769513130188,
+          "daytime": 0.5458586812019348,
+          "dawn/dusk": 0.54656583070755,
+          "night": 0.5204627513885498
+        },
+        "presence:traffic light|knn": {
+          "pooled": 0.6226761937141418,
+          "daytime": 0.5939267873764038,
+          "dawn/dusk": 0.6311222314834595,
+          "night": 0.5846787095069885
+        },
+        "presence:traffic light|linear": {
+          "pooled": 0.6345235109329224,
+          "daytime": 0.6203969717025757,
+          "dawn/dusk": 0.6085057258605957,
+          "night": 0.6214601397514343
+        },
+        "presence:pedestrian|knn": {
+          "pooled": 0.6626930236816406,
+          "daytime": 0.6268865466117859,
+          "dawn/dusk": 0.5886010527610779,
+          "night": 0.6512979865074158
+        },
+        "presence:pedestrian|linear": {
+          "pooled": 0.6272914409637451,
+          "daytime": 0.5975067615509033,
+          "dawn/dusk": 0.616118311882019,
+          "night": 0.6240290999412537
+        },
+        "presence:truck|knn": {
+          "pooled": 0.6234297752380371,
+          "daytime": 0.5229692459106445,
+          "dawn/dusk": 0.509661853313446,
+          "night": 0.5037035346031189
+        },
+        "presence:truck|linear": {
+          "pooled": 0.5632302165031433,
+          "daytime": 0.5218638181686401,
+          "dawn/dusk": 0.5255529880523682,
+          "night": 0.5020912289619446
+        }
+      }
+    },
+    "mae_iid_s4_mid": {
+      "spec": {
+        "name": "mae_iid_s4_mid",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/step00060.pt",
+        "fewshot": false
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5121903419494629,
+          "daytime": 0.49361130595207214,
+          "dawn/dusk": 0.463773250579834,
+          "night": 0.4601128101348877
+        },
+        "scene|linear": {
+          "pooled": 0.5671815872192383,
+          "daytime": 0.5707165598869324,
+          "dawn/dusk": 0.595604419708252,
+          "night": 0.5283408164978027
+        },
+        "presence:traffic light|knn": {
+          "pooled": 0.6236428022384644,
+          "daytime": 0.5963505506515503,
+          "dawn/dusk": 0.6063759922981262,
+          "night": 0.5945435762405396
+        },
+        "presence:traffic light|linear": {
+          "pooled": 0.6301530599594116,
+          "daytime": 0.6230014562606812,
+          "dawn/dusk": 0.633651614189148,
+          "night": 0.6107827425003052
+        },
+        "presence:pedestrian|knn": {
+          "pooled": 0.6640913486480713,
+          "daytime": 0.622785210609436,
+          "dawn/dusk": 0.584324836730957,
+          "night": 0.6612264513969421
+        },
+        "presence:pedestrian|linear": {
+          "pooled": 0.6397290229797363,
+          "daytime": 0.6153263449668884,
+          "dawn/dusk": 0.5974467992782593,
+          "night": 0.6367653608322144
+        },
+        "presence:truck|knn": {
+          "pooled": 0.6234957575798035,
+          "daytime": 0.5183123350143433,
+          "dawn/dusk": 0.5153826475143433,
+          "night": 0.5104687213897705
+        },
+        "presence:truck|linear": {
+          "pooled": 0.5757462978363037,
+          "daytime": 0.5291485786437988,
+          "dawn/dusk": 0.5272057056427002,
+          "night": 0.5162519216537476
+        }
+      }
+    },
+    "mae_iid_s4_end": {
+      "spec": {
+        "name": "mae_iid_s4_end",
+        "kind": "checkpoint",
+        "path": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.5026574730873108,
+          "daytime": 0.4843767583370209,
+          "dawn/dusk": 0.447736531496048,
+          "night": 0.45236659049987793
+        },
+        "scene|linear": {
+          "pooled": 0.5541271567344666,
+          "daytime": 0.5740956664085388,
+          "dawn/dusk": 0.581338107585907,
+          "night": 0.49383512139320374
+        },
+        "scene|ft10": {
+          "pooled": 0.4782613515853882,
+          "daytime": 0.4708939790725708,
+          "dawn/dusk": 0.46380409598350525,
+          "night": 0.44399741291999817
+        },
+        "scene|ft100": {
+          "pooled": 0.556154191493988,
+          "daytime": 0.5403468608856201,
+          "dawn/dusk": 0.5563204884529114,
+          "night": 0.5244484543800354
+        },
+        "presence:traffic light|knn": {
+          "pooled": 0.6218799352645874,
+          "daytime": 0.5937042832374573,
+          "dawn/dusk": 0.6089437007904053,
+          "night": 0.5872587561607361
+        },
+        "presence:traffic light|linear": {
+          "pooled": 0.6341395974159241,
+          "daytime": 0.6264443397521973,
+          "dawn/dusk": 0.6465667486190796,
+          "night": 0.6066474914550781
+        },
+        "presence:pedestrian|knn": {
+          "pooled": 0.6613811254501343,
+          "daytime": 0.6225736737251282,
+          "dawn/dusk": 0.5933017134666443,
+          "night": 0.6512595415115356
+        },
+        "presence:pedestrian|linear": {
+          "pooled": 0.6369619369506836,
+          "daytime": 0.6164058446884155,
+          "dawn/dusk": 0.585635781288147,
+          "night": 0.6303379535675049
+        },
+        "presence:truck|knn": {
+          "pooled": 0.6233544945716858,
+          "daytime": 0.5199043154716492,
+          "dawn/dusk": 0.5195779204368591,
+          "night": 0.506281852722168
+        },
+        "presence:truck|linear": {
+          "pooled": 0.5638279318809509,
+          "daytime": 0.5223902463912964,
+          "dawn/dusk": 0.5256801247596741,
+          "night": 0.50921630859375
+        }
+      }
+    }
+  }
+}

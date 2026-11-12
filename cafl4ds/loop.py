@@ -225,6 +225,7 @@ class StreamingLoop:
         if self.grad_clip is not None:
             torch.nn.utils.clip_grad_norm_(self.method.parameters(), self.grad_clip)
         self.optimizer.step()
+        self.method.after_step()  # a moving-average target follows the step (DINO's teacher)
         if self.scheduler is not None:
             self.scheduler.step()
         loss_value = float(loss.item())

@@ -1,0 +1,35 @@
+{
+  "pool": {
+    "kind": "selection",
+    "n_fit": 450,
+    "n_query": 450
+  },
+  "n_query_by_task": {
+    "scene": 450
+  },
+  "stratum_names": {},
+  "regime_names": {},
+  "encoders": {
+    "decoder": {
+      "spec": {
+        "name": "decoder",
+        "kind": "checkpoint",
+        "path": "outputs/p122/drive/decoder/checkpoints/s0/final.pt"
+      },
+      "bacc": {
+        "scene|knn": {
+          "pooled": 0.4533333480358124,
+          "0": 0.4533333480358124
+        },
+        "scene|linear": {
+          "pooled": 0.5688889026641846,
+          "0": 0.5688889026641846
+        },
+        "scene|ft100": {
+          "pooled": 0.6162962913513184,
+          "0": 0.6162962913513184
+        }
+      }
+    }
+  }
+}

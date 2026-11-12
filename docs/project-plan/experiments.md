@@ -56,13 +56,16 @@ mode calibrated.
 - **1b — BDD100K subset.** Real video correlation → the publishable make-or-break.
 - Sweep pressure including **initialization `{from-scratch, lightly-pretrained, fully-pretrained}`** — from-scratch
     (small) is the degradation-sensitive primary; pretrained checks whether degradation persists or is masked.
-    Instrument **both modes** (collapse on joint-embedding, forgetting on MAE); diagnostic = rank-vs-loss divergence;
-    **PC must fire.**
-- *Closest prior (forgetting):* continual-MAE **pretraining** already shows MAE resists and replay protects (Beyond
-    Cosine Decay 2025; CoSMAE 2025) under random/replay sampling — so Phase 1's novel target is the **selection lever**
-    \+ the envelope, read label-free (none of that prior work puts a filter in the loop; see [novelty.md](novelty.md)
-    N-A). Hold the **LR schedule** fixed and swept as a confound (re-warming manufactures forgetting independently of
-    the diet).
+    Instrument **both sides of the stability–plasticity trade-off across backbones** (MAE and joint-embedding) under a
+    realistic diet, unlike Phase 0's deliberately broken toys: does each backbone forget what it had, or fail to adapt
+    to what it sees? Which backbone carries which side is a Phase-1 finding, not a premise. Plus collapse on
+    joint-embedding; diagnostic = rank-vs-loss divergence; **PC must fire.**
+- *Closest prior (forgetting), per backbone:* for **MAE**, continual-MAE **pretraining** already shows MAE resists and
+    replay protects (Beyond Cosine Decay 2025; CoSMAE 2025) under random/replay sampling; for **joint-embedding**, the
+    streaming-SSL line below is the closest prior. Either way Phase 1's novel target is the **selection lever** + the
+    envelope, read label-free (none of that prior work puts a filter in the loop; see [novelty.md](novelty.md) N-A).
+    Hold the **LR schedule** fixed and swept as a confound (re-warming manufactures forgetting independently of the
+    diet).
 - *Closest prior (streaming premise):* the streaming-SSL line (Purushwalkam's MinRed 2022; Memory Storyboard 2025;
     Orthogonal Gradients 2025) already shows temporal correlation degrades streaming SSL and that de-correlating replay
     mitigates — our distinction is steering **selection by health**, live. For *collapse*, **control batch-size +

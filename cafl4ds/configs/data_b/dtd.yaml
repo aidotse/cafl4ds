@@ -7,7 +7,7 @@
 # texture-preserving crops/flips/rotations from a fixed seed (seed-stable far-domain data). Download
 # once with torchvision.datasets.DTD(root=..., split='train', download=True); mount the dir in.
 _target_: cafl4ds.data.sources.DTDSource
-root: /home/mauricio/data/dtd
+root: /mnt/pr_2018_scaleout_workdir/cafl4ds/data/dtd
 img_size: 224
 max_per_class: ${max_per_class}
 classes: ${task_b_classes} # load only the phase-B split's classes (skip DTD's ~37 unused ones)

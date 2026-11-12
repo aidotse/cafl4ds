@@ -6,7 +6,9 @@ optionally the plateau of its labelled accuracy (``warmup.stop=competence``) —
 method** — encoder and head — as a well the deployment drive resumes intact (:mod:`cafl4ds.warmup`).
 ``warmup.stop=budget`` runs a fixed step budget instead (the P1.1.0 competence-ceiling scout);
 ``warmup.drive_read_per_class>0`` adds the tight drive-pool read (:mod:`cafl4ds.pool_read`) to every
-selection reading — a scout diagnostic, never a stopping signal. The summary and selection trace land
+selection reading — a scout diagnostic, never a stopping signal. ``warmup.freeze_encoder=true``
+trains only the SSL heads (P1.2's settled-head start); ``resume_well=<path>`` continues a saved well.
+The summary and selection trace land
 beside the well as ``<well>.trace.json``. Producing the well once
 and pointing many drives at it (``well=<path>``) means every warm drive starts from the *identical*
 competent state, so drive-to-drive comparisons carry no per-run warm-up variance.
@@ -61,6 +63,11 @@ def _drive_read(method: SSLMethod, stream: RegimeStream, config: DictConfig) -> 
     return read
 
 
+def _snapshot(module: torch.nn.Module) -> dict[str, torch.Tensor]:
+    """A CPU copy of ``module``'s parameters, to verify a frozen encoder stayed bit-identical."""
+    return {k: v.detach().cpu().clone() for k, v in module.named_parameters()}
+
+
 def warm(config: DictConfig) -> Path:
     """Warm a competent well on the stationary diet and save the full method (Hydra-free core).
 
@@ -76,7 +83,15 @@ def warm(config: DictConfig) -> Path:
     method: SSLMethod = instantiate(config.ssl, encoder=instantiate(config.encoder))
     apply_encoder_init(method.encoder, config.init.mode, config.init.checkpoint)
     stream = instantiate(config.stream)
-    optimizer = instantiate(config.optim, params=method.parameters())
+    if config.get("resume_well"):  # continue a saved well (P1.2.0: unfreeze a head-settled well)
+        resume = to_absolute_path(str(config.resume_well))
+        warmup.check_split(resume, stream.split_fingerprint())
+        warmup.load_well(method, resume)
+    frozen_encoder = bool(config.warmup.get("freeze_encoder", False))
+    if frozen_encoder:  # P1.2: settle the SSL heads on an untouched encoder
+        method.encoder.requires_grad_(False)
+    encoder_before = _snapshot(method.encoder) if frozen_encoder else None
+    optimizer = instantiate(config.optim, params=[p for p in method.parameters() if p.requires_grad])
     drive_read = _drive_read(method, stream, config)
 
     logger.info(f"warming {method.name} well on the stationary diet ({stream.num_eras} regimes), dev={config.device}")
@@ -107,6 +122,11 @@ def warm(config: DictConfig) -> Path:
     # The drive refuses this well unless it reserves the same probes and well slice.
     warmup.save_split(well_path, stream.split_fingerprint())
     trace = {k: summary[k] for k in ("steps", "plateaued", "init_loss", "final_loss", "competence_trace")}
+    if encoder_before is not None:
+        after = _snapshot(method.encoder)
+        trace["encoder_unchanged"] = all(torch.equal(after[k], v) for k, v in encoder_before.items())
+        if not trace["encoder_unchanged"]:
+            raise RuntimeError("freeze_encoder: the encoder's weights changed during the warm-up.")
     trace["measurement"] = {k: health.get(k) for k in ("knn_acc", "linear_acc")}
     well_path.with_suffix(".trace.json").write_text(json.dumps(trace, indent=2), encoding="utf-8")
     logger.info(f"realized familiarity (shared share of well / drive): {stream.familiarity}")

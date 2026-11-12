@@ -174,6 +174,7 @@ def _update(
     if grad_clip is not None:
         torch.nn.utils.clip_grad_norm_(method.parameters(), grad_clip)
     optimizer.step()
+    method.after_step()
     return float(loss.detach().cpu())
 
 
