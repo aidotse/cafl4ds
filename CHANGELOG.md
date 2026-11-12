@@ -5,6 +5,24 @@ All notable changes to this project are documented in this file.
 This file is managed by [Commitizen](https://commitizen-tools.github.io/commitizen/) and is updated automatically on
 each `poe bump` (driven by [Conventional Commits](https://www.conventionalcommits.org/)). Do not edit it by hand.
 
+## v0.30.0 (2026-11-12)
+
+### Feat
+
+- P1.1.3 middle-block single-drive read (BDD and P0.3.9)
+- P1.1.3 CKA drift reads, save_states for the forgetting harness
+- P1.1.2 Stage 1 - label-free reader screen against the damage branches
+- P1.1.1 reading protocol - single-trajectory rule, drive branching, damage and collapse-dial reads
+- P1.1.0 ViT-B warm scout, two-sided competence stop, deep-well recipe
+- P1.1.0 competence study - supervised ceiling, pretrained and BDD-train wells
+- P1.1.0 selection set, competence-stopped warm-up, competence scout
+- P1.1.0 shallow-well null + familiarity sweep, deep-well handover
+
+### Fix
+
+- cap CPU threads in the P1.1.3 forgetting-lens reader
+- P1.1.0 harness review fixes before the deep-well runs
+
 ## v0.29.0 (2026-09-16)
 
 ### Feat
