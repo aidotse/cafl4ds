@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import zlib
 from pathlib import Path
 from typing import Any
 
@@ -512,7 +513,8 @@ def _write_ladder(
 ) -> None:
     """A fake reader output: correctness drawn at each encoder's rate, on the two gate tasks and the patch task."""
     path.mkdir(parents=True)
-    rng = np.random.default_rng(len(str(path)))
+    # seeded by the ladder's own name, not the temp dir's: the draws must not depend on where pytest runs
+    rng = np.random.default_rng(zlib.crc32("/".join(path.parts[-3:]).encode()))
     labels = {t: np.arange(n) % 2 for t in _GATE}
     counts = np.full((n_patch_frames, 2), 10.0, dtype=np.float32)
     np.savez_compressed(
