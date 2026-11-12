@@ -107,6 +107,9 @@ nav:
       - P0.6 (forgetting mode on JE): experiments/audits/P0.6.md
       - P1.0 (open-loop harness engineering): experiments/audits/P1.0.md
 
+  - Slides:
+      - P1.1 / P1.2 update: https://aidotse.github.io/cafl4ds/slides/p1-findings/
+
   - API Reference: reference.md
   - Tests: exported/pytest.html
   - Coverage: exported/coverage/index.html

@@ -262,6 +262,15 @@ jobs:
         run: |
           uv sync --extra cpu
           uv run poe docs
+      # Slide decks under slides/ are published inside the same Pages artifact, at
+      # public/slides/<deck>/ (one Pages site per repo, so they cannot deploy separately).
+      # They render with Quarto alone; this runs after mkdocs, which empties public/.
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@8a96df13519ee81fd526f2dfca5962811136661b # v2.2.0
+        with:
+          version: "1.10.19"
+      - name: Build slides
+        run: bash slides/build.sh public/slides
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
