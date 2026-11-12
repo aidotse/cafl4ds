@@ -1,0 +1,576 @@
+{
+  "pool": {
+    "kind": "heldout",
+    "n_fit": 3501,
+    "n_query": 5252
+  },
+  "readout": "mean",
+  "n_query_by_task": {
+    "scene": 5252,
+    "presence_cell:traffic light": 2958
+  },
+  "stratum_names": {
+    "0": "daytime",
+    "1": "dawn/dusk",
+    "2": "night"
+  },
+  "encoders": {
+    "floor": {
+      "spec": {
+        "name": "floor",
+        "kind": "well",
+        "path": "wells/p125/mae_je_heads.pt"
+      },
+      "bacc": {
+        "scene|knn": 0.5668,
+        "scene|linear": 0.6356,
+        "scene|ft10": 0.4976,
+        "scene|ft100": 0.6617,
+        "presence_cell:traffic light|knn": 0.5778,
+        "presence_cell:traffic light|linear": 0.6072,
+        "presence_cell:traffic light|ft10": 0.5211,
+        "presence_cell:traffic light|ft100": 0.628
+      }
+    },
+    "walk_s0_t00100": {
+      "spec": {
+        "name": "walk_s0_t00100",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s1/step00100.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5813,
+        "scene|linear": 0.6458,
+        "scene|ft10": 0.508,
+        "scene|ft100": 0.6718,
+        "presence_cell:traffic light|knn": 0.5778,
+        "presence_cell:traffic light|linear": 0.6092,
+        "presence_cell:traffic light|ft10": 0.519,
+        "presence_cell:traffic light|ft100": 0.6306
+      }
+    },
+    "walk_s0_t00212": {
+      "spec": {
+        "name": "walk_s0_t00212",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s1/step00212.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5928,
+        "scene|linear": 0.6444,
+        "scene|ft10": 0.5142,
+        "scene|ft100": 0.6709,
+        "presence_cell:traffic light|knn": 0.5669,
+        "presence_cell:traffic light|linear": 0.6146,
+        "presence_cell:traffic light|ft10": 0.5267,
+        "presence_cell:traffic light|ft100": 0.6342
+      }
+    },
+    "walk_s0_t00423": {
+      "spec": {
+        "name": "walk_s0_t00423",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s1/step00423.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.6014,
+        "scene|linear": 0.6457,
+        "scene|ft10": 0.5178,
+        "scene|ft100": 0.6726,
+        "presence_cell:traffic light|knn": 0.5767,
+        "presence_cell:traffic light|linear": 0.617,
+        "presence_cell:traffic light|ft10": 0.5143,
+        "presence_cell:traffic light|ft100": 0.6295
+      }
+    },
+    "walk_s0_t00846": {
+      "spec": {
+        "name": "walk_s0_t00846",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s1/step00846.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5806,
+        "scene|linear": 0.6632,
+        "scene|ft10": 0.5228,
+        "scene|ft100": 0.6754,
+        "presence_cell:traffic light|knn": 0.5889,
+        "presence_cell:traffic light|linear": 0.6268,
+        "presence_cell:traffic light|ft10": 0.5256,
+        "presence_cell:traffic light|ft100": 0.6357
+      }
+    },
+    "walk_s0_t01269": {
+      "spec": {
+        "name": "walk_s0_t01269",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s1/step01269.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5605,
+        "scene|linear": 0.6593,
+        "scene|ft10": 0.5068,
+        "scene|ft100": 0.6644,
+        "presence_cell:traffic light|knn": 0.5855,
+        "presence_cell:traffic light|linear": 0.622,
+        "presence_cell:traffic light|ft10": 0.5171,
+        "presence_cell:traffic light|ft100": 0.6439
+      }
+    },
+    "walk_s0_end": {
+      "spec": {
+        "name": "walk_s0_end",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s1/final.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.556,
+        "scene|linear": 0.6605,
+        "scene|ft10": 0.4816,
+        "scene|ft100": 0.6574,
+        "presence_cell:traffic light|knn": 0.5835,
+        "presence_cell:traffic light|linear": 0.6254,
+        "presence_cell:traffic light|ft10": 0.5151,
+        "presence_cell:traffic light|ft100": 0.6502
+      }
+    },
+    "walk_s1_t00100": {
+      "spec": {
+        "name": "walk_s1_t00100",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s2/step00100.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5775,
+        "scene|linear": 0.6383,
+        "scene|ft10": 0.5246,
+        "scene|ft100": 0.6668,
+        "presence_cell:traffic light|knn": 0.5737,
+        "presence_cell:traffic light|linear": 0.6041,
+        "presence_cell:traffic light|ft10": 0.5272,
+        "presence_cell:traffic light|ft100": 0.6362
+      }
+    },
+    "walk_s1_t00212": {
+      "spec": {
+        "name": "walk_s1_t00212",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s2/step00212.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5893,
+        "scene|linear": 0.6503,
+        "scene|ft10": 0.5102,
+        "scene|ft100": 0.6702,
+        "presence_cell:traffic light|knn": 0.571,
+        "presence_cell:traffic light|linear": 0.6129,
+        "presence_cell:traffic light|ft10": 0.5194,
+        "presence_cell:traffic light|ft100": 0.6303
+      }
+    },
+    "walk_s1_t00423": {
+      "spec": {
+        "name": "walk_s1_t00423",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s2/step00423.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5976,
+        "scene|linear": 0.6518,
+        "scene|ft10": 0.5201,
+        "scene|ft100": 0.6745,
+        "presence_cell:traffic light|knn": 0.5778,
+        "presence_cell:traffic light|linear": 0.6183,
+        "presence_cell:traffic light|ft10": 0.5353,
+        "presence_cell:traffic light|ft100": 0.6361
+      }
+    },
+    "walk_s1_t00846": {
+      "spec": {
+        "name": "walk_s1_t00846",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s2/step00846.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5885,
+        "scene|linear": 0.6484,
+        "scene|ft10": 0.5083,
+        "scene|ft100": 0.6682,
+        "presence_cell:traffic light|knn": 0.5896,
+        "presence_cell:traffic light|linear": 0.6183,
+        "presence_cell:traffic light|ft10": 0.5201,
+        "presence_cell:traffic light|ft100": 0.6352
+      }
+    },
+    "walk_s1_t01269": {
+      "spec": {
+        "name": "walk_s1_t01269",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s2/step01269.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5754,
+        "scene|linear": 0.6428,
+        "scene|ft10": 0.5027,
+        "scene|ft100": 0.6762,
+        "presence_cell:traffic light|knn": 0.598,
+        "presence_cell:traffic light|linear": 0.6264,
+        "presence_cell:traffic light|ft10": 0.5132,
+        "presence_cell:traffic light|ft100": 0.6435
+      }
+    },
+    "walk_s1_end": {
+      "spec": {
+        "name": "walk_s1_end",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s2/final.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5711,
+        "scene|linear": 0.6561,
+        "scene|ft10": 0.5003,
+        "scene|ft100": 0.6654,
+        "presence_cell:traffic light|knn": 0.594,
+        "presence_cell:traffic light|linear": 0.6339,
+        "presence_cell:traffic light|ft10": 0.5169,
+        "presence_cell:traffic light|ft100": 0.6444
+      }
+    },
+    "walk_s2_t00100": {
+      "spec": {
+        "name": "walk_s2_t00100",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s3/step00100.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5972,
+        "scene|linear": 0.6474,
+        "scene|ft10": 0.522,
+        "scene|ft100": 0.6739,
+        "presence_cell:traffic light|knn": 0.5811,
+        "presence_cell:traffic light|linear": 0.6062,
+        "presence_cell:traffic light|ft10": 0.5231,
+        "presence_cell:traffic light|ft100": 0.6313
+      }
+    },
+    "walk_s2_t00212": {
+      "spec": {
+        "name": "walk_s2_t00212",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s3/step00212.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.6013,
+        "scene|linear": 0.6541,
+        "scene|ft10": 0.5072,
+        "scene|ft100": 0.6791,
+        "presence_cell:traffic light|knn": 0.5761,
+        "presence_cell:traffic light|linear": 0.6068,
+        "presence_cell:traffic light|ft10": 0.5257,
+        "presence_cell:traffic light|ft100": 0.6374
+      }
+    },
+    "walk_s2_t00423": {
+      "spec": {
+        "name": "walk_s2_t00423",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s3/step00423.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.6032,
+        "scene|linear": 0.6602,
+        "scene|ft10": 0.5177,
+        "scene|ft100": 0.6791,
+        "presence_cell:traffic light|knn": 0.5855,
+        "presence_cell:traffic light|linear": 0.6156,
+        "presence_cell:traffic light|ft10": 0.5207,
+        "presence_cell:traffic light|ft100": 0.6318
+      }
+    },
+    "walk_s2_t00846": {
+      "spec": {
+        "name": "walk_s2_t00846",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s3/step00846.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.6064,
+        "scene|linear": 0.6559,
+        "scene|ft10": 0.5278,
+        "scene|ft100": 0.6755,
+        "presence_cell:traffic light|knn": 0.5963,
+        "presence_cell:traffic light|linear": 0.6241,
+        "presence_cell:traffic light|ft10": 0.5292,
+        "presence_cell:traffic light|ft100": 0.6418
+      }
+    },
+    "walk_s2_t01269": {
+      "spec": {
+        "name": "walk_s2_t01269",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s3/step01269.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5891,
+        "scene|linear": 0.654,
+        "scene|ft10": 0.5258,
+        "scene|ft100": 0.6636,
+        "presence_cell:traffic light|knn": 0.5896,
+        "presence_cell:traffic light|linear": 0.6302,
+        "presence_cell:traffic light|ft10": 0.5197,
+        "presence_cell:traffic light|ft100": 0.6487
+      }
+    },
+    "walk_s2_end": {
+      "spec": {
+        "name": "walk_s2_end",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s3/final.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5658,
+        "scene|linear": 0.6604,
+        "scene|ft10": 0.517,
+        "scene|ft100": 0.6695,
+        "presence_cell:traffic light|knn": 0.5778,
+        "presence_cell:traffic light|linear": 0.6315,
+        "presence_cell:traffic light|ft10": 0.5312,
+        "presence_cell:traffic light|ft100": 0.6383
+      }
+    },
+    "walk_s3_t00100": {
+      "spec": {
+        "name": "walk_s3_t00100",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s4/step00100.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5844,
+        "scene|linear": 0.6419,
+        "scene|ft10": 0.5045,
+        "scene|ft100": 0.6725,
+        "presence_cell:traffic light|knn": 0.5764,
+        "presence_cell:traffic light|linear": 0.6075,
+        "presence_cell:traffic light|ft10": 0.5083,
+        "presence_cell:traffic light|ft100": 0.6341
+      }
+    },
+    "walk_s3_t00212": {
+      "spec": {
+        "name": "walk_s3_t00212",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s4/step00212.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5871,
+        "scene|linear": 0.6405,
+        "scene|ft10": 0.5112,
+        "scene|ft100": 0.6668,
+        "presence_cell:traffic light|knn": 0.5781,
+        "presence_cell:traffic light|linear": 0.6089,
+        "presence_cell:traffic light|ft10": 0.5068,
+        "presence_cell:traffic light|ft100": 0.6277
+      }
+    },
+    "walk_s3_t00423": {
+      "spec": {
+        "name": "walk_s3_t00423",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s4/step00423.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5983,
+        "scene|linear": 0.6456,
+        "scene|ft10": 0.5116,
+        "scene|ft100": 0.6733,
+        "presence_cell:traffic light|knn": 0.5713,
+        "presence_cell:traffic light|linear": 0.617,
+        "presence_cell:traffic light|ft10": 0.5193,
+        "presence_cell:traffic light|ft100": 0.6286
+      }
+    },
+    "walk_s3_t00846": {
+      "spec": {
+        "name": "walk_s3_t00846",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s4/step00846.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.586,
+        "scene|linear": 0.6576,
+        "scene|ft10": 0.5013,
+        "scene|ft100": 0.6763,
+        "presence_cell:traffic light|knn": 0.5842,
+        "presence_cell:traffic light|linear": 0.6129,
+        "presence_cell:traffic light|ft10": 0.5039,
+        "presence_cell:traffic light|ft100": 0.6446
+      }
+    },
+    "walk_s3_t01269": {
+      "spec": {
+        "name": "walk_s3_t01269",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s4/step01269.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5767,
+        "scene|linear": 0.659,
+        "scene|ft10": 0.4792,
+        "scene|ft100": 0.667,
+        "presence_cell:traffic light|knn": 0.5899,
+        "presence_cell:traffic light|linear": 0.6258,
+        "presence_cell:traffic light|ft10": 0.5239,
+        "presence_cell:traffic light|ft100": 0.6415
+      }
+    },
+    "walk_s3_end": {
+      "spec": {
+        "name": "walk_s3_end",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s4/final.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5713,
+        "scene|linear": 0.6592,
+        "scene|ft10": 0.4668,
+        "scene|ft100": 0.67,
+        "presence_cell:traffic light|knn": 0.5835,
+        "presence_cell:traffic light|linear": 0.6298,
+        "presence_cell:traffic light|ft10": 0.5252,
+        "presence_cell:traffic light|ft100": 0.6428
+      }
+    },
+    "walk_s4_t00100": {
+      "spec": {
+        "name": "walk_s4_t00100",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s5/step00100.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5825,
+        "scene|linear": 0.6418,
+        "scene|ft10": 0.4935,
+        "scene|ft100": 0.6705,
+        "presence_cell:traffic light|knn": 0.5727,
+        "presence_cell:traffic light|linear": 0.6034,
+        "presence_cell:traffic light|ft10": 0.5309,
+        "presence_cell:traffic light|ft100": 0.6305
+      }
+    },
+    "walk_s4_t00212": {
+      "spec": {
+        "name": "walk_s4_t00212",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s5/step00212.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5919,
+        "scene|linear": 0.6437,
+        "scene|ft10": 0.5145,
+        "scene|ft100": 0.6705,
+        "presence_cell:traffic light|knn": 0.5723,
+        "presence_cell:traffic light|linear": 0.6095,
+        "presence_cell:traffic light|ft10": 0.5263,
+        "presence_cell:traffic light|ft100": 0.6453
+      }
+    },
+    "walk_s4_t00423": {
+      "spec": {
+        "name": "walk_s4_t00423",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s5/step00423.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5998,
+        "scene|linear": 0.65,
+        "scene|ft10": 0.52,
+        "scene|ft100": 0.6698,
+        "presence_cell:traffic light|knn": 0.5788,
+        "presence_cell:traffic light|linear": 0.6153,
+        "presence_cell:traffic light|ft10": 0.5109,
+        "presence_cell:traffic light|ft100": 0.6386
+      }
+    },
+    "walk_s4_t00846": {
+      "spec": {
+        "name": "walk_s4_t00846",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s5/step00846.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5861,
+        "scene|linear": 0.6649,
+        "scene|ft10": 0.5329,
+        "scene|ft100": 0.677,
+        "presence_cell:traffic light|knn": 0.5882,
+        "presence_cell:traffic light|linear": 0.6281,
+        "presence_cell:traffic light|ft10": 0.5273,
+        "presence_cell:traffic light|ft100": 0.6356
+      }
+    },
+    "walk_s4_t01269": {
+      "spec": {
+        "name": "walk_s4_t01269",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s5/step01269.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5915,
+        "scene|linear": 0.6559,
+        "scene|ft10": 0.5241,
+        "scene|ft100": 0.6715,
+        "presence_cell:traffic light|knn": 0.595,
+        "presence_cell:traffic light|linear": 0.6227,
+        "presence_cell:traffic light|ft10": 0.5405,
+        "presence_cell:traffic light|ft100": 0.6344
+      }
+    },
+    "walk_s4_end": {
+      "spec": {
+        "name": "walk_s4_end",
+        "kind": "checkpoint",
+        "path": "outputs/p125/drive/mae_je_walk/checkpoints/s5/final.pt",
+        "fewshot": true
+      },
+      "bacc": {
+        "scene|knn": 0.5732,
+        "scene|linear": 0.6611,
+        "scene|ft10": 0.4943,
+        "scene|ft100": 0.6661,
+        "presence_cell:traffic light|knn": 0.6024,
+        "presence_cell:traffic light|linear": 0.6247,
+        "presence_cell:traffic light|ft10": 0.5311,
+        "presence_cell:traffic light|ft100": 0.6457
+      }
+    }
+  }
+}

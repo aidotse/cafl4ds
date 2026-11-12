@@ -476,6 +476,28 @@ def test_dino_drives_through_the_harness_and_its_teacher_is_read_from_the_checkp
     assert summary["encoders"]["end"]["bacc"]["scene|linear"]["pooled"] >= 0.0
 
 
+def test_fine_tune_trains_an_encoder_that_arrives_frozen(monkeypatch: pytest.MonkeyPatch) -> None:
+    """DINO's teacher is read with grads off; the fine-tune rungs must still train the encoder, not the head alone."""
+    encoder = _tiny_vit()
+    encoder.requires_grad_(False)
+    before = {k: v.clone() for k, v in encoder.state_dict().items()}
+    torch.manual_seed(0)
+    images, labels = torch.rand(8, 3, 32, 32), torch.arange(8) % 2
+    trained: list[torch.nn.Module] = []
+    original = adaptation._Classifier.forward  # pylint: disable=protected-access
+
+    def spy(self: torch.nn.Module, x: torch.Tensor) -> torch.Tensor:
+        trained.append(self.encoder)
+        return original(self, x)
+
+    recipe = adaptation.FineTuneRecipe(lr=1e-2, head_lr_mult=1.0, weight_decay=0.0, steps=3, batch_size=4)
+    monkeypatch.setattr(adaptation._Classifier, "forward", spy)  # pylint: disable=protected-access
+    adaptation.fine_tune_predict(encoder, images, labels, images, recipe, seed=0, device="cpu")
+    moved = trained[0].state_dict()
+    assert any(not torch.equal(before[k], moved[k]) for k in before if before[k].is_floating_point())
+    assert all(torch.equal(before[k], v) for k, v in encoder.state_dict().items())  # the original is untouched
+
+
 # ---- the analysis (scripts/analyze_adaptation.py mode=p125) ----
 
 _GATE = ["scene", "presence_cell:traffic light"]
