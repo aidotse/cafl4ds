@@ -1,0 +1,957 @@
+---
+title: "Phase 0 Findings"
+subtitle: "Calibrating label-free health readers for a self-supervised model"
+author: "Mauricio Munoz / Senior Research Engineer @ AI Sweden"
+format:
+  revealjs:
+    from: markdown+emoji
+    logo: "./assets/aise-yellow.png"
+    footer: "cafl4ds · Phase 0 · instrument calibration"
+    overview: true
+    slide-number: "c/t"
+    transition: fade
+    css: style.css
+    width: 1920
+    height: 1080
+    include-in-header:
+      - text: |
+          <script src="assets/vendor/echarts.min.js"></script>
+          <script src="assets/data.js"></script>
+          <script src="assets/js/responsive.js"></script>
+          <script src="assets/js/deck.js"></script>
+          <script src="assets/js/charts.js"></script>
+    title-slide-attributes:
+        data-background-image: ./assets/summer.jpg
+        data-background-size: cover
+        data-background-repeat: no-repeat
+        data-background-opacity: "0.7"
+        data-state: "hide-ui"
+---
+
+## Why Phase 0: a model that learns forever needs a thermometer
+
+:::: {.columns}
+
+::: {.column width="46%"}
+
+<div class="loop">
+  <div class="box">Data stream, seen once</div>
+  <div class="arrow">↓</div>
+  <div class="box">Label-free <b>selection filter</b></div>
+  <div class="arrow">↓</div>
+  <div class="box accent">Self-supervised <b>backbone</b>, keeps learning</div>
+  <div class="arrow">↓</div>
+  <div class="box">Label-free <b>health monitor</b> → re-aims selection</div>
+</div>
+
+:::
+
+::: {.column width="54%"}
+
+<div class="lead-in">In deployment there is no answer key. Phase 0 asks: which <b>label-free</b> signals can we trust?</div>
+
+- **Failure modes:** collapse, forgetting, instability, quiet loss of quality
+- **Readers:** rank, geometry, gradient norm, reconstruction loss, drift
+- **Calibration is two-sided:** a reader must **fire** on a run forced into the failure, *and* stay **quiet** on its
+    healthy twin
+- **Toy scale on purpose:** STL-10 / CIFAR / Imagenette, small ViTs, on CPU and Gaudi. The *shape* of a response
+    ports; its thresholds may not
+
+<div class="lead-in" style="margin-top: 30px;">Exit gate: at least one calibrated reader per failure mode.</div>
+
+:::
+
+::::
+
+## The scoreboard: every mode has a reader, every reader has a catch
+
+```{=html}
+<div id="ch-scoreboard" class="chart"></div>
+<script>
+Deck.chart("ch-scoreboard", (el) => {
+  const P = Charts, C = P.C;
+  const rows = P.data("scoreboard");
+  const modes = ["Collapse (JE)", "Forgetting (MAE)", "Forgetting (JE)", "Instability (MAE)", "Quality loss (MAE)"];
+  const readers = ["Rank", "Projector geometry", "Backbone geometry", "Gradient norm", "Loss / recon gap",
+    "Drift, old batch", "Drift, no old data", "Labelled probe"];
+  const S = {
+    works: [C.green, "works"], catch: [C.yellow, "works, with a catch"], labels: [C.blue, "works, needs labels"],
+    fails: [C.red, "blind or misleading"], guard: ["#5d6d7e", "used as a guard"],
+  };
+  const mark = { works: "✓", catch: "✓ *", labels: "✓ labels", fails: "✗", guard: "guard" };
+  const data = rows.map((r) => ({
+    value: [readers.indexOf(r.reader), modes.indexOf(r.mode), 1], note: r.note,
+    itemStyle: { color: Deck.alpha(S[r.status][0], 0.85), borderColor: "#1d2733", borderWidth: 6 },
+    label: { show: true, formatter: mark[r.status], fontSize: 24, fontWeight: "bold", color: r.status === "catch" ? "#1d2733" : "#fff" },
+  }));
+  P.draw(el, {
+    grid: { left: 300, right: 30, top: 70, bottom: 90 },
+    legend: P.legend({ data: Object.values(S).map((s) => s[1]) }),
+    xAxis: { type: "category", data: readers, position: "top", splitArea: { show: false },
+      axisLabel: { fontSize: 20, color: C.text, interval: 0, formatter: (v) => v.replace(", ", ",\n").replace(" / ", " /\n").replace(" geometry", "\ngeometry").replace(" probe", "\nprobe").replace(" norm", "\nnorm") },
+      axisTick: { show: false }, axisLine: { show: false } },
+    yAxis: { type: "category", data: modes, inverse: true, axisLabel: { fontSize: 22, color: C.text }, axisTick: { show: false }, axisLine: { show: false } },
+    series: [
+      { type: "heatmap", data, tooltip: { formatter: (p) => `${modes[p.value[1]]} · ${readers[p.value[0]]}<br>${p.data.note}` } },
+      ...Object.values(S).map(([color, name]) => ({ type: "scatter", name, data: [], itemStyle: { color } })),
+    ],
+  });
+});
+</script>
+```
+
+::: {.caption .side}
+Collapse has the best-calibrated reader, but it reads only at the projector. Forgetting splits by backbone: on MAE it
+needs labels; on JE, drift works label-free. Instability's warning depends on the optimizer. MAE quality has no
+label-free reader at all. Hover a cell for why.
+:::
+
+# [01]{.section-num} Collapse {#collapse}
+
+## Read at the projector, not the backbone
+
+:::: {.columns}
+
+::: {.column width="62%"}
+
+```{=html}
+<div id="ch-collapse-heat" class="chart"></div>
+<script>
+Deck.chart("ch-collapse-heat", (el) => {
+  const P = Charts, C = P.C;
+  const rows = P.data("collapse_heatmap");
+  const corners = P.uniq(rows.map((r) => r.corner));
+  const labels = P.uniq(rows.map((r) => `${r.reader} @ ${r.surface}`));
+  const color = (s) => s >= 3 ? C.yellow : s >= 1 ? Deck.alpha(C.yellow, 0.55) : s >= 0.5 ? "#3f4f5f" : "#2b3846";
+  const data = rows.map((r) => {
+    const s = r.sep / r.bar;
+    return { value: [corners.indexOf(r.corner), labels.indexOf(`${r.reader} @ ${r.surface}`), s], r,
+      itemStyle: { color: color(s), borderColor: "#1d2733", borderWidth: 4 },
+      label: { show: true, fontSize: 19, color: s >= 1 ? "#1d2733" : C.muted,
+        formatter: () => r.bar === 2 ? r.sep.toFixed(1) + "×" : P.signed(r.sep, 2) } };
+  });
+  P.draw(el, {
+    title: P.title("Separation, forced collapse vs healthy twin (worst of 4 seeds)"),
+    grid: { left: 270, right: 20, top: 120, bottom: 30 },
+    xAxis: { type: "category", data: corners, position: "top", axisLabel: { fontSize: 18, color: C.text, interval: 0, formatter: (v) => v.replace(", ", ",\n") },
+      axisTick: { show: false }, axisLine: { show: false } },
+    yAxis: { type: "category", data: labels, inverse: true, axisLabel: { fontSize: 19, color: C.text }, axisTick: { show: false }, axisLine: { show: false } },
+    series: [{ type: "heatmap", data,
+      tooltip: { formatter: (p) => `${p.data.r.reader} @ ${p.data.r.surface}, ${p.data.r.corner}<br>${p.data.r.bar === 2 ? p.data.r.sep.toFixed(2) + "× (fires at 2×)" : "gap " + p.data.r.sep.toFixed(2) + " (fires at 0.5)"}` } }],
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="38%" .side}
+
+- First four columns: SimSiam forced into **point** collapse; last: Barlow Twins forced into **redundancy** collapse
+- **Rank at the projector fires in every corner**: the core reader
+- Variance and covariance **swap roles** between the two collapse types, so together they tell them apart
+- The **backbone** stays dark outside long IID training, and false-alarms under stress (P0.2.4)
+- Yellow cells fire: a ratio of 2× or more (a gap of 0.5 for uniformity)
+
+:::
+
+::::
+
+## A healthy model dips and recovers; a collapsing one stays down
+
+:::: {.columns}
+
+::: {.column width="62%"}
+
+```{=html}
+<div id="ch-collapse-traj" class="chart"></div>
+<script>
+Deck.chart("ch-collapse-traj", (el) => {
+  const P = Charts, C = P.C;
+  const rows = P.data("collapse_trajectory");
+  const { grid, title } = P.panels(2, { width: el.clientWidth, top: 110, bottom: 130, left: 100, titles: ["projector", "backbone"] });
+  title.unshift(P.title("RankMe through 40 epochs of IID training, 16 seeds (range shaded)"));
+  const series = [];
+  ["projector", "backbone"].forEach((surface, i) => {
+    const idx = { xAxisIndex: i, yAxisIndex: i };
+    for (const [arm, color] of [["Healthy", C.green], ["Forced collapse", C.red]]) {
+      const g = rows.filter((r) => r.surface === surface && r.arm === arm);
+      series.push(P.band(g.map((r) => r.epoch), g.map((r) => r.lo), g.map((r) => r.hi), color, idx, 0.2));
+      series.push({ type: "line", name: arm, ...idx, showSymbol: false, z: 3, lineStyle: { width: 4, color }, itemStyle: { color },
+        data: g.map((r) => [r.epoch, r.median]),
+        tooltip: { trigger: "item", formatter: (p) => `${arm}, ${surface}<br>epoch ${p.value[0].toFixed(1)}: median ${p.value[1].toFixed(1)}` } });
+    }
+  });
+  P.draw(el, {
+    title, grid, legend: P.legend({ data: ["Healthy", "Forced collapse"] }),
+    xAxis: grid.map((_, i) => P.axis("epoch", { gridIndex: i, min: 0, max: 40, scale: false })),
+    yAxis: grid.map((_, i) => P.axis(i ? "" : "effective rank (RankMe)", { gridIndex: i, min: 0, scale: false, nameGap: 56 })),
+    series,
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="38%" .side}
+
+- At the **backbone**, healthy rank first **falls by two thirds**, then partly climbs back: a U-shape. Read early, it looks
+    like collapse
+- The collapsing arm sinks and **stays down**
+- At the **projector** the two arms part from the first epochs, and never cross
+- Phase 1 takeaway: anchor to a **fixed healthy reference** (IID × 40 epochs), and don't call a fire on the early dip
+
+:::
+
+::::
+
+## Catching collapse early: a smooth ramp, not a cliff
+
+:::: {.columns}
+
+::: {.column width="62%"}
+
+```{=html}
+<div id="ch-collapse-dose" class="chart"></div>
+<script>
+Deck.chart("ch-collapse-dose", (el) => {
+  const P = Charts, C = P.C;
+  const rows = P.data("collapse_dose");
+  const { grid, title } = P.panels(2, { width: el.clientWidth, top: 110, bottom: 140, left: 100,
+    titles: ["coarse dial (4 seeds)", "fine dial, low severities (2 seeds)"] });
+  title.unshift(P.title("Projector rank as the partial-collapse dial turns (P0.2.5)"));
+  const colors = { "Loss blend": C.blue, "Soft stop-gradient": C.orange };
+  const series = [];
+  ["coarse", "fine"].forEach((ladder, i) => {
+    const idx = { xAxisIndex: i, yAxisIndex: i };
+    for (const [key, g] of P.groupBy(rows.filter((r) => r.ladder === ladder), (r) => `${r.knob}|${r.seed}`)) {
+      const knob = g[0].knob;
+      series.push({ type: "line", name: knob, ...idx, symbolSize: 9, lineStyle: { width: 3, color: colors[knob] }, itemStyle: { color: colors[knob] },
+        data: g.map((r) => [r.severity, r.rank_proj, r.linear]),
+        tooltip: { formatter: (p) => `${knob}, seed ${g[0].seed}<br>severity ${p.value[0]}: rank ${p.value[1].toFixed(1)}<br>linear probe ${(100 * p.value[2]).toFixed(1)}%` } });
+    }
+  });
+  series.push(P.marks({ xAxisIndex: 0, yAxisIndex: 0, xRegion: { from: 0, to: 0.25, color: C.yellow, alpha: 0.1, text: "zoomed in →" } }));
+  P.draw(el, {
+    title, grid, legend: P.legend({ data: Object.keys(colors) }),
+    xAxis: grid.map((_, i) => P.axis("collapse severity", { gridIndex: i, min: 0, max: i ? 0.25 : 1, scale: false })),
+    yAxis: grid.map((_, i) => P.axis(i ? "" : "effective rank at the projector", { gridIndex: i, min: 0, max: 35, scale: false, nameGap: 56,
+      axisLabel: { show: i === 0, fontSize: 19 } })),
+    series,
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="38%" .side}
+
+- Every earlier run forced collapse **all the way**. The real worry is catching it while it is still mild
+- Two different dials (a loss blend and a soft stop-gradient) push a healthy model part-way
+- On the coarse grid it looked like a **cliff**. That was spacing: the whole drop fell between 0 and the first rung
+- The fine grid shows a **smooth, monotone ramp**, ~28 → 21 → 12 → 6 → 4, for both dials and both seeds
+- So the projector readers **see the incipient band**. Whether real-scale collapse ramps as gently is a Phase 1
+    question
+
+:::
+
+::::
+
+## The catch: where Phase 1 reads it, the margin is thin
+
+:::: {.columns}
+
+::: {.column width="62%"}
+
+```{=html}
+<div id="ch-collapse-margin" class="chart"></div>
+<script>
+Deck.chart("ch-collapse-margin", (el) => {
+  const P = Charts, C = P.C;
+  const rows = P.data("collapse_margin");
+  const labels = P.uniq(rows.map((r) => r.label));
+  const target = "Corr., 1 pass";
+  const series = [{
+    type: "scatter", name: "one seed", symbolSize: 18, z: 3,
+    data: rows.map((r) => ({ value: [labels.indexOf(r.label) + (r.seed - 1.5) * 0.09, r.sep], r,
+      itemStyle: { color: r.label === target ? C.yellow : r.group === "Training regime" ? C.blue : C.muted } })),
+    tooltip: { formatter: (p) => `${p.data.r.label}, seed ${p.data.r.seed}<br>${p.data.r.sep.toFixed(2)}×` },
+  }];
+  series.push(P.marks({ yRegion: { from: 0.5, to: 2, color: C.red, alpha: 0.12, text: "below the 2× bar: would not fire" },
+    xRegion: { from: 3.5, to: 8.5, color: C.muted, alpha: 0.06, text: "learning rate, IID one pass" } }));
+  const idx = labels.map((_, i) => i);
+  P.draw(el, {
+    title: P.title("Rank at the projector: forced collapse ÷ healthy, per seed"),
+    grid: { left: 100, right: 30, top: 60, bottom: 110 },
+    xAxis: { type: "value", min: -0.5, max: labels.length - 0.5, splitLine: { show: false },
+      axisLabel: { customValues: idx, formatter: (v) => labels[v] ?? "", fontSize: 18, color: C.text, interval: 0 }, axisTick: { customValues: idx } },
+    yAxis: P.axis("separation (×, log scale)", { type: "log", min: 1, max: 30, nameGap: 56 }),
+    series,
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="38%" .side}
+
+- Phase 1's corner is **correlated data, seen once**. There, every reader but one goes quiet
+- What is left is **rank at the projector at ~2.2×**, on a 2× bar (yellow)
+- It weakens further at **lower learning rates**: at ¼ of the base rate it misses on every seed
+- So Phase 1 inherits a collapse reader that is real but **thin exactly where it will be used**, and should budget a
+    second one
+
+:::
+
+::::
+
+# [02]{.section-num} Forgetting on MAE {#forgetting-mae}
+
+## The forgetting hunt: MAE barely forgets
+
+```{=html}
+<div id="ch-hunt" class="chart tall"></div>
+<script>
+Deck.chart("ch-hunt", (el) => {
+  const P = Charts, C = P.C;
+  const rows = P.data("forgetting_hunt");
+  const configs = P.uniq(rows.map((r) => r.config));
+  const y = (c) => configs.length - 1 - configs.indexOf(c);
+  const series = [];
+  const seedRows = rows.filter((r) => r.kind === "seed"), range = rows.filter((r) => r.kind !== "seed");
+  const jitter = (r, i) => ((i % 5) - 2) * 0.05;
+  const groups = P.groupBy(seedRows, (r) => r.config);
+  const pcData = [], hData = [];
+  for (const [config, g] of groups) {
+    g.forEach((r, i) => {
+      pcData.push({ value: [r.pc, y(config) + 0.14 + jitter(r, i)], r, itemStyle: { color: r.fires ? C.red : C.orange } });
+      hData.push({ value: [r.healthy, y(config) - 0.18 + jitter(r, i)], r });
+    });
+  }
+  for (const [config, g] of P.groupBy(range, (r) => r.config)) {
+    const [lo, mid, hi] = g.map((r) => r.pc).sort((a, b) => a - b);
+    const [hlo, hmid, hhi] = g.map((r) => r.healthy).sort((a, b) => a - b);
+    series.push(P.whiskers([[mid, y(config) + 0.14, lo, hi]], C.orange, { horizontal: true, width: 3 }));
+    series.push(P.whiskers([[hmid, y(config) - 0.18, hlo, hhi]], C.green, { horizontal: true, width: 3 }));
+    pcData.push({ value: [mid, y(config) + 0.14], r: { ...g[1], pc: mid, healthy: hmid, range: true }, itemStyle: { color: C.orange } });
+    hData.push({ value: [hmid, y(config) - 0.18], r: { ...g[1], healthy: hmid, range: true } });
+  }
+  const tip = (who) => (p) => `${p.data.r.config} (${p.data.r.study})<br>${who}: BWT ${P.signed(p.value[0], 3)}${p.data.r.range ? " (median of 5; min–max shown)" : ""}`;
+  series.push({ type: "scatter", name: "forgetting arm", symbolSize: 17, z: 4, data: pcData, itemStyle: { color: C.orange }, tooltip: { formatter: tip("forgetting arm") } });
+  series.push({ type: "scatter", name: "protected twin", symbol: "circle", symbolSize: 14, z: 3, data: hData,
+    itemStyle: { color: "transparent", borderColor: C.green, borderWidth: 3 }, tooltip: { formatter: tip("protected twin") } });
+  series.push(P.marks({ zeroX: true, xRegion: { from: -0.1, to: -0.05, color: C.red, alpha: 0.1, text: "fires: forgot ≥ 5 pts" } }));
+  const counts = configs.map((c) => {
+    const g = rows.filter((r) => r.config === c);
+    return g[0].kind === "seed" ? `${g.filter((r) => r.fires).length}/${g.length}` : "0/5";
+  });
+  const idx = configs.map((c) => y(c));
+  P.draw(el, {
+    legend: P.legend({ data: ["forgetting arm", "protected twin"] }),
+    grid: { left: 430, right: 110, top: 30, bottom: 120 },
+    xAxis: P.axis("Backward transfer on task A (accuracy change after learning task B)", { min: -0.1, max: 0.1, interval: 0.05, scale: false,
+      axisLabel: { fontSize: 19, formatter: (v) => P.signed(v, 2) } }),
+    yAxis: [
+      { type: "value", min: -0.6, max: configs.length - 0.4, splitLine: { show: false },
+        axisLabel: { customValues: idx, formatter: (v) => configs[configs.length - 1 - v] ?? "", fontSize: 20, color: C.text }, axisTick: { customValues: idx } },
+      { type: "value", min: -0.6, max: configs.length - 0.4, position: "right", splitLine: { show: false }, axisLine: { show: false },
+        axisLabel: { customValues: idx, formatter: (v) => counts[configs.length - 1 - v] ?? "", fontSize: 22, color: C.yellow, fontWeight: "bold" }, axisTick: { show: false } },
+    ],
+    series,
+  });
+});
+</script>
+```
+
+::: {.caption .side}
+One dot per seed (CIFAR-100: median and range of 5); red fires. From scratch, MAE never forgets; a **supervised**
+model does (upper limit). A pretrained MAE fires on **every seed** only with a deep task A *and* twice the time on task
+B. Far domains count arm minus twin, so satellite's −0.060 seed (twin −0.023) does not fire.
+:::
+
+## Even the deepest crater is a dent, and it comes back
+
+:::: {.columns}
+
+::: {.column width="62%"}
+
+```{=html}
+<div id="ch-depth" class="chart"></div>
+<script>
+Deck.chart("ch-depth", (el) => {
+  const P = Charts, C = P.C;
+  const all = P.data("forgetting_depth"), floor = all.find((r) => r.config === "floor");
+  const rows = all.filter((r) => r.config !== "floor");
+  const configs = P.uniq(rows.map((r) => r.config));
+  const y = (r) => (configs.length - 1 - configs.indexOf(r.config)) * 6.5 + (4 - r.seed);
+  const series = [{
+    type: "custom", silent: true, z: 2, data: rows.map((r) => [r.before, y(r), r.after]),
+    encode: { x: [0, 2], y: 1 },
+    renderItem: (params, api) => {
+      const a = api.coord([api.value(0), api.value(1)]), b = api.coord([api.value(2), api.value(1)]);
+      return { type: "line", shape: { x1: a[0], y1: a[1], x2: b[0], y2: b[1] }, style: { stroke: C.muted, lineWidth: 4 } };
+    },
+  }];
+  const dot = (name, key, color) => ({ type: "scatter", name, symbolSize: 15, z: 3, itemStyle: { color },
+    data: rows.map((r) => ({ value: [r[key], y(r)], r })),
+    tooltip: { formatter: (p) => `${p.data.r.config}, seed ${p.data.r.seed}<br>${(100 * p.data.r.before).toFixed(1)}% → ${(100 * p.data.r.after).toFixed(1)}%` } });
+  series.push(dot("after task A", "before", C.green), dot("after task B", "after", C.red));
+  series.push(P.marks({ xRegion: { from: floor.before, to: floor.after, color: C.yellow, alpha: 0.35, text: "from-scratch\nMAE" } }));
+  const idx = configs.map((_, i) => (configs.length - 1 - i) * 6.5 + 2);
+  P.draw(el, {
+    title: P.title("Task-A probe accuracy, forgetting arm, per seed"),
+    legend: P.legend({ data: ["after task A", "after task B"] }),
+    grid: { left: 340, right: 30, top: 60, bottom: 130 },
+    xAxis: P.axis("task-A linear probe accuracy", { min: 0.35, max: 0.9, scale: false, axisLabel: { fontSize: 19, formatter: (v) => `${Math.round(100 * v)}%` } }),
+    yAxis: { type: "value", min: -1, max: configs.length * 6.5 - 1.5, splitLine: { show: false },
+      axisLabel: { customValues: idx, formatter: (v) => configs[configs.length - 1 - Math.round((v - 2) / 6.5)] ?? "", fontSize: 19, color: C.text, width: 320, overflow: "break" },
+      axisTick: { show: false } },
+    series,
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="38%" .side}
+
+- The deepest crater, 8.5 pts, uses **under a fifth** of the room down to what a fresh MAE, trained on task A from scratch, reaches
+- Relearning task A brings it back **about as fast as never losing it** (savings ≈ 1.0)
+- So every MAE crater Phase 0 could make is **severity, not permanence**
+- Deep, *permanent* forgetting never appeared. Whether a long, correlated real stream reaches it is **the** Phase 1
+    forgetting question
+
+:::
+
+::::
+
+## The label-free MAE reader is confounded
+
+:::: {.columns}
+
+::: {.column width="60%"}
+
+```{=html}
+<div id="ch-recon" class="chart"></div>
+<script>
+Deck.chart("ch-recon", (el) => {
+  const P = Charts, C = P.C;
+  const rows = P.data("recon_gap");
+  const colors = { "Pretrained MAE, far split": C.blue, "+ deeper well": "#90CAF9", "+ deeper well, 2× task-B time": C.yellow,
+    "Far domain: satellite": C.green, "Far domain: textures": "#81C784", "Scrambled task B": C.orange, "Grayscale task B": C.red };
+  const series = [];
+  for (const [config, g] of P.groupBy(rows, (r) => r.config)) {
+    series.push({ type: "scatter", name: config, symbolSize: config === "Grayscale task B" ? 26 : 16, z: 3, itemStyle: { color: colors[config] },
+      data: g.map((r) => ({ value: [r.bwt, r.gap], r,
+        label: { show: config === "Grayscale task B", position: "left", distance: 14, formatter: "grayscale: the representation\nbarely moved", color: C.red, fontSize: 19, lineHeight: 24 } })),
+      tooltip: { formatter: (p) => `${config}, seed ${p.data.r.seed}<br>forgetting ${P.signed(p.value[0], 3)}<br>recon gap ${p.value[1].toFixed(3)}` } });
+  }
+  series.push(P.marks({ xRegion: { from: -0.12, to: -0.05, color: C.red, alpha: 0.08, text: "real forgetting" } }));
+  P.draw(el, {
+    title: P.title("Reconstruction-loss gap vs measured forgetting, per run"),
+    legend: P.legend({ width: "92%" }), grid: { left: 110, right: 30, top: 60, bottom: 170 },
+    xAxis: P.axis("forgetting arm − twin, task-A probe (labelled ground truth)", { min: -0.12, max: 0.01, scale: false, axisLabel: { fontSize: 19, formatter: (v) => P.signed(v, 2) } }),
+    yAxis: P.axis("recon-loss gap, forgetting arm − twin", { min: 0, max: 0.35, interval: 0.05, scale: false, nameGap: 64 }),
+    series,
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="40%" .side}
+
+- Deployment can't run probes, so the hope was the **reconstruction loss on old data**
+- Its gap barely tracks real forgetting: across one setup (blue) forgetting varies **fivefold** and the gap stays flat
+- It is mostly the **replay twin improving**, not the forgetting arm getting worse
+- Recolour task B **grayscale** and it reads **~10× higher**, though the probe shows a crater no deeper than the
+    colour run's
+- Usable only with the two-arm control beside it. *(Phase 1 later found a label-free MAE signal **per block**,
+    P1.1.3)*
+
+:::
+
+::::
+
+# [03]{.section-num} Instability {#instability}
+
+## The gradient norm warns 5 steps ahead, with plain SGD only
+
+:::: {.columns}
+
+::: {.column width="62%"}
+
+```{=html}
+<div id="ch-diverge" class="chart"></div>
+<script>
+Deck.chart("ch-diverge", (el) => {
+  const P = Charts, C = P.C;
+  const rows = P.data("divergence_traces");
+  const optims = ["SGD", "AdamW"];
+  const { grid, title } = P.panels(2, { width: el.clientWidth, top: 110, bottom: 140, left: 110,
+    titles: ["SGD (undamped step)", "AdamW (normalized step)"] });
+  title.unshift(P.title("Gradient norm per step, MAE, seed 0 (✕ = loss goes NaN)"));
+  const colors = [C.green, C.orange, C.red];
+  const series = [];
+  optims.forEach((optim, i) => {
+    const idx = { xAxisIndex: i, yAxisIndex: i };
+    const arms = P.uniq(rows.filter((r) => r.optim === optim && r.arm !== "alarm").map((r) => r.arm));
+    arms.forEach((arm, k) => {
+      const g = rows.filter((r) => r.optim === optim && r.arm === arm);
+      series.push({ type: "line", name: `${optim} · ${arm}`, ...idx, symbolSize: 7, z: 3, lineStyle: { width: 3.5, color: colors[k] }, itemStyle: { color: colors[k] },
+        data: g.filter((r) => !r.nan).map((r) => [r.step, r.grad_norm]),
+        tooltip: { formatter: (p) => `${optim}, ${arm}<br>step ${p.value[0]}: ${Number(p.value[1]).toPrecision(3)}` } });
+      const nan = g.find((r) => r.nan);
+      if (nan) series.push({ type: "scatter", ...idx, symbol: "path://M0,0 L10,10 M10,0 L0,10", symbolSize: 22, z: 4,
+        itemStyle: { color: "transparent", borderColor: colors[k], borderWidth: 4 }, data: [[nan.step, 3e9]],
+        tooltip: { formatter: () => `${optim}, ${arm}: loss NaN at step ${nan.step}` } });
+    });
+    const alarm = rows.find((r) => r.optim === optim && r.arm === "alarm").grad_norm;
+    series.push(P.marks({ ...idx, yLine: { y: alarm, color: C.yellow, text: "alarm" },
+      xRegion: optim === "SGD" ? { from: 3, to: 8, color: C.yellow, alpha: 0.12, text: "5 steps\nof warning", labelPosition: "insideBottom" } : undefined }));
+  });
+  P.draw(el, {
+    title, grid, legend: P.legend({ width: "95%", itemGap: 18 }),
+    xAxis: grid.map((_, i) => P.axis("step", { gridIndex: i, min: 0, max: 40, scale: false })),
+    yAxis: grid.map((_, i) => P.axis(i ? "" : "gradient norm (log)", { gridIndex: i, type: "log", min: 1e-2, max: 1e10, nameGap: 64,
+      axisLabel: { show: i === 0, fontSize: 18, formatter: (v) => `1e${Math.round(Math.log10(v))}` } })),
+    series,
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="38%" .side}
+
+- Instability is the cleanest mode, because a runaway **reproduces at toy scale**
+- With **SGD + raw pixel loss**, the gradient norm crosses its alarm at step 3 and the loss goes NaN at step 8: **5
+    steps of warning**, the same on every seed tried
+- It is **specific**: quiet on collapse and forgetting runs
+- With **AdamW**, the gradient blows up 10⁵× and the step absorbs it; when it does diverge, it is NaN in **one step**,
+    no warning
+- So Phase 1 faces a **design choice**: keep the early warning, or the standard optimizer
+
+:::
+
+::::
+
+## It reads content shocks, not novelty
+
+:::: {.columns}
+
+::: {.column width="58%"}
+
+```{=html}
+<div id="ch-shock" class="chart"></div>
+<script>
+Deck.chart("ch-shock", (el) => {
+  const P = Charts, C = P.C;
+  const rows = P.data("shock_traces");
+  const colors = { "No burst (control)": C.muted, "Saturating noise burst": C.red, "CIFAR-100 burst": C.blue,
+    "Grayscale CIFAR burst": "#90CAF9", "Phase-scrambled burst": C.green };
+  const series = [];
+  for (const [arm, g] of P.groupBy(rows, (r) => r.arm)) {
+    series.push({ type: "line", name: arm, showSymbol: false, z: arm.startsWith("Saturating") ? 4 : 3,
+      lineStyle: { width: arm.startsWith("Saturating") ? 4 : 2.5, color: colors[arm] }, itemStyle: { color: colors[arm] },
+      data: g.map((r) => [r.step, r.grad_norm]),
+      tooltip: { formatter: (p) => `${arm}<br>step ${p.value[0]}: ${Number(p.value[1]).toPrecision(3)}` } });
+  }
+  series.push(P.marks({ xRegion: { from: 300, to: 308, color: C.yellow, alpha: 0.25, text: "burst" } }));
+  P.draw(el, {
+    title: P.title("Gradient norm around an 8-step burst spliced into a warmed MAE stream"),
+    legend: P.legend({ width: "92%" }), grid: { left: 110, right: 30, top: 60, bottom: 170 },
+    xAxis: P.axis("step", { min: 240, max: 408, scale: false }),
+    yAxis: P.axis("gradient norm (log)", { type: "log", min: 1e-3, max: 10, nameGap: 64,
+      axisLabel: { fontSize: 18, formatter: (v) => `1e${Math.round(Math.log10(v))}` } }),
+    series,
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="42%"}
+
+```{=html}
+<div id="ch-lead" class="chart"></div>
+<script>
+Deck.chart("ch-lead", (el) => {
+  const P = Charts, C = P.C;
+  const rows = P.data("shock_lead");
+  const run = rows.filter((r) => r.lead !== null);
+  const scales = P.uniq(rows.map((r) => r.scale));
+  const runaways = scales.map((s) => rows.find((r) => r.scale === s).runaways);
+  P.draw(el, {
+    title: P.title("Bigger bursts: from recovery to runaway"),
+    grid: { left: 100, right: 30, top: 60, bottom: 170 },
+    xAxis: P.axis("burst size (× the data's range)", { min: 0, max: 34, scale: false }),
+    yAxis: P.axis("warning before NaN (steps, log)", { type: "log", min: 2, max: 100, nameGap: 56 }),
+    series: [
+      { type: "scatter", name: "runaway (one seed)", symbolSize: 16, itemStyle: { color: C.red }, z: 3,
+        data: run.map((r, i) => [r.scale + (r.seed - 1) * 0.35, r.lead, r.seed]),
+        tooltip: { formatter: (p) => `burst ×${Math.round(p.value[0])}, seed ${p.value[2]}<br>${p.value[1]} steps of warning` } },
+      P.marks({ xRegion: { from: 0, to: 5, color: C.green, alpha: 0.12, text: "spike, then\nrecovers\n(3/3 seeds)" } }),
+    ],
+    graphic: [{ type: "text", left: "center", bottom: 10, style: { text: "runaways out of 3 seeds: " + scales.map((s, i) => `×${s}: ${runaways[i]}`).join("  "), fill: C.muted, fontSize: 16 } }],
+  });
+});
+</script>
+```
+
+:::
+
+::::
+
+::: {.caption .side}
+A saturating noise burst lifts the gradient norm **~75×**, then it **recovers**. Real but plausible out-of-domain
+images (CIFAR, grayscale, phase-scrambled) barely move it: it reads **how hard the data is to reconstruct**, not how
+novel it is. Bigger bursts run away; the warning shrinks with severity to ~4 steps. With a normalized loss the burst is
+a bare 1.5× blip.
+:::
+
+# [04]{.section-num} Quality on MAE {#quality}
+
+## The loss lies, and the collapse readers mislead
+
+:::: {.columns}
+
+::: {.column width="45%"}
+
+```{=html}
+<div id="ch-loss-lies" class="chart"></div>
+<script>
+Deck.chart("ch-loss-lies", (el) => {
+  const P = Charts, C = P.C;
+  const rows = P.data("loss_lies");
+  const series = [];
+  for (const [seed, g] of P.groupBy(rows, (r) => r.seed)) {
+    series.push({ type: "line", silent: true, showSymbol: false, z: 1, lineStyle: { color: C.muted, width: 2, type: "dashed" },
+      data: g.map((r) => [r.loss, P.pts(r.knn)]), tooltip: { show: false } });
+  }
+  for (const [arm, color] of [["Healthy MAE", C.green], ["Over-powered decoder", C.red]]) {
+    series.push({ type: "scatter", name: arm, symbolSize: 20, z: 3, itemStyle: { color },
+      data: rows.filter((r) => r.arm === arm).map((r) => [r.loss, P.pts(r.knn), r.seed]),
+      tooltip: { formatter: (p) => `${arm}, seed ${p.value[2]}<br>loss ${p.value[0].toFixed(3)}<br>kNN probe ${p.value[1].toFixed(1)}%` } });
+  }
+  P.draw(el, {
+    title: P.title("Final loss vs kNN probe, 5 seeds (P0.5.2)"),
+    legend: P.legend(), grid: { left: 100, right: 30, top: 60, bottom: 130 },
+    xAxis: P.axis("reconstruction loss (lower looks better)", { min: 0.34, max: 0.46, scale: false }),
+    yAxis: P.axis("kNN probe accuracy (%)", { min: 28, max: 40, scale: false, nameGap: 56 }),
+    series,
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="55%"}
+
+```{=html}
+<div id="ch-readers" class="chart"></div>
+<script>
+Deck.chart("ch-readers", (el) => {
+  const P = Charts, C = P.C;
+  const rows = P.data("quality_readers");
+  const readers = ["Alignment, strong augment", "Alignment", "Rank", "Clusterability", "Uniformity", "Attention distance"];
+  const y = (r) => readers.length - 1 - readers.indexOf(r);
+  const data = rows.map((r) => ({ value: [r.score, y(r.reader) + (r.seed - 2) * 0.08], r,
+    itemStyle: { color: r.score >= 1 ? C.yellow : r.score <= -1 ? C.red : C.muted } }));
+  const idx = readers.map((r) => y(r));
+  P.draw(el, {
+    title: P.title("Each label-free reader on the degraded arm, per seed"),
+    grid: { left: 290, right: 30, top: 60, bottom: 130 },
+    xAxis: P.axis("reads it as worse (÷ fire bar)", { min: -6, max: 2, scale: false }),
+    yAxis: { type: "value", min: -0.6, max: readers.length - 0.4, splitLine: { show: false },
+      axisLabel: { customValues: idx, formatter: (v) => readers[readers.length - 1 - v] ?? "", fontSize: 19, color: C.text }, axisTick: { customValues: idx } },
+    series: [
+      { type: "scatter", symbolSize: 16, z: 3, data,
+        tooltip: { formatter: (p) => `${p.data.r.reader}, seed ${p.data.r.seed}<br>${p.data.r.reader === "Rank" ? "separation " + p.data.r.gap.toFixed(2) + "× (fires at 2×)" : "gap " + P.signed(p.data.r.gap, 3) + " (fires at " + p.data.r.bar + ")"}` } },
+      P.marks({ zeroX: true, xRegion: { from: -6, to: 0, color: C.red, alpha: 0.08, text: "says the bad rep is healthier" } }),
+      { type: "line", data: [], markLine: { silent: true, symbol: "none", data: [{ xAxis: 1 }], lineStyle: { color: C.yellow, type: "dotted", width: 3 },
+        label: { formatter: "fires", color: C.yellow, fontSize: 18 } } },
+    ],
+  });
+});
+</script>
+```
+
+:::
+
+::::
+
+::: {.caption .side}
+MAE learns to fill in pixels; quality is a side effect it never trains for. An over-powered decoder lets the encoder
+coast: on **every seed** its loss is **lower** and its probe **worse**. Rank is blind by construction (the bad rep stays
+full-rank), and uniformity, clusterability and attention distance **point the wrong way** (red: past the bar). One candidate fires 5/5:
+alignment under a strong augment.
+:::
+
+## The one candidate reads the lever, not quality
+
+:::: {.columns}
+
+::: {.column width="60%"}
+
+```{=html}
+<div id="ch-decoder" class="chart"></div>
+<script>
+Deck.chart("ch-decoder", (el) => {
+  const P = Charts, C = P.C;
+  const rows = P.data("decoder_dose");
+  const cats = rows.map((r) => r.decoder);
+  P.draw(el, {
+    title: P.title("Shrinking the shortcut decoder, seed 0 (P0.5.3)"),
+    legend: P.legend({ data: ["probe crater (kNN)", "strong-augment alignment"] }),
+    grid: { left: 100, right: 110, top: 60, bottom: 140 },
+    xAxis: { type: "category", data: cats, axisLabel: { fontSize: 19, color: C.text, interval: 0 } },
+    yAxis: [
+      P.axis("probe crater, healthy − degraded (pts)", { min: -4, max: 8, scale: false, nameGap: 56 }),
+      P.axis("alignment gap", { min: -0.04, max: 0.08, scale: false, nameGap: 70, splitLine: { show: false } }),
+    ],
+    series: [
+      { type: "bar", name: "probe crater (kNN)", barWidth: "45%", z: 2,
+        data: rows.map((r) => ({ value: P.pts(r.knn_crater), itemStyle: { color: r.lever === "mask" ? C.blue : r.knn_crater > 0 ? C.red : C.green, borderRadius: 3 } })),
+        label: { show: true, position: "inside", formatter: (p) => (p.value ? P.signed(p.value) : ""), color: "#fff", fontSize: 18, fontWeight: "bold" },
+        tooltip: { formatter: (p) => `${p.name}<br>crater ${P.signed(p.value)} pts` },
+        markLine: { silent: true, symbol: "none", data: [{ yAxis: 0 }], lineStyle: { color: C.muted, type: "solid", width: 2 }, label: { show: false } } },
+      { type: "line", name: "strong-augment alignment", yAxisIndex: 1, symbolSize: 18, z: 4, connectNulls: false,
+        lineStyle: { width: 4, color: C.yellow }, itemStyle: { color: C.yellow },
+        data: rows.map((r) => r.lever === "mask" ? null : r.align_gap),
+        tooltip: { formatter: (p) => `${p.name}<br>alignment gap ${p.value.toFixed(3)} (fires at 0.05)` },
+        markLine: { silent: true, symbol: "none", data: [{ yAxis: 0.05 }], lineStyle: { color: C.yellow, type: "dotted", width: 3 },
+          label: { formatter: "fires", position: "insideEndTop", color: C.yellow, fontSize: 18 } } },
+      { type: "scatter", name: "strong-augment alignment", yAxisIndex: 1, symbol: "diamond", symbolSize: 24, z: 4, itemStyle: { color: C.yellow },
+        data: rows.map((r) => r.lever === "mask" ? r.align_gap : null),
+        label: { show: true, position: "right", formatter: "silent", color: C.yellow, fontSize: 18 },
+        tooltip: { formatter: (p) => `mask lever<br>alignment gap ${p.value.toFixed(3)}: below the bar` } },
+    ],
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="40%" .side}
+
+- Weaken the shortcut decoder step by step: if alignment read **quality**, it would fade as the crater shrinks
+- It doesn't. It fires **flat**, even where the degraded arm's probe **beats** healthy (green bars)
+- And it stays **silent** on a real 4-pt crater made by the other lever (low mask ratio, blue)
+- It detects the **decoder regime**, which Phase 1 won't have. So MAE quality has **no label-free reader**: Phase 1
+    needs a labelled canary, or a joint-embedding projector
+
+:::
+
+::::
+
+# [05]{.section-num} Forgetting on a joint-embedding model {#forgetting-je}
+
+## Swap the objective: JE forgets where MAE resists
+
+:::: {.columns}
+
+::: {.column width="62%"}
+
+```{=html}
+<div id="ch-je-mae" class="chart"></div>
+<script>
+Deck.chart("ch-je-mae", (el) => {
+  const P = Charts, C = P.C;
+  const rows = P.data("je_vs_mae");
+  const vehicles = ["JE (SimSiam)", "MAE"], colors = { "JE (SimSiam)": C.blue, MAE: C.orange };
+  const { grid, title } = P.panels(2, { width: el.clientWidth, top: 110, bottom: 130, left: 110, gap: 110,
+    titles: ["forgetting, arm − twin (labelled)", "drift on old data, backbone (label-free)"] });
+  title.unshift(P.title("Same far split (Imagenette → satellite), 5 seeds (P0.6.0)"));
+  const jit = (s) => (s - 2) * 0.07;
+  const series = [
+    { type: "scatter", xAxisIndex: 0, yAxisIndex: 0, symbolSize: 17, z: 3,
+      data: rows.map((r) => ({ value: [vehicles.indexOf(r.vehicle) + jit(r.seed), r.bwt], r, itemStyle: { color: colors[r.vehicle] } })),
+      tooltip: { formatter: (p) => `${p.data.r.vehicle}, seed ${p.data.r.seed}<br>${P.signed(p.value[1], 3)}` } },
+    P.marks({ xAxisIndex: 0, yAxisIndex: 0, zeroY: true, yRegion: { from: -0.16, to: -0.05, color: C.red, alpha: 0.1, text: "forgot ≥ 5 pts" } }),
+  ];
+  for (const [arm, key, fill] of [["forgetting arm", "drift_pc", true], ["protected twin", "drift_healthy", false]]) {
+    series.push({ type: "scatter", name: arm, xAxisIndex: 1, yAxisIndex: 1, symbolSize: 16, z: 3,
+      itemStyle: fill ? { color: C.text } : { color: "transparent", borderColor: C.text, borderWidth: 3 },
+      data: rows.map((r) => ({ value: [vehicles.indexOf(r.vehicle) + jit(r.seed) + (fill ? -0.15 : 0.15), r[key]], r,
+        itemStyle: fill ? { color: colors[r.vehicle] } : { color: "transparent", borderColor: colors[r.vehicle], borderWidth: 3 } })),
+      tooltip: { formatter: (p) => `${p.data.r.vehicle}, ${arm}, seed ${p.data.r.seed}<br>CKA drift ${p.value[1].toFixed(3)}` } });
+  }
+  const cat = (i) => ({ type: "value", gridIndex: i, min: -0.5, max: 1.5, splitLine: { show: false },
+    axisLabel: { customValues: [0, 1], formatter: (v) => vehicles[v] ?? "", fontSize: 20, color: C.text }, axisTick: { customValues: [0, 1] } });
+  P.draw(el, {
+    title, grid, legend: P.legend({ data: ["forgetting arm", "protected twin"] }),
+    xAxis: [cat(0), cat(1)],
+    yAxis: [
+      P.axis("task-A accuracy change", { gridIndex: 0, min: -0.16, max: 0.04, scale: false, nameGap: 64, axisLabel: { fontSize: 18, formatter: (v) => P.signed(v, 2) } }),
+      P.axis("CKA drift (log)", { gridIndex: 1, type: "log", min: 0.01, max: 1, nameGap: 56 }),
+    ],
+    series,
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="38%" .side}
+
+- **SimSiam** (pulls two views of an image together) forgets the old task under a **far** shift, on 4–5 of 5 seeds; a
+    near shift (CIFAR) does not move it
+- The same split on **MAE** stays near zero, and a clean deep-well test confirms it: **0/10** (P0.3.10)
+- Its internal picture of the old data **moves ~20× more** than MAE's
+- Masked reconstruction **anchors** the features; JE **churns** them. Forgetting is a JE problem first
+
+:::
+
+::::
+
+## On JE, the forgetting reader is drift, even with no old data
+
+:::: {.columns}
+
+::: {.column width="62%"}
+
+```{=html}
+<div id="ch-je-readers" class="chart"></div>
+<script>
+Deck.chart("ch-je-readers", (el) => {
+  const P = Charts, C = P.C;
+  const rows = P.data("je_readers");
+  const keys = P.uniq(rows.map((r) => `${r.reference}|${r.reader}`));
+  const y = (k) => keys.length - 1 - keys.indexOf(k) + (keys.indexOf(k) >= 4 ? 0 : 0.6);
+  const scale = new Map();
+  for (const k of keys) scale.set(k, Math.max(...rows.filter((r) => `${r.reference}|${r.reader}` === k).map((r) => Math.abs(r.margin))));
+  const data = rows.map((r) => {
+    const k = `${r.reference}|${r.reader}`;
+    return { value: [r.margin / scale.get(k), y(k) + (r.seed - 2) * 0.07], r, itemStyle: { color: r.margin > 0 ? C.green : C.red } };
+  });
+  const idx = keys.map(y), labels = new Map(keys.map((k) => [y(k), k.split("|")[1]]));
+  const counts = new Map(keys.map((k) => [y(k), `${rows.filter((r) => `${r.reference}|${r.reader}` === k && r.margin > 0).length}/5`]));
+  P.draw(el, {
+    grid: { left: 300, right: 80, top: 40, bottom: 110 },
+    xAxis: P.axis("forgetting arm − protected twin (each reader scaled to its largest seed)", { min: -1.05, max: 1.05, scale: false,
+      axisLabel: { fontSize: 18, formatter: (v) => (v === 0 ? "0" : "") } }),
+    yAxis: [
+      { type: "value", min: -0.6, max: keys.length + 0.3, splitLine: { show: false },
+        axisLabel: { customValues: idx, formatter: (v) => labels.get(v) ?? "", fontSize: 19, color: C.text }, axisTick: { customValues: idx } },
+      { type: "value", min: -0.6, max: keys.length + 0.3, position: "right", splitLine: { show: false }, axisLine: { show: false },
+        axisLabel: { customValues: idx, formatter: (v) => counts.get(v) ?? "", fontSize: 21, fontWeight: "bold", color: C.yellow }, axisTick: { show: false } },
+    ],
+    series: [
+      { type: "scatter", symbolSize: 16, z: 3, data,
+        tooltip: { formatter: (p) => `${p.data.r.reference}<br>${p.data.r.reader}, seed ${p.data.r.seed}: ${P.signed(p.data.r.margin, 3)}` } },
+      P.marks({ zeroX: true }),
+      { type: "line", data: [], markLine: { silent: true, symbol: "none", lineStyle: { color: C.muted, type: "dashed", width: 1.5 },
+        data: [{ yAxis: 3.8 }], label: { show: false } } },
+      { type: "line", data: [], markArea: { silent: true, data: [
+        [{ yAxis: 3.95, name: "Against a saved batch of old (task-A) data", itemStyle: { color: "transparent" },
+           label: { position: "insideTopLeft", color: C.muted, fontSize: 18 } }, { yAxis: keys.length + 0.3 }],
+        [{ yAxis: -0.6, name: "Against the current stream only: no old data kept", itemStyle: { color: "transparent" },
+           label: { position: "insideTopLeft", color: C.muted, fontSize: 18 } }, { yAxis: 3.65 }],
+      ] } },
+    ],
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="38%" .side}
+
+- Green: the reader rates the forgetting arm as having moved more than its twin. The count is seeds out of 5
+- With a saved batch of old data, **drift** separates every seed. The collapse geometry does not port: uniformity
+    **flips sign**; alignment separates but reads the far-shift **regime**, not how much was forgotten
+- With **no old data**, only the **projector's drift** separates every seed; backbone drift flips
+- The catch: drift reads **change**, and some change is healthy learning. Phase 0 had the twin to subtract; deployment
+    won't
+
+:::
+
+::::
+
+## What we can trust, and what we can't (yet)
+
+:::: {.columns}
+
+::: {.column width="48%"}
+
+<div class="card green">
+<h3 style="color: #4CAF50;">Trust</h3>
+
+- **Collapse:** rank at the projector, in every corner; variance and covariance tell point from redundancy collapse,
+    and the readers track **mild** collapse smoothly
+- **Instability:** the gradient norm, ~5 steps ahead of the NaN, and specific to divergence
+- **Forgetting on JE:** drift, two-sided, every seed; even with no old data, at the projector
+- **Forgetting, labelled:** backward transfer, seed-stable
+- **MAE resists forgetting**, near and far, and every crater recovers
+
+</div>
+
+:::
+
+::: {.column width="4%"}
+:::
+
+::: {.column width="48%"}
+
+<div class="card red">
+<h3 style="color: #E63946;">Not yet</h3>
+
+- **The target corner:** correlated, single-pass collapse reading is **one marginal reader**, on its bar
+- **MAE quality:** no label-free reader; the loss lies and the collapse geometry misleads
+- **MAE forgetting:** label-free readers confounded at the output; **permanent** forgetting never reached
+- **Early warning** exists only with SGD + a raw loss
+- **Drift** reads change, not harm, without a twin
+- **Toy scale:** shapes port, thresholds may not
+
+</div>
+
+:::
+
+::::
+
+## Handover: what Phase 1 carries
+
+:::: {.columns}
+
+::: {.column width="56%" .side}
+
+- **Anchor** readers to a fixed, certified healthy reference, never a co-trained arm that drifts with the signal
+- **Collapse:** gate at the projector; read the backbone alongside, not alone; budget a second reader for the
+    correlated, single-pass corner
+- **Forgetting:** the real question is whether a **long, correlated** stream breaks MAE's resistance; on JE, read
+    drift at the projector
+- **Quality on MAE:** provision a **labelled canary**, or a JE projector
+- **Instability:** choose the optimizer with the early warning in view
+- **Phase 1 so far:** a frozen-start anchor, a measured canary, and a label-free MAE signal **per block** (P1.1).
+    [P1.1 / P1.2 deck →](../p1-findings/)
+
+:::
+
+::: {.column width="44%"}
+
+<div class="card">
+<h3 style="color: #FECB00;">For discussion</h3>
+
+Phase 0's readers catch the **loud** failures, collapse and divergence. The **quiet** ones, quality loss and slow
+forgetting, are visible label-free only on a **joint-embedding** backbone; MAE resists forgetting but hides its quality.
+
+So choosing a backbone is also choosing what the monitor can see. How much weight should that carry next to accuracy,
+as P1.3 runs JE and MAE side by side?
+
+</div>
+
+:::
+
+::::
