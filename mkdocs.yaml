@@ -4,6 +4,8 @@ site_description: "Continuous, Active Federated Learning for Data Streams"
 site_url: "https://aidotse.github.io/cafl4ds/"
 repo_url: "https://github.com/aidotse/cafl4ds"
 site_dir: public
+not_in_nav: |
+  /experiments/*/artifacts/**
 
 plugins:
   - search
@@ -39,6 +41,7 @@ nav:
       - P0.2.2: experiments/latest-results/P0.2.2.md
       - P0.2.3: experiments/latest-results/P0.2.3.md
       - P0.2.4: experiments/latest-results/P0.2.4.md
+      - P0.2.5: experiments/latest-results/P0.2.5.md
       - P0.3: experiments/latest-results/P0.3.md
       - P0.3.0: experiments/latest-results/P0.3.0.md
       - P0.3.1: experiments/latest-results/P0.3.1.md
@@ -50,6 +53,7 @@ nav:
       - P0.3.7: experiments/latest-results/P0.3.7.md
       - P0.3.8: experiments/latest-results/P0.3.8.md
       - P0.3.9: experiments/latest-results/P0.3.9.md
+      - P0.3.10: experiments/latest-results/P0.3.10.md
       - P0.4: experiments/latest-results/P0.4.md
       - P0.4.0: experiments/latest-results/P0.4.0.md
       - P0.4.1: experiments/latest-results/P0.4.1.md
@@ -65,6 +69,17 @@ nav:
       - P1.0.0: experiments/latest-results/P1.0.0.md
       - P1.0.1: experiments/latest-results/P1.0.1.md
       - P1.0.2: experiments/latest-results/P1.0.2.md
+      - P1.1: experiments/latest-results/P1.1.md
+      - P1.1.0: experiments/latest-results/P1.1.0.md
+      - P1.1.1: experiments/latest-results/P1.1.1.md
+      - P1.1.2: experiments/latest-results/P1.1.2.md
+      - P1.1.3: experiments/latest-results/P1.1.3.md
+      - P1.2: experiments/latest-results/P1.2.md
+      - P1.2.0: experiments/latest-results/P1.2.0.md
+      - P1.2.1: experiments/latest-results/P1.2.1.md
+      - P1.2.2: experiments/latest-results/P1.2.2.md
+      - P1.2.4: experiments/latest-results/P1.2.4.md
+      - P1.2.5: experiments/latest-results/P1.2.5.md
 
   - Phase 0:
       - experiments/phase0/index.md
@@ -74,6 +89,7 @@ nav:
       - P0.2.2 Positive control (collapse gate - full metric suite): experiments/phase0/P0.2.2.md
       - P0.2.3 Positive control (collapse gate - redundancy vehicle): experiments/phase0/P0.2.3.md
       - P0.2.4 Positive control (collapse gate - false-positive stress): experiments/phase0/P0.2.4.md
+      - P0.2.5 Positive control (collapse gate - partial-collapse dose-response): experiments/phase0/P0.2.5.md
       - P0.3.0 Positive control (forgetting gate - making forgetting real): experiments/phase0/P0.3.0.md
       - P0.3.1 Positive control (forgetting gate - operating point + drift verdict): experiments/phase0/P0.3.1.md
       - P0.3.2 Positive control (forgetting gate - multi-seed robustness): experiments/phase0/P0.3.2.md
@@ -84,6 +100,7 @@ nav:
       - P0.3.7 Positive control (forgetting gate - savings audit): experiments/phase0/P0.3.7.md
       - P0.3.8 Positive control (forgetting gate - hard-disjoint vehicle): experiments/phase0/P0.3.8.md
       - P0.3.9 Positive control (forgetting gate - well-depth de-confound): experiments/phase0/P0.3.9.md
+      - P0.3.10 Positive control (forgetting gate - far-domain MAE forgetting at a deep well): experiments/phase0/P0.3.10.md
       - P0.4.0 Positive control (instability gate - LR-driven divergence): experiments/phase0/P0.4.0.md
       - P0.4.1 Positive control (instability gate - data-driven surprise/shock): experiments/phase0/P0.4.1.md
       - P0.5.0 Positive control (representation degradation - mask-ratio vehicle): experiments/phase0/P0.5.0.md
@@ -98,6 +115,15 @@ nav:
       - P1.0.0 Open loop instrumentation (P0 integration): experiments/phase1/P1.0.0.md
       - P1.0.1 Open loop instrumentation (same-seed vs. shared-iterator): experiments/phase1/P1.0.1.md
       - P1.0.2 Open loop instrumentation (deployment prototype de-risker): experiments/phase1/P1.0.2.md
+      - P1.1.0 Reading degradation (healthy-movement null + canary probe power): experiments/phase1/P1.1.0.md
+      - P1.1.1 Reading degradation (reading protocol - degradation vs. benign reorganization): experiments/phase1/P1.1.1.md
+      - P1.1.2 Reading degradation (candidate label-free lenses - layer-wise CKA + intrinsic dimension): experiments/phase1/P1.1.2.md
+      - P1.1.3 Reading degradation (CKA drift deep dive - information loss vs benign adaptation): experiments/phase1/P1.1.3.md
+      - P1.2.0 Adapt vs frozen (the readout ladder and the frozen floor): experiments/phase1/P1.2.0.md
+      - P1.2.1 Adapt vs frozen (the gate read - online adaptation over one long pass): experiments/phase1/P1.2.1.md
+      - P1.2.2 Adapt vs frozen (why adapting MAE loses - a recipe diagnosis): experiments/phase1/P1.2.2.md
+      - P1.2.4 Adapt vs frozen (attribution and widening of the gain): experiments/phase1/P1.2.4.md
+      - P1.2.5 Adapt vs frozen (strong starts - DINO-init, the payoff curve and a wider panel): experiments/phase1/P1.2.5.md
 
   - Audits:
       - P0.2 (collapse mode): experiments/audits/P0.2.md
