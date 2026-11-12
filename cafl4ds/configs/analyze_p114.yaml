@@ -1,0 +1,72 @@
+# P1.1.4 — the reading foundation for P1.3's setup (scripts/analyze_p114.py).
+# `root` holds the drives (outputs/ in the main checkout; the run dirs live on the project share).
+root: outputs
+mode: bands # bands (Part 1) | power (Part 4)
+out: ${root}/p114/${mode}.json
+
+# Part 1 — the healthy null and the single-drive bands, per arm. `iid_seeds` / `check_seeds` pick the
+# calibration and the fresh check from the pooled IID dirs (null = every seed; [] = no check).
+arms:
+  dino_simsiam:
+    backbone: je
+    walk: [p125/partG/drive/dino_simsiam_p9e-5_walk]
+    iid: [p125/partG/drive/dino_simsiam_p9e-5_iid]
+    iid_seeds: null
+    check_seeds: []
+  mae_je:
+    backbone: je
+    walk: [p125/drive/mae_je_walk]
+    iid: [p125/drive/mae_je_iid]
+    iid_seeds: null
+    check_seeds: []
+  # The provisional fourth arm (audit D5). Its projector surface is DINO's head bottleneck (256-d), as P1.2.5
+  # logged it. Only 3 IID seeds before Stage 1 (seeds 1-3, end-only checkpoints): 1a reads it descriptively.
+  dino_dino:
+    backbone: je
+    walk: [p125/drive/dino_dino_walk]
+    iid: [p125/drive/dino_dino_iid]
+    iid_seeds: null
+    check_seeds: []
+
+# P1.1.1's panels and settings (configs/reading_protocol.yaml), unchanged except the span: P1.2.5 logs
+# every 25 steps (69 readings), so +-8 readings covers the share of the drive P1.1.1's +-15 of ~120 did.
+signals:
+  je: [rankme_proj, uniformity_proj, cka_drift_proj, rankme, cka_drift, cosine_drift]
+  mae: [rankme, uniformity, cka_drift, cosine_drift]
+arbiters: [knn_acc, linear_acc, knn_acc_daytime, linear_acc_daytime, knn_acc_dawn_dusk, linear_acc_dawn_dusk,
+  knn_acc_night, linear_acc_night]
+alpha: 0.05
+span: 8
+floor: 0.25
+window_label_free: 1
+window_canary: 5
+batch_size: 32
+min_batch: 8
+# The canary's query images behind one reading (100 per scene x time-of-day cell): pooled, and per stratum.
+n_query_pooled: 900
+n_query_stratum: 300
+
+# Part 4 — the referee's power on past regimes, from P1.2.5's per-image ladder reads at every walk checkpoint.
+power:
+  ladders: { dino_simsiam: p125/ladder/dino_simsiam_p9e-5, mae_je: p125/ladder/mae_je, dino_dino: p125/ladder/dino_dino }
+  seeds: [0, 1, 2, 3, 4] # walk_s<i>_* (the drives' seeds 1-5)
+  checkpoints: [t00100, t00212, t00423, t00846, t01269, end]
+  tasks: [scene, "presence_cell:traffic light"]
+  rungs: [knn, linear]
+  # each past slice -> t0, the first checkpoint after the stream left it (P1.2.5's timeline: daytime clear
+  # 0-325, the other daytime eras to ~800, dawn/dusk to ~925, then night, which is never left)
+  past:
+    "regime:daytime·clear": t00423
+    "regime:daytime·partly cloudy": t00846
+    "regime:daytime·overcast": t00846
+    "regime:daytime·rainy": t00846
+    "regime:daytime·snowy": t00846
+    "tod:daytime": t00846
+    "tod:dawn/dusk": t01269
+  min_per_class: 20 # Part F's read rule
+  alpha: 0.05 # family-wise over the slices read (Bonferroni, Holm's strictest step)
+  power: 0.8
+  targets: [0.02, 0.01]
+  seed_multipliers: [1, 2]
+  dense_checkpoints: 10 # a P1.3-like grid after leaving a regime (Bonferroni bound)
+  n_boot: 2000
