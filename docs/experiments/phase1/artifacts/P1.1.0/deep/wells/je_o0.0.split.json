@@ -1,0 +1,12 @@
+{
+  "canary_seed": 0,
+  "digest": "2efa73407daaed6f4e8994d620d8f394ad531c15606ba145466e6dd8043334e0",
+  "n_images": 8753,
+  "query_per_canary": 45,
+  "select_query_per_canary": 150,
+  "select_support_per_canary": 150,
+  "stratify_canary": true,
+  "support_per_canary": 45,
+  "well_fraction": 0.5,
+  "well_overlap": 0.0
+}

@@ -1,0 +1,74 @@
+[
+  {
+    "file": "step00022.pt",
+    "batches_seen": 22
+  },
+  {
+    "file": "step00031.pt",
+    "batches_seen": 31
+  },
+  {
+    "file": "step00044.pt",
+    "batches_seen": 44
+  },
+  {
+    "file": "step00049.pt",
+    "batches_seen": 49
+  },
+  {
+    "file": "step00055.pt",
+    "batches_seen": 55
+  },
+  {
+    "file": "step00056.pt",
+    "batches_seen": 56
+  },
+  {
+    "file": "step00059.pt",
+    "batches_seen": 59
+  },
+  {
+    "file": "step00060.pt",
+    "batches_seen": 60
+  },
+  {
+    "file": "step00062.pt",
+    "batches_seen": 62
+  },
+  {
+    "file": "step00063.pt",
+    "batches_seen": 63
+  },
+  {
+    "file": "step00064.pt",
+    "batches_seen": 64
+  },
+  {
+    "file": "step00065.pt",
+    "batches_seen": 65
+  },
+  {
+    "file": "step00108.pt",
+    "batches_seen": 108
+  },
+  {
+    "file": "step00109.pt",
+    "batches_seen": 109
+  },
+  {
+    "file": "step00110.pt",
+    "batches_seen": 110
+  },
+  {
+    "file": "step00114.pt",
+    "batches_seen": 114
+  },
+  {
+    "file": "step00118.pt",
+    "batches_seen": 118
+  },
+  {
+    "file": "final.pt",
+    "batches_seen": 119
+  }
+]

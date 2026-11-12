@@ -34,6 +34,44 @@ seeds: null
 # a path = warm drive resuming the competent well intact. The configurable warm-start pointer.
 well: null
 
+# The fixed drift reference (P1.1.0): a full-method well path the monitor anchors drift to, instead of
+# the run's own first checkpoint. Defaults to the drive's well; a cold drive may point it at a well to
+# read "distance from a competent reference" (cka_drift only — cosine_drift needs a shared frame).
+anchor: ${well}
+
+# Save the full method at every leg boundary of the walk (and at the end) under checkpoints/s<seed>/,
+# for post-hoc reads too costly to run inline (the P1.3 fine-tune probe). The IID control checkpoints
+# at the same (matched) steps.
+checkpoint_legs: false
+
+# P1.1.1 branches (cafl4ds/branch.py) — start from a saved checkpoint instead of the well. `checkpoint`
+# is a full-method file ("{seed}" is filled with the drive seed); `step` is the drive step it was saved
+# before (step<NNNNN>.pt), and the drive resumes there (fresh optimizer — compare against a dose-0
+# branch, not the original drive). `checkpoint_legs` also accepts `final` (save only the end state).
+resume:
+  checkpoint: null
+  step: 0
+# The surgical positive control, applied to the resumed state: `reinit` | `noise` the top `k` encoder
+# blocks (`scale` = noise SD as a multiple of each weight tensor's SD). `none` / k=0 is the dose-0 twin.
+damage:
+  mode: none
+  k: 0
+  scale: 0.0
+  seed: ${seed} # the damage draw varies with the drive seed, so a dose is not one realization
+# scripts/dose_pilot.py only: the `mode:k[:scale]` damage ladder read on the well with no training.
+doses: []
+# scripts/extract_block_features.py only (P1.1.2): the run dirs whose saved checkpoints are read.
+# `drives` read every checkpoint in checkpoints/s<seed>/index.json; `branches` read final.pt and the
+# post-damage state, rebuilt from the run's own resume.checkpoint + damage config.
+lens:
+  drives: []
+  branches: []
+  batch_size: 135
+  probe_only: false # P1.1.3: rewrite probe.pt alone (the features need no re-extraction)
+# The recovery pass: >0 runs this many stationary well-pool batches from `resume.checkpoint` instead
+# of the drive (the short IID pass after a drive, read as savings).
+recovery_steps: null
+
 # BDD sizing (data=bdd). bdd_root points at the canonical download; max_images caps the load.
 bdd_root: /mnt/bdd100k
 max_images: null
@@ -69,3 +107,4 @@ long_horizon_growth_frac_max: 0.10
 # The corpus (health.csv/parquet + segments/trust/manifest) and per-seed reports land in the Hydra
 # run dir under corpus/ and reports/ respectively.
 run_name: null # defaults to "<backbone>_deploy" in the run script
+study: P1.0.2 # the study label stamped on the report + corpus (P1.1 runs override, e.g. study=P1.1.0)

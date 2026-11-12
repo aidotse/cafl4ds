@@ -60,6 +60,8 @@ docs/exported/
 
 # ── Hydra run outputs ──────────────────────────────────────────────────
 outputs/
+# warm wells + their split/trace sidecars (regenerable; the traces are promoted to docs artifacts)
+wells/
 multirun/
 .graph_dumps/
 /cache/

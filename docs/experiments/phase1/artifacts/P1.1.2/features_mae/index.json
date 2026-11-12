@@ -1,0 +1,1290 @@
+[
+  {
+    "checkpoint": "wells/p110_deep/mae_o0.0.pt",
+    "features": "features/well.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00022.pt",
+    "features": "features/mae_o0.0_iid/s0/step00022.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00031.pt",
+    "features": "features/mae_o0.0_iid/s0/step00031.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00044.pt",
+    "features": "features/mae_o0.0_iid/s0/step00044.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00049.pt",
+    "features": "features/mae_o0.0_iid/s0/step00049.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00055.pt",
+    "features": "features/mae_o0.0_iid/s0/step00055.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00056.pt",
+    "features": "features/mae_o0.0_iid/s0/step00056.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00059.pt",
+    "features": "features/mae_o0.0_iid/s0/step00059.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00060.pt",
+    "features": "features/mae_o0.0_iid/s0/step00060.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00062.pt",
+    "features": "features/mae_o0.0_iid/s0/step00062.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00063.pt",
+    "features": "features/mae_o0.0_iid/s0/step00063.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00064.pt",
+    "features": "features/mae_o0.0_iid/s0/step00064.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00065.pt",
+    "features": "features/mae_o0.0_iid/s0/step00065.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00108.pt",
+    "features": "features/mae_o0.0_iid/s0/step00108.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00109.pt",
+    "features": "features/mae_o0.0_iid/s0/step00109.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00110.pt",
+    "features": "features/mae_o0.0_iid/s0/step00110.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00114.pt",
+    "features": "features/mae_o0.0_iid/s0/step00114.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00118.pt",
+    "features": "features/mae_o0.0_iid/s0/step00118.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/final.pt",
+    "features": "features/mae_o0.0_iid/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00022.pt",
+    "features": "features/mae_o0.0_iid/s1/step00022.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00031.pt",
+    "features": "features/mae_o0.0_iid/s1/step00031.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00044.pt",
+    "features": "features/mae_o0.0_iid/s1/step00044.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00049.pt",
+    "features": "features/mae_o0.0_iid/s1/step00049.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00055.pt",
+    "features": "features/mae_o0.0_iid/s1/step00055.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00056.pt",
+    "features": "features/mae_o0.0_iid/s1/step00056.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00059.pt",
+    "features": "features/mae_o0.0_iid/s1/step00059.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00060.pt",
+    "features": "features/mae_o0.0_iid/s1/step00060.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00062.pt",
+    "features": "features/mae_o0.0_iid/s1/step00062.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00063.pt",
+    "features": "features/mae_o0.0_iid/s1/step00063.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00064.pt",
+    "features": "features/mae_o0.0_iid/s1/step00064.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00065.pt",
+    "features": "features/mae_o0.0_iid/s1/step00065.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00108.pt",
+    "features": "features/mae_o0.0_iid/s1/step00108.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00109.pt",
+    "features": "features/mae_o0.0_iid/s1/step00109.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00110.pt",
+    "features": "features/mae_o0.0_iid/s1/step00110.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00114.pt",
+    "features": "features/mae_o0.0_iid/s1/step00114.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00118.pt",
+    "features": "features/mae_o0.0_iid/s1/step00118.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/final.pt",
+    "features": "features/mae_o0.0_iid/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00022.pt",
+    "features": "features/mae_o0.0_iid/s2/step00022.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00031.pt",
+    "features": "features/mae_o0.0_iid/s2/step00031.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00044.pt",
+    "features": "features/mae_o0.0_iid/s2/step00044.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00049.pt",
+    "features": "features/mae_o0.0_iid/s2/step00049.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00055.pt",
+    "features": "features/mae_o0.0_iid/s2/step00055.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00056.pt",
+    "features": "features/mae_o0.0_iid/s2/step00056.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00059.pt",
+    "features": "features/mae_o0.0_iid/s2/step00059.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00060.pt",
+    "features": "features/mae_o0.0_iid/s2/step00060.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00062.pt",
+    "features": "features/mae_o0.0_iid/s2/step00062.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00063.pt",
+    "features": "features/mae_o0.0_iid/s2/step00063.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00064.pt",
+    "features": "features/mae_o0.0_iid/s2/step00064.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00065.pt",
+    "features": "features/mae_o0.0_iid/s2/step00065.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00108.pt",
+    "features": "features/mae_o0.0_iid/s2/step00108.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00109.pt",
+    "features": "features/mae_o0.0_iid/s2/step00109.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00110.pt",
+    "features": "features/mae_o0.0_iid/s2/step00110.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00114.pt",
+    "features": "features/mae_o0.0_iid/s2/step00114.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00118.pt",
+    "features": "features/mae_o0.0_iid/s2/step00118.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/final.pt",
+    "features": "features/mae_o0.0_iid/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/step00022.pt",
+    "features": "features/mae_o0.0_iid/s3/step00022.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/step00031.pt",
+    "features": "features/mae_o0.0_iid/s3/step00031.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/step00044.pt",
+    "features": "features/mae_o0.0_iid/s3/step00044.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/step00049.pt",
+    "features": "features/mae_o0.0_iid/s3/step00049.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/step00055.pt",
+    "features": "features/mae_o0.0_iid/s3/step00055.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/step00056.pt",
+    "features": "features/mae_o0.0_iid/s3/step00056.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/step00059.pt",
+    "features": "features/mae_o0.0_iid/s3/step00059.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/step00060.pt",
+    "features": "features/mae_o0.0_iid/s3/step00060.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/step00062.pt",
+    "features": "features/mae_o0.0_iid/s3/step00062.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/step00063.pt",
+    "features": "features/mae_o0.0_iid/s3/step00063.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/step00064.pt",
+    "features": "features/mae_o0.0_iid/s3/step00064.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/step00065.pt",
+    "features": "features/mae_o0.0_iid/s3/step00065.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/step00108.pt",
+    "features": "features/mae_o0.0_iid/s3/step00108.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/step00109.pt",
+    "features": "features/mae_o0.0_iid/s3/step00109.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/step00110.pt",
+    "features": "features/mae_o0.0_iid/s3/step00110.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/step00114.pt",
+    "features": "features/mae_o0.0_iid/s3/step00114.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/step00118.pt",
+    "features": "features/mae_o0.0_iid/s3/step00118.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s3/final.pt",
+    "features": "features/mae_o0.0_iid/s3/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/step00022.pt",
+    "features": "features/mae_o0.0_iid/s4/step00022.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/step00031.pt",
+    "features": "features/mae_o0.0_iid/s4/step00031.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/step00044.pt",
+    "features": "features/mae_o0.0_iid/s4/step00044.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/step00049.pt",
+    "features": "features/mae_o0.0_iid/s4/step00049.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/step00055.pt",
+    "features": "features/mae_o0.0_iid/s4/step00055.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/step00056.pt",
+    "features": "features/mae_o0.0_iid/s4/step00056.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/step00059.pt",
+    "features": "features/mae_o0.0_iid/s4/step00059.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/step00060.pt",
+    "features": "features/mae_o0.0_iid/s4/step00060.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/step00062.pt",
+    "features": "features/mae_o0.0_iid/s4/step00062.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/step00063.pt",
+    "features": "features/mae_o0.0_iid/s4/step00063.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/step00064.pt",
+    "features": "features/mae_o0.0_iid/s4/step00064.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/step00065.pt",
+    "features": "features/mae_o0.0_iid/s4/step00065.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/step00108.pt",
+    "features": "features/mae_o0.0_iid/s4/step00108.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/step00109.pt",
+    "features": "features/mae_o0.0_iid/s4/step00109.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/step00110.pt",
+    "features": "features/mae_o0.0_iid/s4/step00110.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/step00114.pt",
+    "features": "features/mae_o0.0_iid/s4/step00114.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/step00118.pt",
+    "features": "features/mae_o0.0_iid/s4/step00118.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s4/final.pt",
+    "features": "features/mae_o0.0_iid/s4/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00022.pt",
+    "features": "features/mae_o0.0_walk/s0/step00022.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00031.pt",
+    "features": "features/mae_o0.0_walk/s0/step00031.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00044.pt",
+    "features": "features/mae_o0.0_walk/s0/step00044.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00049.pt",
+    "features": "features/mae_o0.0_walk/s0/step00049.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00055.pt",
+    "features": "features/mae_o0.0_walk/s0/step00055.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00056.pt",
+    "features": "features/mae_o0.0_walk/s0/step00056.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00059.pt",
+    "features": "features/mae_o0.0_walk/s0/step00059.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00060.pt",
+    "features": "features/mae_o0.0_walk/s0/step00060.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00062.pt",
+    "features": "features/mae_o0.0_walk/s0/step00062.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00063.pt",
+    "features": "features/mae_o0.0_walk/s0/step00063.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00064.pt",
+    "features": "features/mae_o0.0_walk/s0/step00064.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00065.pt",
+    "features": "features/mae_o0.0_walk/s0/step00065.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00108.pt",
+    "features": "features/mae_o0.0_walk/s0/step00108.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00109.pt",
+    "features": "features/mae_o0.0_walk/s0/step00109.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00110.pt",
+    "features": "features/mae_o0.0_walk/s0/step00110.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00114.pt",
+    "features": "features/mae_o0.0_walk/s0/step00114.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00118.pt",
+    "features": "features/mae_o0.0_walk/s0/step00118.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/final.pt",
+    "features": "features/mae_o0.0_walk/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00022.pt",
+    "features": "features/mae_o0.0_walk/s1/step00022.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00031.pt",
+    "features": "features/mae_o0.0_walk/s1/step00031.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00044.pt",
+    "features": "features/mae_o0.0_walk/s1/step00044.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00049.pt",
+    "features": "features/mae_o0.0_walk/s1/step00049.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00055.pt",
+    "features": "features/mae_o0.0_walk/s1/step00055.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00056.pt",
+    "features": "features/mae_o0.0_walk/s1/step00056.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00059.pt",
+    "features": "features/mae_o0.0_walk/s1/step00059.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00060.pt",
+    "features": "features/mae_o0.0_walk/s1/step00060.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00062.pt",
+    "features": "features/mae_o0.0_walk/s1/step00062.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00063.pt",
+    "features": "features/mae_o0.0_walk/s1/step00063.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00064.pt",
+    "features": "features/mae_o0.0_walk/s1/step00064.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00065.pt",
+    "features": "features/mae_o0.0_walk/s1/step00065.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00108.pt",
+    "features": "features/mae_o0.0_walk/s1/step00108.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00109.pt",
+    "features": "features/mae_o0.0_walk/s1/step00109.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00110.pt",
+    "features": "features/mae_o0.0_walk/s1/step00110.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00114.pt",
+    "features": "features/mae_o0.0_walk/s1/step00114.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00118.pt",
+    "features": "features/mae_o0.0_walk/s1/step00118.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/final.pt",
+    "features": "features/mae_o0.0_walk/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00022.pt",
+    "features": "features/mae_o0.0_walk/s2/step00022.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00031.pt",
+    "features": "features/mae_o0.0_walk/s2/step00031.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00044.pt",
+    "features": "features/mae_o0.0_walk/s2/step00044.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00049.pt",
+    "features": "features/mae_o0.0_walk/s2/step00049.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00055.pt",
+    "features": "features/mae_o0.0_walk/s2/step00055.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00056.pt",
+    "features": "features/mae_o0.0_walk/s2/step00056.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00059.pt",
+    "features": "features/mae_o0.0_walk/s2/step00059.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00060.pt",
+    "features": "features/mae_o0.0_walk/s2/step00060.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00062.pt",
+    "features": "features/mae_o0.0_walk/s2/step00062.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00063.pt",
+    "features": "features/mae_o0.0_walk/s2/step00063.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00064.pt",
+    "features": "features/mae_o0.0_walk/s2/step00064.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00065.pt",
+    "features": "features/mae_o0.0_walk/s2/step00065.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00108.pt",
+    "features": "features/mae_o0.0_walk/s2/step00108.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00109.pt",
+    "features": "features/mae_o0.0_walk/s2/step00109.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00110.pt",
+    "features": "features/mae_o0.0_walk/s2/step00110.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00114.pt",
+    "features": "features/mae_o0.0_walk/s2/step00114.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00118.pt",
+    "features": "features/mae_o0.0_walk/s2/step00118.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/final.pt",
+    "features": "features/mae_o0.0_walk/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/step00022.pt",
+    "features": "features/mae_o0.0_walk/s3/step00022.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/step00031.pt",
+    "features": "features/mae_o0.0_walk/s3/step00031.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/step00044.pt",
+    "features": "features/mae_o0.0_walk/s3/step00044.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/step00049.pt",
+    "features": "features/mae_o0.0_walk/s3/step00049.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/step00055.pt",
+    "features": "features/mae_o0.0_walk/s3/step00055.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/step00056.pt",
+    "features": "features/mae_o0.0_walk/s3/step00056.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/step00059.pt",
+    "features": "features/mae_o0.0_walk/s3/step00059.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/step00060.pt",
+    "features": "features/mae_o0.0_walk/s3/step00060.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/step00062.pt",
+    "features": "features/mae_o0.0_walk/s3/step00062.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/step00063.pt",
+    "features": "features/mae_o0.0_walk/s3/step00063.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/step00064.pt",
+    "features": "features/mae_o0.0_walk/s3/step00064.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/step00065.pt",
+    "features": "features/mae_o0.0_walk/s3/step00065.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/step00108.pt",
+    "features": "features/mae_o0.0_walk/s3/step00108.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/step00109.pt",
+    "features": "features/mae_o0.0_walk/s3/step00109.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/step00110.pt",
+    "features": "features/mae_o0.0_walk/s3/step00110.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/step00114.pt",
+    "features": "features/mae_o0.0_walk/s3/step00114.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/step00118.pt",
+    "features": "features/mae_o0.0_walk/s3/step00118.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s3/final.pt",
+    "features": "features/mae_o0.0_walk/s3/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/step00022.pt",
+    "features": "features/mae_o0.0_walk/s4/step00022.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/step00031.pt",
+    "features": "features/mae_o0.0_walk/s4/step00031.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/step00044.pt",
+    "features": "features/mae_o0.0_walk/s4/step00044.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/step00049.pt",
+    "features": "features/mae_o0.0_walk/s4/step00049.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/step00055.pt",
+    "features": "features/mae_o0.0_walk/s4/step00055.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/step00056.pt",
+    "features": "features/mae_o0.0_walk/s4/step00056.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/step00059.pt",
+    "features": "features/mae_o0.0_walk/s4/step00059.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/step00060.pt",
+    "features": "features/mae_o0.0_walk/s4/step00060.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/step00062.pt",
+    "features": "features/mae_o0.0_walk/s4/step00062.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/step00063.pt",
+    "features": "features/mae_o0.0_walk/s4/step00063.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/step00064.pt",
+    "features": "features/mae_o0.0_walk/s4/step00064.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/step00065.pt",
+    "features": "features/mae_o0.0_walk/s4/step00065.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/step00108.pt",
+    "features": "features/mae_o0.0_walk/s4/step00108.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/step00109.pt",
+    "features": "features/mae_o0.0_walk/s4/step00109.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/step00110.pt",
+    "features": "features/mae_o0.0_walk/s4/step00110.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/step00114.pt",
+    "features": "features/mae_o0.0_walk/s4/step00114.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/step00118.pt",
+    "features": "features/mae_o0.0_walk/s4/step00118.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s4/final.pt",
+    "features": "features/mae_o0.0_walk/s4/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_iid_noise0.3/checkpoints/s0/final.pt",
+    "features": "features/mae_iid_noise0.3/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00065.pt",
+    "features": "features/mae_iid_noise0.3/s0/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.3,
+      "seed": 0,
+      "rel_change": 0.3000222650012824
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_iid_noise0.3/checkpoints/s1/final.pt",
+    "features": "features/mae_iid_noise0.3/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00065.pt",
+    "features": "features/mae_iid_noise0.3/s1/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.3,
+      "seed": 1,
+      "rel_change": 0.29999901776019017
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_iid_noise0.3/checkpoints/s2/final.pt",
+    "features": "features/mae_iid_noise0.3/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00065.pt",
+    "features": "features/mae_iid_noise0.3/s2/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.3,
+      "seed": 2,
+      "rel_change": 0.30002892345212934
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_iid_noise0.5/checkpoints/s0/final.pt",
+    "features": "features/mae_iid_noise0.5/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00065.pt",
+    "features": "features/mae_iid_noise0.5/s0/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.5,
+      "seed": 0,
+      "rel_change": 0.5000370873258394
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_iid_noise0.5/checkpoints/s1/final.pt",
+    "features": "features/mae_iid_noise0.5/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00065.pt",
+    "features": "features/mae_iid_noise0.5/s1/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.5,
+      "seed": 1,
+      "rel_change": 0.4999983421823007
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_iid_noise0.5/checkpoints/s2/final.pt",
+    "features": "features/mae_iid_noise0.5/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00065.pt",
+    "features": "features/mae_iid_noise0.5/s2/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.5,
+      "seed": 2,
+      "rel_change": 0.5000481833659587
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_iid_noise0.75/checkpoints/s0/final.pt",
+    "features": "features/mae_iid_noise0.75/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00065.pt",
+    "features": "features/mae_iid_noise0.75/s0/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.75,
+      "seed": 0,
+      "rel_change": 0.7500556269795432
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_iid_noise0.75/checkpoints/s1/final.pt",
+    "features": "features/mae_iid_noise0.75/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00065.pt",
+    "features": "features/mae_iid_noise0.75/s1/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.75,
+      "seed": 1,
+      "rel_change": 0.7499975074037476
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_iid_noise0.75/checkpoints/s2/final.pt",
+    "features": "features/mae_iid_noise0.75/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00065.pt",
+    "features": "features/mae_iid_noise0.75/s2/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.75,
+      "seed": 2,
+      "rel_change": 0.7500722840978145
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_iid_noise1.0/checkpoints/s0/final.pt",
+    "features": "features/mae_iid_noise1.0/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00065.pt",
+    "features": "features/mae_iid_noise1.0/s0/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 1.0,
+      "seed": 0,
+      "rel_change": 1.000074174350045
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_iid_noise1.0/checkpoints/s1/final.pt",
+    "features": "features/mae_iid_noise1.0/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00065.pt",
+    "features": "features/mae_iid_noise1.0/s1/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 1.0,
+      "seed": 1,
+      "rel_change": 0.999996682102189
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_iid_noise1.0/checkpoints/s2/final.pt",
+    "features": "features/mae_iid_noise1.0/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00065.pt",
+    "features": "features/mae_iid_noise1.0/s2/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 1.0,
+      "seed": 2,
+      "rel_change": 1.0000963655254005
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_iid_none/checkpoints/s0/final.pt",
+    "features": "features/mae_iid_none/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_iid_none/checkpoints/s1/final.pt",
+    "features": "features/mae_iid_none/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_iid_none/checkpoints/s2/final.pt",
+    "features": "features/mae_iid_none/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_iid_reinit12/checkpoints/s0/final.pt",
+    "features": "features/mae_iid_reinit12/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00065.pt",
+    "features": "features/mae_iid_reinit12/s0/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 12,
+      "scale": 0.0,
+      "seed": 0,
+      "rel_change": 1.0808051485211323
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_iid_reinit12/checkpoints/s1/final.pt",
+    "features": "features/mae_iid_reinit12/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00065.pt",
+    "features": "features/mae_iid_reinit12/s1/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 12,
+      "scale": 0.0,
+      "seed": 1,
+      "rel_change": 1.0807255680999406
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_iid_reinit12/checkpoints/s2/final.pt",
+    "features": "features/mae_iid_reinit12/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00065.pt",
+    "features": "features/mae_iid_reinit12/s2/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 12,
+      "scale": 0.0,
+      "seed": 2,
+      "rel_change": 1.0806901466956575
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_iid_reinit4/checkpoints/s0/final.pt",
+    "features": "features/mae_iid_reinit4/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s0/step00065.pt",
+    "features": "features/mae_iid_reinit4/s0/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 4,
+      "scale": 0.0,
+      "seed": 0,
+      "rel_change": 1.0715040403058096
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_iid_reinit4/checkpoints/s1/final.pt",
+    "features": "features/mae_iid_reinit4/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s1/step00065.pt",
+    "features": "features/mae_iid_reinit4/s1/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 4,
+      "scale": 0.0,
+      "seed": 1,
+      "rel_change": 1.071469875985541
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_iid_reinit4/checkpoints/s2/final.pt",
+    "features": "features/mae_iid_reinit4/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_iid/checkpoints/s2/step00065.pt",
+    "features": "features/mae_iid_reinit4/s2/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 4,
+      "scale": 0.0,
+      "seed": 2,
+      "rel_change": 1.0714621861504294
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_walk_noise0.3/checkpoints/s0/final.pt",
+    "features": "features/mae_walk_noise0.3/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00065.pt",
+    "features": "features/mae_walk_noise0.3/s0/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.3,
+      "seed": 0,
+      "rel_change": 0.3000222421463887
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_walk_noise0.3/checkpoints/s1/final.pt",
+    "features": "features/mae_walk_noise0.3/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00065.pt",
+    "features": "features/mae_walk_noise0.3/s1/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.3,
+      "seed": 1,
+      "rel_change": 0.2999990054770751
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_walk_noise0.3/checkpoints/s2/final.pt",
+    "features": "features/mae_walk_noise0.3/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00065.pt",
+    "features": "features/mae_walk_noise0.3/s2/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.3,
+      "seed": 2,
+      "rel_change": 0.3000289213388954
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_walk_noise0.5/checkpoints/s0/final.pt",
+    "features": "features/mae_walk_noise0.5/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00065.pt",
+    "features": "features/mae_walk_noise0.5/s0/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.5,
+      "seed": 0,
+      "rel_change": 0.5000370482499918
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_walk_noise0.5/checkpoints/s1/final.pt",
+    "features": "features/mae_walk_noise0.5/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00065.pt",
+    "features": "features/mae_walk_noise0.5/s1/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.5,
+      "seed": 1,
+      "rel_change": 0.4999983165276251
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_walk_noise0.5/checkpoints/s2/final.pt",
+    "features": "features/mae_walk_noise0.5/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00065.pt",
+    "features": "features/mae_walk_noise0.5/s2/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.5,
+      "seed": 2,
+      "rel_change": 0.5000481840710325
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_walk_noise0.75/checkpoints/s0/final.pt",
+    "features": "features/mae_walk_noise0.75/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00065.pt",
+    "features": "features/mae_walk_noise0.75/s0/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.75,
+      "seed": 0,
+      "rel_change": 0.7500555747377706
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_walk_noise0.75/checkpoints/s1/final.pt",
+    "features": "features/mae_walk_noise0.75/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00065.pt",
+    "features": "features/mae_walk_noise0.75/s1/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.75,
+      "seed": 1,
+      "rel_change": 0.749997472302763
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_walk_noise0.75/checkpoints/s2/final.pt",
+    "features": "features/mae_walk_noise0.75/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00065.pt",
+    "features": "features/mae_walk_noise0.75/s2/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.75,
+      "seed": 2,
+      "rel_change": 0.7500722723613465
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_walk_noise1.0/checkpoints/s0/final.pt",
+    "features": "features/mae_walk_noise1.0/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00065.pt",
+    "features": "features/mae_walk_noise1.0/s0/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 1.0,
+      "seed": 0,
+      "rel_change": 1.0000741013260934
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_walk_noise1.0/checkpoints/s1/final.pt",
+    "features": "features/mae_walk_noise1.0/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00065.pt",
+    "features": "features/mae_walk_noise1.0/s1/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 1.0,
+      "seed": 1,
+      "rel_change": 0.9999966336585653
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_walk_noise1.0/checkpoints/s2/final.pt",
+    "features": "features/mae_walk_noise1.0/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00065.pt",
+    "features": "features/mae_walk_noise1.0/s2/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 1.0,
+      "seed": 2,
+      "rel_change": 1.0000963610538298
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_walk_none/checkpoints/s0/final.pt",
+    "features": "features/mae_walk_none/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_walk_none/checkpoints/s1/final.pt",
+    "features": "features/mae_walk_none/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_walk_none/checkpoints/s2/final.pt",
+    "features": "features/mae_walk_none/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_walk_reinit12/checkpoints/s0/final.pt",
+    "features": "features/mae_walk_reinit12/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00065.pt",
+    "features": "features/mae_walk_reinit12/s0/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 12,
+      "scale": 0.0,
+      "seed": 0,
+      "rel_change": 1.0808039089798553
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_walk_reinit12/checkpoints/s1/final.pt",
+    "features": "features/mae_walk_reinit12/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00065.pt",
+    "features": "features/mae_walk_reinit12/s1/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 12,
+      "scale": 0.0,
+      "seed": 1,
+      "rel_change": 1.080725892121472
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_walk_reinit12/checkpoints/s2/final.pt",
+    "features": "features/mae_walk_reinit12/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00065.pt",
+    "features": "features/mae_walk_reinit12/s2/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 12,
+      "scale": 0.0,
+      "seed": 2,
+      "rel_change": 1.080690338151845
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_walk_reinit4/checkpoints/s0/final.pt",
+    "features": "features/mae_walk_reinit4/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s0/step00065.pt",
+    "features": "features/mae_walk_reinit4/s0/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 4,
+      "scale": 0.0,
+      "seed": 0,
+      "rel_change": 1.0715031504716401
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_walk_reinit4/checkpoints/s1/final.pt",
+    "features": "features/mae_walk_reinit4/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s1/step00065.pt",
+    "features": "features/mae_walk_reinit4/s1/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 4,
+      "scale": 0.0,
+      "seed": 1,
+      "rel_change": 1.0714703881946128
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/mae_walk_reinit4/checkpoints/s2/final.pt",
+    "features": "features/mae_walk_reinit4/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/mae_o0.0_walk/checkpoints/s2/step00065.pt",
+    "features": "features/mae_walk_reinit4/s2/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 4,
+      "scale": 0.0,
+      "seed": 2,
+      "rel_change": 1.0714619652404975
+    }
+  }
+]

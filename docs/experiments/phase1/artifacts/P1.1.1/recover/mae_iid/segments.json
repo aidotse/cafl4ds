@@ -1,0 +1,33 @@
+{
+  "study": "P1.1.1",
+  "segments": [
+    {
+      "era_index": 0,
+      "era_name": "daytime\u00b7clear",
+      "start_step": 0,
+      "end_step": 59,
+      "start_checkpoint": 0,
+      "end_checkpoint": 59,
+      "n_checkpoints": 60,
+      "n_images": 698,
+      "scene_hist": {
+        "city street": 414,
+        "highway": 194,
+        "residential": 90
+      },
+      "category_hist": {
+        "bicycle": 73,
+        "bus": 172,
+        "car": 7546,
+        "motorcycle": 50,
+        "other person": 1,
+        "other vehicle": 11,
+        "pedestrian": 1078,
+        "rider": 61,
+        "traffic light": 1633,
+        "traffic sign": 2640,
+        "truck": 408
+      }
+    }
+  ]
+}

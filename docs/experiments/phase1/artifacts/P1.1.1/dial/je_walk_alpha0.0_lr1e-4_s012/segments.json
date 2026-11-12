@@ -1,0 +1,148 @@
+{
+  "study": "P1.1.1",
+  "segments": [
+    {
+      "era_index": 12,
+      "era_name": "night\u00b7clear",
+      "start_step": 65,
+      "end_step": 107,
+      "start_checkpoint": 0,
+      "end_checkpoint": 42,
+      "n_checkpoints": 43,
+      "n_images": 1355,
+      "scene_hist": {
+        "city street": 964,
+        "highway": 343,
+        "residential": 48
+      },
+      "category_hist": {
+        "bicycle": 55,
+        "bus": 121,
+        "car": 12509,
+        "motorcycle": 27,
+        "pedestrian": 1034,
+        "rider": 42,
+        "traffic light": 4358,
+        "traffic sign": 4528,
+        "train": 2,
+        "truck": 228
+      }
+    },
+    {
+      "era_index": 13,
+      "era_name": "night\u00b7partly cloudy",
+      "start_step": 108,
+      "end_step": 108,
+      "start_checkpoint": 43,
+      "end_checkpoint": 43,
+      "n_checkpoints": 1,
+      "n_images": 2,
+      "scene_hist": {
+        "city street": 2
+      },
+      "category_hist": {
+        "bus": 2,
+        "car": 24,
+        "pedestrian": 4,
+        "traffic light": 8,
+        "traffic sign": 10
+      }
+    },
+    {
+      "era_index": 14,
+      "era_name": "night\u00b7overcast",
+      "start_step": 109,
+      "end_step": 109,
+      "start_checkpoint": 44,
+      "end_checkpoint": 44,
+      "n_checkpoints": 1,
+      "n_images": 7,
+      "scene_hist": {
+        "city street": 5,
+        "highway": 2
+      },
+      "category_hist": {
+        "bus": 2,
+        "car": 43,
+        "pedestrian": 30,
+        "traffic light": 23,
+        "traffic sign": 22,
+        "truck": 2
+      }
+    },
+    {
+      "era_index": 15,
+      "era_name": "night\u00b7rainy",
+      "start_step": 110,
+      "end_step": 113,
+      "start_checkpoint": 45,
+      "end_checkpoint": 48,
+      "n_checkpoints": 4,
+      "n_images": 121,
+      "scene_hist": {
+        "city street": 90,
+        "highway": 27,
+        "residential": 4
+      },
+      "category_hist": {
+        "bicycle": 11,
+        "bus": 10,
+        "car": 1024,
+        "motorcycle": 3,
+        "other vehicle": 1,
+        "pedestrian": 113,
+        "rider": 10,
+        "traffic light": 407,
+        "traffic sign": 392,
+        "truck": 34
+      }
+    },
+    {
+      "era_index": 16,
+      "era_name": "night\u00b7snowy",
+      "start_step": 114,
+      "end_step": 117,
+      "start_checkpoint": 49,
+      "end_checkpoint": 52,
+      "n_checkpoints": 4,
+      "n_images": 115,
+      "scene_hist": {
+        "city street": 90,
+        "highway": 16,
+        "residential": 9
+      },
+      "category_hist": {
+        "bicycle": 13,
+        "bus": 5,
+        "car": 896,
+        "other vehicle": 1,
+        "pedestrian": 106,
+        "rider": 2,
+        "traffic light": 410,
+        "traffic sign": 367,
+        "train": 2,
+        "truck": 32
+      }
+    },
+    {
+      "era_index": 17,
+      "era_name": "night\u00b7foggy",
+      "start_step": 118,
+      "end_step": 118,
+      "start_checkpoint": 53,
+      "end_checkpoint": 53,
+      "n_checkpoints": 1,
+      "n_images": 3,
+      "scene_hist": {
+        "city street": 2,
+        "highway": 1
+      },
+      "category_hist": {
+        "car": 56,
+        "traffic light": 15,
+        "traffic sign": 9,
+        "truck": 1
+      }
+    }
+  ]
+}

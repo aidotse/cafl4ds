@@ -1,0 +1,42 @@
+# P1.1.0 supervised ceiling — train the tiny ViT + a linear head on the well pool's canary labels and
+# score balanced accuracy on the never-trained-on drive pool, beside random-encoder and raw-pixel
+# references. Answers "is the canary task learnable from the well pool at this scale at all?".
+#
+#   uv run python scripts/supervised_ceiling.py data=bdd data.split=val data.min_canary_count=50 \
+#     bdd_root=/abs/path img_size=64 device=hpu
+#
+# The stream settings mirror the P1.1.0 well/drive split (stratified probes, well_fraction=0.5,
+# the selection set) so the pools are exactly the ones the SSL wells trained and drove on.
+defaults:
+  - encoder: tiny
+  - backbone: je # only read with well=<path>: which SSL method the well was saved from
+  - data: attr_synthetic # attribute source: attr_synthetic | bdd
+  - stream: regime
+  - optim: adamw
+  - _self_
+
+img_size: 32
+batch_size: 64
+seed: 0
+device: cpu
+
+bdd_root: /mnt/bdd100k
+max_images: null
+max_train_per_regime: null
+
+stream:
+  support_per_canary: 45
+  query_per_canary: 45
+  stratify_canary: true
+  well_fraction: 0.5
+  select_support_per_canary: 50
+  select_query_per_canary: 50
+
+epochs: 30
+hflip: true # random horizontal flips (scene identity is mirror-invariant)
+probe_per_class: 500 # well-pool images per class the frozen-feature / pixel probes fit on
+knn_k: 20
+pixel_grid: 16 # the pixel reference average-pools each image to this grid before its linear probe
+# A saved SSL well (scripts/warm_well.py) to read instead of the fresh encoder — pair with epochs=0 and the
+# well's backbone=<je|mae> (and encoder / img_size) for a probe-only competence read of that well.
+well: null

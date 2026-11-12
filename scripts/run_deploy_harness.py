@@ -24,6 +24,7 @@ Examples:
 import copy
 import json
 import sys
+from collections.abc import Iterable
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any
@@ -33,11 +34,15 @@ import torch
 from hydra.core.hydra_config import HydraConfig
 from hydra.utils import instantiate, to_absolute_path
 from loguru import logger
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 
-from cafl4ds import deploy, deploy_corpus, harness, warmup
+from cafl4ds import branch, deploy, deploy_corpus, harness, warmup
 from cafl4ds.data.attributes import AttributeSource
+from cafl4ds.data.regime import RegimeStream
+from cafl4ds.data.streams import StreamBatch
 from cafl4ds.health_trust import CANARY_SIGNALS, DEFAULT_LABEL_FREE_SIGNALS, Backbone, backbone_family
+from cafl4ds.leg_checkpoints import CheckpointingStream
+from cafl4ds.monitor import HealthMonitor, group_key
 from cafl4ds.ssl.base import SSLMethod, apply_encoder_init
 
 logger.remove()
@@ -62,14 +67,83 @@ def _live_method(config: DictConfig) -> SSLMethod:
     return method
 
 
+def _anchor_method(config: DictConfig) -> SSLMethod:
+    """Build the frozen drift-anchor model — the selected backbone resumed from the ``anchor`` well.
+
+    It is placed on ``config.device``, the device the live model is read on, so drift measures the
+    model moving and carries no CPU-vs-accelerator numerical floor.
+    """
+    anchor: SSLMethod = instantiate(config.ssl, encoder=instantiate(config.encoder))
+    warmup.load_well(anchor, to_absolute_path(str(config.anchor)))
+    anchor.to(config.device)
+    return anchor
+
+
+def _branch_stream(
+    config: DictConfig, stream: RegimeStream, method: SSLMethod, monitor: HealthMonitor, out_dir: Path
+) -> tuple[Iterable[StreamBatch], dict[str, Any] | None]:
+    """The stream the live arm drives, and the P1.1.1 branch record (``None`` on a plain drive).
+
+    A plain drive streams the walk (or its IID control). A **branch** (P1.1.1) starts from a saved
+    checkpoint instead of the well (``resume.checkpoint``): it either continues the drive from
+    ``resume.step`` — optionally after damaging the encoder (``damage.*``) — or, with
+    ``recovery_steps``, runs the recovery pass over the well's stationary pool. A branch reads the
+    canary just before and just after the damage (identical at dose 0), so the immediate dent is on
+    record and every dose consumes the same RNG. ``checkpoint_legs`` saves every remaining leg
+    boundary (``true``) or only the end state (``final``).
+    """
+    resume: DictConfig = config.get("resume") or OmegaConf.create({})
+    damage: DictConfig = config.get("damage") or OmegaConf.create({})
+    recovery = config.get("recovery_steps")
+    record: dict[str, Any] | None = None
+    fed: Iterable[StreamBatch] = stream
+    start = 0
+    if resume.get("checkpoint"):
+        path = to_absolute_path(str(resume.checkpoint).format(seed=int(config.seed)))
+        warmup.load_well(method, path)
+        start = 0 if recovery else int(resume.get("step") or 0)
+        method.to(config.device)
+        pre = monitor.measure(method, start - 1)
+        dent = branch.damage_top_blocks(
+            method.encoder,
+            str(damage.get("mode", "none")),
+            int(damage.get("k", 0)),
+            scale=float(damage.get("scale", 0.0)),
+            seed=int(damage.get("seed", 0)),
+        )
+        post = monitor.measure(method, start - 1)
+        record = {
+            "checkpoint": path,
+            "phase": "recover" if recovery else "drive",
+            "start_step": start,
+            "damage": {**{k: damage.get(k) for k in ("mode", "k", "scale", "seed")}, **dent},
+            "pre": pre,
+            "post": post,
+        }
+        logger.info(f"branch from {path}: {record['phase']} at step {start}, damage={record['damage']}")
+        fed = branch.recovery_batches(stream, int(recovery)) if recovery else branch.ResumedStream(stream, start)
+    elif recovery:
+        raise ValueError("recovery_steps needs resume.checkpoint (the state to recover from).")
+    legs = config.get("checkpoint_legs")
+    if legs:
+        steps = [] if str(legs) == "final" or recovery else [s for s in stream.leg_boundary_steps if s > start]
+        fed = CheckpointingStream(fed, method, steps, out_dir / "checkpoints" / f"s{config.seed}")
+    return fed, record
+
+
 def _run_live(
     config: DictConfig, out_dir: Path, name: str, source: AttributeSource
-) -> tuple[harness.Arm, dict[int, str], dict[int, Any]]:
+) -> tuple[harness.Arm, RegimeStream, dict[str, Any] | None]:
     """Run the live backbone over the regime diet, logging the full multivariate health vector.
 
-    Returns the completed arm, the stream's era→regime-name map, and its per-era label composition
-    (both for labelling the corpus legs). ``source`` is the one decoded attribute source threaded
-    through every arm, so the corpus is decoded once per drive (not re-decoded per arm).
+    Returns the completed arm, the stream it drove (its era names, leg composition, realized
+    familiarity and probe sizes describe the corpus), and the branch record (P1.1.1; ``None`` on a
+    plain drive). ``source`` is the one decoded attribute source threaded through every arm, so the
+    corpus is decoded once per drive (not re-decoded per arm).
+
+    Raises:
+        ValueError: If the ``well`` or ``anchor`` was reserved with a different split than this
+            drive (:func:`cafl4ds.warmup.check_split`).
     """
     torch.manual_seed(int(config.seed))
     method = _live_method(config)
@@ -79,22 +153,41 @@ def _run_live(
             f"{method.name!r} ({backbone_family(method.name).value}) — check the backbone override."
         )
     stream = instantiate(config.stream, source=source)
+    for path in {str(p) for p in (config.get("well"), config.get("anchor")) if p}:
+        warmup.check_split(to_absolute_path(path), stream.split_fingerprint())
     logger.info(
-        f"deploy '{name}': backbone={method.name}, {stream.num_eras} eras, {len(stream)} batches, dev={config.device}"
+        f"deploy '{name}': backbone={method.name}, order={stream.order}, {stream.num_eras} eras, "
+        f"{len(stream)} batches, dev={config.device}"
     )
+    monitor = instantiate(config.monitor, eval_sets=stream.eval_sets)
+    if config.get("anchor"):
+        with torch.random.fork_rng():  # building the anchor must not shift the arm's RNG draws
+            monitor.anchor_drift(_anchor_method(config))
+    fed, branched = _branch_stream(config, stream, method, monitor, out_dir)
     arm = harness.run_stream_arm(
         name=f"{name}_live",
         role="live",
         method=method,
-        stream=stream,
+        stream=fed,
         optimizer=instantiate(config.optim, params=method.parameters()),
         selection_filter=instantiate(config.filter),
-        monitor=instantiate(config.monitor, eval_sets=stream.eval_sets),
+        monitor=monitor,
         out_dir=out_dir,
         eval_every=config.eval_every,
         device=config.device,
     )
-    return arm, stream.era_names, stream.era_composition()
+    return arm, stream, branched
+
+
+def _probe_query_counts(stream: RegimeStream) -> dict[str, int]:
+    """Query images behind each canary reading: ``pooled``, plus one per probe group (its metric suffix)."""
+    query = stream.eval_sets.probe_query
+    counts = {"pooled": int(query.labels.shape[0])}
+    if query.groups is not None:
+        for gid in sorted(set(query.groups.tolist())):
+            name = group_key(stream.eval_sets.group_names.get(gid, str(gid)))
+            counts[name] = int((query.groups == gid).sum().item())
+    return counts
 
 
 def _run_gate_arms(
@@ -169,12 +262,15 @@ def _run_leak_check(config: DictConfig, out_dir: Path, name: str, source: Attrib
     return harness.leak_report(rss_samples, growth_frac_max=float(config.long_horizon_growth_frac_max))
 
 
-def _build(config: DictConfig, out_dir: Path, seed: int) -> tuple[dict[str, Any], dict[int, str], dict[int, Any]]:
+def _build(
+    config: DictConfig, out_dir: Path, seed: int, source: AttributeSource | None = None
+) -> tuple[dict[str, Any], dict[int, str], dict[int, Any]]:
     """Run the arms for one seed, read the multivariate signal, and assemble the deploy report."""
     config.seed = seed  # drive per-seed determinism (the held-out reservation is fixed by canary_seed)
     name = f"{config.run_name or f'{config.family}_deploy'}_s{seed}"
-    source = instantiate(config.data)  # decode once, thread through every arm (cached — see A2)
-    live, era_names, composition = _run_live(config, out_dir, name, source)
+    if source is None:
+        source = instantiate(config.data)  # decode once, thread through every arm (cached — see A2)
+    live, stream, branched = _run_live(config, out_dir, name, source)
     family = Backbone(str(config.family))
 
     grid = harness.health_grid(live)
@@ -195,12 +291,20 @@ def _build(config: DictConfig, out_dir: Path, seed: int) -> tuple[dict[str, Any]
         "I": config.init.mode,
         "warm": bool(config.get("well")),
         "diet": "regime",
+        "order": str(config.stream.get("order", "walk")),
         "block_size": config.stream.block_size,
+        "stratified_canary": bool(config.stream.get("stratify_canary", False)),
+        "well_fraction": float(config.stream.get("well_fraction", 0.0)),
+        "well_overlap": float(config.stream.get("well_overlap", 0.0)),
+        "anchor": (str(config.anchor) if config.get("anchor") else None),
+        "familiarity": stream.familiarity,
+        "n_probe_query": _probe_query_counts(stream),
         "A": _target_leaf(config.filter),
         "seed": int(seed),
         "img_size": int(config.img_size),
         "device": str(config.device),
         "gate_arms": bool(config.gate_arms),
+        "branch": branched,
     }
     report = deploy.build_deploy_report(
         config_header=header,
@@ -213,9 +317,10 @@ def _build(config: DictConfig, out_dir: Path, seed: int) -> tuple[dict[str, Any]
         log_signals=log_signals,
         canary_chance=canary_chance,
         tier_b_thresholds=tier_b,
+        study=str(config.study),
     )
     _log_verdict(report)
-    return report, era_names, composition
+    return report, stream.era_names, stream.era_composition()
 
 
 def _git_sha() -> str | None:
@@ -236,7 +341,7 @@ def _log_verdict(report: dict[str, Any]) -> None:
     """Log the human-readable Tier-A wiring verdict and (when computed) the Tier-B sanity verdict."""
     val, chan = report["validation"], report["channels"]
     logger.info(
-        "P1.0.2 deploy corpus (Tier-A wiring):\n"
+        f"{report['study']} deploy corpus (Tier-A wiring):\n"
         f"  channels: label_free={len(chan['label_free'])} signals, canary={len(chan['canary'])} signals\n"
         f"  channel_complete={val['channel_complete']}  trust_complete={val['trust_complete']}  "
         f"finite={val['finite']}  memory_flat={val['memory_flat']}\n"
@@ -246,7 +351,7 @@ def _log_verdict(report: dict[str, Any]) -> None:
     if tier_b is not None:
         rep, checks = tier_b["reported"], tier_b["checks"]
         logger.info(
-            "P1.0.2 deploy corpus (Tier-B sanity-of-readings):\n"
+            f"{report['study']} deploy corpus (Tier-B sanity-of-readings):\n"
             f"  rankme in [{rep['rankme_min']}, {rep['rankme_max']}] -> in_range={checks['rankme_in_range']}\n"
             f"  final {rep['drift_key']}={rep['final_drift']} -> accumulated={checks['drift_accumulated']}\n"
             f"  canary({rep['canary_key']}) mean={rep['canary_mean']} vs chance {rep['canary_chance']} -> "
@@ -275,8 +380,11 @@ def run_deploy(config: DictConfig, out_dir: Path) -> dict[str, Path]:
     reports: list[tuple[int, dict[str, Any]]] = []
     era_names: dict[int, str] = {}
     composition: dict[int, Any] = {}
+    # A source that does not draw from the seed (BDD — its reservation is fixed by canary_seed) is
+    # decoded once for the whole ensemble, not per seed; a seeded one (the synthetic sources) is rebuilt.
+    source = None if "seed" in config.data else instantiate(config.data)
     for seed in seeds:
-        report, era_names, composition = _build(config, out_dir, seed)
+        report, era_names, composition = _build(config, out_dir, seed, source)
         (reports_dir / f"{config.family}_deploy_s{seed}.json").write_text(
             json.dumps(report, indent=2), encoding="utf-8"
         )

@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "study": "P1.1.1",
+  "backbone_family": "je",
+  "config": {
+    "backbone": "je",
+    "I": "from_scratch",
+    "warm": true,
+    "diet": "regime",
+    "order": "walk",
+    "block_size": null,
+    "stratified_canary": true,
+    "well_fraction": 0.5,
+    "well_overlap": 0.0,
+    "anchor": "wells/p110_deep/je_o0.0.pt",
+    "familiarity": {
+      "well_side": 0.0,
+      "drive_side": 0.0
+    },
+    "n_probe_query": {
+      "pooled": 405,
+      "daytime": 135,
+      "dawn_dusk": 135,
+      "night": 135
+    },
+    "A": "AcceptAll",
+    "seed": 0,
+    "img_size": 224,
+    "device": "hpu",
+    "gate_arms": false,
+    "branch": {
+      "checkpoint": "/workspace/outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/final.pt",
+      "phase": "recover",
+      "start_step": 0,
+      "damage": {
+        "mode": "none",
+        "k": 0,
+        "scale": 0.0,
+        "seed": 0,
+        "rel_change": 0.0
+      },
+      "pre": {
+        "step": -1.0,
+        "rankme": 22.88376808166504,
+        "mean_feature_var": 0.0008218954317271709,
+        "offdiag_cov": 0.0002564441820140928,
+        "uniformity": -1.0466926097869873,
+        "rankme_proj": 10.901997566223145,
+        "mean_feature_var_proj": 0.007356542162597179,
+        "offdiag_cov_proj": 0.0025193081237375736,
+        "uniformity_proj": -1.5488516092300415,
+        "cka_drift": 0.010323762893676758,
+        "cosine_drift": 0.018648266792297363,
+        "cka_drift_proj": 0.030959248542785645,
+        "cosine_drift_proj": 0.06590002775192261,
+        "alignment": 0.05312343314290047,
+        "alignment_proj": 0.18834646046161652,
+        "knn_acc": 0.5432098507881165,
+        "knn_acc_daytime": 0.5185185074806213,
+        "knn_acc_dawn_dusk": 0.5407407283782959,
+        "knn_acc_night": 0.5703703761100769,
+        "linear_acc": 0.6000000238418579,
+        "linear_acc_daytime": 0.6222222447395325,
+        "linear_acc_dawn_dusk": 0.5703703761100769,
+        "linear_acc_night": 0.6074073910713196
+      },
+      "post": {
+        "step": -1.0,
+        "rankme": 22.88376808166504,
+        "mean_feature_var": 0.0008218954317271709,
+        "offdiag_cov": 0.0002564441820140928,
+        "uniformity": -1.0466926097869873,
+        "rankme_proj": 10.901997566223145,
+        "mean_feature_var_proj": 0.007356542162597179,
+        "offdiag_cov_proj": 0.0025193081237375736,
+        "uniformity_proj": -1.5488516092300415,
+        "cka_drift": 0.010323762893676758,
+        "cosine_drift": 0.018648266792297363,
+        "cka_drift_proj": 0.030959248542785645,
+        "cosine_drift_proj": 0.06590002775192261,
+        "alignment": 0.05312343314290047,
+        "alignment_proj": 0.18834646046161652,
+        "knn_acc": 0.5432098507881165,
+        "knn_acc_daytime": 0.5185185074806213,
+        "knn_acc_dawn_dusk": 0.5407407283782959,
+        "knn_acc_night": 0.5703703761100769,
+        "linear_acc": 0.6000000238418579,
+        "linear_acc_daytime": 0.6222222447395325,
+        "linear_acc_dawn_dusk": 0.5703703761100769,
+        "linear_acc_night": 0.6074073910713196
+      }
+    }
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "n_rows": 180,
+  "channels": {
+    "label_free": [
+      "alignment",
+      "alignment_proj",
+      "cka_drift",
+      "cka_drift_proj",
+      "cosine_drift",
+      "cosine_drift_proj",
+      "grad_norm",
+      "mean_feature_var",
+      "mean_feature_var_proj",
+      "offdiag_cov",
+      "offdiag_cov_proj",
+      "rankme",
+      "rankme_proj",
+      "uniformity",
+      "uniformity_proj"
+    ],
+    "canary": [
+      "knn_acc",
+      "knn_acc_dawn_dusk",
+      "knn_acc_daytime",
+      "knn_acc_night",
+      "linear_acc",
+      "linear_acc_dawn_dusk",
+      "linear_acc_daytime",
+      "linear_acc_night"
+    ]
+  },
+  "tier_a_passed": {
+    "0": true,
+    "1": true,
+    "2": true
+  },
+  "tier_b_passed": {
+    "0": true,
+    "1": true,
+    "2": true
+  },
+  "git_sha": null,
+  "n_seeds": 3,
+  "warm": true,
+  "eval_every": 1
+}

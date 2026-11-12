@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "study": "P1.1.1",
+  "backbone_family": "je",
+  "config": {
+    "backbone": "je",
+    "I": "from_scratch",
+    "warm": true,
+    "diet": "regime",
+    "order": "walk",
+    "block_size": null,
+    "stratified_canary": true,
+    "well_fraction": 0.5,
+    "well_overlap": 0.0,
+    "anchor": "wells/p110_deep/je_o0.0.pt",
+    "familiarity": {
+      "well_side": 0.0,
+      "drive_side": 0.0
+    },
+    "n_probe_query": {
+      "pooled": 405,
+      "daytime": 135,
+      "dawn_dusk": 135,
+      "night": 135
+    },
+    "A": "AcceptAll",
+    "seed": 0,
+    "img_size": 224,
+    "device": "hpu",
+    "gate_arms": false,
+    "branch": {
+      "checkpoint": "/workspace/outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00065.pt",
+      "phase": "drive",
+      "start_step": 65,
+      "damage": {
+        "mode": "reinit",
+        "k": 12,
+        "scale": 0.0,
+        "seed": 0,
+        "rel_change": 1.0800354045498974
+      },
+      "pre": {
+        "step": 64.0,
+        "rankme": 18.921945571899414,
+        "mean_feature_var": 0.0006440673023462296,
+        "offdiag_cov": 0.00017427744751330465,
+        "uniformity": -1.0341992378234863,
+        "rankme_proj": 10.044528007507324,
+        "mean_feature_var_proj": 0.007372671272605658,
+        "offdiag_cov_proj": 0.002591733355075121,
+        "uniformity_proj": -1.5517549514770508,
+        "cka_drift": 0.07103526592254639,
+        "cosine_drift": 0.19076061248779297,
+        "cka_drift_proj": 0.3404031991958618,
+        "cosine_drift_proj": 0.5269216299057007,
+        "alignment": 0.05859699845314026,
+        "alignment_proj": 0.23106420040130615,
+        "knn_acc": 0.5234568119049072,
+        "knn_acc_daytime": 0.5185185074806213,
+        "knn_acc_dawn_dusk": 0.4962962865829468,
+        "knn_acc_night": 0.5555555820465088,
+        "linear_acc": 0.614814817905426,
+        "linear_acc_daytime": 0.6000000238418579,
+        "linear_acc_dawn_dusk": 0.6074073910713196,
+        "linear_acc_night": 0.6370370388031006
+      },
+      "post": {
+        "step": 64.0,
+        "rankme": 11.587636947631836,
+        "mean_feature_var": 0.000229437297093682,
+        "offdiag_cov": 1.9801746020675637e-05,
+        "uniformity": -0.5292568802833557,
+        "rankme_proj": 14.2503023147583,
+        "mean_feature_var_proj": 0.0022890919353812933,
+        "offdiag_cov_proj": 0.0004286801558919251,
+        "uniformity_proj": -0.7574616074562073,
+        "cka_drift": 0.1287750005722046,
+        "cosine_drift": 0.6245392560958862,
+        "cka_drift_proj": 0.3649590015411377,
+        "cosine_drift_proj": 0.75632643699646,
+        "alignment": 0.02484479360282421,
+        "alignment_proj": 0.04249773547053337,
+        "knn_acc": 0.395061731338501,
+        "knn_acc_daytime": 0.37037035822868347,
+        "knn_acc_dawn_dusk": 0.39259257912635803,
+        "knn_acc_night": 0.42222222685813904,
+        "linear_acc": 0.4148148000240326,
+        "linear_acc_daytime": 0.43703705072402954,
+        "linear_acc_dawn_dusk": 0.43703705072402954,
+        "linear_acc_night": 0.37037035822868347
+      }
+    }
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "n_rows": 162,
+  "channels": {
+    "label_free": [
+      "alignment",
+      "alignment_proj",
+      "cka_drift",
+      "cka_drift_proj",
+      "cosine_drift",
+      "cosine_drift_proj",
+      "grad_norm",
+      "mean_feature_var",
+      "mean_feature_var_proj",
+      "offdiag_cov",
+      "offdiag_cov_proj",
+      "rankme",
+      "rankme_proj",
+      "uniformity",
+      "uniformity_proj"
+    ],
+    "canary": [
+      "knn_acc",
+      "knn_acc_dawn_dusk",
+      "knn_acc_daytime",
+      "knn_acc_night",
+      "linear_acc",
+      "linear_acc_dawn_dusk",
+      "linear_acc_daytime",
+      "linear_acc_night"
+    ]
+  },
+  "tier_a_passed": {
+    "0": true,
+    "1": true,
+    "2": true
+  },
+  "tier_b_passed": {
+    "0": true,
+    "1": true,
+    "2": true
+  },
+  "git_sha": null,
+  "n_seeds": 3,
+  "warm": true,
+  "eval_every": 1
+}

@@ -15,6 +15,7 @@ Phase-0 stream is untouched.
 
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Iterator
 from typing import Any
 
@@ -87,6 +88,143 @@ def count_ordered_batches(order: list[tuple[int, int]], batch_size: int, drop_la
     return count
 
 
+def _batches(order: list[tuple[int, int]], batch_size: int, drop_last: bool) -> tuple[list[int], list[int]]:
+    """Per-batch ``(sizes, eras)`` under :func:`iter_ordered_batches`'s chunking (era-boundary flush included)."""
+    sizes: list[int] = []
+    eras: list[int] = []
+    buffer = 0
+    buffer_era: int | None = None
+    for era, _ in order:
+        if buffer_era is not None and era != buffer_era and buffer:
+            sizes.append(buffer)
+            eras.append(buffer_era)
+            buffer = 0
+        buffer_era = era
+        buffer += 1
+        if buffer == batch_size:
+            sizes.append(buffer)
+            eras.append(era)
+            buffer = 0
+    if buffer and not drop_last and buffer_era is not None:
+        sizes.append(buffer)
+        eras.append(buffer_era)
+    return sizes, eras
+
+
+def _reserve_probes(
+    canary: torch.Tensor,
+    stratum: torch.Tensor | None,
+    support_per_cell: int,
+    query_per_cell: int,
+    generator: torch.Generator,
+    available: torch.Tensor | None = None,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Reserve a balanced held-out probe support/query per canary class (or per ``(stratum, class)`` cell).
+
+    Args:
+        canary: Canary label per image ``[N]``.
+        stratum: Optional stratum per image ``[N]``; when given, each ``(stratum, canary)`` cell is
+            reserved separately.
+        support_per_cell: Support images per cell.
+        query_per_cell: Query images per cell.
+        generator: The fixed reservation generator (seeded by ``canary_seed``).
+        available: Optional mask of images still free to reserve (default: all) — a second
+            reservation draws from what the first left.
+
+    Returns:
+        ``(support_idx, query_idx, train_mask)`` — the reserved indices and the remaining training mask.
+
+    Raises:
+        ValueError: If a cell has too few images for the reservation.
+    """
+    strata: list[int | None] = sorted(set(stratum.tolist())) if stratum is not None else [None]
+    support_idx, query_idx = [], []
+    train_mask = torch.ones(canary.shape[0], dtype=torch.bool) if available is None else available.clone()
+    for st in strata:
+        for cls in sorted(set(canary.tolist())):
+            in_cell = canary == cls if stratum is None else (canary == cls) & (stratum == st)
+            in_cell &= train_mask
+            cls_idx = in_cell.nonzero(as_tuple=True)[0]
+            perm = cls_idx[torch.randperm(cls_idx.numel(), generator=generator)]
+            need = support_per_cell + query_per_cell
+            if perm.numel() <= need:
+                where = f"canary class {cls}" if st is None else f"(stratum {st}, canary class {cls}) cell"
+                raise ValueError(
+                    f"{where} has {perm.numel()} images but {need} are reserved for probes; "
+                    "reduce support_per_canary / query_per_canary or use more data."
+                )
+            support_idx.append(perm[:support_per_cell])
+            query_idx.append(perm[support_per_cell:need])
+            train_mask[perm[:need]] = False
+    return torch.cat(support_idx), torch.cat(query_idx), train_mask
+
+
+def _carve_well(
+    era_key: torch.Tensor,
+    train_mask: torch.Tensor,
+    well_fraction: float,
+    well_overlap: float,
+    generator: torch.Generator,
+) -> list[int]:
+    """Carve the warm well's pool out of the training pool, removing its own slice from the drive.
+
+    Each regime reserves ``well_fraction`` of its pool for the well (cleared from ``train_mask`` *in
+    place*, so the drive never streams it). With ``well_overlap``, that fraction of each regime's well
+    pool is then swapped for drive frames — drawn after the slice, from the same fixed generator, so the
+    drive pool is the same at every overlap level and higher levels swap in a superset of lower ones.
+
+    Args:
+        era_key: Regime id per image ``[N]``.
+        train_mask: The training-pool mask (probes already removed); modified in place.
+        well_fraction: Fraction of each regime's pool reserved for the well.
+        well_overlap: Fraction of each regime's well pool drawn from the drive instead.
+        generator: The fixed reservation generator (seeded by ``canary_seed``).
+
+    Returns:
+        The well's image indices (sorted).
+    """
+    regimes = sorted(set(era_key.tolist()))
+    slices: dict[int, list[int]] = {}
+    for regime in regimes:
+        pool = ((era_key == regime) & train_mask).nonzero(as_tuple=True)[0]
+        perm = pool[torch.randperm(pool.numel(), generator=generator)]
+        slices[regime] = perm[: int(round(well_fraction * perm.numel()))].tolist()
+    for idx in slices.values():
+        if idx:
+            train_mask[torch.tensor(idx, dtype=torch.long)] = False
+    well: list[int] = []
+    for regime in regimes:
+        own = slices[regime]
+        drive = ((era_key == regime) & train_mask).nonzero(as_tuple=True)[0]
+        drive = drive[torch.randperm(drive.numel(), generator=generator)]
+        swap = min(int(round(well_overlap * len(own))), drive.numel())
+        well.extend(own[: len(own) - swap] + drive[:swap].tolist())
+    return sorted(well)
+
+
+def _check_options(
+    block_size: int | None,
+    order: str,
+    well_fraction: float,
+    well_overlap: float,
+    select_support: int,
+    select_query: int,
+) -> None:
+    """Validate :class:`RegimeStream`'s scalar options (raises ``ValueError``; see its constructor)."""
+    if block_size is not None and block_size < 1:
+        raise ValueError(f"block_size must be a positive integer; got {block_size}.")
+    if order not in ("walk", "iid"):
+        raise ValueError(f"order must be 'walk' or 'iid'; got {order!r}.")
+    if not 0.0 <= well_fraction < 1.0:
+        raise ValueError(f"well_fraction must be in [0, 1); got {well_fraction}.")
+    if not 0.0 <= well_overlap <= 1.0:
+        raise ValueError(f"well_overlap must be in [0, 1]; got {well_overlap}.")
+    if well_overlap > 0.0 and well_fraction == 0.0:
+        raise ValueError("well_overlap needs well_fraction > 0 (with no reserved slice there is nothing to swap).")
+    if (select_support > 0) != (select_query > 0):
+        raise ValueError("the selection set needs both select_support_per_canary and select_query_per_canary > 0.")
+
+
 class RegimeStream:
     """A single-pass diet that orders images by driving regime and probes an orthogonal canary axis.
 
@@ -94,6 +232,15 @@ class RegimeStream:
     images into eras that walk the regimes in ``regime_order`` — contiguous by default (maximal
     correlation), interleaved by ``block_size`` (the correlation-strength knob). Delivers label-free
     :class:`StreamBatch` batches whose ``era`` is the regime's position in the walk.
+
+    Two P1.1 options sit on top. ``order="iid"`` delivers the **matched IID control** — the exact
+    images the walk delivers, in the walk's own batch-size sequence (so the step count and per-step
+    batch size match the walk one-for-one), only shuffled across regimes, every batch tagged
+    ``era=0``. Any walk-vs-IID gap at a given step is then attributable to the ordering alone.
+    ``well_fraction`` carves a fixed per-regime slice of the training pool out for the warm well, so
+    the drive streams frames the well never trained on. ``well_overlap`` then dials *familiarity* back
+    in without moving anything else: the well's pool keeps its size, but that fraction of it is swapped
+    for frames the drive also streams. The drive itself is identical at every overlap level.
     """
 
     def __init__(
@@ -108,6 +255,12 @@ class RegimeStream:
         drop_last: bool = False,
         seed: int = 0,
         canary_seed: int = 0,
+        order: str = "walk",
+        stratify_canary: bool = False,
+        well_fraction: float = 0.0,
+        well_overlap: float = 0.0,
+        select_support_per_canary: int = 0,
+        select_query_per_canary: int = 0,
     ) -> None:
         """Build the stream (loads the source and constructs the splits eagerly).
 
@@ -119,8 +272,10 @@ class RegimeStream:
                 correlation, following the walk); an integer ``b`` round-robins the regimes in chunks
                 of ``b`` (interleaving them). Pass a multiple of ``batch_size`` to avoid confounding
                 correlation with a shrinking effective batch.
-            support_per_canary: Images per canary class reserved for the probe support set.
-            query_per_canary: Images per canary class reserved for the probe query / drift set.
+            support_per_canary: Images per canary class reserved for the probe support set (per
+                ``(stratum, canary)`` cell when ``stratify_canary`` is set).
+            query_per_canary: Images per canary class reserved for the probe query / drift set (per
+                ``(stratum, canary)`` cell when ``stratify_canary`` is set).
             max_train_per_regime: If set, cap the training images per regime (bounds run length).
             drop_last: Whether to drop the final short batch.
             seed: RNG seed for the **within-regime shuffle** (frame order inside each era, and — with
@@ -132,13 +287,39 @@ class RegimeStream:
                 same way) holds out the **identical** probe set, disjoint from all SSL training. A
                 per-drive reservation would leave each drive probed on images an earlier drive's well
                 had already seen unsupervised — a soft transductive leak (audit P1.0 A1).
+            order: ``"walk"`` (the regime shift-walk) or ``"iid"`` (the matched IID control: the
+                walk's images and batch sizes, shuffled across regimes; see the class docstring).
+            stratify_canary: Reserve the probe set per ``(stratum, canary)`` cell rather than per
+                canary class, and tag every probe image with its stratum (``EvalSet.groups``), so the
+                probes can report accuracy per stratum (BDD: per ``timeofday``). Needs a source that
+                defines strata.
+            well_fraction: Fraction of each regime's training pool reserved for the warm well
+                (drawn from ``canary_seed``, so it is identical across drives). :meth:`stationary_batches`
+                then draws only from that slice and the drive only from the rest. ``0`` (default)
+                shares the whole pool between well and drive.
+            well_overlap: Fraction of the well's pool (per regime) drawn from the **drive's** frames
+                instead of the well's reserved slice — the familiarity knob. The well pool keeps its
+                size and the drive is unchanged, so only how much of the drive the well has already
+                seen varies (``0`` = disjoint, ``1`` = the well trains only on drive frames). Drawn
+                from ``canary_seed`` (fixed across drives). Needs ``well_fraction > 0``.
+            select_support_per_canary: Support images per canary class for the **selection set** — a
+                second labelled reservation, used only to decide when a warm well is competent
+                (:attr:`selection_sets`), so the measurement probes are never selected on. Pooled over
+                strata, drawn from ``canary_seed`` after the probes and before the well slice, so it is
+                disjoint from the probes, the well and the drive. ``0`` (default) reserves none and
+                leaves every other reservation unchanged.
+            select_query_per_canary: Query images per canary class for the selection set.
 
         Raises:
-            ValueError: If ``block_size`` is non-positive, or a canary class has too few images to
-                satisfy the requested held-out reservations.
+            ValueError: If ``block_size`` is non-positive, ``order``, ``well_fraction`` or
+                ``well_overlap`` is invalid,
+                ``stratify_canary`` is set on a source without strata, or a canary class (cell) has
+                too few images to satisfy the requested held-out reservations.
         """
-        if block_size is not None and block_size < 1:
-            raise ValueError(f"block_size must be a positive integer; got {block_size}.")
+        _check_options(
+            block_size, order, well_fraction, well_overlap, select_support_per_canary, select_query_per_canary
+        )
+        self.order = order
         self.batch_size = batch_size
         self.block_size = block_size
         self.drop_last = drop_last
@@ -157,29 +338,69 @@ class RegimeStream:
         # The reservation draws from `reserve_generator` (seeded by `canary_seed`, not the drive
         # `seed`), so the probe set is identical across every drive and the warm well — never a
         # per-drive split that would let a later drive train on an earlier drive's probe images.
-        support_idx, query_idx, train_mask = [], [], torch.ones(self._images.shape[0], dtype=torch.bool)
-        for cls in sorted(set(canary.tolist())):
-            cls_idx = (canary == cls).nonzero(as_tuple=True)[0]
-            perm = cls_idx[torch.randperm(cls_idx.numel(), generator=reserve_generator)]
-            need = support_per_canary + query_per_canary
-            if perm.numel() <= need:
-                raise ValueError(
-                    f"canary class {cls} has {perm.numel()} images but {need} are reserved for probes; "
-                    "reduce support_per_canary / query_per_canary or use more data."
-                )
-            support_idx.append(perm[:support_per_canary])
-            query_idx.append(perm[support_per_canary:need])
-            train_mask[perm[:need]] = False
-
-        self._eval_sets = EvalSets(
-            probe_support=EvalSet(self._images[torch.cat(support_idx)], canary[torch.cat(support_idx)]),
-            probe_query=EvalSet(self._images[torch.cat(query_idx)], canary[torch.cat(query_idx)]),
-            per_era={},
+        if stratify_canary and attributed.stratum is None:
+            raise ValueError("stratify_canary=True needs a source that defines strata (AttributedImages.stratum).")
+        stratum = attributed.stratum if stratify_canary else None
+        support, query, train_mask = _reserve_probes(
+            canary, stratum, support_per_canary, query_per_canary, reserve_generator
         )
+        self._split_params: dict[str, Any] = {
+            "n_images": int(canary.shape[0]),
+            "canary_seed": int(canary_seed),
+            "support_per_canary": int(support_per_canary),
+            "query_per_canary": int(query_per_canary),
+            "stratify_canary": bool(stratify_canary),
+            "well_fraction": float(well_fraction),
+            "well_overlap": float(well_overlap),
+            "select_support_per_canary": int(select_support_per_canary),
+            "select_query_per_canary": int(select_query_per_canary),
+        }
+        self._probe_indices = (support, query)
+
+        # The selection set (the well's stopping signal), pooled over strata, carved before the well
+        # slice so it is disjoint from the well and the drive. Skipped entirely when off, so the
+        # generator — and every reservation after it — is unchanged.
+        self._selection_sets: EvalSets | None = None
+        self._selection_indices: list[int] = []
+        if select_support_per_canary > 0:
+            sel_support, sel_query, train_mask = _reserve_probes(
+                canary, None, select_support_per_canary, select_query_per_canary, reserve_generator, train_mask
+            )
+            self._selection_sets = EvalSets(
+                probe_support=EvalSet(self._images[sel_support], canary[sel_support]),
+                probe_query=EvalSet(self._images[sel_query], canary[sel_query]),
+            )
+            self._selection_indices = torch.cat([sel_support, sel_query]).tolist()
+        self._eval_sets = EvalSets(
+            probe_support=EvalSet(
+                self._images[support], canary[support], stratum[support] if stratum is not None else None
+            ),
+            probe_query=EvalSet(self._images[query], canary[query], stratum[query] if stratum is not None else None),
+            per_era={},
+            group_names=dict(attributed.stratum_names) if stratum is not None else {},
+        )
+
+        # The well's slice of the training pool (fixed by `canary_seed`), removed from the drive.
+        self._well_indices: list[int] | None = None
+        if well_fraction > 0.0:
+            self._well_indices = _carve_well(era_key, train_mask, well_fraction, well_overlap, reserve_generator)
 
         requested = regime_order if regime_order is not None else attributed.regime_order
         self._regime_order = requested
         self._order_stream = self._build_order(era_key, train_mask, requested, max_train_per_regime)
+        walk_sizes, self._walk_batch_eras = _batches(self._order_stream, batch_size, drop_last)
+
+        # The delivered `(era, image_index)` stream and its batch chunking, per `order`.
+        if order == "walk":
+            self._delivered = self._order_stream
+            self._iid_chunks: list[list[int]] | None = None
+        else:
+            kept = [idx for _, idx in self._order_stream][: sum(walk_sizes)]
+            perm = torch.randperm(len(kept), generator=self._generator).tolist()
+            shuffled = [kept[p] for p in perm]
+            starts = [sum(walk_sizes[:i]) for i in range(len(walk_sizes))]
+            self._iid_chunks = [shuffled[a : a + n] for a, n in zip(starts, walk_sizes, strict=True)]
+            self._delivered = [(0, idx) for idx in shuffled]
 
     def _build_order(
         self, era_key: torch.Tensor, train_mask: torch.Tensor, regime_order: list[int], max_train_per_regime: int | None
@@ -241,15 +462,96 @@ class RegimeStream:
         Where :meth:`__iter__` delivers the *nonstationary* regime walk, this reshuffles the same
         reserved training pool with no regime ordering (every batch tagged ``era=0``), so a warm-up
         pass sees a stationary all-regime mix. The reserved canary probe set is excluded exactly as in
-        the drive, so a well warmed here is competent on the same probes the drive reads.
+        the drive, so a well warmed here is competent on the same probes the drive reads. With
+        ``well_fraction > 0`` the pool is the well's own slice, disjoint from the drive.
 
         Yields:
             Stationary :class:`StreamBatch` batches over the training pool.
         """
-        indices = [idx for _, idx in self._order_stream]
+        indices = self._well_indices if self._well_indices is not None else [idx for _, idx in self._order_stream]
         perm = torch.randperm(len(indices), generator=self._generator)
         order = [(0, indices[p]) for p in perm.tolist()]
         return iter_ordered_batches(order, self._images, self.batch_size, self.drop_last)
+
+    @property
+    def familiarity(self) -> dict[str, float] | None:
+        """The *realized* well/drive overlap — how familiar the drive is to the well, as measured.
+
+        ``well_overlap`` is a nominal per-regime fraction; rounding per regime makes the realized
+        share differ slightly. ``well_side`` is the share of the well's pool the drive also streams;
+        ``drive_side`` is the share of the drive's delivered frames the well trained on. ``None``
+        when no well slice is carved (``well_fraction=0``: the well and drive share the whole pool).
+        """
+        if self._well_indices is None:
+            return None
+        well = set(self._well_indices)
+        drive = {idx for _, idx in self._delivered}
+        shared = len(well & drive)
+        return {
+            "well_side": shared / len(well) if well else 0.0,
+            "drive_side": shared / len(drive) if drive else 0.0,
+        }
+
+    def split_fingerprint(self) -> dict[str, Any]:
+        """A fingerprint of the held-out split: the probe and well reservations, plus their settings.
+
+        The probes stay disjoint from a well's training only if the well and the drive reserve
+        identically, so :mod:`cafl4ds.warmup` stores this beside a well and the drive refuses a well
+        whose fingerprint differs. The ``digest`` hashes the reserved indices themselves (probe support
+        and query, selection set, well); the settings are kept beside it to make a mismatch readable.
+
+        Returns:
+            The split settings and a ``digest`` over the reserved indices.
+        """
+        support, query = self._probe_indices
+        well = self._well_indices if self._well_indices is not None else []
+        digest = hashlib.sha256()
+        for part in (support.tolist(), query.tolist(), self._selection_indices, well):
+            digest.update(",".join(map(str, part)).encode())
+            digest.update(b"|")
+        return {**self._split_params, "digest": digest.hexdigest()}
+
+    def labelled_pool(self, which: str, *, drive_disjoint: bool = False) -> EvalSet:
+        """The well's or the drive's training frames with their canary labels — for supervised diagnostics.
+
+        The SSL runs never see these labels; this exists for label-using reference reads (the P1.1.0
+        supervised ceiling: can the canary task be learned from the well pool at all, scored on the
+        never-trained-on drive pool).
+
+        Args:
+            which: ``"well"`` (the well's pool — the drive pool when no well slice is carved) or
+                ``"drive"`` (the frames the drive delivers).
+            drive_disjoint: Drop every frame the drive also delivers (``which="well"`` only). Above
+                ``well_overlap=0`` the well shares drive frames, so a probe fit on the raw well pool and
+                scored on the drive would partly score its own fit set; at overlap 1 nothing is left.
+
+        Returns:
+            The pool's images and canary labels (sorted image order).
+
+        Raises:
+            ValueError: If ``which`` is unknown.
+        """
+        if which == "drive" or (which == "well" and self._well_indices is None):
+            indices = sorted({idx for _, idx in self._delivered})
+        elif which == "well":
+            indices = sorted(self._well_indices or [])
+        else:
+            raise ValueError(f"which must be 'well' or 'drive'; got {which!r}.")
+        if drive_disjoint:
+            delivered = {idx for _, idx in self._delivered}
+            indices = [idx for idx in indices if idx not in delivered]
+        index = torch.tensor(indices, dtype=torch.long)
+        return EvalSet(self._images[index], self._canary[index])
+
+    @property
+    def selection_sets(self) -> EvalSets | None:
+        """The selection set — labelled support/query for the well's competence stop (``None`` if off).
+
+        Kept apart from :attr:`eval_sets` so the well is never stopped on the measurement probes:
+        selecting on them would pick a lucky high reading, and the drive's regression to the mean
+        would then look like degradation.
+        """
+        return self._selection_sets
 
     @property
     def eval_sets(self) -> EvalSets:
@@ -264,6 +566,8 @@ class RegimeStream:
         source's ``(timeofday·weather)`` name, so the deploy corpus can label each leg. Only eras with
         training data (those actually delivered) appear.
         """
+        if self.order == "iid":
+            return {0: "iid"}
         present = {era for era, _ in self._order_stream}
         return {era: self.regime_names[self._regime_order[era]] for era in sorted(present)}
 
@@ -280,7 +584,7 @@ class RegimeStream:
             determinism; ``category_hist`` is empty when the source has no detection labels).
         """
         composition: dict[int, dict[str, Any]] = {}
-        for era, idx in self._order_stream:
+        for era, idx in self._delivered:
             entry = composition.setdefault(era, {"n_images": 0, "scene_hist": {}, "category_hist": {}})
             entry["n_images"] += 1
             scene = self.canary_names[int(self._canary[idx])]
@@ -295,13 +599,31 @@ class RegimeStream:
 
     @property
     def num_eras(self) -> int:
-        """Number of distinct eras (regimes with training data) in the walk."""
-        return len({era for era, _ in self._order_stream})
+        """Number of distinct eras delivered (regimes with training data; ``1`` for the IID control)."""
+        return len({era for era, _ in self._delivered})
+
+    @property
+    def leg_boundary_steps(self) -> list[int]:
+        """The steps at which the **walk** opens a new leg (step 0 excluded).
+
+        The state just *before* such a step is the end of the previous leg. Defined from the walk in
+        both orders: under ``order="iid"`` the batch sizes match the walk one-for-one, so these are
+        the matched steps at which to compare (or checkpoint) the IID control.
+        """
+        eras = self._walk_batch_eras
+        return [step for step in range(1, len(eras)) if eras[step] != eras[step - 1]]
 
     def __len__(self) -> int:
         """Number of batches the stream will deliver (era-boundary flushes included)."""
+        if self._iid_chunks is not None:
+            return len(self._iid_chunks)
         return count_ordered_batches(self._order_stream, self.batch_size, self.drop_last)
 
     def __iter__(self) -> Iterator[StreamBatch]:
-        """Yield label-free :class:`StreamBatch` batches in walk order."""
+        """Yield label-free :class:`StreamBatch` batches (walk order, or the matched IID shuffle)."""
+        if self._iid_chunks is not None:
+            return (
+                StreamBatch(images=self._images[torch.tensor(chunk, dtype=torch.long)], era=0, step=step)
+                for step, chunk in enumerate(self._iid_chunks)
+            )
         return iter_ordered_batches(self._order_stream, self._images, self.batch_size, self.drop_last)

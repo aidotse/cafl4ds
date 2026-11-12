@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import json
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import torch
@@ -51,6 +51,11 @@ class AttributedImages:
         object_categories: Optional per-image detection-category counts (e.g. ``{"car": 4,
             "person": 1}``) aligned to ``images`` — the free label aggregate BDD's boxes give, used
             to tag each corpus leg. ``None`` when the source carries no detection labels (synthetic).
+        stratum: Optional integer stratum id per image ``[N]`` — a coarse grouping of the regime
+            axis (BDD: ``timeofday``) the canary can be stratified on, so a probe can read accuracy
+            on the *earlier* regimes separately from the later ones (a forgetting read). ``None``
+            when the source defines no strata.
+        stratum_names: Human-readable name per stratum id (empty when ``stratum`` is ``None``).
     """
 
     images: torch.Tensor
@@ -60,6 +65,8 @@ class AttributedImages:
     regime_names: dict[int, str]
     canary_names: dict[int, str]
     object_categories: list[dict[str, int]] | None = None
+    stratum: torch.Tensor | None = None
+    stratum_names: dict[int, str] = field(default_factory=dict)
 
 
 class AttributeSource(ABC):
@@ -152,13 +159,18 @@ class SyntheticAttributeSource(AttributeSource):
                 images.append(block.clamp_(0.0, 1.0))
                 era_key.append(torch.full((keep,), r, dtype=torch.long))
                 canary.append(torch.full((keep,), k, dtype=torch.long))
+        era_keys = torch.cat(era_key)
+        # Strata: the early and late halves of the walk (the synthetic stand-in for BDD's timeofday).
+        late = (era_keys >= (self._num_regimes + 1) // 2).long()
         self._cache = AttributedImages(
             images=torch.cat(images),
-            era_key=torch.cat(era_key),
+            era_key=era_keys,
             canary=torch.cat(canary),
             regime_order=list(range(self._num_regimes)),
             regime_names={r: f"regime{r}" for r in range(self._num_regimes)},
             canary_names={k: f"canary{k}" for k in range(self._num_canary)},
+            stratum=late,
+            stratum_names={0: "early", 1: "late"},
         )
         return self._cache
 
@@ -283,13 +295,18 @@ class BDD100KSource(AttributeSource):
         scene_id, canary_names = _index_scenes({s for _, _, s, _ in valid})
         self._num_canary = len(scene_id)
 
+        # Strata = timeofday, id'd in walk order (daytime → dawn/dusk → night).
+        timeofdays = sorted({r[0] for _, r, _, _ in valid}, key=lambda t: (_TIMEOFDAY_RANK.get(t, 99), t))
+        stratum_id = {t: i for i, t in enumerate(timeofdays)}
+
         resize = transforms.Compose([transforms.Resize((self.img_size, self.img_size)), transforms.ToTensor()])
-        imgs, era_key, canary, categories = [], [], [], []
+        imgs, era_key, canary, stratum, categories = [], [], [], [], []
         for path, regime, scene, cats in valid:
             with Image.open(path) as im:
                 imgs.append(resize(im.convert("RGB")))
             era_key.append(regime_id[regime])
             canary.append(scene_id[scene])
+            stratum.append(stratum_id[regime[0]])
             categories.append(cats)
         logger.info(
             f"BDD100KSource: loaded {len(imgs)} images ({self.split}) at {self.img_size}px "
@@ -303,6 +320,8 @@ class BDD100KSource(AttributeSource):
             regime_names=regime_names,
             canary_names=canary_names,
             object_categories=categories,
+            stratum=torch.tensor(stratum, dtype=torch.long),
+            stratum_names={i: t for t, i in stratum_id.items()},
         )
 
 

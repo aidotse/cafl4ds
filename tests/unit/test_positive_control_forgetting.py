@@ -436,3 +436,44 @@ def test_task_a_trajectory_logging_is_correct_and_rng_neutral(harness: ModuleTyp
     assert pc_log["backward_transfer"] == pytest.approx(pc_plain["backward_transfer"], abs=1e-9)
     # Non-logged runs carry empty trajectories (bulky series stay opt-in).
     assert pc_plain["task_a_traj_a"] == [] and pc_plain["task_a_traj_b"] == []
+
+
+def test_save_states_keeps_the_shared_anchor_and_the_state_the_drift_was_read_on(
+    harness: ModuleType, tmp_path: Path
+) -> None:
+    """P1.1.3: both arms save one post-A state (the shared anchor); the post-B state reproduces the recorded drift."""
+    import torch  # noqa: PLC0415 - local: the rest of the module never touches tensors
+    from hydra.utils import instantiate  # noqa: PLC0415
+
+    from cafl4ds import warmup  # noqa: PLC0415
+    from cafl4ds.data.streams import EvalSets  # noqa: PLC0415
+    from cafl4ds.monitor import HealthMonitor  # noqa: PLC0415
+
+    config = _compose([*_BASE, "pretrained_encoder=true", "decoder_warmup_epochs=1"])
+    split = harness._task_split(config)
+    assert harness.task_a_fingerprint(harness._task_split(config)) == harness.task_a_fingerprint(split)
+    records = {
+        name: harness._run_arm(config, split, replay=replay, run_name=name, states_dir=tmp_path)[0]
+        for name, replay in (("healthy", True), ("pc", False))
+    }
+    plain, _ = harness._run_arm(config, split, replay=False, run_name="pc")
+    assert plain["matrix"] == records["pc"]["matrix"]  # saving does not perturb the arm
+    post_a = {name: torch.load(tmp_path / f"{name}_post_a.pt") for name in records}
+    assert all(torch.equal(post_a["pc"][k], post_a["healthy"][k]) for k in post_a["pc"])
+
+    def method(path: Path) -> torch.nn.Module:
+        m = instantiate(config.ssl, encoder=instantiate(config.encoder))
+        warmup.load_well(m, path)
+        return m
+
+    a = split["A"]
+    monitor = HealthMonitor(
+        eval_sets=EvalSets(probe_support=a["support"], probe_query=a["query"]),
+        run_knn=False,
+        run_linear=False,
+        run_alignment=False,
+        knn_k=config.knn_k,
+    )
+    monitor.measure(method(tmp_path / "pc_post_a.pt"), 0)
+    drift = monitor.measure(method(tmp_path / "pc_post_b.pt"), 1)["cka_drift"]
+    assert drift == pytest.approx(records["pc"]["cka_drift"], abs=1e-6)

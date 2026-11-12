@@ -1,0 +1,1290 @@
+[
+  {
+    "checkpoint": "wells/p110_deep/je_o0.0.pt",
+    "features": "features/well.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00022.pt",
+    "features": "features/je_o0.0_iid/s0/step00022.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00031.pt",
+    "features": "features/je_o0.0_iid/s0/step00031.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00044.pt",
+    "features": "features/je_o0.0_iid/s0/step00044.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00049.pt",
+    "features": "features/je_o0.0_iid/s0/step00049.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00055.pt",
+    "features": "features/je_o0.0_iid/s0/step00055.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00056.pt",
+    "features": "features/je_o0.0_iid/s0/step00056.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00059.pt",
+    "features": "features/je_o0.0_iid/s0/step00059.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00060.pt",
+    "features": "features/je_o0.0_iid/s0/step00060.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00062.pt",
+    "features": "features/je_o0.0_iid/s0/step00062.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00063.pt",
+    "features": "features/je_o0.0_iid/s0/step00063.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00064.pt",
+    "features": "features/je_o0.0_iid/s0/step00064.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00065.pt",
+    "features": "features/je_o0.0_iid/s0/step00065.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00108.pt",
+    "features": "features/je_o0.0_iid/s0/step00108.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00109.pt",
+    "features": "features/je_o0.0_iid/s0/step00109.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00110.pt",
+    "features": "features/je_o0.0_iid/s0/step00110.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00114.pt",
+    "features": "features/je_o0.0_iid/s0/step00114.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00118.pt",
+    "features": "features/je_o0.0_iid/s0/step00118.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/final.pt",
+    "features": "features/je_o0.0_iid/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00022.pt",
+    "features": "features/je_o0.0_iid/s1/step00022.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00031.pt",
+    "features": "features/je_o0.0_iid/s1/step00031.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00044.pt",
+    "features": "features/je_o0.0_iid/s1/step00044.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00049.pt",
+    "features": "features/je_o0.0_iid/s1/step00049.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00055.pt",
+    "features": "features/je_o0.0_iid/s1/step00055.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00056.pt",
+    "features": "features/je_o0.0_iid/s1/step00056.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00059.pt",
+    "features": "features/je_o0.0_iid/s1/step00059.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00060.pt",
+    "features": "features/je_o0.0_iid/s1/step00060.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00062.pt",
+    "features": "features/je_o0.0_iid/s1/step00062.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00063.pt",
+    "features": "features/je_o0.0_iid/s1/step00063.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00064.pt",
+    "features": "features/je_o0.0_iid/s1/step00064.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00065.pt",
+    "features": "features/je_o0.0_iid/s1/step00065.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00108.pt",
+    "features": "features/je_o0.0_iid/s1/step00108.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00109.pt",
+    "features": "features/je_o0.0_iid/s1/step00109.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00110.pt",
+    "features": "features/je_o0.0_iid/s1/step00110.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00114.pt",
+    "features": "features/je_o0.0_iid/s1/step00114.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00118.pt",
+    "features": "features/je_o0.0_iid/s1/step00118.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/final.pt",
+    "features": "features/je_o0.0_iid/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00022.pt",
+    "features": "features/je_o0.0_iid/s2/step00022.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00031.pt",
+    "features": "features/je_o0.0_iid/s2/step00031.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00044.pt",
+    "features": "features/je_o0.0_iid/s2/step00044.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00049.pt",
+    "features": "features/je_o0.0_iid/s2/step00049.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00055.pt",
+    "features": "features/je_o0.0_iid/s2/step00055.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00056.pt",
+    "features": "features/je_o0.0_iid/s2/step00056.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00059.pt",
+    "features": "features/je_o0.0_iid/s2/step00059.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00060.pt",
+    "features": "features/je_o0.0_iid/s2/step00060.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00062.pt",
+    "features": "features/je_o0.0_iid/s2/step00062.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00063.pt",
+    "features": "features/je_o0.0_iid/s2/step00063.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00064.pt",
+    "features": "features/je_o0.0_iid/s2/step00064.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00065.pt",
+    "features": "features/je_o0.0_iid/s2/step00065.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00108.pt",
+    "features": "features/je_o0.0_iid/s2/step00108.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00109.pt",
+    "features": "features/je_o0.0_iid/s2/step00109.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00110.pt",
+    "features": "features/je_o0.0_iid/s2/step00110.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00114.pt",
+    "features": "features/je_o0.0_iid/s2/step00114.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00118.pt",
+    "features": "features/je_o0.0_iid/s2/step00118.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/final.pt",
+    "features": "features/je_o0.0_iid/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/step00022.pt",
+    "features": "features/je_o0.0_iid/s3/step00022.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/step00031.pt",
+    "features": "features/je_o0.0_iid/s3/step00031.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/step00044.pt",
+    "features": "features/je_o0.0_iid/s3/step00044.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/step00049.pt",
+    "features": "features/je_o0.0_iid/s3/step00049.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/step00055.pt",
+    "features": "features/je_o0.0_iid/s3/step00055.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/step00056.pt",
+    "features": "features/je_o0.0_iid/s3/step00056.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/step00059.pt",
+    "features": "features/je_o0.0_iid/s3/step00059.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/step00060.pt",
+    "features": "features/je_o0.0_iid/s3/step00060.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/step00062.pt",
+    "features": "features/je_o0.0_iid/s3/step00062.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/step00063.pt",
+    "features": "features/je_o0.0_iid/s3/step00063.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/step00064.pt",
+    "features": "features/je_o0.0_iid/s3/step00064.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/step00065.pt",
+    "features": "features/je_o0.0_iid/s3/step00065.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/step00108.pt",
+    "features": "features/je_o0.0_iid/s3/step00108.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/step00109.pt",
+    "features": "features/je_o0.0_iid/s3/step00109.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/step00110.pt",
+    "features": "features/je_o0.0_iid/s3/step00110.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/step00114.pt",
+    "features": "features/je_o0.0_iid/s3/step00114.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/step00118.pt",
+    "features": "features/je_o0.0_iid/s3/step00118.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s3/final.pt",
+    "features": "features/je_o0.0_iid/s3/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/step00022.pt",
+    "features": "features/je_o0.0_iid/s4/step00022.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/step00031.pt",
+    "features": "features/je_o0.0_iid/s4/step00031.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/step00044.pt",
+    "features": "features/je_o0.0_iid/s4/step00044.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/step00049.pt",
+    "features": "features/je_o0.0_iid/s4/step00049.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/step00055.pt",
+    "features": "features/je_o0.0_iid/s4/step00055.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/step00056.pt",
+    "features": "features/je_o0.0_iid/s4/step00056.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/step00059.pt",
+    "features": "features/je_o0.0_iid/s4/step00059.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/step00060.pt",
+    "features": "features/je_o0.0_iid/s4/step00060.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/step00062.pt",
+    "features": "features/je_o0.0_iid/s4/step00062.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/step00063.pt",
+    "features": "features/je_o0.0_iid/s4/step00063.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/step00064.pt",
+    "features": "features/je_o0.0_iid/s4/step00064.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/step00065.pt",
+    "features": "features/je_o0.0_iid/s4/step00065.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/step00108.pt",
+    "features": "features/je_o0.0_iid/s4/step00108.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/step00109.pt",
+    "features": "features/je_o0.0_iid/s4/step00109.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/step00110.pt",
+    "features": "features/je_o0.0_iid/s4/step00110.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/step00114.pt",
+    "features": "features/je_o0.0_iid/s4/step00114.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/step00118.pt",
+    "features": "features/je_o0.0_iid/s4/step00118.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s4/final.pt",
+    "features": "features/je_o0.0_iid/s4/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00022.pt",
+    "features": "features/je_o0.0_walk/s0/step00022.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00031.pt",
+    "features": "features/je_o0.0_walk/s0/step00031.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00044.pt",
+    "features": "features/je_o0.0_walk/s0/step00044.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00049.pt",
+    "features": "features/je_o0.0_walk/s0/step00049.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00055.pt",
+    "features": "features/je_o0.0_walk/s0/step00055.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00056.pt",
+    "features": "features/je_o0.0_walk/s0/step00056.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00059.pt",
+    "features": "features/je_o0.0_walk/s0/step00059.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00060.pt",
+    "features": "features/je_o0.0_walk/s0/step00060.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00062.pt",
+    "features": "features/je_o0.0_walk/s0/step00062.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00063.pt",
+    "features": "features/je_o0.0_walk/s0/step00063.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00064.pt",
+    "features": "features/je_o0.0_walk/s0/step00064.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00065.pt",
+    "features": "features/je_o0.0_walk/s0/step00065.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00108.pt",
+    "features": "features/je_o0.0_walk/s0/step00108.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00109.pt",
+    "features": "features/je_o0.0_walk/s0/step00109.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00110.pt",
+    "features": "features/je_o0.0_walk/s0/step00110.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00114.pt",
+    "features": "features/je_o0.0_walk/s0/step00114.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00118.pt",
+    "features": "features/je_o0.0_walk/s0/step00118.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/final.pt",
+    "features": "features/je_o0.0_walk/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00022.pt",
+    "features": "features/je_o0.0_walk/s1/step00022.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00031.pt",
+    "features": "features/je_o0.0_walk/s1/step00031.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00044.pt",
+    "features": "features/je_o0.0_walk/s1/step00044.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00049.pt",
+    "features": "features/je_o0.0_walk/s1/step00049.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00055.pt",
+    "features": "features/je_o0.0_walk/s1/step00055.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00056.pt",
+    "features": "features/je_o0.0_walk/s1/step00056.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00059.pt",
+    "features": "features/je_o0.0_walk/s1/step00059.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00060.pt",
+    "features": "features/je_o0.0_walk/s1/step00060.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00062.pt",
+    "features": "features/je_o0.0_walk/s1/step00062.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00063.pt",
+    "features": "features/je_o0.0_walk/s1/step00063.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00064.pt",
+    "features": "features/je_o0.0_walk/s1/step00064.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00065.pt",
+    "features": "features/je_o0.0_walk/s1/step00065.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00108.pt",
+    "features": "features/je_o0.0_walk/s1/step00108.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00109.pt",
+    "features": "features/je_o0.0_walk/s1/step00109.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00110.pt",
+    "features": "features/je_o0.0_walk/s1/step00110.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00114.pt",
+    "features": "features/je_o0.0_walk/s1/step00114.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00118.pt",
+    "features": "features/je_o0.0_walk/s1/step00118.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/final.pt",
+    "features": "features/je_o0.0_walk/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00022.pt",
+    "features": "features/je_o0.0_walk/s2/step00022.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00031.pt",
+    "features": "features/je_o0.0_walk/s2/step00031.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00044.pt",
+    "features": "features/je_o0.0_walk/s2/step00044.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00049.pt",
+    "features": "features/je_o0.0_walk/s2/step00049.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00055.pt",
+    "features": "features/je_o0.0_walk/s2/step00055.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00056.pt",
+    "features": "features/je_o0.0_walk/s2/step00056.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00059.pt",
+    "features": "features/je_o0.0_walk/s2/step00059.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00060.pt",
+    "features": "features/je_o0.0_walk/s2/step00060.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00062.pt",
+    "features": "features/je_o0.0_walk/s2/step00062.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00063.pt",
+    "features": "features/je_o0.0_walk/s2/step00063.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00064.pt",
+    "features": "features/je_o0.0_walk/s2/step00064.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00065.pt",
+    "features": "features/je_o0.0_walk/s2/step00065.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00108.pt",
+    "features": "features/je_o0.0_walk/s2/step00108.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00109.pt",
+    "features": "features/je_o0.0_walk/s2/step00109.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00110.pt",
+    "features": "features/je_o0.0_walk/s2/step00110.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00114.pt",
+    "features": "features/je_o0.0_walk/s2/step00114.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00118.pt",
+    "features": "features/je_o0.0_walk/s2/step00118.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/final.pt",
+    "features": "features/je_o0.0_walk/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/step00022.pt",
+    "features": "features/je_o0.0_walk/s3/step00022.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/step00031.pt",
+    "features": "features/je_o0.0_walk/s3/step00031.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/step00044.pt",
+    "features": "features/je_o0.0_walk/s3/step00044.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/step00049.pt",
+    "features": "features/je_o0.0_walk/s3/step00049.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/step00055.pt",
+    "features": "features/je_o0.0_walk/s3/step00055.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/step00056.pt",
+    "features": "features/je_o0.0_walk/s3/step00056.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/step00059.pt",
+    "features": "features/je_o0.0_walk/s3/step00059.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/step00060.pt",
+    "features": "features/je_o0.0_walk/s3/step00060.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/step00062.pt",
+    "features": "features/je_o0.0_walk/s3/step00062.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/step00063.pt",
+    "features": "features/je_o0.0_walk/s3/step00063.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/step00064.pt",
+    "features": "features/je_o0.0_walk/s3/step00064.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/step00065.pt",
+    "features": "features/je_o0.0_walk/s3/step00065.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/step00108.pt",
+    "features": "features/je_o0.0_walk/s3/step00108.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/step00109.pt",
+    "features": "features/je_o0.0_walk/s3/step00109.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/step00110.pt",
+    "features": "features/je_o0.0_walk/s3/step00110.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/step00114.pt",
+    "features": "features/je_o0.0_walk/s3/step00114.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/step00118.pt",
+    "features": "features/je_o0.0_walk/s3/step00118.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s3/final.pt",
+    "features": "features/je_o0.0_walk/s3/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/step00022.pt",
+    "features": "features/je_o0.0_walk/s4/step00022.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/step00031.pt",
+    "features": "features/je_o0.0_walk/s4/step00031.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/step00044.pt",
+    "features": "features/je_o0.0_walk/s4/step00044.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/step00049.pt",
+    "features": "features/je_o0.0_walk/s4/step00049.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/step00055.pt",
+    "features": "features/je_o0.0_walk/s4/step00055.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/step00056.pt",
+    "features": "features/je_o0.0_walk/s4/step00056.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/step00059.pt",
+    "features": "features/je_o0.0_walk/s4/step00059.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/step00060.pt",
+    "features": "features/je_o0.0_walk/s4/step00060.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/step00062.pt",
+    "features": "features/je_o0.0_walk/s4/step00062.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/step00063.pt",
+    "features": "features/je_o0.0_walk/s4/step00063.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/step00064.pt",
+    "features": "features/je_o0.0_walk/s4/step00064.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/step00065.pt",
+    "features": "features/je_o0.0_walk/s4/step00065.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/step00108.pt",
+    "features": "features/je_o0.0_walk/s4/step00108.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/step00109.pt",
+    "features": "features/je_o0.0_walk/s4/step00109.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/step00110.pt",
+    "features": "features/je_o0.0_walk/s4/step00110.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/step00114.pt",
+    "features": "features/je_o0.0_walk/s4/step00114.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/step00118.pt",
+    "features": "features/je_o0.0_walk/s4/step00118.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s4/final.pt",
+    "features": "features/je_o0.0_walk/s4/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_iid_noise0.3/checkpoints/s0/final.pt",
+    "features": "features/je_iid_noise0.3/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00065.pt",
+    "features": "features/je_iid_noise0.3/s0/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.3,
+      "seed": 0,
+      "rel_change": 0.30002218237518574
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_iid_noise0.3/checkpoints/s1/final.pt",
+    "features": "features/je_iid_noise0.3/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00065.pt",
+    "features": "features/je_iid_noise0.3/s1/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.3,
+      "seed": 1,
+      "rel_change": 0.2999989189374907
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_iid_noise0.3/checkpoints/s2/final.pt",
+    "features": "features/je_iid_noise0.3/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00065.pt",
+    "features": "features/je_iid_noise0.3/s2/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.3,
+      "seed": 2,
+      "rel_change": 0.3000287103567572
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_iid_noise0.5/checkpoints/s0/final.pt",
+    "features": "features/je_iid_noise0.5/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00065.pt",
+    "features": "features/je_iid_noise0.5/s0/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.5,
+      "seed": 0,
+      "rel_change": 0.5000369499768518
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_iid_noise0.5/checkpoints/s1/final.pt",
+    "features": "features/je_iid_noise0.5/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00065.pt",
+    "features": "features/je_iid_noise0.5/s1/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.5,
+      "seed": 1,
+      "rel_change": 0.4999981780105062
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_iid_noise0.5/checkpoints/s2/final.pt",
+    "features": "features/je_iid_noise0.5/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00065.pt",
+    "features": "features/je_iid_noise0.5/s2/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.5,
+      "seed": 2,
+      "rel_change": 0.5000478346376952
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_iid_noise0.75/checkpoints/s0/final.pt",
+    "features": "features/je_iid_noise0.75/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00065.pt",
+    "features": "features/je_iid_noise0.75/s0/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.75,
+      "seed": 0,
+      "rel_change": 0.7500554256870197
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_iid_noise0.75/checkpoints/s1/final.pt",
+    "features": "features/je_iid_noise0.75/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00065.pt",
+    "features": "features/je_iid_noise0.75/s1/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.75,
+      "seed": 1,
+      "rel_change": 0.7499972585284084
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_iid_noise0.75/checkpoints/s2/final.pt",
+    "features": "features/je_iid_noise0.75/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00065.pt",
+    "features": "features/je_iid_noise0.75/s2/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.75,
+      "seed": 2,
+      "rel_change": 0.7500717487087516
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_iid_noise1.0/checkpoints/s0/final.pt",
+    "features": "features/je_iid_noise1.0/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00065.pt",
+    "features": "features/je_iid_noise1.0/s0/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 1.0,
+      "seed": 0,
+      "rel_change": 1.0000739008496593
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_iid_noise1.0/checkpoints/s1/final.pt",
+    "features": "features/je_iid_noise1.0/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00065.pt",
+    "features": "features/je_iid_noise1.0/s1/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 1.0,
+      "seed": 1,
+      "rel_change": 0.9999963563196875
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_iid_noise1.0/checkpoints/s2/final.pt",
+    "features": "features/je_iid_noise1.0/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00065.pt",
+    "features": "features/je_iid_noise1.0/s2/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 1.0,
+      "seed": 2,
+      "rel_change": 1.0000956670355343
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_iid_none/checkpoints/s0/final.pt",
+    "features": "features/je_iid_none/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_iid_none/checkpoints/s1/final.pt",
+    "features": "features/je_iid_none/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_iid_none/checkpoints/s2/final.pt",
+    "features": "features/je_iid_none/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_iid_reinit12/checkpoints/s0/final.pt",
+    "features": "features/je_iid_reinit12/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00065.pt",
+    "features": "features/je_iid_reinit12/s0/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 12,
+      "scale": 0.0,
+      "seed": 0,
+      "rel_change": 1.0800355699695332
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_iid_reinit12/checkpoints/s1/final.pt",
+    "features": "features/je_iid_reinit12/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00065.pt",
+    "features": "features/je_iid_reinit12/s1/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 12,
+      "scale": 0.0,
+      "seed": 1,
+      "rel_change": 1.0799618032967313
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_iid_reinit12/checkpoints/s2/final.pt",
+    "features": "features/je_iid_reinit12/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00065.pt",
+    "features": "features/je_iid_reinit12/s2/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 12,
+      "scale": 0.0,
+      "seed": 2,
+      "rel_change": 1.0799206331128668
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_iid_reinit4/checkpoints/s0/final.pt",
+    "features": "features/je_iid_reinit4/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s0/step00065.pt",
+    "features": "features/je_iid_reinit4/s0/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 4,
+      "scale": 0.0,
+      "seed": 0,
+      "rel_change": 1.0707658137918972
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_iid_reinit4/checkpoints/s1/final.pt",
+    "features": "features/je_iid_reinit4/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s1/step00065.pt",
+    "features": "features/je_iid_reinit4/s1/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 4,
+      "scale": 0.0,
+      "seed": 1,
+      "rel_change": 1.0707294734033805
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_iid_reinit4/checkpoints/s2/final.pt",
+    "features": "features/je_iid_reinit4/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_iid/checkpoints/s2/step00065.pt",
+    "features": "features/je_iid_reinit4/s2/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 4,
+      "scale": 0.0,
+      "seed": 2,
+      "rel_change": 1.0707235500252932
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_walk_noise0.3/checkpoints/s0/final.pt",
+    "features": "features/je_walk_noise0.3/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00065.pt",
+    "features": "features/je_walk_noise0.3/s0/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.3,
+      "seed": 0,
+      "rel_change": 0.3000221873217276
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_walk_noise0.3/checkpoints/s1/final.pt",
+    "features": "features/je_walk_noise0.3/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00065.pt",
+    "features": "features/je_walk_noise0.3/s1/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.3,
+      "seed": 1,
+      "rel_change": 0.2999989240023671
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_walk_noise0.3/checkpoints/s2/final.pt",
+    "features": "features/je_walk_noise0.3/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00065.pt",
+    "features": "features/je_walk_noise0.3/s2/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.3,
+      "seed": 2,
+      "rel_change": 0.3000286908304392
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_walk_noise0.5/checkpoints/s0/final.pt",
+    "features": "features/je_walk_noise0.5/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00065.pt",
+    "features": "features/je_walk_noise0.5/s0/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.5,
+      "seed": 0,
+      "rel_change": 0.5000369656252037
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_walk_noise0.5/checkpoints/s1/final.pt",
+    "features": "features/je_walk_noise0.5/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00065.pt",
+    "features": "features/je_walk_noise0.5/s1/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.5,
+      "seed": 1,
+      "rel_change": 0.4999981879537665
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_walk_noise0.5/checkpoints/s2/final.pt",
+    "features": "features/je_walk_noise0.5/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00065.pt",
+    "features": "features/je_walk_noise0.5/s2/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.5,
+      "seed": 2,
+      "rel_change": 0.5000478037946429
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_walk_noise0.75/checkpoints/s0/final.pt",
+    "features": "features/je_walk_noise0.75/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00065.pt",
+    "features": "features/je_walk_noise0.75/s0/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.75,
+      "seed": 0,
+      "rel_change": 0.7500554401751277
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_walk_noise0.75/checkpoints/s1/final.pt",
+    "features": "features/je_walk_noise0.75/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00065.pt",
+    "features": "features/je_walk_noise0.75/s1/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.75,
+      "seed": 1,
+      "rel_change": 0.7499972829511161
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_walk_noise0.75/checkpoints/s2/final.pt",
+    "features": "features/je_walk_noise0.75/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00065.pt",
+    "features": "features/je_walk_noise0.75/s2/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 0.75,
+      "seed": 2,
+      "rel_change": 0.7500717000301773
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_walk_noise1.0/checkpoints/s0/final.pt",
+    "features": "features/je_walk_noise1.0/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00065.pt",
+    "features": "features/je_walk_noise1.0/s0/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 1.0,
+      "seed": 0,
+      "rel_change": 1.0000739294585013
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_walk_noise1.0/checkpoints/s1/final.pt",
+    "features": "features/je_walk_noise1.0/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00065.pt",
+    "features": "features/je_walk_noise1.0/s1/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 1.0,
+      "seed": 1,
+      "rel_change": 0.9999963765048792
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_walk_noise1.0/checkpoints/s2/final.pt",
+    "features": "features/je_walk_noise1.0/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00065.pt",
+    "features": "features/je_walk_noise1.0/s2/post_damage.pt",
+    "damage": {
+      "mode": "noise",
+      "k": 12,
+      "scale": 1.0,
+      "seed": 2,
+      "rel_change": 1.000095607290642
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_walk_none/checkpoints/s0/final.pt",
+    "features": "features/je_walk_none/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_walk_none/checkpoints/s1/final.pt",
+    "features": "features/je_walk_none/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_walk_none/checkpoints/s2/final.pt",
+    "features": "features/je_walk_none/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_walk_reinit12/checkpoints/s0/final.pt",
+    "features": "features/je_walk_reinit12/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00065.pt",
+    "features": "features/je_walk_reinit12/s0/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 12,
+      "scale": 0.0,
+      "seed": 0,
+      "rel_change": 1.0800354045498974
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_walk_reinit12/checkpoints/s1/final.pt",
+    "features": "features/je_walk_reinit12/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00065.pt",
+    "features": "features/je_walk_reinit12/s1/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 12,
+      "scale": 0.0,
+      "seed": 1,
+      "rel_change": 1.0799611438594732
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_walk_reinit12/checkpoints/s2/final.pt",
+    "features": "features/je_walk_reinit12/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00065.pt",
+    "features": "features/je_walk_reinit12/s2/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 12,
+      "scale": 0.0,
+      "seed": 2,
+      "rel_change": 1.07991982374309
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_walk_reinit4/checkpoints/s0/final.pt",
+    "features": "features/je_walk_reinit4/s0/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s0/step00065.pt",
+    "features": "features/je_walk_reinit4/s0/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 4,
+      "scale": 0.0,
+      "seed": 0,
+      "rel_change": 1.0707669969663407
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_walk_reinit4/checkpoints/s1/final.pt",
+    "features": "features/je_walk_reinit4/s1/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s1/step00065.pt",
+    "features": "features/je_walk_reinit4/s1/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 4,
+      "scale": 0.0,
+      "seed": 1,
+      "rel_change": 1.070728597302151
+    }
+  },
+  {
+    "checkpoint": "outputs/p111/branch/je_walk_reinit4/checkpoints/s2/final.pt",
+    "features": "features/je_walk_reinit4/s2/final.pt"
+  },
+  {
+    "checkpoint": "outputs/p110_deep/warm/je_o0.0_walk/checkpoints/s2/step00065.pt",
+    "features": "features/je_walk_reinit4/s2/post_damage.pt",
+    "damage": {
+      "mode": "reinit",
+      "k": 4,
+      "scale": 0.0,
+      "seed": 2,
+      "rel_change": 1.070723036987584
+    }
+  }
+]

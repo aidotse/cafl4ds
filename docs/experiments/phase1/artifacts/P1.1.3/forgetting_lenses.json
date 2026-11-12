@@ -1,0 +1,1809 @@
+{
+  "reproduction": {
+    "0": {
+      "pc_backward_transfer": {
+        "new": -0.07499999999999996,
+        "promoted": -0.07499999999999996,
+        "ok": true
+      },
+      "healthy_backward_transfer": {
+        "new": 0.02833333333333332,
+        "promoted": 0.02833333333333332,
+        "ok": true
+      },
+      "gate_same": true,
+      "ok": true
+    },
+    "1": {
+      "pc_backward_transfer": {
+        "new": -0.06500000000000006,
+        "promoted": -0.06500000000000006,
+        "ok": true
+      },
+      "healthy_backward_transfer": {
+        "new": 0.015000000000000013,
+        "promoted": 0.015000000000000013,
+        "ok": true
+      },
+      "gate_same": true,
+      "ok": true
+    },
+    "2": {
+      "pc_backward_transfer": {
+        "new": -0.07166666666666666,
+        "promoted": -0.07166666666666666,
+        "ok": true
+      },
+      "healthy_backward_transfer": {
+        "new": -0.011666666666666603,
+        "promoted": -0.011666666666666603,
+        "ok": true
+      },
+      "gate_same": true,
+      "ok": true
+    },
+    "3": {
+      "pc_backward_transfer": {
+        "new": -0.07499999999999996,
+        "promoted": -0.07499999999999996,
+        "ok": true
+      },
+      "healthy_backward_transfer": {
+        "new": -0.0016666666666667052,
+        "promoted": -0.0016666666666667052,
+        "ok": true
+      },
+      "gate_same": true,
+      "ok": true
+    },
+    "4": {
+      "pc_backward_transfer": {
+        "new": -0.08499999999999996,
+        "promoted": -0.08499999999999996,
+        "ok": true
+      },
+      "healthy_backward_transfer": {
+        "new": 0.013333333333333308,
+        "promoted": 0.013333333333333308,
+        "ok": true
+      },
+      "gate_same": true,
+      "ok": true
+    }
+  },
+  "seeds": {
+    "0": {
+      "anchor_max_abs_diff": 0.0,
+      "pc_bwt": -0.07499999999999996,
+      "healthy": {
+        "change": {
+          "cka_drift@block01": 0.006146073341369629,
+          "dcka_drift@block01": 0.006167128090592278,
+          "procrustes_drift@block01": 0.01695613920097694,
+          "rankme@block01": 5.03106689453125,
+          "twonn@block01": 0.7515259344791083,
+          "cka_drift@block02": 0.009357929229736328,
+          "dcka_drift@block02": 0.009393531109647468,
+          "procrustes_drift@block02": 0.025902211194270608,
+          "rankme@block02": 9.364273071289062,
+          "twonn@block02": -0.1442694452072555,
+          "cka_drift@block03": 0.008865654468536377,
+          "dcka_drift@block03": 0.008904363055700637,
+          "procrustes_drift@block03": 0.029298014489017365,
+          "rankme@block03": 6.083244323730469,
+          "twonn@block03": -0.4471700740972917,
+          "cka_drift@block04": 0.005913734436035156,
+          "dcka_drift@block04": 0.005945458086137667,
+          "procrustes_drift@block04": 0.028295072194282955,
+          "rankme@block04": 6.761528015136719,
+          "twonn@block04": -0.4400406679893578,
+          "cka_drift@block05": 0.005459189414978027,
+          "dcka_drift@block05": 0.005493702253454691,
+          "procrustes_drift@block05": 0.03232584136653682,
+          "rankme@block05": 8.601638793945312,
+          "twonn@block05": -0.11750141226104382,
+          "cka_drift@block06": 0.006532013416290283,
+          "dcka_drift@block06": 0.0065778118831200105,
+          "procrustes_drift@block06": 0.03821462541831422,
+          "rankme@block06": 13.2965087890625,
+          "twonn@block06": 0.09275304086111191,
+          "cka_drift@block07": 0.008387386798858643,
+          "dcka_drift@block07": 0.008449798522664809,
+          "procrustes_drift@block07": 0.04332901126688249,
+          "rankme@block07": 11.033355712890625,
+          "twonn@block07": -0.12455839130162438,
+          "cka_drift@block08": 0.013316154479980469,
+          "dcka_drift@block08": 0.013427464706374792,
+          "procrustes_drift@block08": 0.05914980116809998,
+          "rankme@block08": 19.147918701171875,
+          "twonn@block08": -0.6600489771145135,
+          "cka_drift@block09": 0.01666700839996338,
+          "dcka_drift@block09": 0.016801030179031007,
+          "procrustes_drift@block09": 0.07162988949558846,
+          "rankme@block09": 24.1309814453125,
+          "twonn@block09": -0.4930765137108324,
+          "cka_drift@block10": 0.01916372776031494,
+          "dcka_drift@block10": 0.0193204709650463,
+          "procrustes_drift@block10": 0.08460104426378923,
+          "rankme@block10": 29.892059326171875,
+          "twonn@block10": -0.6972852551279125,
+          "cka_drift@block11": 0.022954165935516357,
+          "dcka_drift@block11": 0.023172505703546342,
+          "procrustes_drift@block11": 0.09474861184541927,
+          "rankme@block11": 30.022262573242188,
+          "twonn@block11": -0.6887122027575003,
+          "cka_drift@block12": 0.04226112365722656,
+          "dcka_drift@block12": 0.04265712248939013,
+          "procrustes_drift@block12": 0.11278018827150449,
+          "rankme@block12": 40.73435974121094,
+          "twonn@block12": -0.7616225629867124,
+          "cka_drift@backbone": 0.007581233978271484,
+          "dcka_drift@backbone": 0.007594380103100096,
+          "procrustes_drift@backbone": 0.016241794725588177,
+          "rankme@backbone": 21.62213134765625,
+          "twonn@backbone": 0.048203200989211936
+        },
+        "phase0_cka_drift": 0.007242441177368164,
+        "recorded_cka_drift": 0.0072342753410339355
+      },
+      "pc": {
+        "change": {
+          "cka_drift@block01": 0.011375367641448975,
+          "dcka_drift@block01": 0.011412532505343465,
+          "procrustes_drift@block01": 0.017251706055005034,
+          "rankme@block01": -0.11940765380859375,
+          "twonn@block01": 0.9054848604416819,
+          "cka_drift@block02": 0.008771896362304688,
+          "dcka_drift@block02": 0.008805711643778302,
+          "procrustes_drift@block02": 0.025266446030127288,
+          "rankme@block02": -3.6367568969726562,
+          "twonn@block02": -0.2736968866564915,
+          "cka_drift@block03": 0.012243092060089111,
+          "dcka_drift@block03": 0.01229076524816497,
+          "procrustes_drift@block03": 0.03289390617757881,
+          "rankme@block03": -10.700126647949219,
+          "twonn@block03": -0.40490005492454273,
+          "cka_drift@block04": 0.013204395771026611,
+          "dcka_drift@block04": 0.013270809116282534,
+          "procrustes_drift@block04": 0.036056367711401194,
+          "rankme@block04": -6.070068359375,
+          "twonn@block04": -0.007780109782089539,
+          "cka_drift@block05": 0.015487432479858398,
+          "dcka_drift@block05": 0.015571239951443272,
+          "procrustes_drift@block05": 0.042693583482839914,
+          "rankme@block05": -7.5203399658203125,
+          "twonn@block05": -0.18936028311651043,
+          "cka_drift@block06": 0.01763230562210083,
+          "dcka_drift@block06": 0.017745986607700992,
+          "procrustes_drift@block06": 0.050326918631600215,
+          "rankme@block06": -10.578903198242188,
+          "twonn@block06": -0.5765665640494344,
+          "cka_drift@block07": 0.01937735080718994,
+          "dcka_drift@block07": 0.01950743715832215,
+          "procrustes_drift@block07": 0.05628677276783778,
+          "rankme@block07": -13.247772216796875,
+          "twonn@block07": -0.1705351548660019,
+          "cka_drift@block08": 0.02628910541534424,
+          "dcka_drift@block08": 0.02647465376597269,
+          "procrustes_drift@block08": 0.07468388976720242,
+          "rankme@block08": -12.654815673828125,
+          "twonn@block08": -0.2902675702556792,
+          "cka_drift@block09": 0.027389824390411377,
+          "dcka_drift@block09": 0.02758979531807948,
+          "procrustes_drift@block09": 0.0832371386998827,
+          "rankme@block09": -13.009140014648438,
+          "twonn@block09": -0.2811493808235852,
+          "cka_drift@block10": 0.030329465866088867,
+          "dcka_drift@block10": 0.030576581891219146,
+          "procrustes_drift@block10": 0.0945052673924216,
+          "rankme@block10": -12.585174560546875,
+          "twonn@block10": -0.32831706453637466,
+          "cka_drift@block11": 0.039761364459991455,
+          "dcka_drift@block11": 0.04009313727550656,
+          "procrustes_drift@block11": 0.10477754923354632,
+          "rankme@block11": -14.0938720703125,
+          "twonn@block11": -0.2217754861179131,
+          "cka_drift@block12": 0.04172402620315552,
+          "dcka_drift@block12": 0.04206204468337238,
+          "procrustes_drift@block12": 0.10464720907480607,
+          "rankme@block12": -5.036384582519531,
+          "twonn@block12": -0.24729301130374637,
+          "cka_drift@backbone": 0.004694104194641113,
+          "dcka_drift@backbone": 0.004687391718217526,
+          "procrustes_drift@backbone": 0.014163314885738076,
+          "rankme@backbone": -7.8000946044921875,
+          "twonn@backbone": -0.4800526615770533
+        },
+        "phase0_cka_drift": 0.004574954509735107,
+        "recorded_cka_drift": 0.004574775695800781
+      }
+    },
+    "1": {
+      "anchor_max_abs_diff": 0.0,
+      "pc_bwt": -0.06500000000000006,
+      "healthy": {
+        "change": {
+          "cka_drift@block01": 0.017714500427246094,
+          "dcka_drift@block01": 0.01777543690213168,
+          "procrustes_drift@block01": 0.025248921713633132,
+          "rankme@block01": 6.4883575439453125,
+          "twonn@block01": 0.5300024137653114,
+          "cka_drift@block02": 0.018299520015716553,
+          "dcka_drift@block02": 0.018362359229326275,
+          "procrustes_drift@block02": 0.03250509066389129,
+          "rankme@block02": 9.855155944824219,
+          "twonn@block02": 0.4346764365800766,
+          "cka_drift@block03": 0.012009084224700928,
+          "dcka_drift@block03": 0.012050517584132336,
+          "procrustes_drift@block03": 0.0331211490979928,
+          "rankme@block03": 13.150436401367188,
+          "twonn@block03": 0.3067031951673709,
+          "cka_drift@block04": 0.01074141263961792,
+          "dcka_drift@block04": 0.01079362367145531,
+          "procrustes_drift@block04": 0.03339646154186293,
+          "rankme@block04": 14.944778442382812,
+          "twonn@block04": -0.093311710785704,
+          "cka_drift@block05": 0.010346293449401855,
+          "dcka_drift@block05": 0.010405424312898481,
+          "procrustes_drift@block05": 0.03748620909251099,
+          "rankme@block05": 15.848373413085938,
+          "twonn@block05": -0.20143818931931357,
+          "cka_drift@block06": 0.012103021144866943,
+          "dcka_drift@block06": 0.012181526549089883,
+          "procrustes_drift@block06": 0.044142348997334935,
+          "rankme@block06": 20.539581298828125,
+          "twonn@block06": -0.07350373592278636,
+          "cka_drift@block07": 0.014337778091430664,
+          "dcka_drift@block07": 0.014439088108714304,
+          "procrustes_drift@block07": 0.048283506987761626,
+          "rankme@block07": 17.199172973632812,
+          "twonn@block07": 0.09690929648649416,
+          "cka_drift@block08": 0.018482446670532227,
+          "dcka_drift@block08": 0.01863557050069342,
+          "procrustes_drift@block08": 0.06281157456411024,
+          "rankme@block08": 18.140274047851562,
+          "twonn@block08": -0.2664399674280524,
+          "cka_drift@block09": 0.021117210388183594,
+          "dcka_drift@block09": 0.021285773555663745,
+          "procrustes_drift@block09": 0.07318703292343942,
+          "rankme@block09": 22.1885986328125,
+          "twonn@block09": -0.6687841706947246,
+          "cka_drift@block10": 0.025475263595581055,
+          "dcka_drift@block10": 0.02568856165997535,
+          "procrustes_drift@block10": 0.08580542545970826,
+          "rankme@block10": 31.330963134765625,
+          "twonn@block10": -0.5184363238545089,
+          "cka_drift@block11": 0.03299844264984131,
+          "dcka_drift@block11": 0.03328702507972958,
+          "procrustes_drift@block11": 0.09900594019130438,
+          "rankme@block11": 27.64837646484375,
+          "twonn@block11": -0.46137850739578923,
+          "cka_drift@block12": 0.04981088638305664,
+          "dcka_drift@block12": 0.05030356871127839,
+          "procrustes_drift@block12": 0.11695323682673431,
+          "rankme@block12": 30.894027709960938,
+          "twonn@block12": -0.9915595078713153,
+          "cka_drift@backbone": 0.0037609338760375977,
+          "dcka_drift@backbone": 0.0037662522387326147,
+          "procrustes_drift@backbone": 0.014680567466496708,
+          "rankme@backbone": 13.558662414550781,
+          "twonn@backbone": 0.20855547789966344
+        },
+        "phase0_cka_drift": 0.004124701023101807,
+        "recorded_cka_drift": 0.004115939140319824
+      },
+      "pc": {
+        "change": {
+          "cka_drift@block01": 0.005898952484130859,
+          "dcka_drift@block01": 0.0059139323701805635,
+          "procrustes_drift@block01": 0.018224254544942475,
+          "rankme@block01": 3.1275177001953125,
+          "twonn@block01": 0.5551690371572313,
+          "cka_drift@block02": 0.007084310054779053,
+          "dcka_drift@block02": 0.007106049177565077,
+          "procrustes_drift@block02": 0.02705542978590625,
+          "rankme@block02": -3.2111434936523438,
+          "twonn@block02": 0.6587092814304345,
+          "cka_drift@block03": 0.006029963493347168,
+          "dcka_drift@block03": 0.006058300826805141,
+          "procrustes_drift@block03": 0.030541202248312693,
+          "rankme@block03": -8.276702880859375,
+          "twonn@block03": 0.28281001466175937,
+          "cka_drift@block04": 0.012740612030029297,
+          "dcka_drift@block04": 0.012808773232143356,
+          "procrustes_drift@block04": 0.036996649209353416,
+          "rankme@block04": -6.483665466308594,
+          "twonn@block04": -0.3567595994168702,
+          "cka_drift@block05": 0.014469385147094727,
+          "dcka_drift@block05": 0.014546806305436588,
+          "procrustes_drift@block05": 0.04328835385336616,
+          "rankme@block05": -5.924285888671875,
+          "twonn@block05": -1.1677474944361865,
+          "cka_drift@block06": 0.01539921760559082,
+          "dcka_drift@block06": 0.015485776214650415,
+          "procrustes_drift@block06": 0.05134313734585816,
+          "rankme@block06": -9.413597106933594,
+          "twonn@block06": -0.6718738541590294,
+          "cka_drift@block07": 0.02101576328277588,
+          "dcka_drift@block07": 0.021135991192170467,
+          "procrustes_drift@block07": 0.0589523461963215,
+          "rankme@block07": -11.744705200195312,
+          "twonn@block07": 0.0220208330789724,
+          "cka_drift@block08": 0.03172796964645386,
+          "dcka_drift@block08": 0.031924069733043736,
+          "procrustes_drift@block08": 0.07818474063136227,
+          "rankme@block08": -14.567230224609375,
+          "twonn@block08": -0.009291041386489951,
+          "cka_drift@block09": 0.03286731243133545,
+          "dcka_drift@block09": 0.03306583540427821,
+          "procrustes_drift@block09": 0.0922030505690854,
+          "rankme@block09": -15.141571044921875,
+          "twonn@block09": -0.04175654832592457,
+          "cka_drift@block10": 0.03545159101486206,
+          "dcka_drift@block10": 0.035720712753410155,
+          "procrustes_drift@block10": 0.10218434741105109,
+          "rankme@block10": -12.062469482421875,
+          "twonn@block10": -0.02427050967397193,
+          "cka_drift@block11": 0.05013728141784668,
+          "dcka_drift@block11": 0.05056116464488214,
+          "procrustes_drift@block11": 0.11596542620202754,
+          "rankme@block11": -12.115386962890625,
+          "twonn@block11": -0.592195950727703,
+          "cka_drift@block12": 0.05424153804779053,
+          "dcka_drift@block12": 0.054703011687327385,
+          "procrustes_drift@block12": 0.12462713841072914,
+          "rankme@block12": -4.8365325927734375,
+          "twonn@block12": -1.1973458768883773,
+          "cka_drift@backbone": 0.004738330841064453,
+          "dcka_drift@backbone": 0.0047343719076392565,
+          "procrustes_drift@backbone": 0.01582598788633338,
+          "rankme@backbone": -8.645347595214844,
+          "twonn@backbone": 0.3027297159557385
+        },
+        "phase0_cka_drift": 0.004757523536682129,
+        "recorded_cka_drift": 0.0047574639320373535
+      }
+    },
+    "2": {
+      "anchor_max_abs_diff": 0.0,
+      "pc_bwt": -0.07166666666666666,
+      "healthy": {
+        "change": {
+          "cka_drift@block01": 0.0044765472412109375,
+          "dcka_drift@block01": 0.00449002230528095,
+          "procrustes_drift@block01": 0.014713068097787163,
+          "rankme@block01": 4.051349639892578,
+          "twonn@block01": 0.5956699772058176,
+          "cka_drift@block02": 0.010388553142547607,
+          "dcka_drift@block02": 0.010422586748482066,
+          "procrustes_drift@block02": 0.026442594046324208,
+          "rankme@block02": 4.6198577880859375,
+          "twonn@block02": 0.39431082749279334,
+          "cka_drift@block03": 0.006958484649658203,
+          "dcka_drift@block03": 0.006982389813934176,
+          "procrustes_drift@block03": 0.029605027530369643,
+          "rankme@block03": 3.8008499145507812,
+          "twonn@block03": 0.14859053782569376,
+          "cka_drift@block04": 0.0076673030853271484,
+          "dcka_drift@block04": 0.007705243658886585,
+          "procrustes_drift@block04": 0.03050111565585345,
+          "rankme@block04": 8.951286315917969,
+          "twonn@block04": 0.06408387127004289,
+          "cka_drift@block05": 0.0074190497398376465,
+          "dcka_drift@block05": 0.007459716796296756,
+          "procrustes_drift@block05": 0.03436702183323681,
+          "rankme@block05": 12.79364013671875,
+          "twonn@block05": 0.009198984754428707,
+          "cka_drift@block06": 0.009671688079833984,
+          "dcka_drift@block06": 0.009735965207258834,
+          "procrustes_drift@block06": 0.040334365368043024,
+          "rankme@block06": 20.85027313232422,
+          "twonn@block06": -0.012809445712036904,
+          "cka_drift@block07": 0.012176692485809326,
+          "dcka_drift@block07": 0.012267377544188829,
+          "procrustes_drift@block07": 0.044481079675251944,
+          "rankme@block07": 19.7158203125,
+          "twonn@block07": -0.1474477415299802,
+          "cka_drift@block08": 0.016902267932891846,
+          "dcka_drift@block08": 0.017056947694449653,
+          "procrustes_drift@block08": 0.057895102743896754,
+          "rankme@block08": 21.574874877929688,
+          "twonn@block08": -0.3003018689016521,
+          "cka_drift@block09": 0.02016347646713257,
+          "dcka_drift@block09": 0.020351356858273717,
+          "procrustes_drift@block09": 0.06787095665062881,
+          "rankme@block09": 27.625762939453125,
+          "twonn@block09": 0.13865252138706552,
+          "cka_drift@block10": 0.02763056755065918,
+          "dcka_drift@block10": 0.027901209981213926,
+          "procrustes_drift@block10": 0.0808762666790217,
+          "rankme@block10": 30.589202880859375,
+          "twonn@block10": 0.009417665201290504,
+          "cka_drift@block11": 0.034310102462768555,
+          "dcka_drift@block11": 0.03465720289469976,
+          "procrustes_drift@block11": 0.09354564278826438,
+          "rankme@block11": 31.860809326171875,
+          "twonn@block11": -0.4856884214616919,
+          "cka_drift@block12": 0.04681605100631714,
+          "dcka_drift@block12": 0.047251053714761126,
+          "procrustes_drift@block12": 0.10837536846910023,
+          "rankme@block12": 39.78582763671875,
+          "twonn@block12": -1.1326990312116685,
+          "cka_drift@backbone": 0.008929073810577393,
+          "dcka_drift@backbone": 0.008919092699966269,
+          "procrustes_drift@backbone": 0.01886725862580141,
+          "rankme@backbone": 11.684974670410156,
+          "twonn@backbone": 0.18144437414436965
+        },
+        "phase0_cka_drift": 0.0085676908493042,
+        "recorded_cka_drift": 0.008553922176361084
+      },
+      "pc": {
+        "change": {
+          "cka_drift@block01": 0.008799374103546143,
+          "dcka_drift@block01": 0.008817841730173193,
+          "procrustes_drift@block01": 0.021107124398564547,
+          "rankme@block01": 1.9923744201660156,
+          "twonn@block01": 0.8487760635923998,
+          "cka_drift@block02": 0.016916096210479736,
+          "dcka_drift@block02": 0.01696241450791347,
+          "procrustes_drift@block02": 0.03384669862342227,
+          "rankme@block02": -3.875,
+          "twonn@block02": 0.621076012343222,
+          "cka_drift@block03": 0.014040708541870117,
+          "dcka_drift@block03": 0.014075020461781329,
+          "procrustes_drift@block03": 0.03779397726049383,
+          "rankme@block03": -8.327934265136719,
+          "twonn@block03": 0.023431096751705738,
+          "cka_drift@block04": 0.01634007692337036,
+          "dcka_drift@block04": 0.016392956049297802,
+          "procrustes_drift@block04": 0.039339158730116175,
+          "rankme@block04": -4.770622253417969,
+          "twonn@block04": -0.013189982061829753,
+          "cka_drift@block05": 0.015021145343780518,
+          "dcka_drift@block05": 0.015064326676721196,
+          "procrustes_drift@block05": 0.044012435810553585,
+          "rankme@block05": -3.8410873413085938,
+          "twonn@block05": -0.22165924885910648,
+          "cka_drift@block06": 0.01648610830307007,
+          "dcka_drift@block06": 0.016554206181363162,
+          "procrustes_drift@block06": 0.05058021990801631,
+          "rankme@block06": -4.189247131347656,
+          "twonn@block06": 0.1053795096674186,
+          "cka_drift@block07": 0.01901686191558838,
+          "dcka_drift@block07": 0.019109720986357326,
+          "procrustes_drift@block07": 0.05545356936296075,
+          "rankme@block07": -6.892120361328125,
+          "twonn@block07": -0.16842786867921689,
+          "cka_drift@block08": 0.025232672691345215,
+          "dcka_drift@block08": 0.025392866027373895,
+          "procrustes_drift@block08": 0.07357105542457831,
+          "rankme@block08": -11.519073486328125,
+          "twonn@block08": 0.02718368653685843,
+          "cka_drift@block09": 0.02759760618209839,
+          "dcka_drift@block09": 0.02777524762420691,
+          "procrustes_drift@block09": 0.08490473092375339,
+          "rankme@block09": -15.392547607421875,
+          "twonn@block09": 0.45995208326796266,
+          "cka_drift@block10": 0.033420681953430176,
+          "dcka_drift@block10": 0.03364968786689382,
+          "procrustes_drift@block10": 0.097111562087969,
+          "rankme@block10": -16.936325073242188,
+          "twonn@block10": -0.05089406266479202,
+          "cka_drift@block11": 0.04343259334564209,
+          "dcka_drift@block11": 0.04373957283522911,
+          "procrustes_drift@block11": 0.1122797642174247,
+          "rankme@block11": -17.897491455078125,
+          "twonn@block11": -0.6978846711806312,
+          "cka_drift@block12": 0.058198630809783936,
+          "dcka_drift@block12": 0.05857446786264353,
+          "procrustes_drift@block12": 0.12396653029865923,
+          "rankme@block12": -8.209308624267578,
+          "twonn@block12": -0.7992729568403121,
+          "cka_drift@backbone": 0.009211122989654541,
+          "dcka_drift@backbone": 0.009182617850817087,
+          "procrustes_drift@backbone": 0.020998565267211777,
+          "rankme@backbone": -11.785995483398438,
+          "twonn@backbone": -0.22299534279556532
+        },
+        "phase0_cka_drift": 0.009221315383911133,
+        "recorded_cka_drift": 0.009230256080627441
+      }
+    },
+    "3": {
+      "anchor_max_abs_diff": 0.0,
+      "pc_bwt": -0.07499999999999996,
+      "healthy": {
+        "change": {
+          "cka_drift@block01": 0.0067313313484191895,
+          "dcka_drift@block01": 0.0067558105977254534,
+          "procrustes_drift@block01": 0.02959610244834221,
+          "rankme@block01": 3.7825393676757812,
+          "twonn@block01": 0.7452493295080576,
+          "cka_drift@block02": 0.014641404151916504,
+          "dcka_drift@block02": 0.014708881503892712,
+          "procrustes_drift@block02": 0.03353185398274117,
+          "rankme@block02": 5.8018951416015625,
+          "twonn@block02": -0.28660886314850487,
+          "cka_drift@block03": 0.008598148822784424,
+          "dcka_drift@block03": 0.008636592129320997,
+          "procrustes_drift@block03": 0.030307337164276582,
+          "rankme@block03": 4.586395263671875,
+          "twonn@block03": -0.01878173956156637,
+          "cka_drift@block04": 0.009516477584838867,
+          "dcka_drift@block04": 0.009570856062915856,
+          "procrustes_drift@block04": 0.03099503757812916,
+          "rankme@block04": 8.02056884765625,
+          "twonn@block04": 0.40844576323054405,
+          "cka_drift@block05": 0.009926915168762207,
+          "dcka_drift@block05": 0.009987974378684816,
+          "procrustes_drift@block05": 0.035763223798394694,
+          "rankme@block05": 10.693412780761719,
+          "twonn@block05": 0.04757001527457483,
+          "cka_drift@block06": 0.011272907257080078,
+          "dcka_drift@block06": 0.011350372608772918,
+          "procrustes_drift@block06": 0.04109657919365661,
+          "rankme@block06": 15.745429992675781,
+          "twonn@block06": -0.5078879767858897,
+          "cka_drift@block07": 0.011952817440032959,
+          "dcka_drift@block07": 0.012042227139933082,
+          "procrustes_drift@block07": 0.04358587096120026,
+          "rankme@block07": 13.829238891601562,
+          "twonn@block07": -0.5858571621975486,
+          "cka_drift@block08": 0.0152779221534729,
+          "dcka_drift@block08": 0.015408874903631409,
+          "procrustes_drift@block08": 0.05556754427249411,
+          "rankme@block08": 13.941665649414062,
+          "twonn@block08": -0.17839416609919567,
+          "cka_drift@block09": 0.016947507858276367,
+          "dcka_drift@block09": 0.017095389925387727,
+          "procrustes_drift@block09": 0.06380252182657697,
+          "rankme@block09": 18.885833740234375,
+          "twonn@block09": -0.1465636944217401,
+          "cka_drift@block10": 0.020572125911712646,
+          "dcka_drift@block10": 0.02076414921666825,
+          "procrustes_drift@block10": 0.0742769349791157,
+          "rankme@block10": 24.761764526367188,
+          "twonn@block10": 0.16930869443623564,
+          "cka_drift@block11": 0.026146531105041504,
+          "dcka_drift@block11": 0.026409256261687997,
+          "procrustes_drift@block11": 0.08478633196683183,
+          "rankme@block11": 25.950942993164062,
+          "twonn@block11": 0.5266143563928765,
+          "cka_drift@block12": 0.04508662223815918,
+          "dcka_drift@block12": 0.04552226190776687,
+          "procrustes_drift@block12": 0.1014195890270142,
+          "rankme@block12": 37.78584671020508,
+          "twonn@block12": -0.2866067032577142,
+          "cka_drift@backbone": 0.005225718021392822,
+          "dcka_drift@backbone": 0.005236624224228104,
+          "procrustes_drift@backbone": 0.014655000080949776,
+          "rankme@backbone": 11.135993957519531,
+          "twonn@backbone": 0.18897695884111876
+        },
+        "phase0_cka_drift": 0.004814743995666504,
+        "recorded_cka_drift": 0.004815220832824707
+      },
+      "pc": {
+        "change": {
+          "cka_drift@block01": 0.005202591419219971,
+          "dcka_drift@block01": 0.005221016090163677,
+          "procrustes_drift@block01": 0.022904160536452833,
+          "rankme@block01": 0.05609893798828125,
+          "twonn@block01": 0.6962977725381965,
+          "cka_drift@block02": 0.005814611911773682,
+          "dcka_drift@block02": 0.005835723076759836,
+          "procrustes_drift@block02": 0.028542987202641257,
+          "rankme@block02": -3.7998580932617188,
+          "twonn@block02": -0.1483450641988444,
+          "cka_drift@block03": 0.007013857364654541,
+          "dcka_drift@block03": 0.007043657069751075,
+          "procrustes_drift@block03": 0.03155123052370046,
+          "rankme@block03": -12.344329833984375,
+          "twonn@block03": -0.27136733758828413,
+          "cka_drift@block04": 0.011568188667297363,
+          "dcka_drift@block04": 0.011625797416664918,
+          "procrustes_drift@block04": 0.036632844175036094,
+          "rankme@block04": -8.448989868164062,
+          "twonn@block04": -0.1708754857097876,
+          "cka_drift@block05": 0.01638031005859375,
+          "dcka_drift@block05": 0.01646414982847333,
+          "procrustes_drift@block05": 0.04616720051116929,
+          "rankme@block05": -6.0733642578125,
+          "twonn@block05": -0.7905573065466616,
+          "cka_drift@block06": 0.017567813396453857,
+          "dcka_drift@block06": 0.017667843032747266,
+          "procrustes_drift@block06": 0.05287867870899721,
+          "rankme@block06": -5.314979553222656,
+          "twonn@block06": -1.2094243385848404,
+          "cka_drift@block07": 0.018986761569976807,
+          "dcka_drift@block07": 0.01909743228112304,
+          "procrustes_drift@block07": 0.057127238535572555,
+          "rankme@block07": -5.936126708984375,
+          "twonn@block07": -0.8445713137318709,
+          "cka_drift@block08": 0.02283179759979248,
+          "dcka_drift@block08": 0.02297035753807386,
+          "procrustes_drift@block08": 0.07155665869703798,
+          "rankme@block08": -6.2034454345703125,
+          "twonn@block08": 0.16394801955252802,
+          "cka_drift@block09": 0.02611386775970459,
+          "dcka_drift@block09": 0.026268993181524092,
+          "procrustes_drift@block09": 0.0809207494262969,
+          "rankme@block09": -5.73187255859375,
+          "twonn@block09": 0.4840448695031796,
+          "cka_drift@block10": 0.02652454376220703,
+          "dcka_drift@block10": 0.02670557076347624,
+          "procrustes_drift@block10": 0.08951067652746092,
+          "rankme@block10": -5.868408203125,
+          "twonn@block10": 0.4314846395195282,
+          "cka_drift@block11": 0.037852704524993896,
+          "dcka_drift@block11": 0.03812392402944531,
+          "procrustes_drift@block11": 0.10238770321813084,
+          "rankme@block11": -7.90802001953125,
+          "twonn@block11": 0.5585660500700484,
+          "cka_drift@block12": 0.04772508144378662,
+          "dcka_drift@block12": 0.0479156478291769,
+          "procrustes_drift@block12": 0.11135012054772297,
+          "rankme@block12": 0.043521881103515625,
+          "twonn@block12": 0.21764080782572393,
+          "cka_drift@backbone": 0.006312191486358643,
+          "dcka_drift@backbone": 0.0063049490619386805,
+          "procrustes_drift@backbone": 0.016211651395809268,
+          "rankme@backbone": -7.677391052246094,
+          "twonn@backbone": -0.2453033916361953
+        },
+        "phase0_cka_drift": 0.006047546863555908,
+        "recorded_cka_drift": 0.006039738655090332
+      }
+    },
+    "4": {
+      "anchor_max_abs_diff": 0.0,
+      "pc_bwt": -0.08499999999999996,
+      "healthy": {
+        "change": {
+          "cka_drift@block01": 0.008844137191772461,
+          "dcka_drift@block01": 0.008876382268683924,
+          "procrustes_drift@block01": 0.01813015854462563,
+          "rankme@block01": 5.956409454345703,
+          "twonn@block01": 0.49031074982593736,
+          "cka_drift@block02": 0.008467912673950195,
+          "dcka_drift@block02": 0.008502861285605845,
+          "procrustes_drift@block02": 0.023041470870547087,
+          "rankme@block02": 9.902748107910156,
+          "twonn@block02": 0.14364668977477102,
+          "cka_drift@block03": 0.007617354393005371,
+          "dcka_drift@block03": 0.007651280338535682,
+          "procrustes_drift@block03": 0.027380370361105966,
+          "rankme@block03": 13.193801879882812,
+          "twonn@block03": 0.3895180419687083,
+          "cka_drift@block04": 0.005987584590911865,
+          "dcka_drift@block04": 0.006018229108504691,
+          "procrustes_drift@block04": 0.02800325983312879,
+          "rankme@block04": 11.464683532714844,
+          "twonn@block04": 0.16020889395477056,
+          "cka_drift@block05": 0.008917450904846191,
+          "dcka_drift@block05": 0.008980737270295136,
+          "procrustes_drift@block05": 0.03568840611168378,
+          "rankme@block05": 12.915672302246094,
+          "twonn@block05": -0.17703657816004537,
+          "cka_drift@block06": 0.01037365198135376,
+          "dcka_drift@block06": 0.010454342360627256,
+          "procrustes_drift@block06": 0.0417736710334613,
+          "rankme@block06": 18.20185089111328,
+          "twonn@block06": -0.5156243891764873,
+          "cka_drift@block07": 0.01137232780456543,
+          "dcka_drift@block07": 0.01147156602215238,
+          "procrustes_drift@block07": 0.044558153035638925,
+          "rankme@block07": 16.056564331054688,
+          "twonn@block07": -0.16086344732641678,
+          "cka_drift@block08": 0.015094459056854248,
+          "dcka_drift@block08": 0.015240608321131832,
+          "procrustes_drift@block08": 0.058610140628156504,
+          "rankme@block08": 21.818374633789062,
+          "twonn@block08": -0.5810041420388963,
+          "cka_drift@block09": 0.017964959144592285,
+          "dcka_drift@block09": 0.018136118779430888,
+          "procrustes_drift@block09": 0.07168200967401939,
+          "rankme@block09": 27.663177490234375,
+          "twonn@block09": -0.5839849619340747,
+          "cka_drift@block10": 0.021161019802093506,
+          "dcka_drift@block10": 0.02134591209433534,
+          "procrustes_drift@block10": 0.08615340790651072,
+          "rankme@block10": 35.12467956542969,
+          "twonn@block10": -0.1289085288984566,
+          "cka_drift@block11": 0.028269827365875244,
+          "dcka_drift@block11": 0.028540264075270994,
+          "procrustes_drift@block11": 0.09978595699150405,
+          "rankme@block11": 36.27833557128906,
+          "twonn@block11": 0.0037654689473818337,
+          "cka_drift@block12": 0.05152928829193115,
+          "dcka_drift@block12": 0.05198774219986235,
+          "procrustes_drift@block12": 0.11680050641617457,
+          "rankme@block12": 36.94396209716797,
+          "twonn@block12": 0.6827032309661973,
+          "cka_drift@backbone": 0.008690297603607178,
+          "dcka_drift@backbone": 0.00870283383800663,
+          "procrustes_drift@backbone": 0.018944316937016703,
+          "rankme@backbone": 22.65887451171875,
+          "twonn@backbone": 0.5833037190316439
+        },
+        "phase0_cka_drift": 0.00825279951095581,
+        "recorded_cka_drift": 0.008245587348937988
+      },
+      "pc": {
+        "change": {
+          "cka_drift@block01": 0.005480706691741943,
+          "dcka_drift@block01": 0.005497050318526875,
+          "procrustes_drift@block01": 0.013664896558951645,
+          "rankme@block01": 2.4712982177734375,
+          "twonn@block01": 0.5200923187707609,
+          "cka_drift@block02": 0.007995784282684326,
+          "dcka_drift@block02": 0.008019420496464535,
+          "procrustes_drift@block02": 0.025517590484210873,
+          "rankme@block02": 0.29509735107421875,
+          "twonn@block02": 0.4633058600856703,
+          "cka_drift@block03": 0.008204162120819092,
+          "dcka_drift@block03": 0.008227956322211294,
+          "procrustes_drift@block03": 0.03013438396660484,
+          "rankme@block03": -3.913421630859375,
+          "twonn@block03": 0.28212793369721645,
+          "cka_drift@block04": 0.011026084423065186,
+          "dcka_drift@block04": 0.011064381703687842,
+          "procrustes_drift@block04": 0.03561661252381376,
+          "rankme@block04": -4.839958190917969,
+          "twonn@block04": 0.012621153862033552,
+          "cka_drift@block05": 0.013863682746887207,
+          "dcka_drift@block05": 0.013921456595373027,
+          "procrustes_drift@block05": 0.0435753496635356,
+          "rankme@block05": -0.6468887329101562,
+          "twonn@block05": -0.6697563984921509,
+          "cka_drift@block06": 0.017996132373809814,
+          "dcka_drift@block06": 0.018089174834376998,
+          "procrustes_drift@block06": 0.05167650030186621,
+          "rankme@block06": -0.5523605346679688,
+          "twonn@block06": -0.24108536468018116,
+          "cka_drift@block07": 0.02235335111618042,
+          "dcka_drift@block07": 0.022482727062155705,
+          "procrustes_drift@block07": 0.058249524491966076,
+          "rankme@block07": -3.972808837890625,
+          "twonn@block07": -0.14896313976273845,
+          "cka_drift@block08": 0.02822744846343994,
+          "dcka_drift@block08": 0.0284083628213736,
+          "procrustes_drift@block08": 0.07648588712690674,
+          "rankme@block08": -6.63775634765625,
+          "twonn@block08": -0.11442003316197003,
+          "cka_drift@block09": 0.029526591300964355,
+          "dcka_drift@block09": 0.029725327648327804,
+          "procrustes_drift@block09": 0.0861973721114,
+          "rankme@block09": -9.603469848632812,
+          "twonn@block09": 0.4760012163704097,
+          "cka_drift@block10": 0.03520643711090088,
+          "dcka_drift@block10": 0.035478824822017585,
+          "procrustes_drift@block10": 0.09848432092111592,
+          "rankme@block10": -11.071380615234375,
+          "twonn@block10": 0.22408628229989702,
+          "cka_drift@block11": 0.04464578628540039,
+          "dcka_drift@block11": 0.045020393377749435,
+          "procrustes_drift@block11": 0.10895663256889487,
+          "rankme@block11": -14.488723754882812,
+          "twonn@block11": -0.1229169493103548,
+          "cka_drift@block12": 0.04986780881881714,
+          "dcka_drift@block12": 0.05019592610027768,
+          "procrustes_drift@block12": 0.1151521497472543,
+          "rankme@block12": -6.482097625732422,
+          "twonn@block12": 0.7888857981510569,
+          "cka_drift@backbone": 0.010318875312805176,
+          "dcka_drift@backbone": 0.01030510866888279,
+          "procrustes_drift@backbone": 0.02050514442093143,
+          "rankme@backbone": -10.618560791015625,
+          "twonn@backbone": -0.5648307067376308
+        },
+        "phase0_cka_drift": 0.01043921709060669,
+        "recorded_cka_drift": 0.010443687438964844
+      }
+    }
+  },
+  "test": {
+    "t_max": 35.13807136537447,
+    "reader": "procrustes_drift@block08",
+    "p": 0.03125,
+    "p_min": 0.03125,
+    "diffs": [
+      0.015534088599102436,
+      0.015373166067252031,
+      0.01567595268068156,
+      0.01598911442454387,
+      0.017875746498750233
+    ],
+    "n_positive": 5
+  },
+  "per_lens": {
+    "cka_drift": {
+      "t_max": 12.455107265710424,
+      "reader": "cka_drift@block09",
+      "p": 0.03125,
+      "p_min": 0.03125,
+      "diffs": [
+        0.010722815990447998,
+        0.011750102043151855,
+        0.00743412971496582,
+        0.009166359901428223,
+        0.01156163215637207
+      ],
+      "n_positive": 5
+    },
+    "dcka_drift": {
+      "t_max": 12.34572371850618,
+      "reader": "dcka_drift@block09",
+      "p": 0.03125,
+      "p_min": 0.03125,
+      "diffs": [
+        0.010788765139048473,
+        0.011780061848614465,
+        0.007423890765933194,
+        0.009173603256136365,
+        0.011589208868896916
+      ],
+      "n_positive": 5
+    },
+    "procrustes_drift": {
+      "t_max": 35.13807136537447,
+      "reader": "procrustes_drift@block08",
+      "p": 0.03125,
+      "p_min": 0.03125,
+      "diffs": [
+        0.015534088599102436,
+        0.015373166067252031,
+        0.01567595268068156,
+        0.01598911442454387,
+        0.017875746498750233
+      ],
+      "n_positive": 5
+    },
+    "rankme": {
+      "t_max": 18.003313926967913,
+      "reader": "rankme@block12",
+      "p": 0.03125,
+      "p_min": 0.03125,
+      "diffs": [
+        45.77074432373047,
+        35.730560302734375,
+        47.99513626098633,
+        37.74232482910156,
+        43.42605972290039
+      ],
+      "n_positive": 5
+    }
+  },
+  "single": {
+    "middle": {
+      "threshold": 3.070266674021819,
+      "fired_loo": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "pc": [
+        {
+          "fired": true,
+          "max_z": 3.79273366573534,
+          "signal": "cka_drift@block08"
+        },
+        {
+          "fired": true,
+          "max_z": 5.181504104040751,
+          "signal": "cka_drift@block08"
+        },
+        {
+          "fired": true,
+          "max_z": 3.4899495295922005,
+          "signal": "cka_drift@block08"
+        },
+        {
+          "fired": false,
+          "max_z": 2.9954736025112574,
+          "signal": "cka_drift@block09"
+        },
+        {
+          "fired": true,
+          "max_z": 4.318022279585065,
+          "signal": "cka_drift@block08"
+        }
+      ],
+      "summary": {
+        "loo_false_alarms": "0/5",
+        "fires_on_pc": "4/5"
+      }
+    },
+    "pooled": {
+      "threshold": 2.47416359906964,
+      "fired_loo": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "pc": [
+        {
+          "fired": false,
+          "max_z": -0.7970855155723283,
+          "signal": "cka_drift@backbone"
+        },
+        {
+          "fired": false,
+          "max_z": -0.7742032739868386,
+          "signal": "cka_drift@backbone"
+        },
+        {
+          "fired": false,
+          "max_z": 0.8570450489938439,
+          "signal": "cka_drift@backbone"
+        },
+        {
+          "fired": false,
+          "max_z": -0.07242725274724181,
+          "signal": "cka_drift@backbone"
+        },
+        {
+          "fired": false,
+          "max_z": 1.1371496136113657,
+          "signal": "cka_drift@backbone"
+        }
+      ],
+      "summary": {
+        "loo_false_alarms": "0/5",
+        "fires_on_pc": "0/5"
+      }
+    }
+  },
+  "per_reader": {
+    "cka_drift@backbone": {
+      "diffs": [
+        -0.002887129783630371,
+        0.0009773969650268555,
+        0.00028204917907714844,
+        0.0010864734649658203,
+        0.001628577709197998
+      ],
+      "n_positive": 4,
+      "pc_mean": 0.007054924964904785,
+      "healthy_mean": 0.006837451457977295,
+      "spearman_vs_pc_bwt": -0.46169025843831935
+    },
+    "cka_drift@block01": {
+      "diffs": [
+        0.005229294300079346,
+        -0.011815547943115234,
+        0.004322826862335205,
+        -0.0015287399291992188,
+        -0.0033634305000305176
+      ],
+      "n_positive": 2,
+      "pc_mean": 0.007351398468017578,
+      "healthy_mean": 0.008782517910003663,
+      "spearman_vs_pc_bwt": -0.20519567041703085
+    },
+    "cka_drift@block02": {
+      "diffs": [
+        -0.0005860328674316406,
+        -0.0112152099609375,
+        0.006527543067932129,
+        -0.008826792240142822,
+        -0.00047212839126586914
+      ],
+      "n_positive": 1,
+      "pc_mean": 0.009316539764404297,
+      "healthy_mean": 0.012231063842773438,
+      "spearman_vs_pc_bwt": -0.35909242322980395
+    },
+    "cka_drift@block03": {
+      "diffs": [
+        0.0033774375915527344,
+        -0.00597912073135376,
+        0.007082223892211914,
+        -0.0015842914581298828,
+        0.0005868077278137207
+      ],
+      "n_positive": 3,
+      "pc_mean": 0.009506356716156007,
+      "healthy_mean": 0.00880974531173706,
+      "spearman_vs_pc_bwt": -0.20519567041703085
+    },
+    "cka_drift@block04": {
+      "diffs": [
+        0.007290661334991455,
+        0.001999199390411377,
+        0.008672773838043213,
+        0.002051711082458496,
+        0.00503849983215332
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.012975871562957764,
+      "healthy_mean": 0.007965302467346192,
+      "spearman_vs_pc_bwt": -0.20519567041703085
+    },
+    "cka_drift@block05": {
+      "diffs": [
+        0.010028243064880371,
+        0.004123091697692871,
+        0.007602095603942871,
+        0.006453394889831543,
+        0.004946231842041016
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.01504439115524292,
+      "healthy_mean": 0.008413779735565185,
+      "spearman_vs_pc_bwt": -0.20519567041703085
+    },
+    "cka_drift@block06": {
+      "diffs": [
+        0.011100292205810547,
+        0.003296196460723877,
+        0.006814420223236084,
+        0.006294906139373779,
+        0.007622480392456055
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.01701631546020508,
+      "healthy_mean": 0.00999065637588501,
+      "spearman_vs_pc_bwt": -0.6668859288553503
+    },
+    "cka_drift@block07": {
+      "diffs": [
+        0.010989964008331299,
+        0.006677985191345215,
+        0.006840169429779053,
+        0.007033944129943848,
+        0.01098102331161499
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.020150017738342286,
+      "healthy_mean": 0.011645400524139404,
+      "spearman_vs_pc_bwt": -0.8207826816681234
+    },
+    "cka_drift@block08": {
+      "diffs": [
+        0.01297295093536377,
+        0.01324552297592163,
+        0.00833040475845337,
+        0.00755387544631958,
+        0.013132989406585693
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.026861798763275147,
+      "healthy_mean": 0.015814650058746337,
+      "spearman_vs_pc_bwt": 0.20519567041703085
+    },
+    "cka_drift@block09": {
+      "diffs": [
+        0.010722815990447998,
+        0.011750102043151855,
+        0.00743412971496582,
+        0.009166359901428223,
+        0.01156163215637207
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.028699040412902832,
+      "healthy_mean": 0.01857203245162964,
+      "spearman_vs_pc_bwt": 0.05129891760425771
+    },
+    "cka_drift@block10": {
+      "diffs": [
+        0.011165738105773926,
+        0.009976327419281006,
+        0.005790114402770996,
+        0.005952417850494385,
+        0.014045417308807373
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.0321865439414978,
+      "healthy_mean": 0.022800540924072264,
+      "spearman_vs_pc_bwt": -0.6155870112510925
+    },
+    "cka_drift@block11": {
+      "diffs": [
+        0.016807198524475098,
+        0.01713883876800537,
+        0.009122490882873535,
+        0.011706173419952393,
+        0.016375958919525146
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.043165946006774904,
+      "healthy_mean": 0.028935813903808595,
+      "spearman_vs_pc_bwt": 0.20519567041703085
+    },
+    "cka_drift@block12": {
+      "diffs": [
+        -0.0005370974540710449,
+        0.004430651664733887,
+        0.011382579803466797,
+        0.0026384592056274414,
+        -0.0016614794731140137
+      ],
+      "n_positive": 3,
+      "pc_mean": 0.05035141706466675,
+      "healthy_mean": 0.04710079431533813,
+      "spearman_vs_pc_bwt": 0.8720815992723809
+    },
+    "dcka_drift@backbone": {
+      "diffs": [
+        -0.0029069883848825695,
+        0.0009681196689066418,
+        0.0002635251508508185,
+        0.001068324837710577,
+        0.0016022748308761603
+      ],
+      "n_positive": 4,
+      "pc_mean": 0.007042887841499068,
+      "healthy_mean": 0.006843836620806743,
+      "spearman_vs_pc_bwt": -0.46169025843831935
+    },
+    "dcka_drift@block01": {
+      "diffs": [
+        0.005245404414751187,
+        -0.011861504531951117,
+        0.004327819424892243,
+        -0.0015347945075617764,
+        -0.0033793319501570496
+      ],
+      "n_positive": 2,
+      "pc_mean": 0.007372474602877555,
+      "healthy_mean": 0.008812956032882856,
+      "spearman_vs_pc_bwt": -0.20519567041703085
+    },
+    "dcka_drift@block02": {
+      "diffs": [
+        -0.000587819465869166,
+        -0.011256310051761198,
+        0.006539827759431405,
+        -0.008873158427132877,
+        -0.0004834407891413095
+      ],
+      "n_positive": 1,
+      "pc_mean": 0.009345863780496243,
+      "healthy_mean": 0.012278043975390873,
+      "spearman_vs_pc_bwt": -0.35909242322980395
+    },
+    "dcka_drift@block03": {
+      "diffs": [
+        0.003386402192464333,
+        -0.005992216757327196,
+        0.0070926306478471535,
+        -0.001592935059569922,
+        0.0005766759836756119
+      ],
+      "n_positive": 3,
+      "pc_mean": 0.009539139985742762,
+      "healthy_mean": 0.008845028584324765,
+      "spearman_vs_pc_bwt": -0.20519567041703085
+    },
+    "dcka_drift@block04": {
+      "diffs": [
+        0.0073253510301448665,
+        0.0020151495606880454,
+        0.008687712390411217,
+        0.0020549413537490624,
+        0.005046152595183151
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.01303254350361529,
+      "healthy_mean": 0.008006682117580021,
+      "spearman_vs_pc_bwt": -0.20519567041703085
+    },
+    "dcka_drift@block05": {
+      "diffs": [
+        0.010077537697988581,
+        0.004141381992538107,
+        0.00760460988042444,
+        0.006476175449788513,
+        0.004940719325077891
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.015113595871489482,
+      "healthy_mean": 0.008465511002325976,
+      "spearman_vs_pc_bwt": -0.20519567041703085
+    },
+    "dcka_drift@block06": {
+      "diffs": [
+        0.011168174724580981,
+        0.0033042496655605325,
+        0.006818240974104328,
+        0.006317470423974347,
+        0.007634832473749742
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.017108597374167766,
+      "healthy_mean": 0.010060003721773781,
+      "spearman_vs_pc_bwt": -0.6668859288553503
+    },
+    "dcka_drift@block07": {
+      "diffs": [
+        0.01105763863565734,
+        0.006696903083456163,
+        0.006842343442168497,
+        0.0070552051411899575,
+        0.011011161040003326
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.02026666173602574,
+      "healthy_mean": 0.01173401146753068,
+      "spearman_vs_pc_bwt": -0.8207826816681234
+    },
+    "dcka_drift@block08": {
+      "diffs": [
+        0.013047189059597897,
+        0.013288499232350315,
+        0.008335918332924241,
+        0.007561482634442451,
+        0.013167754500241768
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.027034061977167557,
+      "healthy_mean": 0.01595389322525622,
+      "spearman_vs_pc_bwt": 0.20519567041703085
+    },
+    "dcka_drift@block09": {
+      "diffs": [
+        0.010788765139048473,
+        0.011780061848614465,
+        0.007423890765933194,
+        0.009173603256136365,
+        0.011589208868896916
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.0288850398352833,
+      "healthy_mean": 0.018733933859557416,
+      "spearman_vs_pc_bwt": 0.05129891760425771
+    },
+    "dcka_drift@block10": {
+      "diffs": [
+        0.011256110926172846,
+        0.010032151093434805,
+        0.005748477885679892,
+        0.00594142154680799,
+        0.014132912727682245
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.03242627561940339,
+      "healthy_mean": 0.023004060783447834,
+      "spearman_vs_pc_bwt": -0.6155870112510925
+    },
+    "dcka_drift@block11": {
+      "diffs": [
+        0.01692063157196022,
+        0.017274139565152558,
+        0.009082369940529356,
+        0.011714667767757314,
+        0.01648012930247844
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.043507638432562515,
+      "healthy_mean": 0.029213250802986934,
+      "spearman_vs_pc_bwt": 0.20519567041703085
+    },
+    "dcka_drift@block12": {
+      "diffs": [
+        -0.000595077806017752,
+        0.004399442976048995,
+        0.011323414147882405,
+        0.0023933859214100295,
+        -0.0017918160995846755
+      ],
+      "n_positive": 3,
+      "pc_mean": 0.050690219632559576,
+      "healthy_mean": 0.04754434980461177,
+      "spearman_vs_pc_bwt": 0.8720815992723809
+    },
+    "procrustes_drift@backbone": {
+      "diffs": [
+        -0.0020784798398501003,
+        0.0011454204198366735,
+        0.0021313066414103687,
+        0.0015566513148594918,
+        0.0015608274839147285
+      ],
+      "n_positive": 4,
+      "pc_mean": 0.017540932771204786,
+      "healthy_mean": 0.016677787567170553,
+      "spearman_vs_pc_bwt": -0.10259783520851543
+    },
+    "procrustes_drift@block01": {
+      "diffs": [
+        0.00029556685402809535,
+        -0.007024667168690657,
+        0.006394056300777384,
+        -0.006691941911889376,
+        -0.004465261985673985
+      ],
+      "n_positive": 2,
+      "pc_mean": 0.018630428418783308,
+      "healthy_mean": 0.020928878001073015,
+      "spearman_vs_pc_bwt": -0.20519567041703085
+    },
+    "procrustes_drift@block02": {
+      "diffs": [
+        -0.0006357651641433204,
+        -0.005449660877985041,
+        0.0074041045770980585,
+        -0.00498886678009991,
+        0.0024761196136637853
+      ],
+      "n_positive": 2,
+      "pc_mean": 0.028045830425261587,
+      "healthy_mean": 0.02828464415155487,
+      "spearman_vs_pc_bwt": -0.35909242322980395
+    },
+    "procrustes_drift@block03": {
+      "diffs": [
+        0.003595891688561448,
+        -0.0025799468496801037,
+        0.008188949730124184,
+        0.0012438933594238755,
+        0.002754013605498873
+      ],
+      "n_positive": 4,
+      "pc_mean": 0.032582940035338126,
+      "healthy_mean": 0.02994237972855247,
+      "spearman_vs_pc_bwt": -0.20519567041703085
+    },
+    "procrustes_drift@block04": {
+      "diffs": [
+        0.0077612955171182385,
+        0.0036001876674904842,
+        0.008838043074262725,
+        0.005637806596906936,
+        0.007613352690684971
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.03692832646994413,
+      "healthy_mean": 0.03023818936065146,
+      "spearman_vs_pc_bwt": -0.20519567041703085
+    },
+    "procrustes_drift@block05": {
+      "diffs": [
+        0.010367742116303091,
+        0.005802144760855166,
+        0.009645413977316775,
+        0.010403976712774599,
+        0.007886943551851822
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.04394738466429291,
+      "healthy_mean": 0.03512614044047262,
+      "spearman_vs_pc_bwt": -0.35909242322980395
+    },
+    "procrustes_drift@block06": {
+      "diffs": [
+        0.012112293213285996,
+        0.007200788348523224,
+        0.010245854539973287,
+        0.011782099515340594,
+        0.009902829268404911
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.05136109097926762,
+      "healthy_mean": 0.041112318002162015,
+      "spearman_vs_pc_bwt": -0.35909242322980395
+    },
+    "procrustes_drift@block07": {
+      "diffs": [
+        0.01295776150095529,
+        0.010668839208559877,
+        0.010972489687708809,
+        0.013541367574372298,
+        0.01369137145632715
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.05721389027093173,
+      "healthy_mean": 0.044847524385347046,
+      "spearman_vs_pc_bwt": -0.9746794344808963
+    },
+    "procrustes_drift@block08": {
+      "diffs": [
+        0.015534088599102436,
+        0.015373166067252031,
+        0.01567595268068156,
+        0.01598911442454387,
+        0.017875746498750233
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.07489644632941754,
+      "healthy_mean": 0.058806832675351514,
+      "spearman_vs_pc_bwt": -0.8207826816681234
+    },
+    "procrustes_drift@block09": {
+      "diffs": [
+        0.011607249204294234,
+        0.019016017645645977,
+        0.01703377427312458,
+        0.017118227599719926,
+        0.014515362437380608
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.08549260834608367,
+      "healthy_mean": 0.06963448211405061,
+      "spearman_vs_pc_bwt": 0.6668859288553503
+    },
+    "procrustes_drift@block10": {
+      "diffs": [
+        0.009904223128632372,
+        0.01637892195134283,
+        0.016235295408947303,
+        0.015233741548345225,
+        0.012330913014605205
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.09635923486800371,
+      "healthy_mean": 0.08234261585762911,
+      "spearman_vs_pc_bwt": 0.8207826816681234
+    },
+    "procrustes_drift@block11": {
+      "diffs": [
+        0.010028937388127046,
+        0.016959486010723168,
+        0.01873412142916031,
+        0.017601371251299014,
+        0.009170675577390819
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.10887341508800485,
+      "healthy_mean": 0.09437449675666479,
+      "spearman_vs_pc_bwt": 0.6155870112510925
+    },
+    "procrustes_drift@block12": {
+      "diffs": [
+        -0.00813297919669842,
+        0.0076739015839948355,
+        0.015591161829558997,
+        0.009930531520708774,
+        -0.00164835666892027
+      ],
+      "n_positive": 3,
+      "pc_mean": 0.11594862961583434,
+      "healthy_mean": 0.11126577780210556,
+      "spearman_vs_pc_bwt": 0.46169025843831935
+    },
+    "rankme@backbone": {
+      "diffs": [
+        29.422225952148438,
+        22.204010009765625,
+        23.470970153808594,
+        18.813385009765625,
+        33.277435302734375
+      ],
+      "n_positive": 5,
+      "pc_mean": -9.305477905273438,
+      "healthy_mean": 16.132127380371095,
+      "spearman_vs_pc_bwt": -0.5642880936468347
+    },
+    "rankme@block01": {
+      "diffs": [
+        5.150474548339844,
+        3.36083984375,
+        2.0589752197265625,
+        3.7264404296875,
+        3.4851112365722656
+      ],
+      "n_positive": 5,
+      "pc_mean": 1.5055763244628906,
+      "healthy_mean": 5.061944580078125,
+      "spearman_vs_pc_bwt": -0.5642880936468347
+    },
+    "rankme@block02": {
+      "diffs": [
+        13.001029968261719,
+        13.066299438476562,
+        8.494857788085938,
+        9.601753234863281,
+        9.607650756835938
+      ],
+      "n_positive": 5,
+      "pc_mean": -2.8455322265625,
+      "healthy_mean": 7.908786010742188,
+      "spearman_vs_pc_bwt": 0.20519567041703085
+    },
+    "rankme@block03": {
+      "diffs": [
+        16.783370971679688,
+        21.427139282226562,
+        12.1287841796875,
+        16.93072509765625,
+        17.107223510742188
+      ],
+      "n_positive": 5,
+      "pc_mean": -8.712503051757812,
+      "healthy_mean": 8.162945556640626,
+      "spearman_vs_pc_bwt": 0.05129891760425771
+    },
+    "rankme@block04": {
+      "diffs": [
+        12.831596374511719,
+        21.428443908691406,
+        13.721908569335938,
+        16.469558715820312,
+        16.304641723632812
+      ],
+      "n_positive": 5,
+      "pc_mean": -6.122660827636719,
+      "healthy_mean": 10.02856903076172,
+      "spearman_vs_pc_bwt": 0.35909242322980395
+    },
+    "rankme@block05": {
+      "diffs": [
+        16.121978759765625,
+        21.772659301757812,
+        16.634727478027344,
+        16.76677703857422,
+        13.56256103515625
+      ],
+      "n_positive": 5,
+      "pc_mean": -4.8011932373046875,
+      "healthy_mean": 12.170547485351562,
+      "spearman_vs_pc_bwt": 0.8207826816681234
+    },
+    "rankme@block06": {
+      "diffs": [
+        23.875411987304688,
+        29.95317840576172,
+        25.039520263671875,
+        21.060409545898438,
+        18.75421142578125
+      ],
+      "n_positive": 5,
+      "pc_mean": -6.009817504882813,
+      "healthy_mean": 17.72672882080078,
+      "spearman_vs_pc_bwt": 0.9746794344808963
+    },
+    "rankme@block07": {
+      "diffs": [
+        24.2811279296875,
+        28.943878173828125,
+        26.607940673828125,
+        19.765365600585938,
+        20.029373168945312
+      ],
+      "n_positive": 5,
+      "pc_mean": -8.358706665039062,
+      "healthy_mean": 15.566830444335938,
+      "spearman_vs_pc_bwt": 0.8207826816681234
+    },
+    "rankme@block08": {
+      "diffs": [
+        31.802734375,
+        32.70750427246094,
+        33.09394836425781,
+        20.145111083984375,
+        28.456130981445312
+      ],
+      "n_positive": 5,
+      "pc_mean": -10.316464233398438,
+      "healthy_mean": 18.92462158203125,
+      "spearman_vs_pc_bwt": 0.7181848464596079
+    },
+    "rankme@block09": {
+      "diffs": [
+        37.14012145996094,
+        37.330169677734375,
+        43.018310546875,
+        24.617706298828125,
+        37.26664733886719
+      ],
+      "n_positive": 5,
+      "pc_mean": -11.77572021484375,
+      "healthy_mean": 24.098870849609376,
+      "spearman_vs_pc_bwt": 0.5642880936468347
+    },
+    "rankme@block10": {
+      "diffs": [
+        42.47723388671875,
+        43.3934326171875,
+        47.52552795410156,
+        30.630172729492188,
+        46.19606018066406
+      ],
+      "n_positive": 5,
+      "pc_mean": -11.704751586914062,
+      "healthy_mean": 30.33973388671875,
+      "spearman_vs_pc_bwt": 0.15389675281277312
+    },
+    "rankme@block11": {
+      "diffs": [
+        44.11613464355469,
+        39.763763427734375,
+        49.75830078125,
+        33.85896301269531,
+        50.767059326171875
+      ],
+      "n_positive": 5,
+      "pc_mean": -13.300698852539062,
+      "healthy_mean": 30.352145385742187,
+      "spearman_vs_pc_bwt": -0.4103913408340617
+    },
+    "rankme@block12": {
+      "diffs": [
+        45.77074432373047,
+        35.730560302734375,
+        47.99513626098633,
+        37.74232482910156,
+        43.42605972290039
+      ],
+      "n_positive": 5,
+      "pc_mean": -4.9041603088378904,
+      "healthy_mean": 37.22880477905274,
+      "spearman_vs_pc_bwt": -0.20519567041703085
+    },
+    "twonn@backbone": {
+      "diffs": [
+        -0.5282558625662652,
+        0.09417423805607505,
+        -0.40443971693993497,
+        -0.43428035047731406,
+        -1.1481344257692747
+      ],
+      "n_positive": 1,
+      "pc_mean": -0.24209047735814124,
+      "healthy_mean": 0.24209674618120153,
+      "spearman_vs_pc_bwt": 0.9746794344808963
+    },
+    "twonn@block01": {
+      "diffs": [
+        0.15395892596257355,
+        0.025166623391919885,
+        0.25310608638658216,
+        -0.04895155696986109,
+        0.029781568944823533
+      ],
+      "n_positive": 4,
+      "pc_mean": 0.7051640105000541,
+      "healthy_mean": 0.6225516809568464,
+      "spearman_vs_pc_bwt": 0.05129891760425771
+    },
+    "twonn@block02": {
+      "diffs": [
+        -0.129427441449236,
+        0.2240328448503579,
+        0.22676518485042862,
+        0.13826379894966045,
+        0.3196591703108993
+      ],
+      "n_positive": 4,
+      "pc_mean": 0.26420984060079816,
+      "healthy_mean": 0.10835112909837612,
+      "spearman_vs_pc_bwt": -0.15389675281277312
+    },
+    "twonn@block03": {
+      "diffs": [
+        0.042270019172748974,
+        -0.02389318050561151,
+        -0.12515944107398802,
+        -0.25258559802671776,
+        -0.10739010827149187
+      ],
+      "n_positive": 1,
+      "pc_mean": -0.01757966948042906,
+      "healthy_mean": 0.07577199226058298,
+      "spearman_vs_pc_bwt": 0.10259783520851543
+    },
+    "twonn@block04": {
+      "diffs": [
+        0.4322605582072683,
+        -0.2634478886311662,
+        -0.07727385333187264,
+        -0.5793212489403317,
+        -0.147587740092737
+      ],
+      "n_positive": 1,
+      "pc_mean": -0.1071968046217087,
+      "healthy_mean": 0.019877229936059136,
+      "spearman_vs_pc_bwt": -0.10259783520851543
+    },
+    "twonn@block05": {
+      "diffs": [
+        -0.0718588708554666,
+        -0.966309305116873,
+        -0.2308582336135352,
+        -0.8381273218212364,
+        -0.4927198203321055
+      ],
+      "n_positive": 0,
+      "pc_mean": -0.6078161462901231,
+      "healthy_mean": -0.08784143594227985,
+      "spearman_vs_pc_bwt": -0.35909242322980395
+    },
+    "twonn@block06": {
+      "diffs": [
+        -0.6693196049105463,
+        -0.5983701182362431,
+        0.11818895537945551,
+        -0.7015363617989507,
+        0.2745390244963062
+      ],
+      "n_positive": 2,
+      "pc_mean": -0.5187141223612134,
+      "healthy_mean": -0.20341450134721767,
+      "spearman_vs_pc_bwt": -0.15389675281277312
+    },
+    "twonn@block07": {
+      "diffs": [
+        -0.04597676356437752,
+        -0.07488846340752175,
+        -0.020980127149236694,
+        -0.2587141515343223,
+        0.011900307563678325
+      ],
+      "n_positive": 1,
+      "pc_mean": -0.2620953287921711,
+      "healthy_mean": -0.18436348917381515,
+      "spearman_vs_pc_bwt": -0.4103913408340617
+    },
+    "twonn@block08": {
+      "diffs": [
+        0.3697814068588343,
+        0.2571489260415625,
+        0.32748555543851054,
+        0.3423421856517237,
+        0.46658410887692625
+      ],
+      "n_positive": 5,
+      "pc_mean": -0.044569387742950536,
+      "healthy_mean": -0.397237824316462,
+      "spearman_vs_pc_bwt": -0.9746794344808963
+    },
+    "twonn@block09": {
+      "diffs": [
+        0.21192713288724718,
+        0.6270276223688,
+        0.32129956188089714,
+        0.6306085639249197,
+        1.0599861783044844
+      ],
+      "n_positive": 5,
+      "pc_mean": 0.21941844799840843,
+      "healthy_mean": -0.3507513638748613,
+      "spearman_vs_pc_bwt": -0.46169025843831935
+    },
+    "twonn@block10": {
+      "diffs": [
+        0.36896819059153785,
+        0.49416581418053696,
+        -0.06031172786608252,
+        0.26217594508329256,
+        0.35299481119835363
+      ],
+      "n_positive": 4,
+      "pc_mean": 0.050417856988857326,
+      "healthy_mean": -0.23318074964867036,
+      "spearman_vs_pc_bwt": 0.20519567041703085
+    },
+    "twonn@block11": {
+      "diffs": [
+        0.46693671663958725,
+        -0.1308174433319138,
+        -0.21219624971893936,
+        0.03195169367717199,
+        -0.12668241825773663
+      ],
+      "n_positive": 2,
+      "pc_mean": -0.21524140145331075,
+      "healthy_mean": -0.22107986125494464,
+      "spearman_vs_pc_bwt": -0.5642880936468347
+    },
+    "twonn@block12": {
+      "diffs": [
+        0.514329551682966,
+        -0.20578636901706204,
+        0.3334260743713564,
+        0.5042475110834381,
+        0.10618256718485952
+      ],
+      "n_positive": 4,
+      "pc_mean": -0.247477047811131,
+      "healthy_mean": -0.4979569148722426,
+      "spearman_vs_pc_bwt": -0.35909242322980395
+    }
+  }
+}

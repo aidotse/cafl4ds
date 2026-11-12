@@ -43,9 +43,12 @@ Examples:
             epochs_a=300 epochs_b=300
 """
 
+import hashlib
+import json
 import math
 import sys
 from collections.abc import Callable
+from functools import partial
 from pathlib import Path
 from typing import Any
 
@@ -57,6 +60,7 @@ from hydra.utils import instantiate
 from loguru import logger
 from omegaconf import DictConfig, OmegaConf
 
+from cafl4ds import warmup
 from cafl4ds.data.streams import EvalSet, EvalSets
 from cafl4ds.eval import backward_transfer, forgetting_measure
 from cafl4ds.jsonio import dumps_valid
@@ -123,6 +127,34 @@ def _task_split(config: DictConfig) -> dict[str, Any]:
         }
     logger.info(f"task split: A={len(out['A']['batches'])} batches, B={len(out['B']['batches'])} batches")
     return out
+
+
+def task_a_fingerprint(split: dict[str, Any]) -> dict[str, Any]:
+    """SHA-256 of the task-A probe images and labels — what a saved state's lens read must rebuild (P1.1.3).
+
+    The probe is ~700 MB at ViT-B resolution, so it is not saved: :func:`_task_split` rebuilds it from the
+    seed, and a reader checks the rebuild against this fingerprint.
+    """
+
+    def digest(t: torch.Tensor) -> str:
+        return hashlib.sha256(t.detach().contiguous().cpu().numpy().tobytes()).hexdigest()
+
+    a = split["A"]
+    out: dict[str, Any] = {
+        f"{half}_{field}": digest(getattr(a[half], field))
+        for half in ("support", "query")
+        for field in ("images", "labels")
+    }
+    return {**out, "n_support": int(a["support"].images.shape[0]), "n_query": int(a["query"].images.shape[0])}
+
+
+def _save_state(method: MAE, states_dir: Path | None, name: str) -> None:
+    """Save the full method as ``<states_dir>/<name>.pt`` (``save_states``); a no-op without a states dir.
+
+    Saving copies tensors to the CPU and draws no RNG, so the arm runs exactly as without it.
+    """
+    if states_dir is not None:
+        warmup.save_well(method, states_dir / f"{name}.pt")
 
 
 def _probe(config: DictConfig, method: MAE, task: dict[str, Any]) -> float:
@@ -469,7 +501,9 @@ def _current_stream_monitor(config: DictConfig, split: dict[str, Any]) -> Health
     )
 
 
-def _run_arm(config: DictConfig, split: dict[str, Any], *, replay: bool, run_name: str) -> tuple[dict[str, Any], MAE]:
+def _run_arm(
+    config: DictConfig, split: dict[str, Any], *, replay: bool, run_name: str, states_dir: Path | None = None
+) -> tuple[dict[str, Any], MAE]:
     """Run one two-phase arm (shared phase A; phase B = B-only for PC, else the healthy composition).
 
     The global seed is reset here so both arms start from a bit-identical encoder and train an
@@ -482,6 +516,8 @@ def _run_arm(config: DictConfig, split: dict[str, Any], *, replay: bool, run_nam
         replay: Arm toggle — ``False`` = PC (phase B = B-only, forgets), ``True`` = healthy (phase B per
             ``healthy_replay_mode``: ``a_only`` no-shift oracle, or ``mixed`` rehearsal at ``replay_a_mult``).
         run_name: Label recorded on the returned record.
+        states_dir: If given (``save_states``, P1.1.3), the full method is saved there after phase A and
+            after phase B, as ``<run_name>_post_{a,b}.pt`` — the anchor and the state the lenses read.
 
     Returns:
         A dict with the accuracy matrix, BWT / FM, phase-B drift, and per-phase task accuracies.
@@ -571,6 +607,7 @@ def _run_arm(config: DictConfig, split: dict[str, Any], *, replay: bool, run_nam
     learn_floor = chance if keep_weights else a_init
     recon_a_after_a = _recon_loss(config, method, split["A"]["query"].images, device) if is_mae else float("nan")
     health_a = monitor.measure(method, 0)  # pin the drift reference + read the post-A canary geometry
+    _save_state(method, states_dir, f"{run_name}_post_a")
     if cs_monitor is not None:  # P0.6.1: pin the past-data-free current-stream (phase-B) drift reference
         cs_monitor.measure(method, 0)
 
@@ -608,6 +645,7 @@ def _run_arm(config: DictConfig, split: dict[str, Any], *, replay: bool, run_nam
     recon_a_after_b = _recon_loss(config, method, split["A"]["query"].images, device) if is_mae else float("nan")
     recon_b_after_b = _recon_loss(config, method, split["B"]["query"].images, device) if is_mae else float("nan")
     health_b = monitor.measure(method, 1)  # post-B canary geometry + phase-B drift
+    _save_state(method, states_dir, f"{run_name}_post_b")
     drift = health_b  # the record + log below read cka_drift / cosine_drift off this
     # P0.6.1: the past-data-free drift, referenced to the post-A current-stream (phase-B) snapshot.
     cs_drift = cs_monitor.measure(method, 1) if cs_monitor is not None else None
@@ -1084,7 +1122,16 @@ def main(config: DictConfig) -> None:
     # Short vehicle name for the run tag + log, from the SSL target (mae / simsiam / barlow — the P0.6 JE
     # vehicle), so a SimSiam run is not mislabelled "mae". Supervised keeps its own cross-entropy tag.
     ssl_name = str(config.ssl.get("_target_", "ssl")).rsplit(".", 1)[-1].removeprefix("build_").lower()
-    run_arm = _run_arm_supervised if supervised else _run_arm
+    # P1.1.3: `save_states` keeps each arm's post-A and post-B method, for post-hoc per-block lens reads.
+    states_dir = out_dir / "states" if bool(config.get("save_states", False)) else None
+    if states_dir is not None and supervised:
+        raise ValueError(
+            "save_states saves the SSL vehicle's states; the supervised vehicle is not read by the lenses."
+        )
+    run_arm = _run_arm_supervised if supervised else partial(_run_arm, states_dir=states_dir)
+    if states_dir is not None:
+        states_dir.mkdir(parents=True, exist_ok=True)
+        (states_dir / "task_a_probe.json").write_text(json.dumps(task_a_fingerprint(split), indent=2), encoding="utf-8")
     tag = "sup" if supervised else ssl_name
     logger.info(f"forgetting vehicle: {'supervised cross-entropy' if supervised else f'self-supervised ({ssl_name})'}")
 

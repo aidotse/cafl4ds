@@ -1,0 +1,39 @@
+# P1.1.1 reading protocol — post-hoc read of the P1.1.0 null + the P1.1.1 branches (CPU, seconds).
+#
+#   uv run python scripts/analyze_reading.py
+#
+# `null_root` holds the P1.1.0 deep drives (<null_root>/warm/<bb>_o0.0_<order>/corpus/health.csv); `root`
+# the P1.1.1 runs: heldout{,2}/<bb>_iid (fresh IID seeds), branch/<bb>_<order>_<dose> (drives resumed
+# from a leg checkpoint, damaged or not), recover/<name> (recovery passes). Missing pieces are skipped.
+null_root: outputs/p110_deep
+root: outputs/p111
+backbones: [je, mae]
+# The healthy IID drives the rules are calibrated on (seeds 0-4, then 5-9; `{bb}` is the backbone), and
+# the fresh IID drives they are checked on out of sample (seeds 10-14).
+calibration: ["${null_root}/warm/{bb}_o0.0_iid", "${root}/heldout/{bb}_iid"]
+check: ["${root}/heldout2/{bb}_iid"]
+# Family-wise false-alarm level of each *panel* — the label-free instruments, and the canary arbiters —
+# over the whole drive: one threshold per panel, so "any instrument fired" holds the level per panel.
+alpha: 0.05
+span: 15 # neighbouring checkpoints (each side) pooled into a rule's local SD
+floor: 0.25 # local-SD floor, as a fraction of the drive-wide SD
+# Trailing-mean windows: the label-free instruments are read raw; the canary is smoothed (it jitters
+# reading to reading — P1.1.0 measured ~0.01-0.02 per checkpoint).
+window_label_free: 1
+window_canary: 5
+# The label-free panel, per backbone (the canary slices are the arbiters). Loss and grad norm are left
+# out: on this diet they separate walk from IID mechanically — a walk batch holds one regime, an IID
+# batch all of them (P1.1.0) — so they read the diet, not the representation's health.
+signals:
+  je: [rankme_proj, uniformity_proj, cka_drift_proj, rankme, cka_drift, cosine_drift]
+  mae: [rankme, uniformity, cka_drift, cosine_drift]
+arbiters: [knn_acc, linear_acc, knn_acc_daytime, linear_acc_daytime, knn_acc_dawn_dusk, linear_acc_dawn_dusk,
+  knn_acc_night, linear_acc_night]
+# Readings right after a batch of fewer than `min_batch` images are skipped: the walk flushes each leg's
+# remainder as one short batch (down to 2-3 frames), the IID control copies those sizes, and a tiny update
+# jolts the instruments in healthy drives too (P1.1.0's reading caveat).
+batch_size: 32
+min_batch: 8
+diversity_window: 8 # trailing batches behind the mean-reversion read
+dose0: none # the branch dose label of the undamaged (dose-0) twin
+out: ${root}/reading_report.json

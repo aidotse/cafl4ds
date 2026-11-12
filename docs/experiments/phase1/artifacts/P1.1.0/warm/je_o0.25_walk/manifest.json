@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "study": "P1.0.2",
+  "backbone_family": "je",
+  "config": {
+    "backbone": "je",
+    "I": "from_scratch",
+    "warm": true,
+    "diet": "regime",
+    "order": "walk",
+    "block_size": null,
+    "stratified_canary": true,
+    "well_fraction": 0.5,
+    "well_overlap": 0.25,
+    "anchor": "wells/p110/je_o0.25.pt",
+    "A": "AcceptAll",
+    "seed": 0,
+    "img_size": 64,
+    "device": "hpu",
+    "gate_arms": false
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "n_rows": 660,
+  "channels": {
+    "label_free": [
+      "alignment",
+      "alignment_proj",
+      "cka_drift",
+      "cka_drift_proj",
+      "cosine_drift",
+      "cosine_drift_proj",
+      "grad_norm",
+      "mean_feature_var",
+      "mean_feature_var_proj",
+      "offdiag_cov",
+      "offdiag_cov_proj",
+      "rankme",
+      "rankme_proj",
+      "uniformity",
+      "uniformity_proj"
+    ],
+    "canary": [
+      "knn_acc",
+      "knn_acc_dawn_dusk",
+      "knn_acc_daytime",
+      "knn_acc_night",
+      "linear_acc",
+      "linear_acc_dawn_dusk",
+      "linear_acc_daytime",
+      "linear_acc_night"
+    ]
+  },
+  "tier_a_passed": {
+    "0": true,
+    "1": true,
+    "2": true,
+    "3": true,
+    "4": true
+  },
+  "tier_b_passed": {
+    "0": true,
+    "1": true,
+    "2": true,
+    "3": true,
+    "4": true
+  },
+  "git_sha": null,
+  "n_seeds": 5,
+  "warm": true,
+  "eval_every": 1
+}

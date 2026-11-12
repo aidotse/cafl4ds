@@ -1,0 +1,34 @@
+{
+  "config": {
+    "img_size": 224,
+    "epochs": 0,
+    "batch_size": 64,
+    "hflip": true,
+    "probe_per_class": 500,
+    "seed": 0,
+    "encoder": "cafl4ds.models.vit_mae_pretrained.MAEPretrainedViTEncoder",
+    "well": null
+  },
+  "n": {
+    "well": 3821,
+    "drive": 3822,
+    "probe_fit": 1339
+  },
+  "chance": 0.3333333333333333,
+  "references": {
+    "encoder_at_init": {
+      "knn_bacc": 0.5334751240404318,
+      "linear_bacc": 0.6302372504639486
+    },
+    "pixels": {
+      "linear_bacc": 0.41784720305548695
+    }
+  },
+  "trained_encoder_probes": {
+    "knn_bacc": 0.5334751240404318,
+    "linear_bacc": 0.6302372504639486
+  },
+  "best_drive_bacc": null,
+  "final": null,
+  "trace": []
+}

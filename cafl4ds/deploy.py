@@ -20,7 +20,7 @@ import math
 from typing import Any
 
 from cafl4ds.harness import Arm, all_finite
-from cafl4ds.health_trust import CANARY_SIGNALS, Backbone, annotate
+from cafl4ds.health_trust import Backbone, annotate, canary_base
 
 # The deploy-corpus schema version (independent of the P1.0.0 comparison schema).
 SCHEMA_VERSION = 1
@@ -143,11 +143,42 @@ def split_channels(signals: list[str]) -> dict[str, list[str]]:
 
     Returns:
         ``{"label_free": [...], "canary": [...]}`` — the canary holds the labelled probes
-        (``knn_acc`` / ``linear_acc``), the label-free vector holds the rest.
+        (``knn_acc`` / ``linear_acc`` and their per-stratum slices), the label-free vector holds the
+        rest.
     """
-    canary = sorted(s for s in signals if s in CANARY_SIGNALS)
-    label_free = sorted(s for s in signals if s not in CANARY_SIGNALS)
+    canary = sorted(s for s in signals if canary_base(s) is not None)
+    label_free = sorted(s for s in signals if canary_base(s) is None)
     return {"label_free": label_free, "canary": canary}
+
+
+def with_grad_norm(arm: Arm) -> list[dict[str, Any]]:
+    """The arm's health records with the per-step ``grad_norm`` joined on (the instability reader).
+
+    The loop logs the pre-clip gradient norm on the *loss* series, one value per step; the monitor's
+    health dict does not carry it. Each checkpoint gets the **max** grad norm over the steps since the
+    previous checkpoint (inclusive of its own step) — so a spike between sparse checkpoints is not
+    lost; at ``eval_every=1`` this is simply that step's norm. Arms with no loss series (the frozen
+    B5) pass through unchanged.
+
+    Args:
+        arm: A completed harness arm.
+
+    Returns:
+        New health records (the originals are not mutated).
+    """
+    norms = sorted((int(r["step"]), float(r["grad_norm"])) for r in arm.loss_records if r.get("grad_norm") is not None)
+    if not norms:
+        return arm.health
+    out: list[dict[str, Any]] = []
+    i = 0  # one sweep over the sorted norms: checkpoint steps ascend, so each window starts where the last ended
+    for record in arm.health:
+        step = int(record["step"])
+        window_max: float | None = None
+        while i < len(norms) and norms[i][0] <= step:
+            window_max = norms[i][1] if window_max is None else max(window_max, norms[i][1])
+            i += 1
+        out.append({**record, "grad_norm": window_max} if window_max is not None else dict(record))
+    return out
 
 
 def project_health(health: list[dict[str, Any]], keep: list[str] | None) -> list[dict[str, Any]]:
@@ -204,6 +235,7 @@ def build_deploy_report(
     log_signals: list[str] | None = None,
     canary_chance: float | None = None,
     tier_b_thresholds: dict[str, float] | None = None,
+    study: str = "P1.0.2",
 ) -> dict[str, Any]:
     """Assemble the deploy corpus — the config, the trust-annotated channels, the arms, the validation.
 
@@ -220,12 +252,13 @@ def build_deploy_report(
             given, the reproducible **Tier-B** sanity-of-readings verdict is computed and attached
             under ``tier_b`` — separate from the Tier-A ``validation.passed`` wiring gate.
         tier_b_thresholds: Optional overrides for the loose Tier-B plausibility floor.
+        study: The study the corpus is produced for (the harness serves P1.0.2 and P1.1).
 
     Returns:
         The deploy-corpus dict, ready to serialize.
     """
     arms = [a for a in (live, pc, b5) if a is not None]
-    projected = {a.role: project_health(a.health, log_signals) for a in arms}
+    projected = {a.role: project_health(with_grad_norm(a), log_signals) for a in arms}
     live_health = projected[live.role]
 
     signals = emitted_signals(live_health)
@@ -251,7 +284,7 @@ def build_deploy_report(
 
     report: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
-        "study": "P1.0.2",
+        "study": study,
         "config": config_header,
         "backbone_family": family.value,
         "channels": channels,

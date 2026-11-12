@@ -17,9 +17,10 @@ binds the registry to ``phase0/index.md`` under the accuracy mandate: if a Phase
 both move together.
 
 The registry annotates the **label-free** geometry/drift signals plus the **labelled canary** probes
-(``knn_acc`` / ``linear_acc``). ``grad_norm`` (the instability reader) lives in the loss series, not
-the monitor's health dict, so it is annotated for reference but excluded from the health-menu
-completeness contract.
+(``knn_acc`` / ``linear_acc``, and their per-stratum ``knn_acc_<stratum>`` / ``linear_acc_<stratum>``
+slices, which inherit the pooled probe's verdict). ``grad_norm`` (the instability reader) lives in the
+loss series, not the monitor's health dict; the deploy corpus joins it onto the health rows, but it
+stays excluded from the health-menu completeness contract.
 """
 
 from __future__ import annotations
@@ -375,6 +376,21 @@ LOAD_BEARING_KEYS: dict[Backbone, tuple[str, ...]] = {
 }
 
 
+def canary_base(metric_key: str) -> str | None:
+    """The canary probe a key belongs to — itself, or a per-stratum slice ``<probe>_<stratum>``.
+
+    Args:
+        metric_key: An emitted metric key.
+
+    Returns:
+        The pooled canary key (``"knn_acc"`` / ``"linear_acc"``), or ``None`` for a non-canary key.
+    """
+    for base in CANARY_SIGNALS:
+        if metric_key == base or metric_key.startswith(f"{base}_"):
+            return base
+    return None
+
+
 def trust_for(family: Backbone, metric_key: str) -> tuple[TrustEntry, ...]:
     """The Phase-0 verdict(s) for one emitted signal, or an explicit UNCALIBRATED default.
 
@@ -391,6 +407,9 @@ def trust_for(family: Backbone, metric_key: str) -> tuple[TrustEntry, ...]:
     entry = TRUST_MAP.get((family, metric_key))
     if entry is not None:
         return entry
+    base = canary_base(metric_key)
+    if base is not None and base != metric_key:  # a per-stratum canary slice inherits its probe's verdict
+        return TRUST_MAP[(family, base)]
     return (
         TrustEntry(
             mode=FailureMode.COLLAPSE,  # placeholder mode; the status is the load-bearing field
