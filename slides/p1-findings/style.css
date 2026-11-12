@@ -1,0 +1,1191 @@
+/* =========================================================================
+   Design tokens
+   ========================================================================= */
+
+:root {
+  /* Brand */
+  --surface: #121F2B;           /* slide background */
+  --surface-raised: #0b151e;    /* tooltips, code blocks */
+  --accent: #FECB00;            /* AI Sweden yellow: emphasis only */
+  --green: #4CAF50;
+  --blue: #2196F3;
+  --orange: #FF9800;
+  --red: #E63946;
+
+  /* Ink */
+  --ink: #ffffff;               /* headings, values */
+  --body: #cecece;              /* running text */
+  --muted: #9aa5b1;             /* captions, axis labels */
+  --line: rgba(255, 255, 255, 0.10);
+  --panel: rgba(255, 255, 255, 0.04);
+
+  /* Data viz: categorical slots, validated (CVD + contrast) on --surface.
+     Assign in this order, never cycle; scatter-type charts use at most 1-3. */
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-7: #9085e9;
+  --series-8: #e66767;
+  --series-muted: #4b5b6b;      /* "everything else" next to an accent highlight */
+  --grid: rgba(255, 255, 255, 0.07);
+  --axis: rgba(255, 255, 255, 0.22);
+
+  /* Logical canvas size, kept up to date by assets/js/responsive.js */
+  --slide-w: 1920px;
+  --slide-h: 1080px;
+
+  /* Mermaid (read by Quarto's mermaid theme CSS) */
+  --mermaid-bg-color: var(--surface);
+  --mermaid-edge-color: var(--muted);
+  --mermaid-fg-color: var(--body);
+  --mermaid-fg-color--lighter: rgba(255, 255, 255, 0.25);
+  --mermaid-fg-color--lightest: rgba(255, 255, 255, 0.04);
+  --mermaid-font-family: "Office Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mermaid-label-bg-color: var(--surface);
+  --mermaid-label-fg-color: var(--ink);
+  --mermaid-node-bg-color: #1b2b3a;
+  --mermaid-node-fg-color: rgba(255, 255, 255, 0.28);
+}
+
+/* =========================================================================
+   Base typography
+   ========================================================================= */
+
+.reveal {
+  color: var(--body);
+  font-size: 42px;
+  font-family: "Office Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+  color: var(--body);
+  font-family: "Office Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: Bold;
+  text-transform: none;
+  text-shadow: none;
+}
+
+/* Universal background color, sits underneath backgrounds, etc. */
+body.reveal-viewport {
+    background-color: var(--surface);
+}
+
+.reveal h1 { /* Used for the title slide heading */
+  font-size: 1.7em;
+  color: var(--ink);
+}
+.reveal h2 { /* Used for normal slide headings */
+  font-size: 1.8em;
+}
+.reveal h3 { /* Used for sub-slide headings */
+  font-size: 1.8em;
+}
+.reveal h4 { /* Could be used for intra-slide headings */
+  font-size: 1.5em;
+}
+.reveal a {
+  color: var(--accent);
+}
+.reveal .sourceCode {
+  font-size: 22px;
+}
+.reveal pre code {
+  max-height: 100% !important;
+}
+
+/* Hide the small global logo and footer ONLY on the title slide */
+.reveal:has(#title-slide.present) .slide-logo,
+
+/* Hide the footer when the 'hide-ui' state is active */
+.hide-ui .footer {
+    display: none !important;
+}
+
+/* Hide the global logo when the 'hide-ui' state is active */
+.hide-ui .slide-logo {
+    display: none !important;
+}
+
+/* =========================================================================
+   Section divider slides  (# [01]{.section-num} Title)
+   ========================================================================= */
+
+.reveal .slides section.slide.level1 {
+  text-align: left;
+  padding-left: 60px;
+  height: 100%;
+  justify-content: center;
+}
+.reveal .slides section.slide.level1 h1 {
+  font-size: 2.6em;
+  line-height: 1.05;
+  margin: 0;
+  max-width: 1300px;
+}
+.reveal .slides section.slide.level1 h1::before {
+  content: "";
+  display: block;
+  width: 120px;
+  height: 10px;
+  background: var(--accent);
+  border-radius: 5px;
+  margin-bottom: 50px;
+}
+/* Giant outlined number on the right-hand side */
+.reveal .section-num {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 440px;
+  line-height: 1;
+  font-weight: 800;
+  color: transparent;
+  -webkit-text-stroke: 3px rgba(254, 203, 0, 0.18);
+  letter-spacing: -0.04em;
+  pointer-events: none;
+}
+.reveal .section-desc {
+  display: block;
+  color: var(--muted);
+  font-size: 0.85em;
+  margin-top: 36px;
+  max-width: 950px;
+  line-height: 1.4;
+}
+
+/* =========================================================================
+   Layout helpers
+   ========================================================================= */
+
+.reveal .vcenter {
+  height: 80%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.reveal .grid2,
+.reveal .grid3,
+.reveal .grid4 {
+  display: grid;
+  gap: 32px;
+  margin-top: 40px;
+}
+.reveal .grid2 { grid-template-columns: repeat(2, 1fr); }
+.reveal .grid3 { grid-template-columns: repeat(3, 1fr); }
+.reveal .grid4 { grid-template-columns: repeat(4, 1fr); }
+.reveal .grid-2-1 { display: grid; gap: 48px; grid-template-columns: 2fr 1fr; align-items: center; }
+.reveal .grid-1-2 { display: grid; gap: 48px; grid-template-columns: 1fr 2fr; align-items: center; }
+
+.reveal .spaced-list li {
+  margin-bottom: 50px !important;
+}
+.reveal .mt-1 { margin-top: 40px; }
+.reveal .mt-2 { margin-top: 80px; }
+.reveal .center { text-align: center; }
+
+/* =========================================================================
+   Text helpers
+   ========================================================================= */
+
+.reveal .muted { color: var(--muted); }
+.reveal .ink { color: var(--ink); }
+.reveal .hl { color: var(--accent); }
+.reveal .small { font-size: 0.6em; }
+.reveal .xsmall { font-size: 0.5em; }
+
+.reveal .kicker {
+  color: var(--accent);
+  font-family: monospace;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 0.5em;
+  margin-bottom: 8px;
+}
+.reveal .lead {
+  font-size: 0.75em;
+  color: var(--muted);
+  margin-top: 0;
+  line-height: 1.4;
+}
+.reveal .takeaway {
+  border-left: 6px solid var(--accent);
+  background-color: rgba(254, 203, 0, 0.06);
+  padding: 18px 28px;
+  margin-top: 40px;
+  font-size: 0.66em;
+  line-height: 1.4;
+  border-radius: 0 8px 8px 0;
+}
+.reveal .tag {
+  display: inline-block;
+  background-color: #2a3947;
+  color: #dddddd;
+  border-radius: 14px;
+  padding: 2px 14px;
+  font-family: monospace;
+  font-size: 0.7em;
+  margin-right: 6px;
+}
+.reveal .tag.on {
+  background-color: var(--accent);
+  color: var(--surface);
+  font-weight: bold;
+}
+.reveal kbd {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 4px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-bottom-width: 4px;
+  background: var(--panel);
+  color: var(--ink);
+  font-family: monospace;
+  font-size: 0.8em;
+  text-align: center;
+}
+
+/* =========================================================================
+   Cards
+   ========================================================================= */
+
+.reveal .card {
+  background-color: var(--panel);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--accent);
+  border-radius: 8px;
+  padding: 24px 28px;
+  box-sizing: border-box;
+  font-size: 0.7em;
+  line-height: 1.45;
+}
+.reveal .card.green  { border-top-color: var(--green); }
+.reveal .card.blue   { border-top-color: var(--blue); }
+.reveal .card.orange { border-top-color: var(--orange); }
+.reveal .card.red    { border-top-color: var(--red); }
+.reveal .card.plain  { background: none; border: none; border-top: 3px solid var(--accent); border-radius: 0; }
+.reveal .card.plain.green  { border-top-color: var(--green); }
+.reveal .card.plain.orange { border-top-color: var(--orange); }
+
+.reveal .card .card-title {
+  font-weight: bold;
+  font-size: 1.2em;
+  color: var(--ink);
+  margin: 0 0 14px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.reveal .card .card-title .muted { font-weight: normal; font-size: 0.8em; }
+.reveal .card p { margin: 0 0 10px 0; }
+.reveal .card p:last-child { margin-bottom: 0; }
+.reveal .card ul { margin: 0 0 0 1em; }
+.reveal .card li { margin-bottom: 6px; }
+
+/* =========================================================================
+   Stat tiles  (count-up: <span class="count" data-to="94.2" data-decimals="1">)
+   ========================================================================= */
+
+.reveal .stat {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.reveal .stat > p > span,
+.reveal .stat > span { display: block; }
+.reveal .stat .label {
+  color: var(--muted);
+  font-size: 0.95em;
+}
+.reveal .stat .spark {
+  height: 70px;
+  margin-top: 22px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+.reveal .stat .value {
+  font-size: 3.2em;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.1;
+  margin: 10px 0 6px 0;
+  white-space: nowrap;
+}
+.reveal .stat .value .unit {
+  font-size: 0.45em;
+  color: var(--muted);
+  font-weight: normal;
+  margin-left: 6px;
+}
+.reveal .stat .delta { font-size: 0.9em; font-weight: bold; }
+.reveal .stat .delta.up   { color: var(--green); }
+.reveal .stat .delta.down { color: var(--red); }
+.reveal .stat .delta .muted { font-weight: normal; }
+
+/* =========================================================================
+   Quiz (question + multiple choice)
+   ========================================================================= */
+
+.reveal .quiz-q h3 {
+  font-size: 1.2em;
+  color: var(--ink);
+  margin: 5px 0 20px 0;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 20px;
+  line-height: 1.3;
+}
+.reveal .quiz-label {
+  font-family: monospace;
+  font-weight: bold;
+}
+.reveal .option {
+  border: 1px solid var(--line);
+  padding: 10px 16px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  background-color: var(--panel);
+}
+.reveal .option .quiz-label { color: #aaaaaa; margin-right: 10px; }
+/* The correct option lights up once the (fragment) explanation is revealed */
+.reveal .option { transition: border-color 0.4s, background-color 0.4s; }
+.reveal .quiz:has(.explain.visible) .option.correct {
+  border-color: var(--green);
+  box-shadow: inset 0 0 0 1px var(--green);
+  background-color: rgba(76, 175, 80, 0.1);
+}
+.reveal .quiz:has(.explain.visible) .option.correct .quiz-label { color: var(--green); }
+.reveal .quiz:has(.explain.visible) .option.correct::after { content: " ✓"; color: var(--green); font-weight: bold; }
+.reveal .explain {
+  border-left: 4px solid #aaaaaa;
+  padding-left: 16px;
+  margin-top: 26px;
+  color: #aaaaaa;
+}
+
+/* =========================================================================
+   Tables
+   ========================================================================= */
+
+.reveal .compact-table table {
+  font-size: 0.6em;
+  line-height: 1.3;
+  width: 100%;
+}
+.reveal .compact-table table th {
+  color: var(--ink);
+  border-bottom: 2px solid var(--accent);
+}
+.reveal .compact-table table td,
+.reveal .compact-table table th {
+  padding: 14px 18px;
+  vertical-align: top;
+}
+.reveal .compact-table table tr:nth-child(even) td {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* =========================================================================
+   Logo wall / credits
+   ========================================================================= */
+
+.reveal .logo-wall {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 80px;
+  margin-top: 200px;
+}
+.reveal .logo-wall > p,
+.reveal .legend > p { display: contents; }
+.reveal .logo-wall img { height: 200px; margin: 0; }
+.reveal .logo-wall .break { flex-basis: 100%; height: 0; }
+
+.reveal .people-title {
+  display: block;
+  font-weight: bold;
+  font-size: 1.4em;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+.reveal .person { margin-bottom: 8px; font-size: 0.85em; }
+.reveal .person strong { color: var(--ink); }
+.reveal .person .role {
+  color: #aaaaaa;
+  font-size: 0.88em;
+  font-family: monospace;
+  margin-left: 8px;
+}
+.reveal .person .role::before { content: "// "; }
+
+/* =========================================================================
+   Charts (Plotly / D3 containers)
+   ========================================================================= */
+
+/* Heights follow the canvas: 720 / 600 / 800 px on the default 1080-high slide */
+.reveal .chart {
+  width: 100%;
+  height: calc(var(--slide-h) * 0.667);
+  margin-top: 20px;
+}
+.reveal .chart.short { height: calc(var(--slide-h) * 0.555); }
+.reveal .chart.tall  { height: calc(var(--slide-h) * 0.74); }
+.reveal .chart-note {
+  color: var(--muted);
+  font-size: 0.45em;
+  text-align: right;
+  margin-top: 6px;
+}
+/* Plotly mode bar: quiet until hovered */
+.reveal .js-plotly-plot .modebar { background: transparent !important; }
+.reveal .js-plotly-plot .modebar-btn path { fill: var(--muted) !important; }
+.reveal .js-plotly-plot .modebar-btn:hover path,
+.reveal .js-plotly-plot .modebar-btn.active path { fill: var(--accent) !important; }
+.reveal .js-plotly-plot .modebar-btn svg { width: 22px; height: 22px; }
+.reveal .js-plotly-plot .parcoords line.highlight { stroke: var(--accent) !important; stroke-opacity: 0.9 !important; }
+
+/* Library comparison: the same chart in different libraries, side by side
+   (::: {.lib-compare} > ::: {.lib-col} with [Name]{.lib-name} [meta]{.lib-meta},
+   then a .lib-chart container or an ![](figure.svg){.lib-static} image) */
+.reveal .lib-compare {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px 56px;
+}
+.reveal .lib-col { min-width: 0; }
+.reveal .lib-col > p { margin: 0 0 6px; line-height: 1.2; }
+.reveal .lib-name {
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.55em;
+  margin-right: 10px;
+}
+.reveal .lib-meta {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.42em;
+}
+.reveal .lib-chart,
+.reveal img.lib-static {
+  display: block;
+  width: 100%;
+  height: calc(var(--slide-h) * 0.52);
+  margin: 0;
+}
+.reveal img.lib-static { object-fit: contain; }
+
+/* Step labels that drive a fragment-synced chart */
+.reveal .chart-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.62em;
+}
+.reveal .chart-steps li {
+  padding: 16px 22px;
+  margin-bottom: 14px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  line-height: 1.35;
+}
+.reveal .chart-steps li strong { color: var(--ink); display: block; margin-bottom: 4px; }
+.reveal .chart-steps li.current-fragment {
+  border-color: var(--accent);
+  background: rgba(254, 203, 0, 0.06);
+}
+
+/* D3 network graph */
+.reveal .net text {
+  fill: var(--body);
+  font-size: 22px;
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 6px;
+}
+.reveal .net circle { cursor: grab; stroke: var(--surface); stroke-width: 3px; transition: opacity 0.2s; }
+.reveal .net line { stroke: rgba(255, 255, 255, 0.18); transition: opacity 0.2s, stroke 0.2s; }
+.reveal .net.focus circle:not(.lit),
+.reveal .net.focus text:not(.lit) { opacity: 0.18; }
+.reveal .net.focus line:not(.lit) { opacity: 0.08; }
+.reveal .net line.lit { stroke: var(--accent); }
+
+/* Legend chips used beside D3 / HTML charts */
+.reveal .legend { display: flex; gap: 30px; flex-wrap: wrap; font-size: 0.55em; color: var(--body); }
+.reveal .legend span::before {
+  content: "";
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  margin-right: 10px;
+  vertical-align: -2px;
+  background: var(--c);
+}
+
+/* =========================================================================
+   Mermaid diagrams (colours come from the --mermaid-* tokens above)
+   ========================================================================= */
+
+.reveal .cell-output-display:has(svg.mermaid-js),
+.reveal div:has(> pre.mermaid-js) { margin-top: 30px; }
+.reveal svg.mermaid-js { width: 100% !important; max-width: 100% !important; height: auto; }
+.reveal svg.mermaid-js .flowchart-link { stroke-width: 2.5px !important; }
+.reveal svg.mermaid-js .labelBkg,
+.reveal svg.mermaid-js span.edgeLabel,
+.reveal svg.mermaid-js .edgeLabel p {
+  background-color: var(--surface) !important;
+  color: var(--muted) !important;
+  font-style: italic;
+}
+.reveal svg.mermaid-js .node.accent rect,
+.reveal svg.mermaid-js .node.accent polygon { stroke: var(--accent) !important; stroke-width: 3px !important; fill: rgba(254, 203, 0, 0.10) !important; }
+
+/* Gantt */
+.reveal svg.mermaid-js .grid .tick line { stroke: var(--grid) !important; }
+.reveal svg.mermaid-js .grid .tick text { fill: var(--muted) !important; stroke: none !important; font-size: 18px !important; }
+.reveal svg.mermaid-js .grid path { fill: none !important; stroke: none !important; }
+.reveal svg.mermaid-js .section0,
+.reveal svg.mermaid-js .section2 { fill: rgba(255, 255, 255, 0.03) !important; }
+.reveal svg.mermaid-js .section1,
+.reveal svg.mermaid-js .section3 { fill: transparent !important; }
+.reveal svg.mermaid-js .sectionTitle { fill: var(--ink) !important; font-size: 22px !important; font-weight: bold; }
+.reveal svg.mermaid-js .task { fill: rgba(57, 135, 229, 0.30) !important; stroke: var(--series-1) !important; stroke-width: 2px !important; }
+.reveal svg.mermaid-js .done0, .reveal svg.mermaid-js .done1,
+.reveal svg.mermaid-js .done2, .reveal svg.mermaid-js .done3 { fill: rgba(255, 255, 255, 0.10) !important; stroke: rgba(255, 255, 255, 0.25) !important; }
+.reveal svg.mermaid-js .active0, .reveal svg.mermaid-js .active1,
+.reveal svg.mermaid-js .active2, .reveal svg.mermaid-js .active3 { fill: rgba(254, 203, 0, 0.22) !important; stroke: var(--accent) !important; }
+.reveal svg.mermaid-js .crit0, .reveal svg.mermaid-js .crit1,
+.reveal svg.mermaid-js .crit2, .reveal svg.mermaid-js .crit3 { fill: rgba(230, 57, 70, 0.25) !important; stroke: var(--red) !important; }
+.reveal svg.mermaid-js .milestone { fill: var(--accent) !important; stroke: var(--surface) !important; }
+.reveal svg.mermaid-js .taskText,
+.reveal svg.mermaid-js .taskTextOutsideRight,
+.reveal svg.mermaid-js .taskTextOutsideLeft { fill: var(--ink) !important; font-size: 20px !important; }
+.reveal svg.mermaid-js .today { stroke: var(--accent) !important; stroke-width: 3px !important; }
+
+/* Row of embedded web pages (e.g. Datawrapper charts) */
+.reveal .iframe-row {
+  margin-top: 120px;
+  width: 100%;
+  height: 800px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  overflow: hidden;
+}
+.reveal .iframe-row iframe {
+  flex: 1;
+  height: 100%;
+  border: none;
+  transform: scale(1.04);
+  transform-origin: center center;
+}
+
+/* =========================================================================
+   Framed figure  (![Optional caption](figure.png){.framed})
+   A white rounded card for figures with a light background (plots, diagrams,
+   logos), so they don't end in hard edges on the dark slide. Sized by the
+   canvas, overriding the inline size Reveal's auto-stretch would set.
+   Match an off-white figure by setting --frame on the slide:
+   ## Title {style="--frame: #fffdf9"}  (Quarto drops style on the image itself).
+   ========================================================================= */
+
+.reveal img.framed {
+  display: block;
+  box-sizing: content-box;
+  width: auto !important;
+  height: auto !important;
+  max-width: calc(100% - 48px);
+  max-height: calc(var(--slide-h, 1080px) * 0.6);
+  margin: 0 auto;
+  padding: 24px;
+  background: var(--frame, #ffffff);
+  border-radius: 18px;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+}
+.reveal .slide img.framed + p.caption,
+.reveal .slide figure:has(> img.framed) > figcaption {
+  margin-top: 28px;
+  text-align: center;
+  font-size: 0.6em;
+  color: var(--muted);
+}
+
+/* =========================================================================
+   Before / after image comparison slider
+   ========================================================================= */
+
+.reveal img-comparison-slider {
+  /* Never taller than ~2/3 of the slide (images are 16:9) */
+  max-width: calc(var(--slide-h) * 1.2);
+  --divider-width: 4px;
+  --divider-color: var(--accent);
+  --default-handle-color: var(--accent);
+  --default-handle-width: 80px;
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  outline: none;
+}
+.reveal img-comparison-slider img { margin: 0; max-height: none; width: 100%; display: block; }
+.reveal .compare-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: monospace;
+  font-size: 0.5em;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: 16px;
+}
+
+/* =========================================================================
+   Math (MathML rendered at build time; bundled font keeps it offline)
+   ========================================================================= */
+
+@font-face {
+  font-family: "STIX Two Math";
+  src: url("assets/vendor/fonts/stix-two-math.woff2") format("woff2");
+  font-display: block;
+}
+.reveal math {
+  font-family: "STIX Two Math", math;
+  color: var(--ink);
+}
+.reveal math[display="block"] { font-size: 1.5em; margin: 30px 0; }
+
+/* =========================================================================
+   Tabsets
+   ========================================================================= */
+
+.reveal .panel-tabset {
+  margin-top: 30px;
+}
+.reveal .panel-tabset [role="tablist"] {
+  border-bottom: 1px solid var(--line);
+}
+.reveal .panel-tabset [role="tab"] {
+  color: var(--muted);
+  font-size: 0.6em;
+  padding: 12px 24px;
+  border-bottom: 3px solid transparent;
+}
+.reveal .panel-tabset [role="tab"][aria-selected="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+.reveal .panel-tabset .tab-content { font-size: 0.8em; padding-top: 24px; }
+.reveal .panel-tabset .sourceCode { font-size: 32px; }
+.reveal .panel-tabset pre code { padding: 20px 26px; line-height: 1.5; }
+
+/* =========================================================================
+   Agenda  (ordered list of section links)
+   ========================================================================= */
+
+.reveal .agenda ol {
+  list-style: none;
+  counter-reset: agenda;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(3, auto);
+  column-gap: 80px;
+}
+.reveal .agenda li {
+  counter-increment: agenda;
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  align-items: baseline;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--line);
+}
+.reveal .agenda li::before {
+  content: counter(agenda, decimal-leading-zero);
+  grid-row: span 2;
+  font-family: monospace;
+  color: var(--accent);
+  font-size: 0.85em;
+}
+.reveal .agenda a {
+  color: var(--ink);
+  font-weight: bold;
+  transition: color 0.2s;
+}
+.reveal .agenda a:hover { color: var(--accent); }
+.reveal .agenda .agenda-desc {
+  grid-column: 2;
+  color: var(--muted);
+  font-size: 0.6em;
+  margin-top: 4px;
+}
+
+/* =========================================================================
+   Callouts (Quarto .callout-note / -tip / -warning / -important / -caution)
+   ========================================================================= */
+
+.reveal div.callout.callout-style-default {
+  --c: var(--blue);
+  border: none;
+  border-left: 6px solid var(--c);
+  border-radius: 0 8px 8px 0;
+  background: color-mix(in srgb, var(--c) 9%, transparent);
+  margin: 0;
+  font-size: 0.62em;
+  height: 100%;
+  box-sizing: border-box;
+}
+.reveal div.callout-tip.callout-style-default       { --c: var(--green); }
+.reveal div.callout-warning.callout-style-default   { --c: var(--orange); }
+.reveal div.callout-important.callout-style-default { --c: var(--red); }
+.reveal div.callout-caution.callout-style-default   { --c: var(--orange); }
+.reveal div.callout.callout-style-default div.callout-title {
+  background: none !important;
+  border: none;
+  opacity: 1;
+  padding-top: 8px;
+}
+.reveal div.callout.callout-style-default div.callout-title p { color: var(--c); }
+.reveal div.callout .callout-content { color: var(--body); }
+
+/* =========================================================================
+   Results table  (**best**, [second]{.second}, row with [ours]{.ours})
+   ========================================================================= */
+
+.reveal .results-table table { font-size: 0.68em; }
+.reveal .results-table td,
+.reveal .results-table th { white-space: nowrap; vertical-align: baseline; }
+.reveal .results-table strong { color: var(--ink); }
+.reveal .results-table .pm {
+  color: var(--muted);
+  font-size: 0.7em;
+  margin-left: 4px;
+}
+.reveal .second {
+  text-decoration: underline;
+  text-decoration-color: var(--muted);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 6px;
+}
+.reveal .results-table tr:has(span.ours) td {
+  background-color: rgba(254, 203, 0, 0.07) !important;
+  border-top: 1px solid rgba(254, 203, 0, 0.35);
+}
+.reveal span.ours {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--surface);
+  font-weight: bold;
+  font-size: 0.7em;
+  padding: 0 12px;
+  border-radius: 12px;
+  margin-left: 8px;
+  vertical-align: 2px;
+}
+
+/* =========================================================================
+   Asides & footnotes  (::: aside, ^[footnote]) pinned above the footer
+   ========================================================================= */
+
+.reveal .slides section.slide aside:not(.notes) {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 70px;
+  font-size: 0.42em;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+.reveal .slides section.slide aside:not(.notes) p { margin: 0; }
+.reveal .slides section.slide.level2:has(> aside:not(.notes)) { padding-bottom: 150px; }
+.reveal .aside-footnotes { margin: 0; padding-left: 1.4em; }
+
+/* =========================================================================
+   References  (::: {#refs})
+   ========================================================================= */
+
+/* Quarto already marks the References slide .smaller (0.7em) */
+.reveal #refs {
+  font-size: 0.85em;
+  line-height: 1.45;
+}
+.reveal #refs .csl-entry {
+  margin-bottom: 18px;
+  padding-left: 2em;
+  text-indent: -2em;
+}
+
+/* =========================================================================
+   Local video
+   ========================================================================= */
+
+.reveal .video-frame {
+  margin: 0;
+  line-height: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  max-width: calc(var(--slide-h) * 1.2);
+}
+.reveal .video-frame video { width: 100%; max-width: 100%; max-height: none; display: block; }
+
+/* =========================================================================
+   Chat transcript  (::: {.msg .user who="..."}, ::: {.msg .bot who="..."})
+   ========================================================================= */
+
+.reveal .chat { align-items: start; }
+.reveal .msg {
+  position: relative;
+  padding: 22px 30px;
+  border-radius: 22px;
+  font-size: 0.64em;
+  line-height: 1.5;
+  margin-top: 44px;
+  box-sizing: border-box;
+}
+.reveal .msg::before {
+  content: attr(data-who);
+  position: absolute;
+  top: -38px;
+  font-family: monospace;
+  font-size: 0.72em;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+.reveal .msg p { margin: 0 0 12px 0; }
+.reveal .msg p:last-child { margin-bottom: 0; }
+.reveal .msg.user {
+  background: #24384c;
+  color: var(--ink);
+  max-width: 70%;
+  margin-left: auto;
+  border-bottom-right-radius: 6px;
+}
+.reveal .msg.user::before { right: 8px; }
+.reveal .msg.bot {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-bottom-left-radius: 6px;
+}
+.reveal .msg.bot::before { left: 8px; }
+.reveal .msg.ours { border-color: rgba(254, 203, 0, 0.45); }
+.reveal .msg.ours::before { color: var(--accent); }
+.reveal .verdict {
+  display: inline-block;
+  font-weight: bold;
+  font-size: 0.85em;
+  padding: 4px 16px;
+  border-radius: 16px;
+  margin-top: 6px;
+}
+.reveal .verdict.good { color: var(--green); background: rgba(76, 175, 80, 0.12); }
+.reveal .verdict.bad  { color: var(--red);   background: rgba(230, 57, 70, 0.12); }
+.reveal .caret {
+  display: inline-block;
+  width: 0.5em;
+  height: 1.1em;
+  margin-left: 2px;
+  vertical-align: -0.2em;
+  background: var(--accent);
+  animation: caret-blink 1s steps(1) infinite;
+}
+@keyframes caret-blink { 50% { opacity: 0; } }
+
+/* =========================================================================
+   Token attribution  (Deck.tokens)
+   ========================================================================= */
+
+.reveal .tokens {
+  font-size: 1.05em;
+  line-height: 2.3;
+  color: var(--ink);
+  margin-top: 30px;
+}
+.reveal .tok {
+  position: relative;
+  padding: 6px 4px;
+  margin: 0 2px;
+  border-radius: 6px;
+  box-shadow: inset 0 -3px 0 rgba(255, 255, 255, 0.12);
+  transition: background-color 0.5s ease, color 0.5s ease;
+  transition-delay: calc(var(--i) * 30ms);
+}
+.reveal .tokens.lit .tok { background-color: rgba(254, 203, 0, calc(var(--s) * 0.9)); }
+.reveal .tokens.lit .tok.hi { color: var(--surface); }
+.reveal .tokens.lit .tok:hover { outline: 2px solid var(--ink); }
+.reveal .tokens.lit .tok:hover::after {
+  content: attr(data-score);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  background: var(--surface-raised);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  padding: 2px 12px;
+  font-size: 0.5em;
+  line-height: 1.6;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2;
+}
+.reveal .scale-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.55em;
+}
+.reveal .scale-legend > p { display: contents; }
+.reveal .scale-bar {
+  width: 280px;
+  height: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: linear-gradient(to right, rgba(254, 203, 0, 0.04), rgba(254, 203, 0, 0.9));
+}
+
+/* =========================================================================
+   Qualitative results grid  ([![](img.jpg)]{.tile score="93.4"})
+   ========================================================================= */
+
+.reveal .qual-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.reveal .qual-grid > p { display: contents; }
+.reveal .qual-head {
+  font-family: monospace;
+  font-size: 0.45em;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--muted);
+  text-align: center;
+}
+.reveal .qual-head.hl { color: var(--accent); }
+.reveal .tile {
+  --ox: center;
+  --oy: center;
+  position: relative;
+  display: block;
+  line-height: 0;
+}
+.reveal .tile img {
+  width: 100%;
+  margin: 0;
+  border-radius: 6px;
+  transform-origin: var(--ox) var(--oy);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+/* Zoom towards the slide's interior so enlarged tiles stay on screen */
+.reveal .tile:nth-child(4n + 1) { --ox: left; }
+.reveal .tile:nth-child(4n)     { --ox: right; }
+.reveal .tile:nth-child(-n + 8) { --oy: top; }
+.reveal .tile:nth-last-child(-n + 4) { --oy: bottom; }
+.reveal .tile:hover { z-index: 5; }
+.reveal .tile:hover img {
+  transform: scale(1.9);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+}
+.reveal .tile[data-score]::after {
+  content: "mIoU " attr(data-score);
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  background: rgba(11, 21, 30, 0.85);
+  color: #ffffff;
+  font-family: monospace;
+  font-size: 16px;
+  line-height: 1.5;
+  padding: 2px 10px;
+  border-radius: 10px;
+}
+.reveal .tile[data-score]:hover::after { display: none; }
+
+/* =========================================================================
+   Closing slide with QR code
+   ========================================================================= */
+
+.reveal .closing .thanks {
+  display: block;
+  font-size: 3.4em;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.reveal .closing .thanks::after {
+  content: "";
+  display: block;
+  width: 120px;
+  height: 10px;
+  margin-top: 40px;
+  border-radius: 5px;
+  background: var(--accent);
+}
+.reveal .closing .thanks-sub {
+  display: block;
+  margin-top: 30px;
+  font-size: 1.1em;
+}
+.reveal .contact { margin-top: 70px; font-size: 0.7em; }
+.reveal .contact p { margin: 0 0 14px 0; }
+.reveal .contact .kicker { display: inline-block; width: 110px; margin: 0; }
+.reveal .qr-card {
+  justify-self: center;
+  width: 440px;
+  padding: 36px;
+  box-sizing: border-box;
+  border-radius: 22px;
+  background: #ffffff;
+  color: var(--surface);
+  text-align: center;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+}
+.reveal .qr svg { display: block; width: 100%; height: auto; }
+.reveal .qr-label { display: block; margin-top: 22px; font-weight: bold; font-size: 0.6em; }
+.reveal .qr-url {
+  display: block;
+  margin-top: 6px;
+  font-family: monospace;
+  font-size: 0.42em;
+  color: #4b5b6b;
+  word-break: break-all;
+}
+
+/* =========================================================================
+   Responsive layout
+   The canvas size follows the window (assets/js/responsive.js). Each content
+   slide is a full-height flex column: the title stays on top, blocks keep
+   their natural height, and spare height is shared out as equal gaps
+   between the blocks and the bottom of the slide.
+   ========================================================================= */
+
+.reveal .slides section {
+  flex-direction: column;
+}
+.reveal .slides section.slide.level2:not(.center) {
+  height: 100%;
+  box-sizing: border-box;
+  padding-bottom: 80px; /* clearance for the footer */
+}
+.reveal .slides section.slide.level2 > * {
+  flex: none;
+}
+/* Captions and leads stay attached to the block they describe */
+.reveal .slides section.slide.level2:not(.center) > :not(h2):not(.lead):not(.chart-note):not(.compare-labels):not(.caption) {
+  margin-top: auto;
+}
+.reveal .slides section.slide.level2:not(.center)::after {
+  content: "";
+  margin-top: auto;
+}
+
+/* Portrait: one column, smaller decorations */
+.portrait .reveal .lib-compare { grid-template-columns: 1fr; }
+.portrait .reveal .lib-chart,
+.portrait .reveal img.lib-static { height: calc(var(--slide-h) * 0.2); }
+.portrait .reveal .lib-col > p { line-height: 1.1; }
+.portrait .reveal .grid2,
+.portrait .reveal .grid3,
+.portrait .reveal .grid-2-1,
+.portrait .reveal .grid-1-2 {
+  grid-template-columns: 1fr !important;
+}
+.portrait .reveal .grid4 {
+  grid-template-columns: repeat(2, 1fr);
+}
+.portrait .reveal .columns {
+  flex-direction: column;
+}
+.portrait .reveal .columns > .column {
+  width: 100% !important;
+}
+.portrait .reveal .iframe-row {
+  flex-direction: column;
+  height: calc(var(--slide-h) * 0.75);
+  margin-top: 40px;
+}
+.portrait .reveal .iframe-row iframe {
+  width: 100%;
+}
+.portrait .reveal .chart,
+.portrait .reveal .chart.short,
+.portrait .reveal .chart.tall {
+  height: calc(var(--slide-w) * 0.75);
+}
+.portrait .reveal .section-num {
+  position: static;
+  display: block;
+  transform: none;
+  font-size: 260px;
+  margin-bottom: 30px;
+}
+.portrait .reveal .logo-wall {
+  margin-top: 60px;
+  gap: 50px;
+}
+.portrait .reveal .msg.user { max-width: 90%; }
+.portrait .reveal .agenda ol { grid-template-columns: 1fr; grid-auto-flow: row; grid-template-rows: none; }
+.portrait .reveal .qr-card { width: 380px; }
+.portrait .reveal .contact { margin-top: 40px; }
+.portrait .reveal .results-table table { font-size: 0.56em; }
+.portrait .reveal .results-table .pm { display: block; margin-left: 0; }
+.portrait .reveal .results-table td:first-child { white-space: normal; }
+
+/* =========================================================================
+   P1.1 / P1.2 deck additions
+   Class names here are the deck's own; the template's .small, .lead and
+   .card are used as the template defines them.
+   ========================================================================= */
+
+/* Side columns of bullets beside a chart, and captions under charts */
+.reveal .side { font-size: 0.8em; }
+.reveal .side li { margin-bottom: 18px; }
+.reveal .caption.side { margin-top: 0; }
+.reveal .tight li { margin-bottom: 6px; font-size: 0.92em; }
+.reveal strong, .reveal b { color: var(--ink); }
+
+/* A white, bold lead-in line (the template's .lead is a muted subtitle) */
+.reveal .lead-in { color: var(--ink); font-weight: bold; margin-bottom: 12px; }
+
+/* Chart heights between the template's short (600) and default (720) */
+.reveal .chart.mid { height: calc(var(--slide-h) * 0.593); }
+.portrait .reveal .chart.mid { height: calc(var(--slide-w) * 0.75); }
+
+/* Cards with an <h3> title (trust / not yet / discussion) */
+.reveal .card { font-size: 0.78em; height: 100%; padding: 10px 30px 20px 30px; }
+.reveal .card h3 { font-size: 1.3em; margin-top: 10px; }
+.reveal .card li { margin-bottom: 14px; }
+
+/* The loop diagram */
+.reveal .loop { display: flex; flex-direction: column; align-items: center; margin-top: 30px; }
+.reveal .loop .box {
+  width: 80%; text-align: center; padding: 22px 18px; border-radius: 10px; font-size: 0.85em;
+  background-color: var(--panel); border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.reveal .loop .box.accent { border: 2px solid var(--accent); background-color: rgba(254, 203, 0, 0.08); }
+.reveal .loop .arrow { color: var(--accent); font-size: 1.1em; line-height: 1.4; }
+
+/* The Phase 0 -> Phase 1 table */
+.reveal .p0table table { font-size: 0.66em; width: 100%; margin-top: 20px; }
+.reveal .p0table th { color: var(--accent); border-bottom: 2px solid var(--accent); }
+.reveal .p0table td { padding: 14px 18px; vertical-align: top; border-bottom: 1px solid var(--line); }
+.reveal .p0table td:first-child { width: 46%; }
+.portrait .reveal .p0table table { font-size: 0.56em; }
+.portrait .reveal .card { font-size: 0.68em; height: auto; }

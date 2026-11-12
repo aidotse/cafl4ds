@@ -1,0 +1,753 @@
+---
+title: "P1.1 / P1.2 Update"
+subtitle: "Can we read degradation, and does continued learning pay?"
+author: "Mauricio Munoz / Senior Research Engineer @ AI Sweden"
+format:
+  revealjs:
+    from: markdown+emoji
+    logo: "./assets/aise-yellow.png"
+    footer: "cafl4ds · Phase 1 · P1.1 / P1.2 update"
+    overview: true
+    slide-number: "c/t"
+    transition: fade
+    css: style.css
+    width: 1920
+    height: 1080
+    include-in-header:
+      - text: |
+          <script src="assets/vendor/echarts.min.js"></script>
+          <script src="assets/data.js"></script>
+          <script src="assets/js/responsive.js"></script>
+          <script src="assets/js/deck.js"></script>
+          <script src="assets/js/p1.js"></script>
+    title-slide-attributes:
+        data-background-image: ./assets/summer.jpg
+        data-background-size: cover
+        data-background-repeat: no-repeat
+        data-background-opacity: "0.7"
+        data-state: "hide-ui"
+---
+
+## Where we are
+
+:::: {.columns}
+
+::: {.column width="52%"}
+
+<div class="loop">
+  <div class="box">Correlated data stream</div>
+  <div class="arrow">↓</div>
+  <div class="box">Label-free <b>selection filter</b></div>
+  <div class="arrow">↓</div>
+  <div class="box accent">Self-supervised <b>backbone</b>, keeps learning</div>
+  <div class="arrow">↓</div>
+  <div class="box">Label-free <b>health monitor</b> → re-aims selection</div>
+</div>
+
+:::
+
+::: {.column width="48%"}
+
+<div class="lead-in">Phase 1's exit gate asks three things:</div>
+
+1. Does adapting on the stream **beat a frozen backbone**?
+2. Does the correlated stream **degrade** the backbone?
+3. Does the **selection filter** change that?
+
+<div class="lead-in" style="margin-top: 50px;">All three must hold on real data: BDD100K dashcam frames.</div>
+
+:::
+
+::::
+
+## Phase 0 calibrated the instruments, on toy data
+
+::: {.p0table}
+
+| Phase 0 left us… | …so in Phase 1 |
+| :--- | :--- |
+| Thresholds tuned on **toy models and data** (tiny ViT, STL-10 / CIFAR); STL-10 **cannot even induce forgetting** | Move to **BDD100K** with a pretrained **ViT-B**: real correlation (time of day, weather, scene), not synthetic class blocks |
+| A "healthy" comparison arm that **drifts with the very signal** being read | A **certified frozen start** to anchor drift, and a matched **shuffled (IID) control** as the null (P1.1.0) |
+| In our target corner (correlated, single pass), the collapse suite thins to **one marginal reader** | A **collapse dial** on the real backbone; read projector **and** backbone rank together (P1.1.1) |
+| **No label-free reader** for MAE quality; forgetting readable only with labels | A labelled **canary** as referee, with a measured power; the **CKA-drift** search (P1.1.1–P1.1.3) |
+| MAE **resists** forgetting; every crater recoverable | First ask whether adapting even **helps** (P1.2), before chasing forgetting (P1.3) |
+
+:::
+
+<div class="lead-in" style="margin-top: 40px; text-align: center;">
+P1.1: can we <i>read</i> degradation on real data? &nbsp;·&nbsp; P1.2: is continued learning <i>worth doing</i> at all?
+</div>
+
+## The setup, in one slide
+
+:::: {.columns .tight}
+
+::: {.column width="50%"}
+
+**Data.** BDD100K dashcam frames, one pass (~54k frames, 224 px)
+
+- **Walk:** regimes in order (time of day, weather, scene), as a car would see them
+- **IID control:** the same frames, shuffled
+
+**Backbones.** ViT-B/16, from pretrained weights
+
+- **MAE** (its own objective) and **JE**: SimSiam on MAE's weights, *a hybrid*
+- **DINO** (P1.2.5): with SimSiam, and with its own objective
+
+:::
+
+::: {.column width="50%"}
+
+**Reads.**
+
+- **Canary:** a labelled 3-class probe, the referee for "information lost"
+- **Health signals:** rank, drift, uniformity (label-free)
+- **Readout ladder** on held-out val: kNN, linear probe, few-shot
+
+**A gain** is always the adapted model against **its own start, frozen**, on the same images, with seed × image
+intervals.
+
+:::
+
+::::
+
+# [01]{.section-num} P1.1 · Can we read degradation? {#p11}
+
+## A quiet null, and a canary of known power
+
+:::: {.columns}
+
+::: {.column width="58%"}
+
+```{=html}
+<div id="ch-canary" class="chart"></div>
+<script>
+Deck.chart("ch-canary", (el) => {
+  const P = P1, C = P.C;
+  const rows = P.data("canary_power");
+  const series = [];
+  for (const [name, g] of P.groupBy(rows, (r) => `${r.backbone} · ${r.order}`)) {
+    const color = g[0].backbone === "JE" ? C.blue : C.orange;
+    series.push({
+      type: "line", name, data: g.map((r) => [r.sigma, r.dent_pts, r.fires]), symbolSize: 12,
+      lineStyle: { width: 4, color, type: g[0].order === "walk" ? "solid" : "dotted" }, itemStyle: { color },
+      tooltip: { formatter: (p) => `${name}<br>σ ${p.value[0]}<br>dent ${p.value[1].toFixed(1)} pts<br>fired on ${p.value[2]}/3 seeds` },
+    });
+  }
+  series.push(P.marks({ yRegion: { from: -3.5, to: 0, text: "~3 pts: missed" }, yLine: { y: -7, color: C.yellow, text: "6–8 pts: called" } }));
+  P.draw(el, {
+    title: P.title("Surgical damage, against its undamaged twin (3 seeds)"),
+    legend: P.legend(), grid: { left: 100, right: 30, top: 60, bottom: 150 },
+    xAxis: P.axis("Injected weight noise (σ × each tensor's SD)"),
+    yAxis: P.axis("Canary linear dent (pts)", { nameGap: 60 }),
+    series,
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="42%" .side}
+
+- From a **settled** pretrained model, a healthy drive barely moves any instrument (P1.1.0)
+- **A single-drive rule** against healthy bands: ~1 false alarm in 10 per panel (P1.1.1)
+- **The canary calls a 6–8 pt loss and misses ~3**, on both backbones
+- Walk and IID read the same; no healing within a drive
+
+:::
+
+::::
+
+## JE's compression is not collapse
+
+:::: {.columns}
+
+::: {.column width="55%"}
+
+```{=html}
+<div id="ch-compression" class="chart"></div>
+<script>
+Deck.chart("ch-compression", (el) => {
+  const P = P1, C = P.C;
+  const rows = P.data("compression_vs_collapse"), arms = P.uniq(rows.map((r) => r.arm));
+  const series = [["Projector rank", C.blue], ["Backbone rank", C.yellow]].map(([surface, color]) => ({
+    type: "bar", name: surface, barGap: "10%", barCategoryGap: "30%", itemStyle: { color, borderRadius: 3 },
+    data: arms.map((a) => {
+      const r = rows.find((x) => x.arm === a && x.surface === surface);
+      return { value: r.change_pct, start: r.start, end: r.end,
+        label: { show: true, position: r.change_pct < 0 ? "bottom" : "top", formatter: P.signed(r.change_pct, 0) + "%", color: C.text, fontSize: 20 } };
+    }),
+    tooltip: { formatter: (p) => `${surface}<br>${p.data.start} → ${p.data.end}` },
+  }));
+  series.push(P.marks({ zeroY: true }));
+  P.draw(el, {
+    title: P.title("54-step branch, 3 seeds (P1.1.1)"),
+    legend: P.legend(), grid: { left: 100, right: 30, top: 60, bottom: 120 },
+    xAxis: { type: "category", data: arms, axisLabel: { fontSize: 20, color: C.text } },
+    yAxis: P.axis("Change over the branch (%)", { min: -50, max: 8, scale: false, nameGap: 60 }),
+    series,
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="45%" .side}
+
+- The walk **compresses JE's projector**: rank falls ~20%
+- It is **benign**: undone within 10 shuffled steps, at no accuracy cost
+- **Forced collapse** also cuts the **backbone's** rank (−40%), so we read the two ranks together
+- The 3-class canary barely sees collapse (a 2.7× projector collapse costs 2–5 pts), so it is *not* JE's collapse
+    referee
+
+:::
+
+::::
+
+## A label-free MAE reader, in the middle blocks
+
+:::: {.columns}
+
+::: {.column width="58%"}
+
+```{=html}
+<div id="ch-cka" class="chart"></div>
+<script>
+Deck.chart("ch-cka", (el) => {
+  const P = P1, C = P.C;
+  const rows = P.data("cka_blocks");
+  const blocks = rows.filter((r) => r.layer !== "output"), out = rows.find((r) => r.layer === "output");
+  const ticks = blocks.map((r) => Number(r.layer));
+  const line = (key, name, color, tip) => ({
+    type: "line", name, data: blocks.map((r) => [Number(r.layer), r[key], r.seeds_separating]), symbolSize: 11,
+    lineStyle: { width: 4, color }, itemStyle: { color }, z: 3, tooltip: { formatter: tip },
+  });
+  P.draw(el, {
+    title: P.title("Phase 0's natural MAE forgetting, re-run with saved states (P1.1.3)"),
+    legend: P.legend({ data: ["Forgetting arm", "Healthy twin"] }), grid: { left: 110, right: 30, top: 60, bottom: 150 },
+    xAxis: P.axis("Transformer block", { min: 0.5, max: 14, scale: false, splitLine: { show: false },
+      axisLabel: { fontSize: 19, customValues: ticks }, axisTick: { customValues: ticks } }),
+    yAxis: P.axis("CKA drift from the certified start", { nameGap: 72 }),
+    series: [
+      line("forgetting", "Forgetting arm", C.red, (p) => `block ${p.value[0]}: ${p.value[1].toFixed(3)}<br>separates on ${p.value[2]}/5 seeds`),
+      line("healthy", "Healthy twin", C.green, (p) => `block ${p.value[0]}: ${p.value[1].toFixed(3)}`),
+      { type: "scatter", symbol: "diamond", symbolSize: 18, z: 4,
+        data: [{ value: [13.2, out.forgetting], itemStyle: { color: C.red },
+                 label: { show: true, position: "top", distance: 16, formatter: "output\n(where Phase 0\nlooked)", color: C.muted, fontSize: 17, lineHeight: 21 } },
+               { value: [13.2, out.healthy], itemStyle: { color: C.green } }],
+        tooltip: { formatter: (p) => `output: ${p.value[1].toFixed(4)}` } },
+      P.marks({ xRegion: { from: 3.5, to: 11.5, color: C.yellow, alpha: 0.08, text: "blocks 4–11: forgetting > healthy on 5/5 seeds" } }),
+    ],
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="42%" .side}
+
+- Of every candidate, only **CKA drift** (how far the representation moved from a certified start) tracks damage
+    *and* stays quiet on a harmless control (P1.1.2)
+- Natural forgetting is **invisible at the output** but clear in **blocks 4–11**: 1.4–1.8× more drift, every seed
+    (P1.1.3)
+- Read alone, without a twin, it catches **4 of 5** forgetting runs; the output catches 0
+- It is a **change detector**, not a quality reader
+
+:::
+
+::::
+
+# [02]{.section-num} P1.2 · Does continued learning beat freezing? {#p12}
+
+## Adapting beats its frozen start, by 2–4 points
+
+```{=html}
+<div id="ch-gates" class="chart tall"></div>
+<script>
+Deck.chart("ch-gates", (el) => {
+  const P = P1, C = P.C;
+  const rows = P.data("gates").map((r) => ({ ...r, row: `${r.study} · ${r.arm}` }));
+  const labels = P.uniq(rows.map((r) => r.row)).reverse();
+  const series = [];
+  for (const [task, color, dy] of [["scene", C.yellow, 0.15], ["traffic light", C.blue, -0.15]]) {
+    const g = rows.filter((r) => r.task === task), y = (r) => labels.indexOf(r.row) + dy;
+    series.push(P.whiskers(g.map((r) => [P.pts(r.delta), y(r), P.pts(r.lo), P.pts(r.hi)]), color, { horizontal: true, width: 3 }));
+    series.push({ type: "scatter", name: task, symbolSize: 16, itemStyle: { color }, z: 3,
+      data: g.map((r) => [P.pts(r.delta), y(r), r.row]),
+      tooltip: { formatter: (p) => `${p.value[2]}<br>${task}: ${P.signed(p.value[0])} pts` } });
+  }
+  series.push(P.marks({ zeroX: true }));
+  const idx = labels.map((_, i) => i);
+  P.draw(el, {
+    legend: P.legend({ top: 0, bottom: null, data: ["scene", "traffic light"] }), grid: { left: 520, right: 40, top: 50, bottom: 80 },
+    xAxis: P.axis("Linear-probe gain over its own frozen start (pts, 95% interval)"),
+    yAxis: { type: "value", min: -0.6, max: labels.length - 0.5, splitLine: { show: false },
+      axisLabel: { customValues: idx, formatter: (v) => labels[v] ?? "", fontSize: 19, color: C.text }, axisTick: { customValues: idx } },
+    series,
+  });
+});
+</script>
+```
+
+::: {.caption .side}
+JE passes every time it is tested. **MAE never gains** from its pretrained start, even repaired (a No-Go, P1.2.2).
+SimSiam on DINO passes too, **+4.4 on scene at the rate a 3-seed grid chose** (G); **DINO's own objective does not clear
+zero**. Without the fine-tuning protections both JE starts still pass. Linear rung shown for every arm.
+:::
+
+## Through the drive: linear holds, kNN rises and falls
+
+:::: {.columns}
+
+::: {.column width="62%"}
+
+```{=html}
+<div id="ch-curve" class="chart"></div>
+<script>
+Deck.chart("ch-curve", (el) => {
+  const P = P1, C = P.C;
+  const rows = P.data("curve");
+  const { grid, title } = P.panels(2, { width: el.clientWidth, top: 110, bottom: 150, left: 100, titles: ["scene · linear", "scene · kNN"] });
+  const ys = rows.flatMap((r) => [r.lo, r.hi]).map(P.pts), yr = P.nice(Math.min(...ys), Math.max(...ys));
+  const series = [];
+  ["linear", "knn"].forEach((rung, i) => {
+    const idx = { xAxisIndex: i, yAxisIndex: i };
+    for (const [arm, g] of P.groupBy(rows.filter((r) => r.rung === rung), (r) => r.arm)) {
+      const xs = g.map((r) => r.frames / 1000), color = P.ARM[arm];
+      series.push(P.band(xs, g.map((r) => P.pts(r.lo)), g.map((r) => P.pts(r.hi)), color, idx));
+      series.push({ type: "line", name: arm, ...idx, data: g.map((r) => [r.frames / 1000, P.pts(r.delta)]), symbolSize: 10, z: 3,
+        lineStyle: { width: 4, color }, itemStyle: { color },
+        tooltip: { formatter: (p) => `${arm}<br>${p.value[0].toFixed(1)}k frames: ${P.signed(p.value[1])} pts` } });
+    }
+    series.push(P.marks({ ...idx, zeroY: true, xRegion: { from: 29.6, to: 54.5, text: "stream at night" } }));
+  });
+  P.draw(el, {
+    title: [P.title("Scene, 5 seeds, 95% intervals (P1.2.5)"), ...title], grid,
+    legend: P.legend({ data: P.uniq(rows.map((r) => r.arm)) }),
+    xAxis: grid.map((_, i) => P.axis("frames seen (k)", { gridIndex: i, min: 0, max: 55, scale: false })),
+    yAxis: grid.map((_, i) => P.axis(i ? "" : "gain over frozen start (pts)", { gridIndex: i, ...yr, scale: false, nameGap: 56,
+      axisLabel: { show: i === 0, fontSize: 19 } })),
+    series,
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="38%" .side}
+
+- **Linear** pays by ~13k frames, peaks mid-drive and **holds** to the end
+- **kNN** (what the selection filter uses) gains **from the first checkpoint** on both SimSiam-objective arms, ~2–3 pts,
+    then **gives it back** in the second half
+- The end read alone said "no kNN gain"; P1.2.1's drives show the same rise and fall
+- **DINO's own objective** is the mirror image: kNN builds all the way, linear stays flat
+- Verdicts read the end, as pre-registered, so none changes. **P1.3 reads every rung through the drive**
+
+:::
+
+::::
+
+## How broadly? Narrow, and on small objects
+
+:::: {.columns}
+
+::: {.column width="40%"}
+
+```{=html}
+<div id="ch-breadth" class="chart short"></div>
+<script>
+Deck.chart("ch-breadth", (el) => {
+  const P = P1, C = P.C;
+  const rows = P.data("breadth").filter((r) => r.rung === "linear");
+  const tasks = P.uniq(rows.map((r) => r.task)), arms = P.uniq(rows.map((r) => r.arm)).sort();
+  const series = [];
+  arms.forEach((arm, k) => {
+    const g = tasks.map((t) => rows.find((r) => r.arm === arm && r.task === t));
+    series.push({ type: "bar", name: arm, barGap: "10%", barCategoryGap: "30%", itemStyle: { color: P.ARM[arm], borderRadius: 3 },
+      data: g.map((r) => P.pts(r.delta)), tooltip: { formatter: (p) => `${arm}<br>${p.name}: ${P.signed(p.value)} pts` } });
+    series.push(P.barWhiskers(g.map((r, j) => [j, P.pts(r.delta), P.pts(r.lo), P.pts(r.hi)]), k, arms.length));
+  });
+  series.push(P.marks({ zeroY: true }));
+  P.draw(el, {
+    title: P.title("The pre-registered panel (C)"),
+    legend: P.legend({ data: arms }), grid: { left: 90, right: 20, top: 60, bottom: 130 },
+    xAxis: { type: "category", data: tasks, axisLabel: { fontSize: 19, color: C.text } },
+    yAxis: P.axis("linear gain at the end (pts)", { nameGap: 52 }),
+    series,
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="60%"}
+
+```{=html}
+<div id="ch-sizes" class="chart short"></div>
+<script>
+Deck.chart("ch-sizes", (el) => {
+  const P = P1, C = P.C;
+  const rows = P.data("sizes"), order = ["under 1 patch", "1–4 patches", "4+ patches"];
+  const drives = ["SimSiam (DINO-init)", "JE (MAE-init)", "JE (MAE-init), P1.2.1 recipe", "MAE"];
+  const { grid, title } = P.panels(2, { width: el.clientWidth, top: 100, bottom: 150, left: 90, titles: ["linear", "kNN"] });
+  title.unshift(P.title("Gain by the object's size, 15 tasks (F1, exploratory)"));
+  const mean = (g) => g.reduce((s, r) => s + r.delta, 0) / g.length;
+  const series = [];
+  let lo = 0, hi = 0;
+  ["linear", "knn"].forEach((rung, i) => {
+    const idx = { xAxisIndex: i, yAxisIndex: i };
+    for (const drive of drives) {
+      const data = order.map((size) => {
+        const g = rows.filter((r) => r.drive === drive && r.rung === rung && r.size === size);
+        const v = P.pts(mean(g));
+        lo = Math.min(lo, v); hi = Math.max(hi, v);
+        return { value: v, n: g.length };
+      });
+      series.push({ type: "bar", name: drive, ...idx, barGap: "8%", barCategoryGap: "25%", data, itemStyle: { color: P.ARM[drive], borderRadius: 2 },
+        tooltip: { formatter: (p) => `${drive}<br>${p.name}: ${P.signed(p.value)} pts (mean of ${p.data.n} tasks)` } });
+    }
+    series.push(P.marks({ ...idx, zeroY: true }));
+  });
+  P.draw(el, {
+    title, grid, legend: P.legend({ data: drives }),
+    xAxis: grid.map((_, i) => ({ type: "category", gridIndex: i, data: order, axisLabel: { fontSize: 18, color: C.text } })),
+    yAxis: grid.map((_, i) => P.axis(i ? "" : "mean gain at the end (pts)", { gridIndex: i, scale: false, nameGap: 52,
+      ...P.nice(lo, hi), axisLabel: { show: i === 0, fontSize: 19 } })),
+    series,
+  });
+});
+</script>
+```
+
+:::
+
+::::
+
+::: {.caption .side}
+SimSiam on DINO gains on **1 of 4** panel tasks and **0 of 15** size tasks (at lr 9e-5: 0 of 4, 1 of 15; three panel
+tasks gain 1–2 pts, below the ~2 pts the panel resolves). MAE-init JE gains on **objects smaller than one patch** (pedestrian, truck, bus: ~+4 pts), the same on both of its drives; its kNN gains sit on large objects. How
+often an object appears in the stream does not predict a gain.
+:::
+
+## By regime: the gain carries forward and holds
+
+:::: {.columns}
+
+::: {.column width="62%"}
+
+```{=html}
+<div id="ch-regime" class="chart"></div>
+<script>
+Deck.chart("ch-regime", (el) => {
+  const P = P1, C = P.C;
+  const rows = P.data("regime_curve");
+  const { grid, title } = P.panels(2, { width: el.clientWidth, top: 110, bottom: 170, left: 100, titles: ["scene · linear", "scene · kNN"] });
+  title.unshift(P.title("Val's daytime and night frames, read separately (F2, exploratory)"));
+  const series = [], names = [];
+  let lo = 0, hi = 0;
+  ["linear", "knn"].forEach((rung, i) => {
+    const idx = { xAxisIndex: i, yAxisIndex: i };
+    for (const [key, g] of P.groupBy(rows.filter((r) => r.rung === rung), (r) => `${r.arm} · ${r.slice} frames`)) {
+      const color = P.ARM[g[0].arm];
+      if (!names.includes(key)) names.push(key);
+      for (const r of g) { lo = Math.min(lo, P.pts(r.delta)); hi = Math.max(hi, P.pts(r.delta)); }
+      series.push({ type: "line", name: key, ...idx, symbolSize: 10, z: 3, itemStyle: { color },
+        lineStyle: { width: 4, color, type: g[0].slice === "daytime" ? "solid" : "dotted" },
+        data: g.map((r) => [r.step, P.pts(r.delta), P.pts(r.lo), P.pts(r.hi)]),
+        tooltip: { formatter: (p) => `${key}<br>step ${p.value[0]}: ${P.signed(p.value[1])} pts [${P.signed(p.value[2])}, ${P.signed(p.value[3])}]` } });
+    }
+    series.push(P.marks({ ...idx, zeroY: true, xRegion: { from: 925, to: 1700, text: "stream at night" } }));
+  });
+  P.draw(el, {
+    title, grid, legend: P.legend({ data: names, width: "90%" }),
+    xAxis: grid.map((_, i) => P.axis("step", { gridIndex: i, min: 0, max: 1750, scale: false })),
+    yAxis: grid.map((_, i) => P.axis(i ? "" : "gain over frozen start (pts)", { gridIndex: i, scale: false, nameGap: 56,
+      ...P.nice(lo, hi + 1), axisLabel: { show: i === 0, fontSize: 19 } })),
+    series,
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="38%" .side}
+
+- **Night frames gain before the stream reaches night** (MAE-init JE's night kNN: +4 pts at step 423, still in
+    daytime); daytime frames keep their gain after it leaves
+- No regime-local gain-then-loss on the linear rung
+- The **kNN erosion is not regime-local** either: both slices lose it late
+- Weather windows are too small to read (150–250 frames each)
+
+:::
+
+::::
+
+## BDD-specific, but the frozen floors still lead on kNN
+
+:::: {.columns}
+
+::: {.column width="52%"}
+
+```{=html}
+<div id="ch-attribution" class="chart mid"></div>
+<script>
+Deck.chart("ch-attribution", (el) => {
+  const P = P1, C = P.C;
+  const rows = P.data("attribution").map((r) => ({ ...r, row: `${r.arm} − ${r.control}` }));
+  const labels = P.uniq(rows.map((r) => r.row)).reverse();
+  const series = [];
+  for (const [task, color, dy] of [["scene", C.yellow, 0.15], ["traffic light", C.blue, -0.15]]) {
+    const g = rows.filter((r) => r.task === task), y = (r) => labels.indexOf(r.row) + dy;
+    series.push(P.whiskers(g.map((r) => [P.pts(r.delta), y(r), P.pts(r.lo), P.pts(r.hi)]), color, { horizontal: true, width: 3 }));
+    series.push({ type: "scatter", name: task, symbolSize: 15, itemStyle: { color }, z: 3,
+      data: g.map((r) => [P.pts(r.delta), y(r), r.row]),
+      tooltip: { formatter: (p) => `${p.value[2]}<br>${task}: ${P.signed(p.value[0])} pts` } });
+  }
+  series.push(P.marks({ zeroX: true }));
+  const idx = labels.map((_, i) => i);
+  P.draw(el, {
+    title: P.title("BDD gain minus the gain from COCO / Places365"),
+    legend: P.legend({ data: ["scene", "traffic light"] }), grid: { left: 270, right: 30, top: 60, bottom: 140 },
+    xAxis: P.axis("BDD gain minus generic-image gain (pts)"),
+    yAxis: { type: "value", min: -0.6, max: labels.length - 0.4, splitLine: { show: false },
+      axisLabel: { customValues: idx, formatter: (v) => (labels[v] ?? "").replace(" − ", "\nvs "), fontSize: 18, color: C.text, lineHeight: 22 },
+      axisTick: { customValues: idx } },
+    series,
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="48%"}
+
+```{=html}
+<div id="ch-floors" class="chart mid"></div>
+<script>
+Deck.chart("ch-floors", (el) => {
+  const P = P1, C = P.C;
+  const rows = P.data("floors");
+  P.draw(el, {
+    title: P.title("Frozen (grey) vs adapted (yellow), scene, end of drive"),
+    legend: P.legend({ data: ["linear", "kNN"] }), grid: { left: 90, right: 20, top: 60, bottom: 190 },
+    xAxis: { type: "category", data: rows.map((r) => r.encoder), axisLabel: { fontSize: 18, color: C.text, rotate: 20 } },
+    yAxis: P.axis("scene, balanced accuracy (%)", { min: 50, max: 70, scale: false, nameGap: 52 }),
+    series: [
+      { type: "bar", name: "linear", barWidth: "55%", itemStyle: { color: C.yellow, borderRadius: 3 },
+        data: rows.map((r) => ({ value: P.pts(r.scene_linear), itemStyle: { color: r.kind === "adapted" ? C.yellow : C.muted } })),
+        label: { show: true, position: "top", formatter: (p) => p.value.toFixed(1), color: C.text, fontSize: 19 },
+        tooltip: { formatter: (p) => `${p.name}: ${p.value.toFixed(1)} (linear)` } },
+      { type: "scatter", name: "kNN", symbol: "diamond", symbolSize: 20, itemStyle: { color: C.blue }, z: 3,
+        data: rows.map((r) => P.pts(r.scene_knn)), tooltip: { formatter: (p) => `${p.name}: ${p.value.toFixed(1)} (kNN)` } },
+    ],
+  });
+});
+</script>
+```
+
+:::
+
+::::
+
+::: {.side}
+**SimSiam on DINO is BDD-specific** against both controls, at both rates. **MAE-init JE reads MIXED with the
+protections** (road-free scenes reproduce its scene gain) and **BDD-specific without them**, as in P1.2.4. Adapted
+models edge past frozen DINO on the linear probe; on kNN at the end of the drive, the frozen supervised ViT-B still
+leads.
+:::
+
+## DINO's own objective: a flattened target on BDD
+
+:::: {.columns}
+
+::: {.column width="58%"}
+
+```{=html}
+<div id="ch-dino-lr" class="chart short"></div>
+<script>
+Deck.chart("ch-dino-lr", (el) => {
+  const P = P1, C = P.C;
+  const rows = P.data("dino_lr"), colors = { "9e-5": C.green, "3e-4": C.orange, "1e-3": C.red };
+  const keys = [["projector_rank", "projector rank"], ["backbone_rank", "backbone rank"], ["canary_knn", "canary kNN"]];
+  const { grid, title } = P.panels(3, { width: el.clientWidth, top: 110, bottom: 130, left: 80, gap: 90, titles: keys.map((k) => k[1]) });
+  title.unshift(P.title("DINO-init DINO, unswitched, first 600 steps"));
+  const series = [];
+  keys.forEach(([key], i) => {
+    for (const [lr, g] of P.groupBy(rows, (r) => r.lr)) {
+      series.push({ type: "line", name: `lr ${lr}`, xAxisIndex: i, yAxisIndex: i, showSymbol: false,
+        lineStyle: { width: 4, color: colors[lr] }, itemStyle: { color: colors[lr] },
+        data: g.map((r) => [r.step, r[key]]),
+        tooltip: { formatter: (p) => `lr ${lr}<br>step ${p.value[0]}: ${Number(p.value[1]).toPrecision(3)}` } });
+    }
+  });
+  P.draw(el, {
+    title, grid, legend: P.legend(),
+    xAxis: grid.map((_, i) => P.axis("step", { gridIndex: i, min: 0, scale: false })),
+    yAxis: grid.map((_, i) => P.axis("", { gridIndex: i })),
+    series,
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="42%" .side}
+
+- DINO's **centring flattens its target on BDD**: 10.7 of a possible 11.1 nats, against 3.3–5.2 on ImageNet-like,
+    COCO and Places images. BDD frames look ~4× as alike to DINO
+- At 1e-3 the objective **collapses on its own**, and rank and kNN all see it; its collapse control did not fire as
+    pre-registered
+- Read anyway, as corroboration: **no linear gain**, but gains on **kNN** (+3.5 scene) and **fine-tuning** (+4.9
+    scene, 10-shot)
+- It is the **objective, not the features**: frozen DINO is our best frozen start. Literature agrees (S3PT, WACV 2025)
+- So P1.3 carries **SimSiam on DINO**, not DINO's objective
+
+:::
+
+::::
+
+## The fine-tuning protections guard the geometry, not the gain
+
+:::: {.columns}
+
+::: {.column width="62%"}
+
+```{=html}
+<div id="ch-protections" class="chart mid"></div>
+<script>
+Deck.chart("ch-protections", (el) => {
+  const P = P1, C = P.C;
+  const rows = P.data("protections"), arms = ["SimSiam (DINO-init)", "JE (MAE-init)"];
+  const style = { linear: [C.yellow, "linear"], knn: [C.blue, "kNN"], ft100: [C.green, "100-shot fine-tune (end)"] };
+  const star = "path://M50,0 L61,35 L98,35 L68,57 L79,91 L50,70 L21,91 L32,57 L2,35 L39,35 Z";
+  const { grid, title } = P.panels(2, { width: el.clientWidth, top: 60, bottom: 130, left: 100, titles: arms });
+  const ys = rows.flatMap((r) => [r.lo, r.hi]).map(P.pts), yr = P.nice(Math.min(...ys), Math.max(...ys));
+  const series = [];
+  arms.forEach((arm, i) => {
+    const idx = { xAxisIndex: i, yAxisIndex: i };
+    for (const [rung, [color, name]] of Object.entries(style)) {
+      const g = rows.filter((r) => r.arm === arm && r.rung === rung), x = (r) => r.frames / 1000;
+      series.push(P.whiskers(g.map((r) => [x(r), P.pts(r.delta), P.pts(r.lo), P.pts(r.hi)]), color, { ...idx, width: 2, cap: 5 }));
+      series.push({ type: rung === "ft100" ? "scatter" : "line", name, ...idx, z: 3,
+        symbol: rung === "ft100" ? star : "circle", symbolSize: rung === "ft100" ? 26 : 12,
+        lineStyle: { width: 4, color }, itemStyle: { color },
+        data: g.map((r) => [x(r), P.pts(r.delta)]),
+        tooltip: { formatter: (p) => `${name}<br>${p.value[0].toFixed(1)}k frames: ${P.signed(p.value[1])} pts` } });
+    }
+    series.push(P.marks({ ...idx, zeroY: true }));
+  });
+  P.draw(el, {
+    title, grid, legend: P.legend({ data: Object.values(style).map((s) => s[1]) }),
+    xAxis: grid.map((_, i) => P.axis("frames seen (k)", { gridIndex: i, min: 0, max: 55, scale: false })),
+    yAxis: grid.map((_, i) => P.axis(i ? "" : "protected − unprotected, scene (pts)", { gridIndex: i, ...yr, scale: false,
+      nameGap: 56, axisLabel: { show: i === 0, fontSize: 19 } })),
+    series,
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="38%" .side}
+
+- With and without the protections, both at lr 3e-5 (Part G): the **linear gain is the same**
+- What they keep is **kNN** (+10.6 pts on DINO-init at the end) and **fine-tuning** (+5.9)
+- A rate chosen on linear alone **spends the rest**: lr 9e-5 doubles the scene gain, and costs 5.5 pts kNN
+- Without them, DINO-init gains on **3 small-object tasks** (exploratory), at a kNN loss on 6
+- So P1.3 chooses recipes **on more than one rung, and more than one seed**: quality on linear and fine-tuning, kNN as a
+    constraint
+
+:::
+
+::::
+
+## What we can trust, and what we can't (yet)
+
+:::: {.columns}
+
+::: {.column width="48%"}
+
+<div class="card green">
+<h3 style="color: #4CAF50;">Trust</h3>
+
+- A healthy drive is quiet; a single-drive rule at ~1 false alarm in 10
+- The canary calls a 6–8 pt loss, walk or IID
+- JE's walk compression is benign
+- Adapting **beats its frozen start** on SimSiam-objective backbones, strong start included; on DINO the gain is
+    **BDD-specific**
+- MAE-init JE's linear gain **on small objects**, on both of its drives
+- Within a pass, the linear gain **carries across regimes and holds**
+- MAE does **not** gain from one pass from its pretrained start
+
+</div>
+
+:::
+
+::: {.column width="4%"}
+:::
+
+::: {.column width="48%"}
+
+<div class="card red">
+<h3 style="color: #E63946;">Not yet</h3>
+
+- **Breadth:** 2–4 pts, firm on the gate tasks but on 0–2 of 4 panel tasks, so the claim is **Qualified**; a close
+    call, as a seed-only test counts 3 of 4 on DINO-init at lr 9e-5. Those gains sit below what the panel resolves:
+    open, not ruled out
+- **Geometry:** kNN gains early and **erodes late**; SimSiam on DINO *loses* 17–20 pts kNN on weather
+- **Recipe:** chosen on the linear rung, it spends kNN and fine-tuning unseen
+- **Below the ruler:** val reads resolve 2 pts; the live canary needs 6–8 on one drive
+- **Readers** have not met a natural failure on BDD
+- One pass, a fixed domain, 224 px
+
+</div>
+
+:::
+
+::::
+
+## P1.2 closes; P1.3 opens
+
+:::: {.columns}
+
+::: {.column width="52%" .side}
+
+**P1.2: Qualified.** Adapting on in-domain data beats a strong frozen start: firm on the gate tasks, narrow beyond
+them
+
+**P1.3: stability vs plasticity, three equal arms**
+
+- SimSiam on DINO, the MAE-init hybrid, and MAE, over a **longer horizon**; choose only after
+- Forgetting on JE; plasticity and horizon on MAE; tracking on all
+- **Every rung read through the drive**, dense checkpoints, Part F's panel fixed in advance, and a **larger held-out
+    pool** to settle breadth
+- **kNN is not a quality gate:** it is the filter's input (does **selection** get worse?), and a forgetting warning when
+    fine-tuning drops with it
+- Recipe tuning moves here; **adapt once, then freeze** is the control continuous learning must beat
+
+:::
+
+::: {.column width="48%"}
+
+<div class="card">
+<h3 style="color: #FECB00;">For discussion</h3>
+
+The loop exists to *protect what adaptation adds*. So far that is **2–4 points**, at or below what our monitor can see
+on one drive, and its kNN part does not last the pass.
+
+Is that enough to build on, or does Phase 1 lean toward **selection for efficiency** on a strong frozen backbone?
+
+</div>
+
+:::
+
+::::
