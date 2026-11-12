@@ -411,13 +411,14 @@ def fine_tune_predict(
     """Fine-tune a *copy* of ``encoder`` with a fresh linear head; return its predictions on the query.
 
     Batches are drawn class-balanced with replacement (so a 10-shot set and a 1,500-per-class set run
-    the same step count), each image flipped horizontally with probability ½. The encoder passed in is
-    never modified.
+    the same step count), each image flipped horizontally with probability ½. The copy is always fully
+    trainable, even if ``encoder`` arrives frozen; the encoder passed in is never modified.
     """
     generator = torch.Generator().manual_seed(seed)
     torch.manual_seed(seed)  # the head's init
     num_classes = int(train_labels.max()) + 1
     model = _Classifier(copy.deepcopy(encoder), num_classes).to(device)
+    model.requires_grad_(True)  # a method may hand over a frozen encoder (DINO's moving-average teacher)
     model.train()
     optimizer = torch.optim.AdamW(
         [
@@ -480,6 +481,7 @@ def fine_tune_patch_predict(
     generator = torch.Generator().manual_seed(seed)
     torch.manual_seed(seed)  # the head's init
     model = _PatchClassifier(copy.deepcopy(encoder), 2).to(device)
+    model.requires_grad_(True)
     model.train()
     optimizer = torch.optim.AdamW(
         [

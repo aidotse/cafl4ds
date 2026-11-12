@@ -10,6 +10,7 @@
 #   card1 (card 1): G3's re-read of DINO-init DINO and DINO-init SimSiam (the fine-tune rungs at every checkpoint), then
 #          G2 — MAE-init JE without the protections under P1.2.5's conditions: the walk x seeds 1-5 with the checkpoints,
 #          BDD IID x 5, COCO x 3, Places365 x 5, and its val ladders.
+#   dinoft (card 1): DINO-init DINO's fine-tune rungs re-read after the frozen-teacher fix (see the function).
 #   analyze (host): analyze_adaptation mode=p125g -> outputs/p125/partG.json.
 # "Without the protections" is P1.2.1's recipe: no layer-wise decay, weight decay on every parameter (the harness's
 # defaults). Drives write to the project share, linked from outputs/p125/partG.
@@ -175,6 +176,36 @@ card1() {
     'seeds=[1,2,3,4,5]'
   controls 1 mae_je_np $WM "$MAE" "$NOPROT optim.lr=3e-5"
   ladders 1 mae_je_np "- {name: floor, kind: well, path: $WM}" 3e-5 partG/drive/mae_je_np_walk yes $MAE
+}
+
+dinoft() {  # card 1: DINO-init DINO's fine-tune rungs again, after the fix that trains the encoder in every fine-tune
+  # (a DINO checkpoint's teacher is loaded with its grads off, so the first read trained the head alone); the first
+  # read is kept beside it as ladder_ft/dino_dino_headonly
+  [ -d $OUT/ladder_ft/dino_dino_headonly ] || mv $OUT/ladder_ft/dino_dino $OUT/ladder_ft/dino_dino_headonly
+  reread 1 dino_dino 1e-5 encoder=vit_b16_dino backbone=dino
+  # the corrected fine-tune rungs replace the walk ends' in ladder/dino_dino (the first read kept in ladder_headonly/);
+  # the floor and every frozen rung must match exactly. Then re-run analyze_adaptation mode=p125.
+  uv run python - "$OUT" <<'EOF'
+import json, shutil, sys
+from pathlib import Path
+import numpy as np
+root = Path(sys.argv[1])
+src, fix, keep = root / "ladder/dino_dino", root / "ladder_ft/dino_dino", root / "ladder_headonly/dino_dino"
+if not keep.exists():
+    shutil.copytree(src, keep, symlinks=True)
+summary = json.loads((keep / "summary.json").read_text())
+fixed = json.loads((fix / "summary.json").read_text())["encoders"]
+for name in ["floor", *[f"walk_s{s}_end" for s in range(5)]]:
+    old, new = dict(np.load(keep / f"{name}.npz")), np.load(fix / f"{name}.npz")
+    for key in new.files:
+        if "|ft" in key and name != "floor":
+            old[key] = new[key]
+            summary["encoders"][name]["bacc"][key] = fixed[name]["bacc"][key]
+        else:
+            assert np.array_equal(old[key], new[key]), (name, key)
+    np.savez(src / f"{name}.npz", **old)
+(src / "summary.json").write_text(json.dumps(summary, indent=2))
+EOF
 }
 
 analyze() {  # host: every Part G ladder present
