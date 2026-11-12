@@ -74,6 +74,7 @@ nav:
       - P1.1.1: experiments/latest-results/P1.1.1.md
       - P1.1.2: experiments/latest-results/P1.1.2.md
       - P1.1.3: experiments/latest-results/P1.1.3.md
+      - P1.1.4: experiments/latest-results/P1.1.4.md
       - P1.2: experiments/latest-results/P1.2.md
       - P1.2.0: experiments/latest-results/P1.2.0.md
       - P1.2.1: experiments/latest-results/P1.2.1.md
@@ -119,6 +120,7 @@ nav:
       - P1.1.1 Reading degradation (reading protocol - degradation vs. benign reorganization): experiments/phase1/P1.1.1.md
       - P1.1.2 Reading degradation (candidate label-free lenses - layer-wise CKA + intrinsic dimension): experiments/phase1/P1.1.2.md
       - P1.1.3 Reading degradation (CKA drift deep dive - information loss vs benign adaptation): experiments/phase1/P1.1.3.md
+      - P1.1.4 Reading degradation (the reading foundation for P1.3's setup): experiments/phase1/P1.1.4.md
       - P1.2.0 Adapt vs frozen (the readout ladder and the frozen floor): experiments/phase1/P1.2.0.md
       - P1.2.1 Adapt vs frozen (the gate read - online adaptation over one long pass): experiments/phase1/P1.2.1.md
       - P1.2.2 Adapt vs frozen (why adapting MAE loses - a recipe diagnosis): experiments/phase1/P1.2.2.md
@@ -132,6 +134,7 @@ nav:
       - P0.5 (representation degradation mode): experiments/audits/P0.5.md
       - P0.6 (forgetting mode on JE): experiments/audits/P0.6.md
       - P1.0 (open-loop harness engineering): experiments/audits/P1.0.md
+      - P1.1 (learning to read degradation): experiments/audits/P1.1.md
 
   - Slides:
       - P1.1 / P1.2 update: https://aidotse.github.io/cafl4ds/slides/p1-findings/
