@@ -5,6 +5,17 @@ All notable changes to this project are documented in this file.
 This file is managed by [Commitizen](https://commitizen-tools.github.io/commitizen/) and is updated automatically on
 each `poe bump` (driven by [Conventional Commits](https://www.conventionalcommits.org/)). Do not edit it by hand.
 
+## v0.33.0 (2026-11-13)
+
+### Feat
+
+- promote the Phase 0 traces the deck reads into the P0 artifacts
+- Phase 0 findings slide deck, published with the docs
+
+### Fix
+
+- give the P0 deck's data script its own module name for mypy
+
 ## v0.32.0 (2026-11-12)
 
 ### Feat
