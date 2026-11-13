@@ -1,0 +1,176 @@
+{
+  "what": "The correlated walk's regime map: one full pass of BDD train in (time of day, weather) order. start/end steps are checkpoint-granular (every 25 steps); n_images is each regime's frame count.",
+  "source": "outputs/p125/drive/<arm>/corpus/segments.json (era_index / checkpoint fields and category_hist dropped)",
+  "check": "identical regime names and frame counts across all 9 P1.2.5 walk corpora; 13 regimes, 53485 frames",
+  "segments": [
+    {
+      "regime": "daytime\u00b7clear",
+      "time_of_day": "daytime",
+      "weather": "clear",
+      "start_step": 0,
+      "end_step": 325,
+      "n_images": 10865,
+      "scene_hist": {
+        "city street": 6093,
+        "highway": 3117,
+        "residential": 1655
+      }
+    },
+    {
+      "regime": "daytime\u00b7partly cloudy",
+      "time_of_day": "daytime",
+      "weather": "partly cloudy",
+      "start_step": 350,
+      "end_step": 450,
+      "n_images": 3772,
+      "scene_hist": {
+        "city street": 2042,
+        "highway": 1305,
+        "residential": 425
+      }
+    },
+    {
+      "regime": "daytime\u00b7overcast",
+      "time_of_day": "daytime",
+      "weather": "overcast",
+      "start_step": 475,
+      "end_step": 650,
+      "n_images": 6650,
+      "scene_hist": {
+        "city street": 4042,
+        "highway": 1708,
+        "residential": 900
+      }
+    },
+    {
+      "regime": "daytime\u00b7rainy",
+      "time_of_day": "daytime",
+      "weather": "rainy",
+      "start_step": 675,
+      "end_step": 725,
+      "n_images": 2229,
+      "scene_hist": {
+        "city street": 1503,
+        "highway": 479,
+        "residential": 247
+      }
+    },
+    {
+      "regime": "daytime\u00b7snowy",
+      "time_of_day": "daytime",
+      "weather": "snowy",
+      "start_step": 750,
+      "end_step": 800,
+      "n_images": 2499,
+      "scene_hist": {
+        "city street": 1751,
+        "highway": 385,
+        "residential": 363
+      }
+    },
+    {
+      "regime": "dawn/dusk\u00b7clear",
+      "time_of_day": "dawn/dusk",
+      "weather": "clear",
+      "start_step": 825,
+      "end_step": 850,
+      "n_images": 1551,
+      "scene_hist": {
+        "city street": 900,
+        "highway": 521,
+        "residential": 130
+      }
+    },
+    {
+      "regime": "dawn/dusk\u00b7partly cloudy",
+      "time_of_day": "dawn/dusk",
+      "weather": "partly cloudy",
+      "start_step": 875,
+      "end_step": 875,
+      "n_images": 448,
+      "scene_hist": {
+        "city street": 266,
+        "highway": 155,
+        "residential": 27
+      }
+    },
+    {
+      "regime": "dawn/dusk\u00b7overcast",
+      "time_of_day": "dawn/dusk",
+      "weather": "overcast",
+      "start_step": 900,
+      "end_step": 900,
+      "n_images": 885,
+      "scene_hist": {
+        "city street": 572,
+        "highway": 252,
+        "residential": 61
+      }
+    },
+    {
+      "regime": "dawn/dusk\u00b7snowy",
+      "time_of_day": "dawn/dusk",
+      "weather": "snowy",
+      "start_step": 925,
+      "end_step": 925,
+      "n_images": 332,
+      "scene_hist": {
+        "city street": 260,
+        "highway": 39,
+        "residential": 33
+      }
+    },
+    {
+      "regime": "night\u00b7clear",
+      "time_of_day": "night",
+      "weather": "clear",
+      "start_step": 950,
+      "end_step": 1550,
+      "n_images": 20253,
+      "scene_hist": {
+        "city street": 13850,
+        "highway": 5373,
+        "residential": 1030
+      }
+    },
+    {
+      "regime": "night\u00b7rainy",
+      "time_of_day": "night",
+      "weather": "rainy",
+      "start_step": 1575,
+      "end_step": 1625,
+      "n_images": 1940,
+      "scene_hist": {
+        "city street": 1424,
+        "highway": 425,
+        "residential": 91
+      }
+    },
+    {
+      "regime": "night\u00b7snowy",
+      "time_of_day": "night",
+      "weather": "snowy",
+      "start_step": 1650,
+      "end_step": 1675,
+      "n_images": 2001,
+      "scene_hist": {
+        "city street": 1628,
+        "highway": 197,
+        "residential": 176
+      }
+    },
+    {
+      "regime": "night\u00b7foggy",
+      "time_of_day": "night",
+      "weather": "foggy",
+      "start_step": 1691,
+      "end_step": 1691,
+      "n_images": 60,
+      "scene_hist": {
+        "city street": 41,
+        "highway": 12,
+        "residential": 7
+      }
+    }
+  ]
+}

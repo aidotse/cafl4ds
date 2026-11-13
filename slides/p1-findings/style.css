@@ -1188,4 +1188,20 @@ body.reveal-viewport {
 .reveal .p0table td { padding: 14px 18px; vertical-align: top; border-bottom: 1px solid var(--line); }
 .reveal .p0table td:first-child { width: 46%; }
 .portrait .reveal .p0table table { font-size: 0.56em; }
+
+/* Audit state: a badge on section slides, and coloured text in the slide footers */
+.reveal .audit { color: var(--muted); }
+.reveal .audit.closed { color: var(--green); }
+.reveal .audit.open { color: var(--orange); }
+.reveal .audit.none { color: #c9d1d9; }
+.reveal .section-badge {
+  display: inline-block; margin-top: 50px; padding: 12px 26px; font-size: 0.62em;
+  border: 2px solid currentColor; border-radius: 10px;
+}
+.reveal .footer .audit { font-weight: bold; }
+
+/* The exit-gate legs beside the status chart */
+.reveal .legs li { margin-bottom: 16px; }
+.reveal .legs .leg-pass { color: var(--green); font-weight: bold; }
+.reveal .legs .leg-open { color: var(--muted); font-weight: bold; }
 .portrait .reveal .card { font-size: 0.68em; height: auto; }

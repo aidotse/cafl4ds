@@ -1,6 +1,6 @@
-/* Chart helpers for the P1.1 / P1.2 deck, on top of the template's Deck.echarts().
+/* Chart helpers for the Phase 1 deck, on top of the template's Deck.echarts().
 
-   Every chart reads window.DeckData (assets/data.js, written by make_data.py) and is
+   Every chart reads window.DeckData (assets/data.js, written by make_p1_data.py) and is
    registered with Deck.chart(id, el => ...) in index.qmd, so it is drawn the first time
    its slide is shown. Values in DeckData are fractions; charts show points (x 100).
 
@@ -152,6 +152,23 @@
 
   /* Common option scaffolding: item tooltips, no entry animation surprises. */
   P.draw = (el, option) => Deck.echarts(el, { tooltip: { trigger: "item" }, ...option });
+
+  /* A study's audit state, from the status table (parsed from the audits by make_p1_data.py). */
+  P.audit = (study) => {
+    const r = window.DeckData.status.find((x) => x.study === study);
+    if (!r || r.audit === "none") return { cls: "none", text: "Not yet audited" };
+    if (r.audit === "closed") return { cls: "closed", text: "Audited · every point worked" };
+    return { cls: "open", text: `Audited · ${r.pending} of ${r.findings} points open, remediation proposed` };
+  };
+
+  /* Fill every <span class="audit" data-study="P1.x"> (section badges, footers) from the status table. */
+  document.addEventListener("DOMContentLoaded", () => {
+    for (const el of document.querySelectorAll(".audit[data-study]")) {
+      const a = P.audit(el.dataset.study);
+      el.classList.add(a.cls);
+      el.textContent = a.text;
+    }
+  });
 
   window.P1 = P;
 })();

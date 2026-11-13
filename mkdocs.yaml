@@ -138,7 +138,7 @@ nav:
 
   - Slides:
       - Phase 0 findings: https://aidotse.github.io/cafl4ds/slides/p0-findings/
-      - P1.1 / P1.2 update: https://aidotse.github.io/cafl4ds/slides/p1-findings/
+      - Phase 1 findings: https://aidotse.github.io/cafl4ds/slides/p1-findings/
 
   - API Reference: reference.md
   - Tests: exported/pytest.html

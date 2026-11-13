@@ -4,7 +4,7 @@ Presentation decks on the project's results, one directory per deck, built on th
 [aidotse/quarto-pres](https://github.com/aidotse/quarto-pres) template. They are published with the docs site:
 
 - [Phase 0 findings](https://aidotse.github.io/cafl4ds/slides/p0-findings/) (`p0-findings/`)
-- [P1.1 / P1.2 update](https://aidotse.github.io/cafl4ds/slides/p1-findings/) (`p1-findings/`)
+- [Phase 1 findings](https://aidotse.github.io/cafl4ds/slides/p1-findings/) (`p1-findings/`)
 
 ## How a deck is built and published
 
@@ -26,6 +26,6 @@ cd slides/<deck> && quarto preview index.qmd
 ```
 
 Each deck's own README says how to refresh its numbers (in each, a Python script writes `assets/data.js` from the run
-artifacts and substudy docs). Give each deck's script its own name (`make_data.py`, `make_p0_data.py`): `mypy` checks
+artifacts and substudy docs). Give each deck's script its own name (`make_p0_data.py`, `make_p1_data.py`): `mypy` checks
 the whole repo, and two files with the same module name stop it. Keep files under 2 MB (the repository's pre-commit
 limit): prefer JPEG for photographic backgrounds.
