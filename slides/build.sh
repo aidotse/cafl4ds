@@ -25,6 +25,6 @@ for qmd in "${decks[@]}"; do
   (cd "$deck" && quarto render index.qmd)
   rm -rf "${out:?}/${name:?}"
   mkdir -p "$out/$name"
-  cp -r "$deck/index.html" "$deck/index_files" "$deck/assets" "$deck/style.css" "$out/$name/"
+  cp -rL "$deck/index.html" "$deck/index_files" "$deck/assets" "$deck/style.css" "$out/$name/"
 done
 echo "decks written to $out"
