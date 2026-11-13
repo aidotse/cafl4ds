@@ -137,6 +137,7 @@ nav:
       - P1.1 (learning to read degradation): experiments/audits/P1.1.md
 
   - Slides:
+      - slides/index.md
       - Phase 0 findings: https://aidotse.github.io/cafl4ds/slides/p0-findings/
       - Phase 1 findings: https://aidotse.github.io/cafl4ds/slides/p1-findings/
 
