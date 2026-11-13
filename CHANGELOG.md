@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 This file is managed by [Commitizen](https://commitizen-tools.github.io/commitizen/) and is updated automatically on
 each `poe bump` (driven by [Conventional Commits](https://www.conventionalcommits.org/)). Do not edit it by hand.
 
+## v0.34.0 (2026-11-13)
+
+### Feat
+
+- Phase 1 findings deck, covering all of Phase 1 with its audit state
+
 ## v0.33.0 (2026-11-13)
 
 ### Feat
