@@ -97,6 +97,10 @@ ladder() {  # card name floor ft-lr encoder-flags... -- list lines on stdin: the
   # floor is the arm's settled-head well, or `pretrained` (DINO-init DINO: the released backbone, as P1.2.5 read it)
   card=$1; name=$2; floor=$3; lr=$4; shift 4
   link ladder/$name
+  [ -f $OUT/ladder/$name/summary.json ] && return
+  # claim the ladder, so a group queued on both cards runs each ladder on one card only (a failed read leaves the
+  # claim: remove $SH/ladder/$name.claimed to retry)
+  mkdir $SH/ladder/$name.claimed 2>/dev/null || { echo "skip $name: claimed by another card"; return; }
   f=$SH/ladder/encoders_$name.yaml
   if [ "$floor" = pretrained ]; then fl="- {name: floor, kind: pretrained, fewshot: true}"
   else fl="- {name: floor, kind: well, path: $floor, fewshot: true}"; fi
