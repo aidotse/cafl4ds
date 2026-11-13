@@ -136,6 +136,12 @@ tracks where each one landed. Follow this formula:
     then reviewing conclusions is moot. Conclude this review with an assessment of which claims are affected, if any,
     and a remediation plan to run before the rest of the audit proceeds.
 
+- **Number audit.** Recompute every headline count and number from the tracked artifacts, not from the docs. Two places
+    to look beyond the substudy's own runs: sibling substudies that re-run the same config (a reader's count must hold
+    on every run of it), and any later change to the counting rule (re-score the earlier counts under it). Check that
+    the summaries (index rows, `latest-results/`) keep the detail doc's scope qualifiers, e.g. "only at the deeper
+    well".
+
 Next, proceed with the main body of the audit:
 
 - **Sections, in order.**

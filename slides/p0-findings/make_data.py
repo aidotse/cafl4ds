@@ -69,7 +69,12 @@ def scoreboard() -> None:
         ("Forgetting (JE)", "Labelled probe", "labels", "BWT ground truth"),
         ("Forgetting (JE)", "Drift, old batch", "works", "Tracks the crater two-sided, 5/5"),
         ("Forgetting (JE)", "Drift, no old data", "catch", "Only the projector's frame churn, 5/5; backbone 3/5"),
-        ("Forgetting (JE)", "Projector geometry", "catch", "Uniformity mis-signals; alignment reads the regime only"),
+        (
+            "Forgetting (JE)",
+            "Projector geometry",
+            "fails",
+            "Neither holds across runs: alignment 5/5 then 2/5, uniformity 3/5 then 5/5",
+        ),
         ("Forgetting (JE)", "Rank", "guard", "Full rank throughout: forgetting, not collapse"),
         ("Instability (MAE)", "Gradient norm", "catch", "~5 steps ahead of the NaN, only with SGD + a raw loss"),
         ("Instability (MAE)", "Loss / recon gap", "fails", "The loss shows a runaway only as it goes NaN"),
@@ -214,13 +219,24 @@ def forgetting_hunt() -> None:
     """Every MAE forgetting vehicle, per seed: PC and healthy-twin BWT (fires at PC BWT <= -0.05).
 
     `fires` follows each substudy's own rule: PC <= -0.05 with the twin holding (|BWT| <= 0.03) up to P0.3.9;
-    two-sided (PC - twin <= -0.05) in P0.3.10. STL-10 is transcribed from P0.3.2.md (200-image probes) and
-    CIFAR-100 from P0.3.4.md (min / median / max only); the rest read the artifacts.
+    two-sided (PC - twin <= -0.05) in P0.3.10. `fires2` is the two-sided count, shown for the matched shallow / deep
+    wells, where the two rules disagree. STL-10 is transcribed from P0.3.2.md (200-image probes) and CIFAR-100 from
+    P0.3.4.md (min / median / max only); the rest read the artifacts.
     """
     rows: list[dict[str, Any]] = []
 
     def add(config: str, study: str, pc: float, h: float, fires: bool, kind: str = "seed") -> None:
-        rows.append({"config": config, "study": study, "pc": pc, "healthy": h, "fires": fires, "kind": kind})
+        rows.append(
+            {
+                "config": config,
+                "study": study,
+                "pc": pc,
+                "healthy": h,
+                "fires": fires,
+                "fires2": pc - h <= -0.05,
+                "kind": kind,
+            }
+        )
 
     stl_pc = [0.024, -0.001, 0.026, 0.026, 0.026]
     stl_h = [0.078, 0.010, 0.063, 0.015, 0.044]
@@ -237,8 +253,9 @@ def forgetting_hunt() -> None:
         add("Supervised ViT-B (upper limit)", "P0.3.4", p, h, absolute(p, h))
     for config, pattern in (
         ("Pretrained MAE, far split", "P0.3.9/c1_seedsweep/comparison_lr3e-4_seed{}.json"),
-        ("+ deeper well", "P0.3.9/d1redo_decfirst/comparison_decfirst_seed{}.json"),
-        ("+ deeper well, 2× task-B time", "P0.3.9/d1redo_epochsb40/comparison_epochsb40_seed{}.json"),
+        ("Shallow well, matched budget", "P0.3.9/d1redo_shallow60/comparison_shallow_seed{}.json"),
+        ("Deep well, matched budget", "P0.3.9/d1redo_decfirst/comparison_decfirst_seed{}.json"),
+        ("Deep well, 2× task-B time", "P0.3.9/d1redo_epochsb40/comparison_epochsb40_seed{}.json"),
     ):
         for s in range(5):
             p, h, _ = _bwt(pattern.format(s))
@@ -258,7 +275,7 @@ def forgetting_depth() -> None:
     rows = []
     for config, pattern in (
         ("Pretrained MAE, far split", "P0.3.9/c1_seedsweep/comparison_lr3e-4_seed{}.json"),
-        ("+ deeper well, 2× task-B time", "P0.3.9/d1redo_epochsb40/comparison_epochsb40_seed{}.json"),
+        ("Deep well, 2× task-B time", "P0.3.9/d1redo_epochsb40/comparison_epochsb40_seed{}.json"),
         ("Far domain: satellite", "P0.3.10/eurosat_nseed/comparison_eurosat_seed{}.json"),
         ("Far domain: textures", "P0.3.10/dtd_nseed/comparison_dtd_seed{}.json"),
     ):
@@ -278,8 +295,8 @@ def recon_gap() -> None:
     rows = []
     for config, pattern, seeds in (
         ("Pretrained MAE, far split", "P0.3.9/c1_seedsweep/comparison_lr3e-4_seed{}.json", 5),
-        ("+ deeper well", "P0.3.9/d1redo_decfirst/comparison_decfirst_seed{}.json", 5),
-        ("+ deeper well, 2× task-B time", "P0.3.9/d1redo_epochsb40/comparison_epochsb40_seed{}.json", 5),
+        ("Deep well, matched budget", "P0.3.9/d1redo_decfirst/comparison_decfirst_seed{}.json", 5),
+        ("Deep well, 2× task-B time", "P0.3.9/d1redo_epochsb40/comparison_epochsb40_seed{}.json", 5),
         ("Far domain: satellite", "P0.3.10/eurosat_nseed/comparison_eurosat_seed{}.json", 5),
         ("Far domain: textures", "P0.3.10/dtd_nseed/comparison_dtd_seed{}.json", 5),
         ("Scrambled task B", "P0.3.8/comparison_scrambled_lr3e-4_seed0.json", 1),
@@ -477,19 +494,28 @@ def je_vs_mae() -> None:
 def je_readers() -> None:
     """P0.6 per-seed margin (forgetting arm - A-only twin) for each label-free reader.
 
-    A1 (task-A canary): P0.6.0/reader_null_analysis/null_analysis.json eb40.<reader>.matched_margins.
+    A1 (task-A canary): P0.6.0/reader_null_analysis/null_analysis.json eb40.<reader>.matched_margins, and P0.6.1's
+    re-run of the same config read on the same canary (gate.reported {pc,healthy}_cka_drift and
+    proj_{align,uniformity}_{pc,healthy}_rise).
     C3 (current stream, no old data): P0.6.1/comparison_aonly_seed*.json gate.reported.cs_<reader>_{pc,healthy}.
     """
     rows = []
     null = load("P0.6.0/reader_null_analysis/null_analysis.json")["eb40"]
-    for key, label in (
-        ("cka_drift", "Backbone drift (CKA)"),
-        ("cosine_drift", "Backbone drift (cosine)"),
-        ("alignment_proj", "Projector alignment"),
-        ("uniformity_proj", "Projector uniformity"),
-    ):
-        for s, m in enumerate(null[key]["matched_margins"]):
-            rows.append({"reference": "Saved task-A batch (A1)", "reader": label, "seed": s, "margin": m})
+    rerun = [load(f"P0.6.1/comparison_aonly_seed{s}.json")["gate"]["reported"] for s in range(5)]
+    canary = (
+        ("cka_drift", "pc_cka_drift", "healthy_cka_drift", "Backbone drift (CKA)"),
+        ("alignment_proj", "proj_align_pc_rise", "proj_align_healthy_rise", "Projector alignment"),
+        ("uniformity_proj", "proj_uniformity_pc_rise", "proj_uniformity_healthy_rise", "Projector uniformity"),
+    )
+    for key, pc_key, h_key, label in canary:
+        for run, margins in (
+            ("run 1", null[key]["matched_margins"]),
+            ("run 2", [r[pc_key] - r[h_key] for r in rerun]),
+        ):
+            for s, m in enumerate(margins):
+                rows.append(
+                    {"reference": "Saved task-A batch (A1)", "reader": f"{label}, {run}", "seed": s, "margin": m}
+                )
     for key, label in (
         ("cosine_drift_proj", "Projector drift (cosine)"),
         ("cka_drift_proj", "Projector drift (CKA)"),

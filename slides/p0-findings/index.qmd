@@ -346,12 +346,14 @@ Deck.chart("ch-hunt", (el) => {
   series.push(P.marks({ zeroX: true, xRegion: { from: -0.1, to: -0.05, color: C.red, alpha: 0.1, text: "fires: forgot ≥ 5 pts" } }));
   const counts = configs.map((c) => {
     const g = rows.filter((r) => r.config === c);
-    return g[0].kind === "seed" ? `${g.filter((r) => r.fires).length}/${g.length}` : "0/5";
+    if (g[0].kind !== "seed") return "0/5";
+    const n = `${g.filter((r) => r.fires).length}/${g.length}`;
+    return c.includes("matched budget") ? `${n} (${g.filter((r) => r.fires2).length}/${g.length})` : n;
   });
   const idx = configs.map((c) => y(c));
   P.draw(el, {
     legend: P.legend({ data: ["forgetting arm", "protected twin"] }),
-    grid: { left: 430, right: 110, top: 30, bottom: 120 },
+    grid: { left: 430, right: 150, top: 30, bottom: 120 },
     xAxis: P.axis("Backward transfer on task A (accuracy change after learning task B)", { min: -0.1, max: 0.1, interval: 0.05, scale: false,
       axisLabel: { fontSize: 19, formatter: (v) => P.signed(v, 2) } }),
     yAxis: [
@@ -367,9 +369,9 @@ Deck.chart("ch-hunt", (el) => {
 ```
 
 ::: {.caption .side}
-One dot per seed (CIFAR-100: median and range of 5); red fires. From scratch, MAE never forgets; a **supervised**
-model does (upper limit). A pretrained MAE fires on **every seed** only with a deep task A *and* twice the time on task
-B. Far domains count arm minus twin, so satellite's −0.060 seed (twin −0.023) does not fire.
+One dot per seed; red fires. From scratch, MAE never forgets; a **supervised** model does (upper limit). Depth alone
+is not the lever: deep beats shallow 3/5 to 1/5, but counted arm minus twin (brackets) it is 2/5 to 4/5, as the shallow
+twin improves. Only **twice the time on task B** fires on every seed, under both counts. Far domains count arm minus twin.
 :::
 
 ## Even the deepest crater is a dent, and it comes back
@@ -441,13 +443,13 @@ Deck.chart("ch-depth", (el) => {
 Deck.chart("ch-recon", (el) => {
   const P = Charts, C = P.C;
   const rows = P.data("recon_gap");
-  const colors = { "Pretrained MAE, far split": C.blue, "+ deeper well": "#90CAF9", "+ deeper well, 2× task-B time": C.yellow,
+  const colors = { "Pretrained MAE, far split": C.blue, "Deep well, matched budget": "#90CAF9", "Deep well, 2× task-B time": C.yellow,
     "Far domain: satellite": C.green, "Far domain: textures": "#81C784", "Scrambled task B": C.orange, "Grayscale task B": C.red };
   const series = [];
   for (const [config, g] of P.groupBy(rows, (r) => r.config)) {
     series.push({ type: "scatter", name: config, symbolSize: config === "Grayscale task B" ? 26 : 16, z: 3, itemStyle: { color: colors[config] },
       data: g.map((r) => ({ value: [r.bwt, r.gap], r,
-        label: { show: config === "Grayscale task B", position: "left", distance: 14, formatter: "grayscale: the representation\nbarely moved", color: C.red, fontSize: 19, lineHeight: 24 } })),
+        label: { show: config === "Grayscale task B", position: "left", distance: 14, formatter: "grayscale: a crater like the\ncolour run, ~8× the gap", color: C.red, fontSize: 19, lineHeight: 24 } })),
       tooltip: { formatter: (p) => `${config}, seed ${p.data.r.seed}<br>forgetting ${P.signed(p.value[0], 3)}<br>recon gap ${p.value[1].toFixed(3)}` } });
   }
   series.push(P.marks({ xRegion: { from: -0.12, to: -0.05, color: C.red, alpha: 0.08, text: "real forgetting" } }));
@@ -469,8 +471,7 @@ Deck.chart("ch-recon", (el) => {
 - Deployment can't run probes, so the hope was the **reconstruction loss on old data**
 - Its gap barely tracks real forgetting: across one setup (blue) forgetting varies **fivefold** and the gap stays flat
 - It is mostly the **replay twin improving**, not the forgetting arm getting worse
-- Recolour task B **grayscale** and it reads **~10× higher**, though the probe shows a crater no deeper than the
-    colour run's
+- Recolour task B **grayscale** and it reads **~8× higher** than the colour run, though its probe crater is no deeper
 - Usable only with the two-arm control beside it. *(Phase 1 later found a label-free MAE signal **per block**,
     P1.1.3)*
 
@@ -822,13 +823,15 @@ Deck.chart("ch-je-mae", (el) => {
 ::: {.column width="62%"}
 
 ```{=html}
-<div id="ch-je-readers" class="chart"></div>
+<div id="ch-je-readers" class="chart tall"></div>
 <script>
 Deck.chart("ch-je-readers", (el) => {
   const P = Charts, C = P.C;
   const rows = P.data("je_readers");
   const keys = P.uniq(rows.map((r) => `${r.reference}|${r.reader}`));
-  const y = (k) => keys.length - 1 - keys.indexOf(k) + (keys.indexOf(k) >= 4 ? 0 : 0.6);
+  const nTop = keys.filter((k) => k.startsWith("Saved")).length;
+  const y = (k) => keys.length - 1 - keys.indexOf(k) + (keys.indexOf(k) < nTop ? 0.6 : 0);
+  const split = keys.length - nTop - 0.2;
   const scale = new Map();
   for (const k of keys) scale.set(k, Math.max(...rows.filter((r) => `${r.reference}|${r.reader}` === k).map((r) => Math.abs(r.margin))));
   const data = rows.map((r) => {
@@ -852,12 +855,12 @@ Deck.chart("ch-je-readers", (el) => {
         tooltip: { formatter: (p) => `${p.data.r.reference}<br>${p.data.r.reader}, seed ${p.data.r.seed}: ${P.signed(p.data.r.margin, 3)}` } },
       P.marks({ zeroX: true }),
       { type: "line", data: [], markLine: { silent: true, symbol: "none", lineStyle: { color: C.muted, type: "dashed", width: 1.5 },
-        data: [{ yAxis: 3.8 }], label: { show: false } } },
+        data: [{ yAxis: split }], label: { show: false } } },
       { type: "line", data: [], markArea: { silent: true, data: [
-        [{ yAxis: 3.95, name: "Against a saved batch of old (task-A) data", itemStyle: { color: "transparent" },
+        [{ yAxis: split + 0.15, name: "Against a saved batch of old (task-A) data; run 2 re-runs run 1's config", itemStyle: { color: "transparent" },
            label: { position: "insideTopLeft", color: C.muted, fontSize: 18 } }, { yAxis: keys.length + 0.3 }],
         [{ yAxis: -0.6, name: "Against the current stream only: no old data kept", itemStyle: { color: "transparent" },
-           label: { position: "insideTopLeft", color: C.muted, fontSize: 18 } }, { yAxis: 3.65 }],
+           label: { position: "insideTopLeft", color: C.muted, fontSize: 18 } }, { yAxis: split - 0.15 }],
       ] } },
     ],
   });
@@ -870,8 +873,8 @@ Deck.chart("ch-je-readers", (el) => {
 ::: {.column width="38%" .side}
 
 - Green: the reader rates the forgetting arm as having moved more than its twin. The count is seeds out of 5
-- With a saved batch of old data, **drift** separates every seed. The collapse geometry does not port: uniformity
-    **flips sign**; alignment separates but reads the far-shift **regime**, not how much was forgotten
+- With a saved batch of old data, **drift** separates every seed, in both runs of the same setup
+- The collapse geometry does not port: alignment goes **5/5 → 2/5** from one run to the next, uniformity **3/5 → 5/5**
 - With **no old data**, only the **projector's drift** separates every seed; backbone drift flips
 - The catch: drift reads **change**, and some change is healthy learning. Phase 0 had the twin to subtract; deployment
     won't
