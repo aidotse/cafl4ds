@@ -8,7 +8,7 @@
 #   card1 (card 1): the MAE wells on P1.2.5's split (the 512-d x 8 decoder, and the 64-d x 2 one), the repaired MAE
 #          walk x seeds 1-5 (P1.2.2's recipe: protections, lr 1e-4), the natural failure (P1.2.1's recipe: 64-d decoder,
 #          no protections, lr 1e-4) walk x seeds 1-3, the repaired MAE's dose pilot, then its IID x seeds 1-15.
-#   reads (both cards, after card0/card1): the val ladder at every checkpoint of every Stage-1 drive — kNN, linear and
+#   reads (both cards, after card0/card1), or `reads1 <je|dd|mae> <card>` one group at a time: the val ladder at every checkpoint of every Stage-1 drive — kNN, linear and
 #          the 10- and 100-shot fine-tunes on scene and traffic light — on P1.2.5's val query frames (checked).
 # Every drive is P1.2.5's (its diet, split, health vector every 25 steps, Part B's checkpoints) and lands on the
 # project share, linked from outputs/p114. Stage 2 (the damage branches, at doses read off the pilots) is added once
@@ -50,6 +50,25 @@ pilot() {  # card name checkpoint-pattern well recipe-flags...: the probe-only d
     "resume.checkpoint='$ck'" seed=1 "$DOSES" hydra.run.dir=$SH/pilot/$name
 }
 
+# The refined pilot: three seeds' step-846 states, a finer noise grid where the first (seed-1) pilot left gaps; doses are
+# chosen on the seed mean, never on one seed.
+FINE="doses=[reinit:2,reinit:4,noise:12:0.2,noise:12:0.3,noise:12:0.4,noise:12:0.5,noise:12:0.55,noise:12:0.6,noise:12:0.65,noise:12:0.7,noise:12:0.75,noise:12:0.8,noise:12:0.875,noise:12:1.0]"
+pilot3() {  # card name checkpoint-pattern well recipe-flags...: the refined pilot on seeds 1-3
+  card=$1; name=$2; ck=$3; well=$4; shift 4
+  for s in 1 2 3; do
+    link pilot_fine/${name}_s$s
+    [ -f $OUT/pilot_fine/${name}_s$s/dose_pilot.json ] || run $card python scripts/dose_pilot.py $DIET "$SCENES" "$@" \
+      well=$well "resume.checkpoint='$ck'" seed=$s "$FINE" hydra.run.dir=$SH/pilot_fine/${name}_s$s
+  done
+}
+
+pilots_fine() {  # card
+  pilot3 $1 dino_simsiam "outputs/p125/partG/drive/dino_simsiam_p9e-5_walk/checkpoints/s{seed}/step00846.pt" $WS $SIM
+  pilot3 $1 mae_je "outputs/p125/drive/mae_je_walk/checkpoints/s{seed}/step00846.pt" $WM $MAEJE
+  pilot3 $1 dino_dino "outputs/p125/drive/dino_dino_walk/checkpoints/s{seed}/step00846.pt" null $DINO
+  pilot3 $1 mae "$OUT/drive/mae_walk/checkpoints/s{seed}/step00846.pt" $WR $MAE $DEC
+}
+
 well() {  # card out decoder-flags...: a MAE well, heads settled on the frozen encoder (P1.2.1 / P1.2.2's settings)
   card=$1; out=$2; shift 2
   mkdir -p wells/p114
@@ -89,16 +108,19 @@ ladder() {  # card name floor ft-lr encoder-flags... -- list lines on stdin: the
     || echo "QUERY MISMATCH $name"
 }
 
-reads0() {  # the DINO-start and JE arms' new IID drives (fine-tunes at the floor's rate: DINO 1e-5, MAE-init 3e-5)
-  ckpt_list $OUT/drive/dino_simsiam_iid_6to15 iid $(seq 6 15) | ladder 0 dino_simsiam_iid $WS 1e-5 $SIM
-  ckpt_list $OUT/drive/mae_je_iid_6to15 iid $(seq 6 15) | ladder 0 mae_je_iid $WM 3e-5 $MAEJE
-  ckpt_list $OUT/drive/dino_dino_iid_4to15 iid $(seq 4 15) | ladder 0 dino_dino_iid pretrained 1e-5 $DINO
+reads_je() {  # card: the JE arms' new IID drives (fine-tunes at the floor's rate: DINO 1e-5, MAE-init 3e-5)
+  ckpt_list $OUT/drive/dino_simsiam_iid_6to15 iid $(seq 6 15) | ladder $1 dino_simsiam_iid $WS 1e-5 $SIM
+  ckpt_list $OUT/drive/mae_je_iid_6to15 iid $(seq 6 15) | ladder $1 mae_je_iid $WM 3e-5 $MAEJE
 }
 
-reads1() {  # the MAE arms (P1.2.2's few-shot rate, 3e-5)
+reads_dd() {  # card: DINO-init DINO's new IID drives
+  ckpt_list $OUT/drive/dino_dino_iid_4to15 iid $(seq 4 15) | ladder $1 dino_dino_iid pretrained 1e-5 $DINO
+}
+
+reads_mae() {  # card: the MAE arms (P1.2.2's few-shot rate, 3e-5)
   { ckpt_list $OUT/drive/mae_walk walk 1 2 3 4 5; ckpt_list $OUT/drive/mae_iid iid $(seq 1 15); } \
-    | ladder 1 mae $WR 3e-5 $MAE $DEC
-  ckpt_list $OUT/drive/mae_fail_walk walk 1 2 3 | ladder 1 mae_fail $WF 3e-5 $MAE
+    | ladder $1 mae $WR 3e-5 $MAE $DEC
+  ckpt_list $OUT/drive/mae_fail_walk walk 1 2 3 | ladder $1 mae_fail $WF 3e-5 $MAE
 }
 
 card0() {
@@ -128,7 +150,10 @@ card1() {
 case "${1:-}" in
   card0) card0 > $SH/card0.log 2>&1 ;;
   card1) card1 > $SH/card1.log 2>&1 ;;
-  reads) reads0 > $SH/reads0.log 2>&1 & reads1 > $SH/reads1.log 2>&1 & wait ;;
-  *) echo "usage: $0 card0|card1|reads"; exit 1 ;;
+  reads) { reads_je 0; reads_dd 0; } > $SH/reads0.log 2>&1 & reads_mae 1 > $SH/reads1.log 2>&1 & wait ;;
+  # one ladder group on a chosen card (a card freed early takes the drives already done): reads1 <je|dd|mae> <card>
+  reads1) reads_$2 $3 > $SH/reads_$2.log 2>&1 ;;
+  pilots_fine) pilots_fine $2 > $SH/pilots_fine.log 2>&1 ;;
+  *) echo "usage: $0 card0|card1|reads|reads1 <je|dd|mae> <card>|pilots_fine <card>"; exit 1 ;;
 esac
 echo "P114_STAGE1_${1}_DONE"
