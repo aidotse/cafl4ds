@@ -81,7 +81,7 @@ Deck.chart("ch-status", (el) => {
     complete: [C.green, "complete"], "runs complete": [C.blue, "runs complete"], designed: [C.yellow, "designed, awaiting runs"],
     "not started": ["#5d6d7e", "not started"], folded: ["#2c3844", "folded into a later study"],
   };
-  const A = { closed: [C.green, "closed"], open: [C.orange, "open"], none: ["#5d6d7e", "not yet"] };
+  const A = { closed: [C.green, "closed"], open: [C.orange, "open"], none: ["#5d6d7e", "none"] };
   const slots = ["1", "2", "3", "4", "5", "6", "", "Audit"];
   const cell = (color, dark) => ({ color: Deck.alpha(color, 0.9), borderColor: "#1d2733", borderWidth: 6, dark });
   const wrap = (t) => (t.length > 420 ? t.slice(0, 420) + "…" : t);
@@ -97,7 +97,7 @@ Deck.chart("ch-status", (el) => {
     if (g.some((r) => r.status === "complete")) {
       const r = g[0], [color, text] = A[r.audit];
       data.push({ value: [7, name(s), 1], audit: r, itemStyle: cell(color),
-        label: { show: true, formatter: r.audit === "open" ? `${r.pending} open` : text, fontSize: 19, fontWeight: "bold", color: "#fff" } });
+        label: { show: true, formatter: text, fontSize: 19, fontWeight: "bold", color: "#fff" } });
     }
   }
   P.draw(el, {
@@ -742,7 +742,9 @@ Deck.chart("ch-sizes", (el) => {
 ::: {.caption .side}
 SimSiam on DINO gains on **1 of 4** panel tasks and **0 of 15** size tasks (at lr 9e-5: 0 of 4, 1 of 15; three panel
 tasks gain 1–2 pts, below the ~2 pts the panel resolves). MAE-init JE gains on **objects smaller than one patch** (pedestrian, truck, bus: ~+4 pts), the same on both of its drives; its kNN gains sit on large objects. How
-often an object appears in the stream does not predict a gain.
+often an object appears in the stream does not predict a gain. Not shown: on **weather's kNN read**, SimSiam on DINO
+**loses 17–20 pts** (lr 3e-5 / 9e-5) while its linear read stays flat: the neighbourhoods the selection filter uses
+reorganized, the information did not.
 :::
 
 ::: footer
@@ -925,12 +927,13 @@ Deck.chart("ch-dino-lr", (el) => {
 ::: {.column width="42%" .side}
 
 - DINO's **centring flattens its target on BDD**: 10.7 of a possible 11.1 nats, against 3.3–5.2 on ImageNet-like,
-    COCO and Places images. BDD frames look ~4× as alike to DINO
+    COCO and Places images. BDD frames look ~4× as alike to DINO. Driving scenes clash with DINO's centring in the
+    literature too (<a href="https://arxiv.org/abs/2410.23085">S3PT, WACV 2025</a>)
 - At 1e-3 the objective **collapses on its own**, and rank and kNN all see it; its collapse control did not fire as
     pre-registered
 - Read anyway, as corroboration: **no linear gain**, but gains on **kNN** (+3.5 scene) and **fine-tuning** (+4.9
     scene, 10-shot)
-- It is the **objective, not the features**: frozen DINO is our best frozen start. Literature agrees (S3PT, WACV 2025)
+- It is the **objective, not the features**: frozen DINO is our best frozen start
 - So P1.3 carries **SimSiam on DINO**, not DINO's objective
 
 :::
@@ -1036,7 +1039,8 @@ cafl4ds · Phase 1 findings · P1.2 · <span class="audit" data-study="P1.2"></s
 - **No label-free forgetting reader on JE**, where P1.3 reads forgetting
 - **Breadth:** 2–4 pts, firm on the gate tasks, on 0–2 of 4 panel tasks, so **Qualified**; gains below what the panel
     resolves: open, not ruled out
-- **Geometry:** kNN gains early and **erodes late**; a recipe chosen on linear spends kNN and fine-tuning unseen
+- **Geometry:** kNN gains early and **erodes late**; SimSiam on DINO *loses* 17–20 pts kNN on weather; a recipe
+    chosen on linear spends kNN and fine-tuning unseen
 - **Exit-gate tests (b) and (c):** degradation and the selection knob, not yet read
 - One pass, a fixed domain, 224 px
 

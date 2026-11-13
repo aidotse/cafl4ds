@@ -157,8 +157,11 @@
   P.audit = (study) => {
     const r = window.DeckData.status.find((x) => x.study === study);
     if (!r || r.audit === "none") return { cls: "none", text: "Not yet audited" };
-    if (r.audit === "closed") return { cls: "closed", text: "Audited · every point worked" };
-    return { cls: "open", text: `Audited · ${r.pending} of ${r.findings} points open, remediation proposed` };
+    if (r.audit === "closed") return { cls: "closed", text: "Audit closed · all remediations implemented" };
+    const done = r.findings - r.pending;
+    return { cls: "open", text: done
+      ? `Audit open · ${done} of ${r.findings} remediations implemented`
+      : `Audit open · ${r.findings} findings, remediations proposed` };
   };
 
   /* Fill every <span class="audit" data-study="P1.x"> (section badges, footers) from the status table. */
