@@ -938,7 +938,7 @@ Deck.chart("ch-je-readers", (el) => {
 - **Quality on MAE:** provision a **labelled canary**, or a JE projector
 - **Instability:** choose the optimizer with the early warning in view
 - **Phase 1 so far:** a frozen-start anchor, a measured canary, and a label-free MAE signal **per block** (P1.1).
-    [P1.1 / P1.2 deck →](../p1-findings/)
+    [Phase 1 findings deck →](../p1-findings/)
 
 :::
 

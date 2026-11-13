@@ -15,6 +15,8 @@ Presentation decks on the project's results, one directory per deck, built on th
     decks ship in the same GitHub Pages artifact as the docs. A repository has one Pages site, so they cannot deploy on
     their own. A deck therefore goes live with the next release, or when the manual "Publish site" workflow
     (`.github/workflows/publish-site.yml`) is run on `main`.
+- The docs site's Slides tab opens a landing page, `docs/slides/index.md`, which mkdocs builds to `slides/index.html`
+    beside the decks. Add a new deck there and to the Slides section of `mkdocs.yaml`'s nav.
 - Rendered output (`index.html`, `index_files/`, `.quarto/`) is not committed.
 - Decks share one copy of ECharts: `p0-findings/assets/vendor/echarts.min.js` is a symlink to the `p1-findings` copy,
     and `build.sh` copies with `-L`, so each published deck gets the real file.
