@@ -44,7 +44,10 @@ only, so it runs on any checkout, and it names the source of every table.
 
 - The status slide and the audit badges parse `docs/experiments/phase1/index.md` (each Studies row's status marker) and
     `docs/experiments/audits/P1.x.md` (an audit is open while its Disposition is a placeholder or a Conclusion is
-    pending). Re-run after a status or audit change and the slide follows.
+    pending). The badges read "Audit closed · all remediations implemented", "Audit open · N findings, remediations
+    proposed" (none implemented yet), "Audit open · k of N remediations implemented", or "Not yet audited", where a
+    remediation counts as implemented once its finding's Conclusion is no longer *Pending*. Re-run after a status or
+    audit change and the slide follows.
 - The P1.1 audit chart parses the audit's findings and their `[tag]` remediation types; the reader-coverage matrix is
     transcribed from the audit and P1.1.4's design.
 - P1.1.1, P1.2.1, P1.2.2 and P1.2.4 numbers are transcribed from their docs' tables; P1.1.3 and P1.2.5 are read from the
