@@ -34,23 +34,12 @@ uv run python slides/p0-findings/make_data.py
 cd slides/p0-findings && quarto render index.qmd
 ```
 
-`make_data.py` is the only Python, and it runs once, in the repo's own env, when the numbers change. It names the source
-of every table:
+`make_data.py` is the only Python, and it runs once, in the repo's own env, when the numbers change. It needs only the
+tracked files, and names the source of every table:
 
-- Most tables read the tracked artifacts under `docs/experiments/phase0/artifacts/`.
-
+- Every table but two reads the artifacts under `docs/experiments/phase0/artifacts/`. That includes the per-step and
+    per-checkpoint traces (`P0.2.2/E3_16seed/iid_trajectories.json`, `P0.4.0/*/traces.json`, `P0.4.1/op_traces/`), which
+    the substudies' slimmed artifacts drop and which were promoted next to them for this deck. Each trace file records
+    its source run and the check tying it to the summary it belongs to.
 - The STL-10 and CIFAR-100 forgetting rows are transcribed from P0.3.2 and P0.3.4 (no artifacts exist for them), and the
     scoreboard from the Phase 0 index.
-
-- Per-step and per-checkpoint traces were never tracked, so three tables read local run dirs under `outputs/`
-    (gitignored): the P0.2.2 D1 rider (`outputs/D1_rider/`), the P0.4.1 burst runs (`outputs/2026-08-06/`), and a re-run
-    of the documented P0.4.0 commands, seed 0 on CPU:
-
-    ```bash
-    uv run python scripts/positive_control_instability.py seed=0 hydra.run.dir=outputs/p0-deck/p040_sgd
-    uv run python scripts/positive_control_instability.py seed=0 optim=adamw lr_healthy=1e-3 \
-        'lr_sweep=[1e-3,0.01,0.1,1,10,100]' hydra.run.dir=outputs/p0-deck/p040_adamw
-    ```
-
-    `make_data.py` checks these against the tracked artifacts (the re-run reproduces `P0.4.0/dose_seed0` and `adamw_seed0`
-    exactly).

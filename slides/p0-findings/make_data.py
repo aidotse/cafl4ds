@@ -6,9 +6,8 @@ The deck itself never runs Python: its ECharts charts read `window.DeckData` fro
 numbers change.
 
 Each table cites its source. Most read the tracked run artifacts (`docs/experiments/phase0/artifacts/`). Where only a
-substudy doc records the numbers, they are transcribed from it. The per-step and per-checkpoint traces were never
-tracked, so three tables read local Hydra run dirs under `outputs/` (gitignored); each says which run it reads and is
-checked against the tracked artifact where one exists.
+substudy doc records the numbers, they are transcribed from it. The per-step and per-checkpoint traces come from the
+trace files promoted next to their runs' summaries (each records its source run and the check tying it to them).
 """
 
 from __future__ import annotations
@@ -21,7 +20,6 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 OUT = Path(__file__).resolve().parent / "assets" / "data.js"
 ART = ROOT / "docs/experiments/phase0/artifacts"
-RUNS = ROOT / "outputs"
 
 TABLES: dict[str, list[dict[str, Any]]] = {}
 
@@ -44,12 +42,6 @@ def load(path: str | Path) -> dict[str, Any]:
     p = Path(path)
     data: dict[str, Any] = json.loads((p if p.is_absolute() else ART / p).read_text())
     return data
-
-
-def check(ok: bool, what: str) -> None:
-    """Stop if a local run no longer matches the tracked artifact it stands in for."""
-    if not ok:
-        raise ValueError(what)
 
 
 # --- The scoreboard -------------------------------------------------------------------------------------------------
@@ -140,19 +132,19 @@ def collapse_heatmap() -> None:
 def collapse_trajectory() -> None:
     """P0.2.2 D1 rider: IID x 40 epochs, 16 seeds, healthy vs forced-collapse RankMe per checkpoint.
 
-    Local run dirs outputs/D1_rider/iid_seed{0-15} (their summary reproduces the tracked E3_16seed/summary.json).
+    Source: P0.2.2/E3_16seed/iid_trajectories.json (the series behind E3_16seed/summary.json cells.iid).
     """
-    runs = [load(RUNS / f"D1_rider/iid_seed{s}/comparison.json") for s in range(16)]
+    t = load("P0.2.2/E3_16seed/iid_trajectories.json")
     rows = []
     for arm, label in (("healthy", "Healthy"), ("pc", "Forced collapse")):
-        for i, point in enumerate(runs[0][arm]):
+        for i, step in enumerate(t["step"]):
             for key, surface in (("rankme_proj", "projector"), ("rankme", "backbone")):
-                vals = sorted(r[arm][i][key] for r in runs)
+                vals = sorted(seed[i] for seed in t["series"][arm][key])
                 rows.append(
                     {
                         "arm": label,
                         "surface": surface,
-                        "epoch": point["step"] / 32,
+                        "epoch": step / t["steps_per_epoch"],
                         "median": median(vals),
                         "lo": vals[0],
                         "hi": vals[-1],
@@ -305,63 +297,47 @@ def recon_gap() -> None:
 def divergence_traces() -> None:
     """P0.4.0 per-step grad norm, SGD vs AdamW, seed 0 (step 0-40; a NaN ends a trace).
 
-    The tracked artifacts dropped the traces, so this reads a re-run of the documented commands
-    (outputs/p0-deck/p040_{sgd,adamw}); its summaries match P0.4.0/{dose_seed0,adamw_seed0} exactly, checked below.
+    Source: P0.4.0/{dose_seed0,adamw_seed0}/traces.json (re-runs that reproduce each comparison.json exactly).
     """
     rows = []
-    for optim, tracked, lr_healthy, lrs in (
-        ("SGD", "dose_seed0", 1.0, (3.0, 10.0)),
-        ("AdamW", "adamw_seed0", 1e-3, (10.0, 100.0)),
-    ):
-        run = load(RUNS / f"p0-deck/p040_{optim.lower()}/comparison.json")
-        ref = load(f"P0.4.0/{tracked}/comparison.json")
-        for mine, theirs in zip(run["sweep"], ref["sweep"], strict=True):
-            same_nan = mine["summary"]["first_nonfinite_step"] == theirs["first_nonfinite_step"]
-            same_peak = abs(mine["summary"]["peak_grad_norm"] / theirs["peak_grad_norm"] - 1) < 1e-6
-            check(same_nan and same_peak, f"{optim} lr {theirs['lr']} does not match P0.4.0/{tracked}")
-        arms = [("healthy", run["healthy"])] + [(f"lr {s['summary']['lr']:g}", s) for s in run["sweep"]]
-        for name, arm in arms:
-            if name != "healthy" and float(name[3:]) not in lrs:
-                continue
-            label = f"healthy (lr {lr_healthy:g})" if name == "healthy" else name
-            for t in arm["trace"][:41]:
+    for optim, tracked, lrs in (("SGD", "dose_seed0", (3.0, 10.0)), ("AdamW", "adamw_seed0", (10.0, 100.0))):
+        t = load(f"P0.4.0/{tracked}/traces.json")
+        arms = [(f"healthy (lr {t['healthy']['lr']:g})", t["healthy"])]
+        arms += [(f"lr {a['lr']:g}", a) for a in t["sweep"] if a["lr"] in lrs]
+        for label, a in arms:
+            for i, step in enumerate(a["step"][:41]):
+                finite = a["finite"][i]
                 rows.append(
                     {
                         "optim": optim,
                         "arm": label,
-                        "step": t["step"],
-                        "grad_norm": t["grad_norm"] if t["finite"] else None,
-                        "nan": not t["finite"],
+                        "step": step,
+                        "grad_norm": a["grad_norm"][i] if finite else None,
+                        "nan": not finite,
                     }
                 )
-        rows.append(
-            {"optim": optim, "arm": "alarm", "step": None, "grad_norm": run["gate"]["blowup_level"], "nan": False}
-        )
+        rows.append({"optim": optim, "arm": "alarm", "step": None, "grad_norm": t["blowup_level"], "nan": False})
     write("divergence_traces", rows)
 
 
 def shock_traces() -> None:
     """P0.4.1 per-step grad norm around a spliced burst (steps 300-307), seed 0, lr 1.
 
-    The tracked artifacts dropped op_traces, so this reads the local run dirs of the documented runs; the noise and
-    scrambled runs are checked against P0.4.1/{gate_seed0,dataset_scrambled} gate.fire_ratio.
+    Source: P0.4.1/op_traces/*.json (the noise and scrambled runs are the ones behind gate_seed0 / dataset_scrambled).
     """
     runs = [
-        ("16-19-40", "control", "No burst (control)", None),
-        ("16-19-40", "shock", "Saturating noise burst", "gate_seed0"),
-        ("16-14-10", "shock", "CIFAR-100 burst", None),
-        ("16-14-33", "shock", "Grayscale CIFAR burst", None),
-        ("16-14-56", "shock", "Phase-scrambled burst", "dataset_scrambled"),
+        ("gate_seed0", "control", "No burst (control)"),
+        ("gate_seed0", "shock", "Saturating noise burst"),
+        ("dataset_cifar100", "shock", "CIFAR-100 burst"),
+        ("dataset_grayscale", "shock", "Grayscale CIFAR burst"),
+        ("dataset_scrambled", "shock", "Phase-scrambled burst"),
     ]
     rows = []
-    for d, arm, label, tracked in runs:
-        r = load(RUNS / f"2026-08-06/{d}/comparison.json")
-        if tracked:
-            ref = load(f"P0.4.1/{tracked}/comparison.json")["gate"]["fire_ratio"]
-            check(abs(r["gate"]["fire_ratio"] / ref - 1) < 1e-3, f"{d} does not match P0.4.1/{tracked}")
-        for t in r["op_traces"][arm]:
-            if t["step"] >= 240:
-                rows.append({"arm": label, "step": t["step"], "grad_norm": t["grad_norm"], "loss": t["loss"]})
+    for name, arm, label in runs:
+        a = load(f"P0.4.1/op_traces/{name}.json")[arm]
+        for i, step in enumerate(a["step"]):
+            if step >= 240:
+                rows.append({"arm": label, "step": step, "grad_norm": a["grad_norm"][i], "loss": a["loss"][i]})
     write("shock_traces", rows)
 
 
