@@ -4,4 +4,4 @@ project:
     - index.qmd
 
 # No code cells: the charts are Apache ECharts, drawn in the browser from assets/data.js
-# (written by make_data.py), so rendering needs Quarto only.
+# (written by make_p0_data.py), so rendering needs Quarto only.

@@ -1,6 +1,6 @@
 /* Chart helpers for the Phase 0 deck (copied from p1-findings/assets/js/p1.js), on top of the template's Deck.echarts().
 
-   Every chart reads window.DeckData (assets/data.js, written by make_data.py) and is
+   Every chart reads window.DeckData (assets/data.js, written by make_p0_data.py) and is
    registered with Deck.chart(id, el => ...) in index.qmd, so it is drawn the first time
    its slide is shown. Values in DeckData are fractions; charts show points (x 100).
 

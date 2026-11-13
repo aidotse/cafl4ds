@@ -20,7 +20,7 @@ offline.
 ## Layout
 
 - `index.qmd`: the slides. Each chart is a `<div class="chart">` plus a `Deck.chart(id, el => ...)` block.
-- `assets/data.js`: the plotted numbers (`window.DeckData`), written by `make_data.py`. Do not edit by hand.
+- `assets/data.js`: the plotted numbers (`window.DeckData`), written by `make_p0_data.py`. Do not edit by hand.
 - `assets/js/charts.js`: chart helpers (interval bands, whiskers, multi-panel grids, marks), a copy of the P1 deck's
     `p1.js` exposed as `window.Charts`.
 - `assets/js/deck.js`, `assets/js/responsive.js`, `style.css`: the template's files, as in `p1-findings/`.
@@ -30,12 +30,12 @@ offline.
 
 ```bash
 # from the repo root: pull the plotted numbers into assets/data.js
-uv run python slides/p0-findings/make_data.py
+uv run python slides/p0-findings/make_p0_data.py
 cd slides/p0-findings && quarto render index.qmd
 ```
 
-`make_data.py` is the only Python, and it runs once, in the repo's own env, when the numbers change. It needs only the
-tracked files, and names the source of every table:
+`make_p0_data.py` is the only Python, and it runs once, in the repo's own env, when the numbers change. It needs only
+the tracked files, and names the source of every table:
 
 - Every table but two reads the artifacts under `docs/experiments/phase0/artifacts/`. That includes the per-step and
     per-checkpoint traces (`P0.2.2/E3_16seed/iid_trajectories.json`, `P0.4.0/*/traces.json`, `P0.4.1/op_traces/`), which

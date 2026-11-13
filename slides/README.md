@@ -25,6 +25,7 @@ Presentation decks on the project's results, one directory per deck, built on th
 cd slides/<deck> && quarto preview index.qmd
 ```
 
-Each deck's own README says how to refresh its numbers (in each, `make_data.py` writes `assets/data.js` from the run
-artifacts and substudy docs). Keep files under 2 MB (the repository's pre-commit limit): prefer JPEG for photographic
-backgrounds.
+Each deck's own README says how to refresh its numbers (in each, a Python script writes `assets/data.js` from the run
+artifacts and substudy docs). Give each deck's script its own name (`make_data.py`, `make_p0_data.py`): `mypy` checks
+the whole repo, and two files with the same module name stop it. Keep files under 2 MB (the repository's pre-commit
+limit): prefer JPEG for photographic backgrounds.
