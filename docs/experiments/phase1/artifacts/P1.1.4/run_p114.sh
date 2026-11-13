@@ -1,10 +1,10 @@
 #!/bin/bash
 # P1.1.4 — the reading foundation for P1.3's setup (design: P1.1.4.md). Stage 1, one mode per call:
 #   card0 (card 0): DINO-init SimSiam's IID seeds 6-15 (protections, lr 9e-5), then the dose pilots of both JE arms
-#          on their walks' step-846 states, then MAE-init JE's IID seeds 6-15 (protections, lr 3e-5), then the
+#          and of DINO-init DINO on their walks' step-846 states (DINO's damage hits student and teacher alike:
+#          cafl4ds.branch.damage_method), then MAE-init JE's IID seeds 6-15 (protections, lr 3e-5), then the
 #          provisional fourth arm, DINO-init DINO's IID seeds 4-15 (protections, lr 9e-5; no well: DINO's full
-#          checkpoint resumes, its centre primed before step 0). Its dose pilot waits for Stage 2's engineering
-#          (damage applied to student and teacher alike).
+#          checkpoint resumes, its centre primed before step 0).
 #   card1 (card 1): the MAE wells on P1.2.5's split (the 512-d x 8 decoder, and the 64-d x 2 one), the repaired MAE
 #          walk x seeds 1-5 (P1.2.2's recipe: protections, lr 1e-4), the natural failure (P1.2.1's recipe: 64-d decoder,
 #          no protections, lr 1e-4) walk x seeds 1-3, the repaired MAE's dose pilot, then its IID x seeds 1-15.
@@ -106,6 +106,7 @@ card0() {
     'seeds=[6,7,8,9,10,11,12,13,14,15]'
   pilot 0 dino_simsiam "outputs/p125/partG/drive/dino_simsiam_p9e-5_walk/checkpoints/s{seed}/step00846.pt" $WS $SIM
   pilot 0 mae_je "outputs/p125/drive/mae_je_walk/checkpoints/s{seed}/step00846.pt" $WM $MAEJE
+  pilot 0 dino_dino "outputs/p125/drive/dino_dino_walk/checkpoints/s{seed}/step00846.pt" null $DINO
   drive 0 drive/mae_je_iid_6to15 s15 $DIET "$SCENES" $MAEJE $PROTECT optim.lr=3e-5 stream.order=iid well=$WM $CKPTS "$STEPS" \
     'seeds=[6,7,8,9,10,11,12,13,14,15]'
   drive 0 drive/dino_dino_iid_4to15 s15 $DIET "$SCENES" $DINO $PROTECT optim.lr=9e-5 stream.order=iid $CKPTS "$STEPS" \

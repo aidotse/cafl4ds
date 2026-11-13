@@ -1,11 +1,14 @@
 # P1.1.4 — the reading foundation for P1.3's setup (scripts/analyze_p114.py).
 # `root` holds the drives (outputs/ in the main checkout; the run dirs live on the project share).
 root: outputs
-mode: bands # bands (Part 1) | power (Part 4)
+mode: bands # bands (Part 1) | power (Part 4) | breadth (Part 4b)
 out: ${root}/p114/${mode}.json
 
 # Part 1 — the healthy null and the single-drive bands, per arm. `iid_seeds` / `check_seeds` pick the
-# calibration and the fresh check from the pooled IID dirs (null = every seed; [] = no check).
+# calibration and the fresh check from the pooled IID dirs (null = every seed; [] = no check). `ladder` is the
+# val referee's per-image reads (walk_s<i>_* and iid_s<i>_end, ladder index = drive seed - 1), for the
+# canary-against-referee check; `ft_ladders` hold the fine-tune reads, searched in order, for the `degradation`
+# label's fine-tune corroboration of a kNN-canary fire.
 arms:
   dino_simsiam:
     backbone: je
@@ -13,20 +16,45 @@ arms:
     iid: [p125/partG/drive/dino_simsiam_p9e-5_iid]
     iid_seeds: null
     check_seeds: []
+    ladder: p125/ladder/dino_simsiam_p9e-5
+    ft_ladders: [p125/ladder/dino_simsiam_p9e-5]
   mae_je:
     backbone: je
     walk: [p125/drive/mae_je_walk]
     iid: [p125/drive/mae_je_iid]
     iid_seeds: null
     check_seeds: []
+    ladder: p125/ladder/mae_je
+    ft_ladders: [p125/ladder_ft/mae_je]
   # The provisional fourth arm (audit D5). Its projector surface is DINO's head bottleneck (256-d), as P1.2.5
-  # logged it. Only 3 IID seeds before Stage 1 (seeds 1-3, end-only checkpoints): 1a reads it descriptively.
+  # logged it. Only 3 IID seeds before Stage 1 (seeds 1-3): too few to calibrate a threshold (each
+  # leave-one-out fit needs 3), so 1a reads it descriptively — the null, the bands, the walk's max z.
   dino_dino:
     backbone: je
     walk: [p125/drive/dino_dino_walk]
     iid: [p125/drive/dino_dino_iid]
     iid_seeds: null
     check_seeds: []
+    ladder: p125/ladder/dino_dino
+    ft_ladders: [p125/ladder_ft/dino_dino]
+  # Part A's gentler DINO-init SimSiam recipe (protections, lr 3e-5): how far the bands move with the rate.
+  dino_simsiam_3e-5:
+    backbone: je
+    walk: [p125/drive/dino_simsiam_walk]
+    iid: [p125/drive/dino_simsiam_iid, p125/drive/dino_simsiam_iid45]
+    iid_seeds: null
+    check_seeds: []
+    ladder: p125/ladder/dino_simsiam
+    ft_ladders: [p125/ladder_ft/dino_simsiam]
+
+# The `degradation` label's fine-tune corroboration: the rungs read, and the ladder checkpoints looked for.
+finetune_keys: [scene|ft10, scene|ft100, "presence_cell:traffic light|ft10", "presence_cell:traffic light|ft100"]
+ladder_checkpoints: [t00100, t00212, t00423, t00846, t01269, end]
+
+# The canary against the val referee: per rung, the canary channel's slice -> the referee's scene slice.
+referee:
+  rungs: [knn, linear]
+  slices: { pooled: all, daytime: "tod:daytime", dawn_dusk: "tod:dawn/dusk", night: "tod:night" }
 
 # P1.1.1's panels and settings (configs/reading_protocol.yaml), unchanged except the span: P1.2.5 logs
 # every 25 steps (69 readings), so +-8 readings covers the share of the drive P1.1.1's +-15 of ~120 did.
@@ -48,11 +76,16 @@ n_query_stratum: 300
 
 # Part 4 — the referee's power on past regimes, from P1.2.5's per-image ladder reads at every walk checkpoint.
 power:
-  ladders: { dino_simsiam: p125/ladder/dino_simsiam_p9e-5, mae_je: p125/ladder/mae_je, dino_dino: p125/ladder/dino_dino }
+  # per arm, its ladder dirs (sharing the val query); each rung is read from the first dir holding it. The
+  # fine-tunes of MAE-init JE and DINO-init DINO were read apart (DINO's after P1.2.5's fine-tune fix).
+  ladders:
+    dino_simsiam: [p125/ladder/dino_simsiam_p9e-5]
+    mae_je: [p125/ladder/mae_je, p125/ladder_ft/mae_je]
+    dino_dino: [p125/ladder/dino_dino, p125/ladder_ft/dino_dino]
   seeds: [0, 1, 2, 3, 4] # walk_s<i>_* (the drives' seeds 1-5)
   checkpoints: [t00100, t00212, t00423, t00846, t01269, end]
   tasks: [scene, "presence_cell:traffic light"]
-  rungs: [knn, linear]
+  rungs: [knn, linear, ft10, ft100]
   # each past slice -> t0, the first checkpoint after the stream left it (P1.2.5's timeline: daytime clear
   # 0-325, the other daytime eras to ~800, dawn/dusk to ~925, then night, which is never left)
   past:
@@ -70,3 +103,13 @@ power:
   seed_multipliers: [1, 2]
   dense_checkpoints: 10 # a P1.3-like grid after leaving a regime (Bonferroni bound)
   n_boot: 2000
+
+# Part 4b — breadth: P1.2.5's Part C panel, end-of-drive linear (and kNN) delta against the floor, one-sided,
+# Holm over the panel (its MDD at the strictest step). The gate tasks are read beside it, outside the family.
+breadth:
+  panel: [weather, "large_cell:car,bus,truck:0.02", "presence_cell:bus", "presence_cell:pedestrian"]
+  reference: [scene, "presence_cell:traffic light"]
+  rungs: [linear, knn, ft10, ft100]
+  floor: floor
+  alpha: 0.05
+  targets: [0.01, 0.02]

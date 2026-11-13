@@ -209,9 +209,15 @@ class DINO(SSLMethod):
             return "dino_nocenter"
         return "dino" if self.sharpening else "dino_nosharpen"
 
-    def set_horizon(self, total_steps: int) -> None:
-        """Ramp the teacher momentum to 1 over ``total_steps`` (restarting the ramp)."""
-        self._step, self._total = 0, int(total_steps)
+    def set_horizon(self, total_steps: int, start: int = 0) -> None:
+        """Ramp the teacher momentum to 1 over ``total_steps``, from step ``start`` (0 restarts the ramp).
+
+        A branch resumed at step ``s`` of a drive passes ``start=s``: its teacher then moves exactly as the
+        drive's would have from there (the step counter is not in the checkpoint).
+        """
+        if not 0 <= start <= total_steps:
+            raise ValueError(f"start must be in [0, {total_steps}]; got {start}.")
+        self._step, self._total = int(start), int(total_steps)
 
     @torch.no_grad()  # type: ignore[misc]  # untyped decorator without torch stubs (mypy hook env)
     def prime(self, batches: Iterable[torch.Tensor]) -> None:

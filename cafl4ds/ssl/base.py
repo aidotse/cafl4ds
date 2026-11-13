@@ -62,10 +62,11 @@ class SSLMethod(nn.Module, ABC):  # type: ignore[misc]  # nn.Module is Any witho
         DINO (:mod:`cafl4ds.ssl.dino`) updates its teacher here, from the student the step just moved.
         """
 
-    def set_horizon(self, total_steps: int) -> None:
+    def set_horizon(self, total_steps: int, start: int = 0) -> None:
         """Tell the method how many optimizer steps the drive will take — a no-op, except for a scheduled method.
 
-        DINO ramps its teacher momentum over the drive (0.996 → 1, its own schedule).
+        DINO ramps its teacher momentum over the drive (0.996 → 1, its own schedule). ``start`` is the
+        step a resumed branch continues from, so the schedule picks up where the drive left it.
         """
 
     def prime(self, batches: Iterable[torch.Tensor]) -> None:

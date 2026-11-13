@@ -1,6 +1,6 @@
 r"""P1.1.1 dose pilot — read the canary and the instruments on a damaged well, with no training.
 
-The surgical positive control (:func:`cafl4ds.branch.damage_top_blocks`) needs doses that span "no
+The surgical positive control (:func:`cafl4ds.branch.damage_method`) needs doses that span "no
 dent" to "near chance" before any drive is spent on them. This reads each candidate dose once: load
 the well (or any saved checkpoint), damage a fresh copy, and run the health monitor on the canary
 probes. Minutes, not hours. Writes ``dose_pilot.json`` into the run dir and prints a table.
@@ -62,7 +62,7 @@ def pilot(config: DictConfig, out_dir: Path) -> list[dict[str, Any]]:
     for spec in ["none:0", *config.doses]:
         dose = parse_dose(str(spec))
         method = copy.deepcopy(base)
-        dent = branch.damage_top_blocks(method.encoder, dose["mode"], dose["k"], dose["scale"], seed=int(config.seed))
+        dent = branch.damage_method(method, dose["mode"], dose["k"], dose["scale"], seed=int(config.seed))
         rows.append({"dose": str(spec), **dose, **dent, "metrics": monitor.measure(method, 0)})
         m = rows[-1]["metrics"]
         logger.info(

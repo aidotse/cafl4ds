@@ -103,10 +103,13 @@ def _branch_stream(
         path = to_absolute_path(str(resume.checkpoint).format(seed=int(config.seed)))
         warmup.load_well(method, path)
         start = 0 if recovery else int(resume.get("step") or 0)
+        # A drive branch continues the drive's schedules from `start` (DINO's teacher momentum; P1.1.4):
+        # restarting them would give the branch, and its dose-0 twin, a different drive from the original.
+        method.set_horizon(len(stream), start=start)
         method.to(config.device)
         pre = monitor.measure(method, start - 1)
-        dent = branch.damage_top_blocks(
-            method.encoder,
+        dent = branch.damage_method(
+            method,
             str(damage.get("mode", "none")),
             int(damage.get("k", 0)),
             scale=float(damage.get("scale", 0.0)),

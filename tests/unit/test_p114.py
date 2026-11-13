@@ -1,12 +1,27 @@
-"""P1.1.4 — the referee-power core (Part 4) and the false-alarm count (Part 1)."""
+"""P1.1.4 — the referee power, the split adjudication and the damage branches' engineering.
 
+Part 4's referee-power core, Part 1's false-alarm count and split adjudication, and Part 2's damage on
+DINO's method (student and teacher alike) and its resumed momentum ramp.
+"""
+
+import copy
 import math
+import sys
+from pathlib import Path
 
 import numpy as np
 import pytest
+import torch
 
 from cafl4ds import referee_power as rp
-from scripts.analyze_p114 import wilson_interval
+from cafl4ds.branch import damage_method, damage_top_blocks, top_blocks
+from cafl4ds.models.vit import TinyViTEncoder
+from cafl4ds.reading_protocol import adjudicate_split, finetune_drop
+from cafl4ds.ssl.dino import DINO, build_dino, momentum_at
+from scripts.analyze_p114 import _perm_p, _welch_ci, three_panels, wilson_interval
+
+sys.path.insert(0, str(Path(__file__).parent))
+from test_p125 import _DINO_SMALL, _tiny_vit  # noqa: E402
 
 
 def test_change_noise_point_is_the_seed_mean_bacc_fall() -> None:
@@ -83,3 +98,134 @@ def test_wilson_interval() -> None:
     assert lo == pytest.approx(0.0119, abs=1e-3) and hi == pytest.approx(0.2983, abs=1e-3)
     with pytest.raises(ValueError):
         wilson_interval(3, 2)
+
+
+# ---- the split adjudication (Part 1) -------------------------------------------------------------------------
+
+
+def test_adjudicate_split_reads_information_and_geometry_apart() -> None:
+    """Linear canary = degradation; kNN canary = geometry unless a fine-tune rung drops with it."""
+    assert adjudicate_split({}) == "quiet"
+    assert adjudicate_split({"label_free": True}) == "movement"
+    assert adjudicate_split({"label_free": True, "canary_knn": True}) == "geometry"
+    assert adjudicate_split({"canary_knn": True}, finetune=None) == "geometry"  # corroboration unread
+    assert adjudicate_split({"canary_knn": True}, finetune=False) == "geometry"
+    assert adjudicate_split({"canary_knn": True}, finetune=True) == "degradation"
+    assert adjudicate_split({"canary_linear": True}, finetune=False) == "degradation"
+
+
+def test_finetune_drop_counts_only_checkpoints_at_or_after_the_fire_with_a_healthy_read() -> None:
+    """Below every healthy seed at an eligible checkpoint drops; earlier checkpoints and unread ones do not count."""
+    steps = {"t00100": 100.0, "t00846": 846.0, "end": math.inf}
+    healthy = {"t00100": [0.60, 0.62], "end": [0.60, 0.61]}
+    assert finetune_drop({"t00100": 0.50, "end": 0.605}, healthy, steps, after=500) is False  # the drop came before
+    assert finetune_drop({"t00100": 0.50, "end": 0.59}, healthy, steps, after=500) is True
+    assert finetune_drop({"t00846": 0.10}, healthy, steps, after=500) is None  # no healthy read at 846
+    assert finetune_drop({"t00100": 0.50}, healthy, steps, after=0) is True
+
+
+def test_three_panels_split_the_canary_by_rung() -> None:
+    """The label-free signals stay one panel; the canary channels split into linear and kNN."""
+    rows = [{"rankme": 1.0, "knn_acc": 0.5, "knn_acc_night": 0.5, "linear_acc": 0.6}]
+    out = three_panels(rows, ["rankme", "uniformity"], ["knn_acc", "linear_acc", "knn_acc_night", "linear_acc_night"])
+    assert out == {
+        "label_free": ["rankme"],
+        "canary_linear": ["linear_acc"],
+        "canary_knn": ["knn_acc", "knn_acc_night"],
+    }
+
+
+def test_welch_interval_and_exact_permutation() -> None:
+    """The Welch interval covers the difference; the permutation p of a complete separation is 2 / C(10, 5)."""
+    a, b = np.array([1.0, 1.1, 1.2, 1.3, 1.4]), np.array([0.0, 0.1, 0.2, 0.3, 0.4])
+    diff, lo, hi = _welch_ci(a, b)
+    assert diff == pytest.approx(1.0) and lo < 1.0 < hi and lo > 0
+    assert _perm_p(a, b) == pytest.approx(2 / 252)
+    assert _perm_p(a, a.copy()) == 1.0
+
+
+# ---- damage on DINO's method and the resumed momentum (Part 2's engineering) ---------------------------------
+
+
+def _tiny_dino() -> DINO:
+    method = build_dino(_tiny_vit(), **_DINO_SMALL)
+    with torch.no_grad():  # a trained student, apart from the teacher
+        for p in method.student.parameters():
+            p.add_(0.05 * torch.randn_like(p))
+    return method
+
+
+def _snapshot(module: torch.nn.Module) -> dict[str, torch.Tensor]:
+    return {k: v.detach().clone() for k, v in module.state_dict().items()}
+
+
+@pytest.mark.parametrize(("mode", "k", "scale"), [("none", 2, 1.0), ("reinit", 0, 0.0), ("noise", 2, 0.0)])
+def test_damage_method_at_dose_zero_is_a_no_op_on_the_whole_method(mode: str, k: int, scale: float) -> None:
+    """Dose 0 leaves teacher, student, heads and centre bit for bit."""
+    method = _tiny_dino()
+    before = _snapshot(method)
+    out = damage_method(method, mode, k, scale=scale)
+    assert out["rel_change"] == 0.0 and out["twin_rel_change"] == 0.0
+    assert all(torch.equal(before[n], v) for n, v in method.state_dict().items())
+
+
+@pytest.mark.parametrize(("mode", "scale"), [("reinit", 0.0), ("noise", 0.5)])
+def test_damage_method_hits_teacher_and_student_alike_and_nothing_else(mode: str, scale: float) -> None:
+    """The same damage reaches both backbones: equal blocks stay equal; heads and centre stay as they were."""
+    method = _tiny_dino()
+    with torch.no_grad():  # make the damaged block equal in both, to test "equal stays equal"
+        top_blocks(method.student, 1)[0].load_state_dict(top_blocks(method.encoder, 1)[0].state_dict())
+    before = _snapshot(method)
+    out = damage_method(method, mode, 1, scale=scale, seed=3)
+    assert out["rel_change"] > 0 and out["twin_rel_change"] > 0
+    teacher, student = top_blocks(method.encoder, 1)[0].state_dict(), top_blocks(method.student, 1)[0].state_dict()
+    assert all(torch.equal(teacher[n], student[n]) for n in teacher)
+    after = method.state_dict()
+    changed = {n for n in before if not torch.equal(before[n], after[n])}
+    last = f"blocks.{len(method.encoder.blocks) - 1}."
+    assert changed and all(n.startswith((f"encoder.{last}", f"student.{last}")) for n in changed)
+
+
+def test_damage_method_noise_keeps_the_teacher_student_difference() -> None:
+    """Under noise the two get the same delta, so the moving average's lag behind the student is unchanged."""
+    method = _tiny_dino()
+    t, s = top_blocks(method.encoder, 2), top_blocks(method.student, 2)
+    gap = [(a.mlp.fc1.weight - b.mlp.fc1.weight).clone() for a, b in zip(t, s, strict=True)]
+    damage_method(method, "noise", 2, scale=0.7, seed=1)
+    for g, a, b in zip(gap, t, s, strict=True):
+        assert torch.allclose(a.mlp.fc1.weight - b.mlp.fc1.weight, g, atol=1e-6)
+
+
+def test_damage_without_a_twin_is_p111s_draw() -> None:
+    """A method with no student (SimSiam, MAE) is damaged exactly as P1.1.1 damaged it."""
+    torch.manual_seed(0)
+    enc = TinyViTEncoder(img_size=8, patch_size=4, embed_dim=16, depth=4, num_heads=2)
+    holder = torch.nn.Module()
+    holder.encoder = copy.deepcopy(enc)
+    out = damage_method(holder, "noise", 2, scale=0.3, seed=4)
+    damage_top_blocks(enc, "noise", 2, scale=0.3, seed=4)
+    assert "twin_rel_change" not in out
+    assert all(
+        torch.equal(a, b) for a, b in zip(enc.state_dict().values(), holder.encoder.state_dict().values(), strict=False)
+    )
+
+
+def test_damage_rejects_a_mismatched_twin() -> None:
+    """A twin whose blocks differ in shape is refused."""
+    a = TinyViTEncoder(img_size=8, patch_size=4, embed_dim=16, depth=4, num_heads=2)
+    b = TinyViTEncoder(img_size=8, patch_size=4, embed_dim=8, depth=4, num_heads=2)
+    with pytest.raises(ValueError, match="twin"):
+        damage_top_blocks(a, "noise", 2, scale=0.1, twin=b)
+
+
+def test_resumed_dino_continues_the_drives_momentum_ramp() -> None:
+    """set_horizon(total, start=s): the next update uses the momentum the drive would have used at step s + 1."""
+    method = _tiny_dino()
+    method.set_horizon(10, start=6)
+    before = method.encoder.norm.weight.clone()
+    method.after_step()
+    m = momentum_at(7, 10, 0.996)
+    assert m > momentum_at(1, 10, 0.996)
+    assert torch.allclose(method.encoder.norm.weight, m * before + (1 - m) * method.student.norm.weight)
+    with pytest.raises(ValueError, match="start"):
+        method.set_horizon(10, start=11)

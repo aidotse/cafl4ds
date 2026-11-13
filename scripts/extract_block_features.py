@@ -101,8 +101,8 @@ class _Reader:
             if damage is not None:
                 entry["damage"] = {
                     **damage,
-                    **branch.damage_top_blocks(
-                        self.method.encoder, damage["mode"], damage["k"], damage["scale"], seed=damage["seed"]
+                    **branch.damage_method(
+                        self.method, damage["mode"], damage["k"], damage["scale"], seed=damage["seed"]
                     ),
                 }
             feats = block_features(self.method, self.images, batch_size=self.batch_size)

@@ -146,8 +146,33 @@ def _reinit_block(block: nn.Module, generator: torch.Generator) -> None:
             m.bias.zero_()
 
 
+def _linears(blocks: list[nn.Module]) -> list[nn.Linear]:
+    return [m for block in blocks for m in block.modules() if isinstance(m, nn.Linear)]
+
+
+def _rel_change(linears: list[nn.Linear], before: list[torch.Tensor]) -> float:
+    num = sum(float((m.weight.detach() - b).pow(2).sum()) for m, b in zip(linears, before, strict=True))
+    den = sum(float(b.pow(2).sum()) for b in before)
+    return (num / den) ** 0.5 if den > 0 else 0.0
+
+
+def _add_noise(linears: list[nn.Linear], twins: list[nn.Linear], scale: float, generator: torch.Generator) -> None:
+    """Add ``scale`` × each weight's own SD of Gaussian noise; each twin weight gets the identical delta."""
+    for i, m in enumerate(linears):
+        noise = torch.randn(m.weight.shape, generator=generator).to(m.weight.device)
+        delta = noise * (scale * m.weight.std())
+        m.weight.add_(delta)
+        if twins:
+            twins[i].weight.add_(delta.to(twins[i].weight.device))
+
+
 def damage_top_blocks(
-    encoder: TinyViTEncoder, mode: str, k: int, scale: float = 0.0, seed: int = 0
+    encoder: TinyViTEncoder,
+    mode: str,
+    k: int,
+    scale: float = 0.0,
+    seed: int = 0,
+    twin: TinyViTEncoder | None = None,
 ) -> dict[str, float]:
     """Damage the top ``k`` encoder blocks in place — the surgical positive control.
 
@@ -158,8 +183,14 @@ def damage_top_blocks(
     matrix (biases and LayerNorm parameters untouched), a graded dent that keeps the blocks' function
     partly intact. ``k = 0``, ``mode="none"`` or a zero noise ``scale`` leave the encoder unchanged.
 
+    ``twin`` is a second backbone of the same architecture that must take the *same* damage — DINO's
+    student, whose moving average is the encoder read (P1.1.4). It gets the identical perturbation:
+    the same re-drawn weights under ``reinit``, and under ``noise`` the same additive delta (sized by
+    ``encoder``'s tensors), so a twin equal to ``encoder`` stays equal, and their difference is kept.
+
     The draws come from a CPU generator seeded by ``seed`` inside a forked RNG, so the global RNG —
-    and with it every later augmentation and masking draw — is left exactly where it was.
+    and with it every later augmentation and masking draw — is left exactly where it was. Without a
+    twin the draws are exactly P1.1.1's.
 
     Args:
         encoder: The encoder to damage (any device).
@@ -167,29 +198,51 @@ def damage_top_blocks(
         k: How many top blocks to damage.
         scale: Noise standard deviation as a multiple of each weight tensor's std (``noise`` only).
         seed: Seed for the damage draws.
+        twin: A backbone to damage identically (``None``: the encoder alone).
 
     Returns:
-        ``{"rel_change"}`` — the relative L2 change of the damaged blocks' weight matrices (0 if none).
+        ``{"rel_change"}`` — the relative L2 change of the damaged blocks' weight matrices (0 if none);
+        with a twin, also ``twin_rel_change``.
 
     Raises:
-        ValueError: If ``mode`` is unknown, ``k`` is out of range, or ``scale`` is negative.
+        ValueError: If ``mode`` is unknown, ``k`` is out of range, ``scale`` is negative, or the twin's
+            blocks do not match the encoder's.
     """
     if mode not in DAMAGE_MODES:
         raise ValueError(f"mode must be one of {DAMAGE_MODES}; got {mode!r}.")
     if scale < 0.0:
         raise ValueError(f"scale must be >= 0; got {scale}.")
     blocks = top_blocks(encoder, k)
-    linears = [m for block in blocks for m in block.modules() if isinstance(m, nn.Linear)]
+    linears = _linears(blocks)
+    twin_blocks = top_blocks(twin, k) if twin is not None else []
+    twin_linears = _linears(twin_blocks)
+    if twin is not None and [m.weight.shape for m in twin_linears] != [m.weight.shape for m in linears]:
+        raise ValueError("the twin's top blocks do not match the encoder's.")
     before = [m.weight.detach().clone() for m in linears]
+    twin_before = [m.weight.detach().clone() for m in twin_linears]
     generator = torch.Generator().manual_seed(seed)
     with torch.no_grad(), torch.random.fork_rng(devices=[]):
         if mode == "reinit":
             for block in blocks:
                 _reinit_block(block, generator)
+            for block, other in zip(blocks, twin_blocks, strict=False):
+                other.load_state_dict(block.state_dict())
         elif mode == "noise" and scale > 0.0:
-            for m in linears:
-                noise = torch.randn(m.weight.shape, generator=generator).to(m.weight.device)
-                m.weight.add_(noise * (scale * m.weight.std()))
-    num = sum(float((m.weight.detach() - b).pow(2).sum()) for m, b in zip(linears, before, strict=True))
-    den = sum(float(b.pow(2).sum()) for b in before)
-    return {"rel_change": (num / den) ** 0.5 if den > 0 else 0.0}
+            _add_noise(linears, twin_linears, scale, generator)
+    out = {"rel_change": _rel_change(linears, before)}
+    if twin is not None:
+        out["twin_rel_change"] = _rel_change(twin_linears, twin_before)
+    return out
+
+
+def damage_method(method: nn.Module, mode: str, k: int, scale: float = 0.0, seed: int = 0) -> dict[str, float]:
+    """Damage a method's read encoder, and its ``student`` backbone alike when it trains one (DINO).
+
+    A method whose read encoder is a moving average of a trained student must lose the same weights in
+    both: damage to the average alone would be pulled back toward the intact student, and damage to
+    the student alone would reach the read encoder only diluted, over hundreds of steps. Every other
+    state (heads, DINO's centre) is left as it stands.
+    """
+    student = getattr(method, "student", None)
+    twin = student if isinstance(student, TinyViTEncoder) and student is not method.encoder else None
+    return damage_top_blocks(method.encoder, mode, k, scale=scale, seed=seed, twin=twin)

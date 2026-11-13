@@ -463,6 +463,56 @@ def adjudicate(fired: dict[str, bool], arbiters: list[str]) -> str:
     return "quiet"
 
 
+def finetune_drop(
+    walk: dict[str, float], healthy: dict[str, list[float]], steps: dict[str, float], after: float
+) -> bool | None:
+    """Did a fine-tune read fall below every healthy seed's read, at a checkpoint at or after ``after``?
+
+    P1.1.4's corroboration for a kNN-canary fire: a geometry change counts as degradation only when
+    a fine-tune rung drops with it. Read per checkpoint against the healthy (IID) seeds' reads there.
+
+    Args:
+        walk: Checkpoint name → the drive's fine-tune read (balanced accuracy).
+        healthy: Checkpoint name → the healthy seeds' reads at that checkpoint.
+        steps: Checkpoint name → its drive step (the end as ``inf``).
+        after: The step the kNN panel first fired.
+
+    Returns:
+        ``True`` if any eligible checkpoint drops, ``False`` if none does, ``None`` if no checkpoint at
+        or after ``after`` has both the drive's read and a healthy one (the check cannot be made).
+    """
+    eligible = [c for c, v in walk.items() if steps[c] >= after and healthy.get(c) and np.isfinite(v)]
+    if not eligible:
+        return None
+    return any(walk[c] < min(healthy[c]) for c in eligible)
+
+
+def adjudicate_split(fired: dict[str, bool], finetune: bool | None = None) -> str:
+    """P1.1.4's adjudication over three panels: information (linear canary) and geometry (kNN canary) apart.
+
+    * ``degradation`` — the linear canary panel fired; or the kNN canary panel fired and a fine-tune
+      rung dropped with it (``finetune`` is ``True``, see :func:`finetune_drop`).
+    * ``geometry`` — the kNN canary panel fired without either: the selection filter's input moved.
+      ``finetune`` ``None`` means the corroboration could not be read, so the label is provisional.
+    * ``movement`` — only the label-free panel fired.
+    * ``quiet`` — nothing fired.
+
+    Args:
+        fired: Panel → did it fire; keys ``label_free``, ``canary_linear``, ``canary_knn`` (missing = quiet).
+        finetune: The fine-tune corroboration for a kNN fire (``None`` = not available).
+
+    Returns:
+        ``"quiet"``, ``"movement"``, ``"geometry"`` or ``"degradation"``.
+    """
+    if fired.get("canary_linear", False):
+        return "degradation"
+    if fired.get("canary_knn", False):
+        return "degradation" if finetune else "geometry"
+    if fired.get("label_free", False):
+        return "movement"
+    return "quiet"
+
+
 def trailing_diversity(eras: np.ndarray | list[int], window: int) -> np.ndarray:
     """Distinct regimes among the last ``window`` batches at each checkpoint — how mixed the recent diet is.
 
