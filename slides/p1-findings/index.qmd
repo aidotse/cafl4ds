@@ -186,7 +186,8 @@ P1.1: can we <i>read</i> degradation on real data? &nbsp;·&nbsp; P1.2: is conti
 
 **Reads.**
 
-- **Canary:** a labelled 3-class probe, the referee for "information lost"
+- **Canary:** a small labelled image set, never trained on. At every checkpoint, kNN and a linear probe predict its
+    scene (3 classes) from frozen features: the referee for "information lost"
 - **Health signals:** rank, drift, uniformity (label-free)
 - **Readout ladder** on held-out val: kNN, linear probe, few-shot
 
@@ -300,12 +301,15 @@ Deck.chart("ch-canary", (el) => {
       tooltip: { formatter: (p) => `${name}<br>σ ${p.value[0]}<br>dent ${p.value[1].toFixed(1)} pts<br>fired on ${p.value[2]}/3 seeds` },
     });
   }
-  series.push(P.marks({ yRegion: { from: -3.5, to: 0, text: "~3 pts: missed" }, yLine: { y: -7, color: C.yellow, text: "6–8 pts: called" } }));
+  // Bands from the doses themselves: the largest mostly-missed drop (3.7) and the smallest drop called on every seed (6.8).
+  series.push(P.marks({ yRegion: { from: -3.7, to: 0, text: "≤ ~3 pts: mostly missed" } }));
+  series.push(P.marks({ yRegion: { from: -6.8, to: -3.7, text: "no dose landed here", color: C.muted, alpha: 0.09 },
+    yLine: { y: -6.8, color: C.yellow, text: "≥ 6–8 pts: called on every seed" } }));
   P.draw(el, {
-    title: P.title("Surgical damage, against its undamaged twin (3 seeds)"),
+    title: P.title("Damage of known size, on one drive, against its undamaged twin (3 seeds)"),
     legend: P.legend(), grid: { left: 100, right: 30, top: 60, bottom: 150 },
     xAxis: P.axis("Injected weight noise (σ × each tensor's SD)"),
-    yAxis: P.axis("Canary linear dent (pts)", { nameGap: 60 }),
+    yAxis: P.axis("Change in canary linear accuracy (pts)", { nameGap: 60 }),
     series,
   });
 });
@@ -319,7 +323,8 @@ Deck.chart("ch-canary", (el) => {
 - From a **settled** pretrained model, a healthy drive barely moves any instrument (P1.1.0)
 - **A single-drive rule** against healthy bands: 1–2 false alarms in 15 fresh drives per panel. So "~1 in 10" is a
     point estimate; the 95% bound is 1 in 3 (audit B3)
-- **The canary calls a 6–8 pt loss and misses ~3**, on both backbones; walk and IID read the same
+- **On one drive, a 6–8 pt drop in canary accuracy is called on every seed; a ~3 pt drop mostly goes unseen.** Both
+    backbones; walk and IID read the same. A 5-seed comparison resolves ~2–4.5 pts
 - All measured on P1.1's setup: a 119-step drive, MAE with an undersized decoder (audit C1, D1)
 
 :::
@@ -1014,7 +1019,8 @@ cafl4ds · Phase 1 findings · P1.2 · <span class="audit" data-study="P1.2"></s
 <h3 style="color: #4CAF50;">Trust</h3>
 
 - **The code:** P1.0's audit is closed; P1.1's audit finds no result-changing bug, and its numbers recompute from raw data
-- On P1.1's setup, a healthy drive is quiet, and the canary calls a 6–8 pt loss on one drive
+- On P1.1's setup, a healthy drive is quiet, and on one drive the canary calls a 6–8 pt accuracy drop (~3 pts mostly
+    goes unseen)
 - MAE's natural forgetting shows in the **middle blocks**, 5/5 against its twin
 - Adapting **beats its frozen start** on SimSiam-objective backbones, strong start included; on DINO the gain is
     **BDD-specific**
