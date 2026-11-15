@@ -17,7 +17,8 @@
 #   1-3), damages the encoder (the dose's draw varies with the drive seed, as in the pilots), saves that start state,
 #   and drives the rest of the walk, saving step 1,269 and the end. Per arm: the dose-0 twin, four noise doses read
 #   off the 3-seed pilots (2-15 linear-canary points), and one re-init (the specificity control where the pilot
-#   passes it, else one more dose; P1.1.4.md). The block features follow in `features <card>`.
+#   passes it, else one more dose; P1.1.4.md). Then `features <card>`: the block features of every checkpoint the
+#   reader screen reads (branches, walks, IID drives, natural failures), on the same cards' arms.
 set -u
 cd /home/mauricio/projects/cafl4ds
 SCENES='data.scenes=["city street",highway,residential]'
@@ -147,8 +148,15 @@ branches() {
 
 branch_reads() {  # card arm floor ft-lr encoder-flags...: the val ladder at each branch's start, step 1,269 and end
   card=$1; arm=$2; floor=$3; lr=$4; shift 4
-  for d in $OUT/branch/${arm}_*; do ckpt_list $d $(basename $d | sed "s/^${arm}_//") 1 2 3; done \
+  for d in $(br $arm | tr , ' '); do ckpt_list $d $(basename $d | sed "s/^${arm}_//") 1 2 3; done \
     | ladder $card branch_$arm $floor $lr "$@"
+}
+
+# An arm's branch dirs, comma-separated: its own kinds only (a bare `mae_*` would also match `mae_je_*`).
+br() { ls -d $OUT/branch/${1}_dose0 $OUT/branch/${1}_reinit[0-9]* $OUT/branch/${1}_noise0p* 2>/dev/null | paste -sd,; }
+
+branch_reads_mae() {  # card: the MAE arm's branch ladder alone (the first launcher's pattern caught MAE-init JE's dirs)
+  branch_reads $1 mae $WR 3e-5 $MAE $DEC
 }
 
 # The walks' step-846 states and recipes (P1.2.5's walks for the JE starts, P1.1.4's for MAE); doses in SD multiples.
@@ -169,6 +177,28 @@ stage2_card1() {
   branches 1 mae $B_MAE $WR 2 "0.4 0.5 0.65 0.875" $MAE $DEC $PROTECT optim.lr=1e-4 stream.order=walk
   branch_reads 1 mae_je $WM 3e-5 $MAEJE
   branch_reads 1 mae $WR 3e-5 $MAE $DEC
+}
+
+# The block features (P1.1.2's per-block reads) of every checkpoint an arm's reader screen reads: its branches, its
+# walks, its IID drives with all six checkpoints, and its natural failure. One extraction per arm (one method); with no
+# well (DINO-init DINO) the anchor is the method as built. features1 <card> <arm> <well|null> <dirs> -- recipe...
+features1() {
+  card=$1; arm=$2; well=$3; dirs=$4; shift 4
+  link features/$arm
+  [ -f $OUT/features/$arm/index.json ] && return
+  run $card python scripts/extract_block_features.py $DIET "$SCENES" "$@" well=$well "lens.drives=[$dirs]" \
+    hydra.run.dir=$SH/features/$arm
+}
+
+features_card0() {
+  features1 0 dino_simsiam $WS "$(br dino_simsiam),outputs/p125/partG/drive/dino_simsiam_p9e-5_walk,$OUT/drive/dino_simsiam_iid_6to15,outputs/p125/partG/drive/dino_simsiam_np_walk" $SIM
+  features1 0 dino_dino null "$(br dino_dino),outputs/p125/drive/dino_dino_walk,$OUT/drive/dino_dino_iid_4to15" $DINO
+}
+
+features_card1() {
+  features1 1 mae_je $WM "$(br mae_je),outputs/p125/drive/mae_je_walk,$OUT/drive/mae_je_iid_6to15,outputs/p125/partG/drive/mae_je_np_walk" $MAEJE
+  features1 1 mae $WR "$(br mae),$OUT/drive/mae_walk,$OUT/drive/mae_iid" $MAE $DEC
+  features1 1 mae_fail $WF "$OUT/drive/mae_fail_walk" $MAE  # the 64-d decoder: its own method and anchor
 }
 
 card0() {
@@ -203,6 +233,8 @@ case "${1:-}" in
   reads1) reads_$2 $3 > $SH/reads_$2.log 2>&1 ;;
   pilots_fine) pilots_fine $2 > $SH/pilots_fine.log 2>&1 ;;
   stage2) stage2_card$2 > $SH/stage2_card$2.log 2>&1 ;;
-  *) echo "usage: $0 card0|card1|reads|reads1 <je|dd|mae> <card>|pilots_fine <card>|stage2 <card>"; exit 1 ;;
+  features) features_card$2 > $SH/features_card$2.log 2>&1 ;;
+  branch_reads_mae) branch_reads_mae $2 > $SH/branch_reads_mae.log 2>&1 ;;
+  *) echo "usage: $0 card0|card1|reads|reads1 <je|dd|mae> <card>|pilots_fine <card>|stage2 <card>|features <card>|branch_reads_mae <card>"; exit 1 ;;
 esac
 echo "P114_${1}_DONE"

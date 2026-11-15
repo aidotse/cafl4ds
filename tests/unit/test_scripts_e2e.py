@@ -287,6 +287,27 @@ def test_p112_extracts_block_features_that_reproduce_the_branch_record(tmp_path:
         _load_script("extract_block_features")._save_probe(cfg, out)
 
 
+def test_p114_block_features_anchor_on_the_built_method_without_a_well(tmp_path: Path) -> None:
+    """P1.1.4: with no well, the anchor is the method as built, read after a checkpoint changed the loaded state."""
+    harness = _load_script("run_deploy_harness")
+    harness.run_deploy(_compose("deploy", [*_P11_DIET, "eval_every=2", "checkpoint_legs=true"]), tmp_path / "drive")
+    cfg = _compose("deploy", [*_P11_DIET, "well=null", f"lens.drives=[{tmp_path / 'drive'}]"])
+    script = _load_script("extract_block_features")
+    first = tmp_path / "lens"
+    entries = script.extract(cfg, first)
+    assert entries[0]["checkpoint"] == "initial"
+    # read the anchor again after the drive's checkpoints were loaded: the built state was restored, not the last one
+    second = tmp_path / "lens2"
+    torch.manual_seed(int(cfg.seed))  # as extract() does: the toy method's random init is the "built" state here
+    reader = script._Reader(cfg, script._save_probe(cfg, second), second)
+    final = tmp_path / "drive" / "checkpoints" / "s0" / "final.pt"
+    reader.read(final, second / "final.pt")
+    reader.read(None, second / "well.pt")
+    a, b = torch.load(first / "features" / "well.pt"), torch.load(second / "well.pt")
+    assert all(torch.allclose(a[k], b[k]) for k in a)
+    assert not torch.allclose(a["backbone"], torch.load(second / "final.pt")["backbone"])
+
+
 def test_p111_recovery_needs_a_checkpoint_to_recover_from(tmp_path: Path) -> None:
     """P111 recovery needs a checkpoint to recover from."""
     config = _compose("deploy", [*_P11_DIET, "recovery_steps=3"])
