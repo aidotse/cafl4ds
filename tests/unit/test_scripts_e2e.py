@@ -202,6 +202,45 @@ def test_p111_branches_resume_damage_and_recover_from_a_leg_checkpoint(tmp_path:
     assert [h["step"] for h in report["arms"]["live"]["health"]] == list(range(5))
 
 
+def test_p114_branch_saves_its_damaged_start_state_and_the_steps_after_it(tmp_path: Path) -> None:
+    """P1.1.4: ``resume.save_start`` saves the branch's start (after the damage), then the later steps and the end."""
+    well_out = tmp_path / "je_well.pt"
+    warm_cfg = _compose(
+        "warm_well",
+        [*_P11_DIET, "warmup.window=2", "warmup.min_steps=2", "warmup.max_steps=4", f"well_out={well_out}"],
+    )
+    _load_script("warm_well").warm(warm_cfg)
+    script = _load_script("run_deploy_harness")
+    base = [*_P11_DIET, "eval_every=1", f"well={well_out}"]
+    script.run_deploy(_compose("deploy", [*base, "checkpoint_legs=true"]), tmp_path / "drive")
+    index = json.loads((tmp_path / "drive" / "checkpoints" / "s0" / "index.json").read_text())
+    start = int(index[1]["batches_seen"])
+    ckpt = tmp_path / "drive" / "checkpoints" / "s{seed}" / f"step{start:05d}.pt"
+    later = start + 2
+    overrides = [
+        *base,
+        f"resume.checkpoint='{ckpt}'",
+        f"resume.step={start}",
+        "resume.save_start=true",
+        "checkpoint_legs=steps",
+        f"checkpoint_steps=[1,{start},{later}]",
+        "damage.mode=noise",
+        "damage.k=2",
+        "damage.scale=0.5",
+    ]
+    out = tmp_path / "noise"
+    script.run_deploy(_compose("deploy", overrides), out)
+    saved = [e["file"] for e in json.loads((out / "checkpoints" / "s0" / "index.json").read_text())]
+    assert saved == [f"step{start:05d}.pt", f"step{later:05d}.pt", "final.pt"]
+    # the saved start is the parent's state damaged exactly as the branch recorded it
+    report = json.loads(next((out / "reports").glob("*.json")).read_text())
+    parent = torch.load(str(ckpt).format(seed=0), map_location="cpu")
+    start_state = torch.load(out / "checkpoints" / "s0" / f"step{start:05d}.pt", map_location="cpu")
+    assert report["config"]["branch"]["damage"]["rel_change"] > 0.0
+    changed = [k for k, v in parent.items() if not torch.equal(v, start_state[k])]
+    assert changed and all("blocks" in k for k in changed)
+
+
 def test_p112_extracts_block_features_that_reproduce_the_branch_record(tmp_path: Path) -> None:
     """P1.1.2: the extracted leg checkpoint and rebuilt post-damage state read as the branch recorded them."""
     well_out = tmp_path / "je_well.pt"

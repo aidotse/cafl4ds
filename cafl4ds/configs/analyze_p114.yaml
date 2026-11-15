@@ -2,13 +2,15 @@
 # `root` holds the drives (outputs/ in the main checkout; the run dirs live on the project share).
 root: outputs
 mode: bands # bands (Part 1) | power (Part 4) | breadth (Part 4b)
+arm_set: arms # the arms mode=bands reads: arms (Part 1a) | arms_1b (Part 1b)
 out: ${root}/p114/${mode}.json
 
 # Part 1 — the healthy null and the single-drive bands, per arm. `iid_seeds` / `check_seeds` pick the
-# calibration and the fresh check from the pooled IID dirs (null = every seed; [] = no check). `ladder` is the
-# val referee's per-image reads (walk_s<i>_* and iid_s<i>_end, ladder index = drive seed - 1), for the
-# canary-against-referee check; `ft_ladders` hold the fine-tune reads, searched in order, for the `degradation`
-# label's fine-tune corroboration of a kNN-canary fire.
+# calibration and the fresh check from the pooled IID dirs (null = every seed; [] = no check); the null and
+# the referee read the walk against every IID seed. `ladders` are the val referee's per-image reads, searched
+# in order: for the canary-against-referee check and the `degradation` label's fine-tune corroboration of a
+# kNN-canary fire. A plain dir names encoders by seed index (P1.2.5: walk_s0_* = drive seed 1); a
+# {dir, names: seed} entry by drive seed (P1.1.4: iid_s6_*).
 arms:
   dino_simsiam:
     backbone: je
@@ -16,16 +18,14 @@ arms:
     iid: [p125/partG/drive/dino_simsiam_p9e-5_iid]
     iid_seeds: null
     check_seeds: []
-    ladder: p125/ladder/dino_simsiam_p9e-5
-    ft_ladders: [p125/ladder/dino_simsiam_p9e-5]
+    ladders: [p125/ladder/dino_simsiam_p9e-5]
   mae_je:
     backbone: je
     walk: [p125/drive/mae_je_walk]
     iid: [p125/drive/mae_je_iid]
     iid_seeds: null
     check_seeds: []
-    ladder: p125/ladder/mae_je
-    ft_ladders: [p125/ladder_ft/mae_je]
+    ladders: [p125/ladder/mae_je, p125/ladder_ft/mae_je]
   # The provisional fourth arm (audit D5). Its projector surface is DINO's head bottleneck (256-d), as P1.2.5
   # logged it. Only 3 IID seeds before Stage 1 (seeds 1-3): too few to calibrate a threshold (each
   # leave-one-out fit needs 3), so 1a reads it descriptively — the null, the bands, the walk's max z.
@@ -35,8 +35,7 @@ arms:
     iid: [p125/drive/dino_dino_iid]
     iid_seeds: null
     check_seeds: []
-    ladder: p125/ladder/dino_dino
-    ft_ladders: [p125/ladder_ft/dino_dino]
+    ladders: [p125/ladder/dino_dino, p125/ladder_ft/dino_dino]
   # Part A's gentler DINO-init SimSiam recipe (protections, lr 3e-5): how far the bands move with the rate.
   dino_simsiam_3e-5:
     backbone: je
@@ -44,8 +43,84 @@ arms:
     iid: [p125/drive/dino_simsiam_iid, p125/drive/dino_simsiam_iid45]
     iid_seeds: null
     check_seeds: []
-    ladder: p125/ladder/dino_simsiam
-    ft_ladders: [p125/ladder_ft/dino_simsiam]
+    ladders: [p125/ladder/dino_simsiam, p125/ladder_ft/dino_simsiam]
+
+# Part 1b: IID seeds 6-15 (DINO-init DINO 4-15) join P1.2.5's; the MAE arm is P1.1.4's own (well, walk x 5,
+# IID x 15). Calibrated on IID seeds 1-10, checked on fresh seeds 11-15; the null is the walk against all 15.
+# The fine-tune corroboration reads against every other IID seed with ladder reads at that checkpoint
+# (P1.2.5's IID seeds were ladder-read at their end only, without fine-tunes).
+arms_1b:
+  dino_simsiam:
+    backbone: je
+    walk: [p125/partG/drive/dino_simsiam_p9e-5_walk]
+    iid: [p125/partG/drive/dino_simsiam_p9e-5_iid, p114/drive/dino_simsiam_iid_6to15]
+    iid_seeds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    check_seeds: [11, 12, 13, 14, 15]
+    ladders: [p125/ladder/dino_simsiam_p9e-5, { dir: p114/ladder/dino_simsiam_iid, names: seed }]
+    referee_null: true
+    inject_power: true
+    # A sensitivity check for the fine-tune corroboration: Part G's walks without the protections (a known
+    # fine-tune loss), read against this arm's healthy seeds. Descriptive: their recipe differs.
+    natural: { ladders: [p125/ladder/dino_simsiam_np], seeds: [1, 2, 3, 4, 5] }
+  mae_je:
+    backbone: je
+    walk: [p125/drive/mae_je_walk]
+    iid: [p125/drive/mae_je_iid, p114/drive/mae_je_iid_6to15]
+    iid_seeds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    check_seeds: [11, 12, 13, 14, 15]
+    ladders: [p125/ladder/mae_je, p125/ladder_ft/mae_je, { dir: p114/ladder/mae_je_iid, names: seed }]
+    referee_null: true
+    inject_power: true
+    natural: { ladders: [p125/ladder/mae_je_np], seeds: [1, 2, 3, 4, 5] }
+  dino_dino:
+    backbone: je
+    walk: [p125/drive/dino_dino_walk]
+    iid: [p125/drive/dino_dino_iid, p114/drive/dino_dino_iid_4to15]
+    iid_seeds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    check_seeds: [11, 12, 13, 14, 15]
+    ladders: [p125/ladder/dino_dino, p125/ladder_ft/dino_dino, { dir: p114/ladder/dino_dino_iid, names: seed }]
+    referee_null: true
+    inject_power: true
+  mae:
+    backbone: mae
+    walk: [p114/drive/mae_walk]
+    iid: [p114/drive/mae_iid]
+    iid_seeds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    check_seeds: [11, 12, 13, 14, 15]
+    ladders: [{ dir: p114/ladder/mae, names: seed }]
+    referee_null: true
+    inject_power: true
+
+# The `degradation` label's fine-tune corroboration of a kNN fire: min (fixed before 1b: a read below every
+# healthy seed's at any checkpoint at or after the fire), consecutive (the same on two consecutive checkpoints),
+# or calibrated (the fine-tune reads as a panel, P1.1.1's rule at alpha over every read and checkpoint). All
+# three are reported; the label uses `finetune_rule`. `null_from`: the start steps of the healthy-rate check.
+finetune_rule: calibrated
+finetune_panel:
+  span: 8
+  floor: 0.25
+  alpha: 0.05
+  null_from: [0, 846]
+
+# Part 1b's pass bars, per arm: out-of-sample false alarms (leave-one-out over seeds 1-10 plus fresh 11-15)
+# per panel, and the `degradation` label on the same drives.
+bars:
+  panel_false_alarms: 2
+  degradation_false_alarms: 1
+
+# The referee's own walk-vs-IID null and healthy range, at every ladder checkpoint.
+referee_null:
+  tasks: [scene, "presence_cell:traffic light"]
+  rungs: [knn, linear, ft10, ft100]
+
+# Canary power for the test actually run (B2): a drop injected into 5 of the 15 IID seeds, tested against
+# the other 10 (exact max-over-checkpoints permutation, 3,003 splits), over n_groups random walk groups.
+inject:
+  n_inject: 5
+  n_groups: 200
+  power: 0.8
+  seed: 0
+  shapes: [sustained, last_quarter, single]
 
 # The `degradation` label's fine-tune corroboration: the rungs read, and the ladder checkpoints looked for.
 finetune_keys: [scene|ft10, scene|ft100, "presence_cell:traffic light|ft10", "presence_cell:traffic light|ft100"]

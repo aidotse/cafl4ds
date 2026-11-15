@@ -26,6 +26,7 @@ from __future__ import annotations
 import csv
 import itertools
 import math
+import warnings
 from pathlib import Path
 from typing import Any
 
@@ -296,4 +297,210 @@ def canary_power(iid: np.ndarray, n_query: int) -> dict[str, float]:
         "sd_seed": sd_seed,
         "sd_within": sd_within,
         "mdd": float(t_multiplier(2 * n_seeds - 2) * sd_seed * math.sqrt(2.0 / n_seeds)),
+    }
+
+
+def split_masks(n_total: int, n_walk: int) -> np.ndarray:
+    """Every split of ``n_total`` seeds into ``n_walk`` + the rest, as a ``[splits, n_total]`` 0/1 matrix."""
+    combos = list(itertools.combinations(range(n_total), n_walk))
+    masks = np.zeros((len(combos), n_total))
+    for row, chosen in enumerate(combos):
+        masks[row, list(chosen)] = 1.0
+    return masks
+
+
+def split_d(pooled: np.ndarray, masks: np.ndarray) -> np.ndarray:
+    """:func:`effect_sizes` for every split in ``masks`` at once, from per-split sums: ``[splits, checkpoints]``.
+
+    ``nan`` readings are ignored; a checkpoint where both groups' readings coincide reads ``0`` when
+    the means agree and ``nan`` otherwise. Unlike the loop, readings that coincide are recognized
+    as such even when their mean is not exactly representable (the loop's ``nanvar`` then returns a
+    rounding-level spread, and *d* a rounding ratio).
+
+    Args:
+        pooled: ``[seeds, checkpoints]``, both arms stacked.
+        masks: ``[splits, seeds]``, 1 marks the "walk" group (see :func:`split_masks`).
+    """
+    x = np.asarray(pooled, dtype=float)
+    finite = np.isfinite(x)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        centre = np.nanmean(x, axis=0)  # centring keeps the sums-of-squares variance exact enough
+    x0 = np.where(finite, x - np.nan_to_num(centre), 0.0)
+    f = finite.astype(float)
+    cnt, tot, sq = f.sum(0), x0.sum(0), (x0**2).sum(0)
+    c_a, s_a, q_a = masks @ f, masks @ x0, masks @ x0**2
+    c_b, s_b, q_b = cnt - c_a, tot - s_a, sq - q_a
+    with np.errstate(divide="ignore", invalid="ignore"):
+        m_a, m_b = s_a / c_a, s_b / c_b
+        # A group whose readings coincide has variance 0 exactly in the loop; from sums it comes out at
+        # rounding level, relative to the group's mean square, so snap that to 0.
+        v_a = np.where(c_a > 1, (q_a - s_a * m_a) / (c_a - 1), np.nan)
+        v_b = np.where(c_b > 1, (q_b - s_b * m_b) / (c_b - 1), np.nan)
+        v_a = np.where(v_a <= 1e-9 * q_a / c_a, 0.0, v_a)
+        v_b = np.where(v_b <= 1e-9 * q_b / c_b, 0.0, v_b)
+        diff = m_a - m_b
+        diff = np.where(np.abs(diff) <= 1e-9 * np.maximum(np.abs(m_a), np.abs(m_b)), 0.0, diff)
+        spread = np.sqrt((v_a + v_b) / 2.0)
+        return np.where(spread > 0, diff / np.where(spread > 0, spread, 1.0), np.where(diff == 0, 0.0, np.nan))
+
+
+def split_max_d(pooled: np.ndarray, masks: np.ndarray) -> np.ndarray:
+    """``max_t |d_t|`` per split (see :func:`split_d`); ``nan`` for a split with no defined checkpoint."""
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        return np.nanmax(np.abs(split_d(pooled, masks)), axis=1)
+
+
+def gap_fast(walk: np.ndarray, iid: np.ndarray, alpha: float = 0.05) -> dict[str, float]:
+    """:func:`gap`, with the permutation null computed in one pass (5 + 15 seeds: 15,504 splits).
+
+    The effect sizes come from :func:`split_d`, so coinciding readings (every seed's step-0 read of the
+    same start, say) read as no gap rather than a rounding ratio.
+
+    Args:
+        walk: Walk arm ``[seeds, checkpoints]``.
+        iid: IID arm ``[seeds, checkpoints]``.
+        alpha: The family-wise level for ``frac_sig``.
+
+    Returns:
+        The same keys as :func:`gap`.
+
+    Raises:
+        ValueError: If the arms do not share a checkpoint count.
+    """
+    if walk.shape[1] != iid.shape[1]:
+        raise ValueError(f"walk and IID checkpoint counts differ: {walk.shape[1]} vs {iid.shape[1]}.")
+    pooled = np.vstack([walk, iid])
+    identity = np.zeros((1, pooled.shape[0]))
+    identity[0, : walk.shape[0]] = 1.0
+    d = split_d(pooled, identity)[0]
+    observed = float(np.nanmax(np.abs(d)))
+    null = split_max_d(pooled, split_masks(pooled.shape[0], walk.shape[0]))
+    d_crit = float(np.quantile(null, 1.0 - alpha))
+    return {
+        "max_abs_d": observed,
+        "mean_abs_d": float(np.nanmean(np.abs(d))),
+        "final_d": float(d[-1]),
+        "final_gap": float(np.nanmean(walk, axis=0)[-1] - np.nanmean(iid, axis=0)[-1]),
+        "p_max": float(np.mean(null >= observed - 1e-12)),
+        "frac_sig": float(np.nanmean(np.abs(d) > d_crit)),
+        "d_crit": d_crit,
+        "n_perm": float(null.size),
+    }
+
+
+def drop_profile(n_checkpoints: int, shape: str, last: int | None = None) -> np.ndarray:
+    """A unit drop's profile over a drive: ``sustained`` (every reading), ``last_quarter``, or ``single``.
+
+    ``last`` is the index of the drive's last usable reading (default: the last); the last quarter and
+    the single reading end there.
+    """
+    end = n_checkpoints - 1 if last is None else last
+    profile = np.zeros(n_checkpoints)
+    if shape == "sustained":
+        profile[:] = 1.0
+    elif shape == "last_quarter":
+        profile[max(0, end + 1 - math.ceil((end + 1) / 4)) : end + 1] = 1.0
+    elif shape == "single":
+        profile[end] = 1.0
+    else:
+        raise ValueError(f"unknown drop shape {shape!r}.")
+    return profile
+
+
+def injected_power(
+    iid: np.ndarray,
+    profile: np.ndarray,
+    delta: float,
+    groups: np.ndarray,
+    masks: np.ndarray,
+    alpha: float = 0.05,
+) -> float:
+    """The share of injections the max-over-checkpoints permutation test catches at drop ``delta``.
+
+    Each row of ``groups`` picks the "walk" seeds; ``delta · profile`` is subtracted from them, and the
+    walk-vs-rest test of :func:`gap` (every split in ``masks``) is run on the result.
+
+    Args:
+        iid: Healthy ``[seeds, checkpoints]`` (raw readings, ``nan`` = skipped).
+        profile: The drop's shape over the drive (see :func:`drop_profile`).
+        delta: The drop, in the reading's units.
+        groups: ``[injections, seeds]`` 0/1 rows, each the injected group (the observed split).
+        masks: Every split of the seeds into a group of the same size (see :func:`split_masks`).
+        alpha: The test's level.
+
+    Returns:
+        The rejection rate over the injections.
+    """
+    caught = 0
+    for group in groups:
+        x = np.asarray(iid, dtype=float) - delta * np.outer(group, profile)
+        null = split_max_d(x, masks)
+        observed = split_max_d(x, group[None, :])[0]
+        caught += int(np.mean(null >= observed - 1e-12) <= alpha)
+    return caught / len(groups)
+
+
+def injected_mdd(
+    iid: np.ndarray,
+    shape: str,
+    *,
+    n_inject: int = 5,
+    n_groups: int = 200,
+    alpha: float = 0.05,
+    power: float = 0.8,
+    seed: int = 0,
+    hi: float = 0.05,
+    tol: float = 5e-4,
+) -> dict[str, float]:
+    """The drop the walk-vs-IID test catches ``power`` of the time, by injection into healthy seeds (B2).
+
+    ``n_inject`` of the healthy seeds play the walk, a known drop is injected into them, and the exact
+    max-over-checkpoints permutation test is run against the rest — the test the null actually runs,
+    not P1.1.0's single-checkpoint *t* figure. The same ``n_groups`` random walk groups are used at
+    every drop (common random numbers), and the drop is found by bisection.
+
+    Args:
+        iid: Healthy ``[seeds, checkpoints]``.
+        shape: The drop's shape (see :func:`drop_profile`).
+        n_inject: Seeds playing the walk.
+        n_groups: Random walk groups per drop (all of them if fewer exist).
+        alpha: The test's level.
+        power: The detection rate the MDD is defined at.
+        seed: The group sampler's seed.
+        hi: The first upper bracket (doubled until caught, up to 1.0).
+        tol: The bisection's resolution.
+
+    Returns:
+        ``mdd`` (``inf`` if not reached at 1.0), ``power_at_mdd``, ``n_groups``, ``n_splits``.
+    """
+    x = np.asarray(iid, dtype=float)
+    n = x.shape[0]
+    finite_cols = np.flatnonzero(np.isfinite(x).any(axis=0))
+    profile = drop_profile(x.shape[1], shape, int(finite_cols[-1]))
+    masks = split_masks(n, n_inject)
+    rng = np.random.default_rng(seed)
+    pick = masks if masks.shape[0] <= n_groups else masks[rng.choice(masks.shape[0], n_groups, replace=False)]
+    lo = 0.0
+    while injected_power(x, profile, hi, pick, masks, alpha) < power:
+        lo, hi = hi, hi * 2
+        if hi > 1.0:
+            return {
+                "mdd": math.inf,
+                "power_at_mdd": math.nan,
+                "n_groups": float(len(pick)),
+                "n_splits": float(len(masks)),
+            }
+    while hi - lo > tol:
+        mid = (lo + hi) / 2
+        if injected_power(x, profile, mid, pick, masks, alpha) >= power:
+            hi = mid
+        else:
+            lo = mid
+    return {
+        "mdd": hi,
+        "power_at_mdd": injected_power(x, profile, hi, pick, masks, alpha),
+        "n_groups": float(len(pick)),
+        "n_splits": float(len(masks)),
     }

@@ -11,8 +11,13 @@
 #   reads (both cards, after card0/card1), or `reads1 <je|dd|mae> <card>` one group at a time: the val ladder at every checkpoint of every Stage-1 drive — kNN, linear and
 #          the 10- and 100-shot fine-tunes on scene and traffic light — on P1.2.5's val query frames (checked).
 # Every drive is P1.2.5's (its diet, split, health vector every 25 steps, Part B's checkpoints) and lands on the
-# project share, linked from outputs/p114. Stage 2 (the damage branches, at doses read off the pilots) is added once
-# the pilots are in. Run from the main checkout, which holds wells/ and outputs/.
+# project share, linked from outputs/p114. Run from the main checkout, which holds wells/ and outputs/.
+# Stage 2, `stage2 <card>`: the damage branches of the arms on that card (card 0: DINO-init SimSiam and DINO-init
+#   DINO; card 1: MAE-init JE and MAE), then their val ladder. Each branch resumes its walk's step-846 state (seeds
+#   1-3), damages the encoder (the dose's draw varies with the drive seed, as in the pilots), saves that start state,
+#   and drives the rest of the walk, saving step 1,269 and the end. Per arm: the dose-0 twin, four noise doses read
+#   off the 3-seed pilots (2-15 linear-canary points), and one re-init (the specificity control where the pilot
+#   passes it, else one more dose; P1.1.4.md). The block features follow in `features <card>`.
 set -u
 cd /home/mauricio/projects/cafl4ds
 SCENES='data.scenes=["city street",highway,residential]'
@@ -127,6 +132,45 @@ reads_mae() {  # card: the MAE arms (P1.2.2's few-shot rate, 3e-5)
   ckpt_list $OUT/drive/mae_fail_walk walk 1 2 3 | ladder $1 mae_fail $WF 3e-5 $MAE
 }
 
+# Stage 2 — the damage branches. branches <card> <arm> <walk-ckpt-pattern> <well|null> <reinit-k> <doses> -- recipe...
+branches() {
+  card=$1; arm=$2; ck=$3; well=$4; rk=$5; doses=$6; shift 6
+  w=""; [ "$well" = null ] || w="well=$well"
+  kinds="dose0:none:0:0 reinit$rk:reinit:$rk:0"
+  for d in $doses; do kinds="$kinds noise${d/./p}:noise:12:$d"; done
+  for kind in $kinds; do
+    IFS=: read -r name mode k scale <<< "$kind"
+    drive $card branch/${arm}_$name s3 $DIET "$SCENES" "$@" $w "resume.checkpoint='$ck'" resume.step=846 \
+      resume.save_start=true damage.mode=$mode damage.k=$k damage.scale=$scale $CKPTS "$STEPS" 'seeds=[1,2,3]'
+  done
+}
+
+branch_reads() {  # card arm floor ft-lr encoder-flags...: the val ladder at each branch's start, step 1,269 and end
+  card=$1; arm=$2; floor=$3; lr=$4; shift 4
+  for d in $OUT/branch/${arm}_*; do ckpt_list $d $(basename $d | sed "s/^${arm}_//") 1 2 3; done \
+    | ladder $card branch_$arm $floor $lr "$@"
+}
+
+# The walks' step-846 states and recipes (P1.2.5's walks for the JE starts, P1.1.4's for MAE); doses in SD multiples.
+B_SIM="outputs/p125/partG/drive/dino_simsiam_p9e-5_walk/checkpoints/s{seed}/step00846.pt"
+B_MJE="outputs/p125/drive/mae_je_walk/checkpoints/s{seed}/step00846.pt"
+B_DD="outputs/p125/drive/dino_dino_walk/checkpoints/s{seed}/step00846.pt"
+B_MAE="$OUT/drive/mae_walk/checkpoints/s{seed}/step00846.pt"
+
+stage2_card0() {
+  branches 0 dino_simsiam $B_SIM $WS 4 "0.5 0.65 0.75 0.875" $SIM $PROTECT optim.lr=9e-5 stream.order=walk
+  branches 0 dino_dino $B_DD null 4 "0.3 0.5 0.65 0.75" $DINO $PROTECT optim.lr=9e-5 stream.order=walk
+  branch_reads 0 dino_simsiam $WS 1e-5 $SIM
+  branch_reads 0 dino_dino pretrained 1e-5 $DINO
+}
+
+stage2_card1() {
+  branches 1 mae_je $B_MJE $WM 2 "0.3 0.4 0.5 0.65" $MAEJE $PROTECT optim.lr=3e-5 stream.order=walk
+  branches 1 mae $B_MAE $WR 2 "0.4 0.5 0.65 0.875" $MAE $DEC $PROTECT optim.lr=1e-4 stream.order=walk
+  branch_reads 1 mae_je $WM 3e-5 $MAEJE
+  branch_reads 1 mae $WR 3e-5 $MAE $DEC
+}
+
 card0() {
   drive 0 drive/dino_simsiam_iid_6to15 s15 $DIET "$SCENES" $SIM $PROTECT optim.lr=9e-5 stream.order=iid well=$WS $CKPTS "$STEPS" \
     'seeds=[6,7,8,9,10,11,12,13,14,15]'
@@ -158,6 +202,7 @@ case "${1:-}" in
   # one ladder group on a chosen card (a card freed early takes the drives already done): reads1 <je|dd|mae> <card>
   reads1) reads_$2 $3 > $SH/reads_$2.log 2>&1 ;;
   pilots_fine) pilots_fine $2 > $SH/pilots_fine.log 2>&1 ;;
-  *) echo "usage: $0 card0|card1|reads|reads1 <je|dd|mae> <card>|pilots_fine <card>"; exit 1 ;;
+  stage2) stage2_card$2 > $SH/stage2_card$2.log 2>&1 ;;
+  *) echo "usage: $0 card0|card1|reads|reads1 <je|dd|mae> <card>|pilots_fine <card>|stage2 <card>"; exit 1 ;;
 esac
-echo "P114_STAGE1_${1}_DONE"
+echo "P114_${1}_DONE"

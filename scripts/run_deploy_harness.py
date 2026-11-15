@@ -137,6 +137,9 @@ def _branch_stream(
             # a value in (0, 1) is a fraction of the drive's batches (its exact length is known only here)
             chosen = [round(float(s) * len(stream)) if 0 < float(s) < 1 else int(s) for s in config.checkpoint_steps]
             steps = [s for s in chosen if s > start]
+        if resume.get("checkpoint") and not recovery and resume.get("save_start"):
+            # P1.1.4: the branch's own start state, after the damage and before its first step, for the ladder
+            steps = sorted({*steps, start})
         fed = CheckpointingStream(fed, method, steps, out_dir / "checkpoints" / f"s{config.seed}")
     return fed, record
 

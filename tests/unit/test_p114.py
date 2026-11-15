@@ -16,9 +16,10 @@ import torch
 from cafl4ds import referee_power as rp
 from cafl4ds.branch import damage_method, damage_top_blocks, top_blocks
 from cafl4ds.models.vit import TinyViTEncoder
-from cafl4ds.reading_protocol import adjudicate_split, finetune_drop
+from cafl4ds.null_envelope import drop_profile, gap, gap_fast, injected_mdd, injected_power, split_masks
+from cafl4ds.reading_protocol import adjudicate_split, direction, finetune_drop, finetune_drop_consecutive
 from cafl4ds.ssl.dino import DINO, build_dino, momentum_at
-from scripts.analyze_p114 import _perm_p, _welch_ci, three_panels, wilson_interval
+from scripts.analyze_p114 import LadderSet, _perm_p, _welch_ci, three_panels, wilson_interval
 
 sys.path.insert(0, str(Path(__file__).parent))
 from test_p125 import _DINO_SMALL, _tiny_vit  # noqa: E402
@@ -229,3 +230,107 @@ def test_resumed_dino_continues_the_drives_momentum_ramp() -> None:
     assert torch.allclose(method.encoder.norm.weight, m * before + (1 - m) * method.student.norm.weight)
     with pytest.raises(ValueError, match="start"):
         method.set_horizon(10, start=11)
+
+
+def test_gap_fast_matches_the_loop_with_skips_and_tied_checkpoints() -> None:
+    """The vectorized null reproduces P1.1.0's loop, skipped readings and a shared start included."""
+    rng = np.random.default_rng(3)
+    for trial in range(12):
+        walk = rng.normal(size=(5, 9)) * 0.02 + 0.6
+        iid = rng.normal(size=(6, 9)) * 0.02 + 0.6 + 0.01 * trial
+        walk[rng.random(walk.shape) < 0.1] = np.nan
+        iid[rng.random(iid.shape) < 0.1] = np.nan
+        walk[:, 0] = iid[:, 0] = 0.5  # every drive reads the same start
+        a, b = gap(walk, iid), gap_fast(walk, iid)
+        for key in a:
+            assert math.isclose(a[key], b[key], rel_tol=1e-9, abs_tol=1e-12), (trial, key)
+
+
+def test_gap_fast_reads_coinciding_unrepresentable_readings_as_no_gap() -> None:
+    """Readings that coincide across arms read as no gap, even off the binary grid."""
+    walk, iid = np.full((5, 3), 0.1), np.full((5, 3), 0.1)
+    walk[:, 1] += np.linspace(0, 0.01, 5)
+    iid[:, 1] += np.linspace(0, 0.01, 5)
+    assert gap_fast(walk, iid)["max_abs_d"] == pytest.approx(0.0, abs=1e-9)
+
+
+def test_split_masks_enumerate_every_split_once() -> None:
+    """Every split of the seeds appears exactly once."""
+    masks = split_masks(6, 2)
+    assert masks.shape == (15, 6)
+    assert (masks.sum(axis=1) == 2).all()
+    assert len({tuple(r) for r in masks}) == 15
+
+
+def test_drop_profile_shapes_end_at_the_last_usable_reading() -> None:
+    """Each drop shape covers its share of the drive, ending at the last usable reading."""
+    assert drop_profile(8, "sustained").tolist() == [1.0] * 8
+    assert drop_profile(8, "last_quarter").tolist() == [0, 0, 0, 0, 0, 0, 1, 1]
+    assert drop_profile(8, "single", last=5).tolist() == [0, 0, 0, 0, 0, 1, 0, 0]
+    with pytest.raises(ValueError, match="unknown"):
+        drop_profile(8, "ramp")
+
+
+def test_injected_power_rises_with_the_drop_and_holds_the_level_at_zero() -> None:
+    """No drop is rarely caught; a large one always is."""
+    rng = np.random.default_rng(0)
+    healthy = rng.normal(size=(10, 6)) * 0.01 + 0.6
+    masks = split_masks(10, 3)
+    groups = masks[rng.choice(len(masks), 40, replace=False)]
+    profile = drop_profile(6, "sustained")
+    at_zero = injected_power(healthy, profile, 0.0, groups, masks)
+    small, large = (injected_power(healthy, profile, d, groups, masks) for d in (0.005, 0.03))
+    assert at_zero <= 0.2
+    assert small <= large
+    assert large == 1.0
+
+
+def test_injected_mdd_is_larger_for_a_single_reading_than_a_sustained_drop() -> None:
+    """A drop held over the drive is caught at a smaller size than one at a single reading."""
+    rng = np.random.default_rng(1)
+    healthy = rng.normal(size=(10, 8)) * 0.01 + 0.6
+    sustained = injected_mdd(healthy, "sustained", n_inject=3, n_groups=30)
+    single = injected_mdd(healthy, "single", n_inject=3, n_groups=30)
+    assert sustained["mdd"] < single["mdd"]
+    assert sustained["power_at_mdd"] >= 0.8
+
+
+def _ladder_dir(path: Path, reads: dict[str, np.ndarray], query: np.ndarray) -> None:
+    """A minimal ladder dir: a 4-frame scene pool and one kNN read per encoder."""
+    path.mkdir(parents=True)
+    labels = np.array([0, 1, 0, 1])
+    np.savez(path / "pool.npz", query_index=query, stratum=np.zeros(4), regime=np.zeros(4), **{"labels|scene": labels})
+    (path / "summary.json").write_text("{}", encoding="utf-8")
+    for name, correct in reads.items():
+        np.savez(path / f"{name}.npz", **{"scene|knn": correct[None, :]})
+
+
+def test_ladder_set_maps_index_and_drive_seed_naming(tmp_path: Path) -> None:
+    """P1.2.5's index naming and P1.1.4's drive-seed naming read the same drive; a mismatched query is refused."""
+    query = np.arange(4)
+    _ladder_dir(tmp_path / "old", {"walk_s0_end": np.array([1.0, 1, 0, 0])}, query)
+    _ladder_dir(tmp_path / "new", {"iid_s6_end": np.array([1.0, 1, 1, 1])}, query)
+    ladders = LadderSet(tmp_path, ["old", {"dir": "new", "names": "seed"}])
+    assert ladders.read("walk", 1, "end", "scene|knn") == pytest.approx(0.5)
+    assert ladders.read("iid", 6, "end", "scene|knn") == pytest.approx(1.0)
+    assert math.isnan(ladders.read("iid", 1, "end", "scene|knn"))
+    _ladder_dir(tmp_path / "other", {}, np.arange(1, 5))
+    with pytest.raises(ValueError, match="val query"):
+        LadderSet(tmp_path, ["old", "other"])
+
+
+def test_finetune_drop_consecutive_needs_a_run_of_drops() -> None:
+    """One checkpoint below every healthy seed is not enough; two in a row are."""
+    steps = {"a": 100.0, "b": 200.0, "c": 300.0, "end": math.inf}
+    healthy = {c: [0.6, 0.62] for c in steps}
+    single = {"a": 0.5, "b": 0.61, "c": 0.5, "end": 0.61}
+    run = {"a": 0.61, "b": 0.5, "c": 0.5, "end": 0.61}
+    assert finetune_drop_consecutive(single, healthy, steps, 0.0) is False
+    assert finetune_drop_consecutive(run, healthy, steps, 0.0) is True
+    assert finetune_drop_consecutive(run, healthy, steps, 250.0) is False
+    assert finetune_drop_consecutive(run, healthy, steps, 1e9) is None
+
+
+def test_finetune_reads_are_harmful_when_they_fall() -> None:
+    """A fine-tune read is a one-sided panel: a fall is harm."""
+    assert direction("finetune_acc_scene|ft100") == -1

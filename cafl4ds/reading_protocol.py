@@ -49,13 +49,15 @@ from typing import Any, TypedDict
 import numpy as np
 
 # The harmful direction of each instrument: -1 = a fall is harm, +1 = a rise is harm. Anything not
-# listed is read two-sided. Canary slices (``knn_acc_night``, …) inherit their base's direction, and
+# listed is read two-sided. Canary slices (``knn_acc_night``, …) and fine-tune reads
+# (``finetune_acc_scene|ft100``) inherit their base's direction, and
 # so do per-layer reads (``<base>@<layer>``, P1.1.2's lenses: ``dcka_drift@block07``).
 _DIRECTION = {
     "rankme": -1,
     "rankme_proj": -1,
     "knn_acc": -1,
     "linear_acc": -1,
+    "finetune_acc": -1,
     "cka_drift": 1,
     "cka_drift_proj": 1,
     "cosine_drift": 1,
@@ -95,7 +97,7 @@ def direction(signal: str) -> int:
     signal = signal.split("@", 1)[0]
     if signal in _DIRECTION:
         return _DIRECTION[signal]
-    for base in ("knn_acc", "linear_acc"):
+    for base in ("knn_acc", "linear_acc", "finetune_acc"):
         if signal.startswith(f"{base}_"):
             return _DIRECTION[base]
     return 0
@@ -485,6 +487,27 @@ def finetune_drop(
     if not eligible:
         return None
     return any(walk[c] < min(healthy[c]) for c in eligible)
+
+
+def finetune_drop_consecutive(
+    walk: dict[str, float], healthy: dict[str, list[float]], steps: dict[str, float], after: float, run: int = 2
+) -> bool | None:
+    """:func:`finetune_drop`, required on ``run`` consecutive read checkpoints at or after ``after``.
+
+    The uncalibrated tightening of the corroboration: one checkpoint below every healthy seed happens
+    by chance on most healthy drives once several rungs and checkpoints are read; a run of them is rarer.
+
+    Returns:
+        ``True`` if ``run`` consecutive eligible checkpoints all drop, ``False`` if none do, ``None`` if
+        fewer than ``run`` checkpoints are eligible.
+    """
+    eligible = sorted(
+        (c for c, v in walk.items() if steps[c] >= after and healthy.get(c) and np.isfinite(v)), key=lambda c: steps[c]
+    )
+    if len(eligible) < run:
+        return None
+    below = [walk[c] < min(healthy[c]) for c in eligible]
+    return any(all(below[i : i + run]) for i in range(len(below) - run + 1))
 
 
 def adjudicate_split(fired: dict[str, bool], finetune: bool | None = None) -> str:
