@@ -24,6 +24,9 @@ stream left it), the loss from ``t0`` to each later checkpoint, its seed and ima
 max-over-checkpoints test's MDD and the pool each target needs (:mod:`cafl4ds.referee_power`). An arm's
 ladder may be several dirs (the fine-tune rungs were read apart); each rung is read from the first holding it.
 
+``mode=branches`` (Parts 2 and 3, with ``arm_set=arms_1b``): the damage branches, read on the referee and by
+every reader (:mod:`scripts.analyze_p114_branches`).
+
 ``mode=breadth`` (Part 4b): per arm and panel task, the end-of-drive Δ against the floor, its seed and
 image noise, the MDD of P1.2.5's one-sided test at Holm's strictest step, and the pool and seed count
 that resolve each target.
@@ -36,6 +39,7 @@ Example::
 import itertools
 import json
 import math
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -44,7 +48,7 @@ import hydra
 import numpy as np
 from hydra.utils import to_absolute_path
 from loguru import logger
-from omegaconf import DictConfig
+from omegaconf import DictConfig, ListConfig
 from scipy.stats import t as student_t
 from threadpoolctl import threadpool_limits
 
@@ -759,26 +763,46 @@ def _log(name: str, entry: dict[str, Any]) -> None:
     logger.info("\n".join(lines))
 
 
-def _rows_any(ladders: list[Ladder], names: list[str], key: str) -> np.ndarray | None:
-    """``Ladder.rows`` from the first ladder holding every name with ``key`` (fine-tunes may sit apart)."""
-    for ladder in ladders:
-        if all(ladder.has(n) for n in names) and (rows := ladder.rows(names, key)) is not None:
+def _own_name(name: str, naming: str) -> str:
+    """An index-named encoder (``walk_s0_end``) in a dir's own naming (``seed``: ``walk_s1_end``); others unchanged."""
+    if naming == "index":
+        return name
+    return re.sub(r"_s(\d+)_", lambda m: f"_s{int(m.group(1)) + 1}_", name, count=1)
+
+
+def _rows_any(ladders: list[tuple[Ladder, str]], names: list[str], key: str) -> np.ndarray | None:
+    """``Ladder.rows`` from the first ladder holding every name with ``key`` (fine-tunes may sit apart).
+
+    ``names`` are index-named (``walk_s0_end`` is drive seed 1), and renamed to each dir's own naming.
+    """
+    for ladder, naming in ladders:
+        own = [_own_name(n, naming) for n in names]
+        if all(ladder.has(n) for n in own) and (rows := ladder.rows(own, key)) is not None:
             return rows
     return None
 
 
-def _open_ladders(root: Path, dirs: str | list[str]) -> list[Ladder]:
-    """One or more ladder dirs of one arm; they must share the val query (checked)."""
-    ladders = [Ladder(root / str(d)) for d in ([dirs] if isinstance(dirs, str) else dirs)]
-    if any(not np.array_equal(x.query, ladders[0].query) for x in ladders[1:]):
+def _open_ladders(root: Path, dirs: str | list[Any] | ListConfig) -> list[tuple[Ladder, str]]:
+    """One or more ladder dirs of one arm, each a path (index naming) or ``{dir, names: seed}``.
+
+    They must share the val query (checked).
+    """
+    specs = [dirs] if isinstance(dirs, str) else list(dirs)
+    ladders = [
+        (Ladder(root / str(s)), "index") if isinstance(s, str) else (Ladder(root / str(s["dir"])), str(s["names"]))
+        for s in specs
+    ]
+    if any(naming not in ("index", "seed") for _, naming in ladders):
+        raise ValueError(f"unknown naming in {dirs}.")
+    if any(not np.array_equal(x.query, ladders[0][0].query) for x, _ in ladders[1:]):
         raise ValueError(f"ladders {dirs} do not share the val query.")
     return ladders
 
 
-def read_power(name: str, ladders: list[Ladder], config: DictConfig) -> dict[str, Any]:
+def read_power(name: str, ladders: list[tuple[Ladder, str]], config: DictConfig) -> dict[str, Any]:
     """Part 4 for one arm: per past slice, task and rung, the max test's MDD now and the pool a target needs."""
     cfg = config.power
-    ladder = ladders[0]
+    ladder = ladders[0][0]
     seeds, order = list(cfg.seeds), list(cfg.checkpoints)
     out: dict[str, Any] = {}
     for task in cfg.tasks:
@@ -840,7 +864,7 @@ def read_power(name: str, ladders: list[Ladder], config: DictConfig) -> dict[str
     return out
 
 
-def read_breadth(name: str, ladders: list[Ladder], config: DictConfig) -> dict[str, Any]:
+def read_breadth(name: str, ladders: list[tuple[Ladder, str]], config: DictConfig) -> dict[str, Any]:
     """Part 4b for one arm: the end-of-drive Δ against the floor per panel task, and what resolves ``target``.
 
     P1.2.5's breadth test: Δ = walk end − floor (the floor is one frozen read, paired on the images),
@@ -849,14 +873,14 @@ def read_breadth(name: str, ladders: list[Ladder], config: DictConfig) -> dict[s
     gate tasks are read beside the panel for reference, outside the family.
     """
     cfg, bc = config.power, config.breadth
-    ladder = ladders[0]
     seeds = list(cfg.seeds)
     alpha = float(bc.alpha) / len(bc.panel)
     out: dict[str, Any] = {}
     for task in list(bc.panel) + list(bc.reference):
-        if task not in ladder.labels:
+        # the first dir reading the task holds its labels (MAE's breadth tasks sit in a dir of their own)
+        labels = next((lad.labels[task] for lad, _ in ladders if task in lad.labels), None)
+        if labels is None:
             continue
-        labels = ladder.labels[task]
         for rung in bc.rungs:
             walk = _rows_any(ladders, [f"walk_s{i}_end" for i in seeds], f"{task}|{rung}")
             floor = _rows_any(ladders, [str(bc.floor)], f"{task}|{rung}")
@@ -921,6 +945,18 @@ def analyze(config: DictConfig) -> dict[str, Any]:
         with threadpool_limits(8):
             report = {
                 name: read_power(name, _open_ladders(root, d), config) for name, d in config.power.ladders.items()
+            }
+    elif config.mode == "branches":
+        # Imported here: the branch module builds on this one's readers (a top-level import would be circular).
+        from scripts.analyze_p114_branches import read_branches  # noqa: PLC0415
+
+        with threadpool_limits(8):
+            arms = config[str(config.get("arm_set", "arms"))]
+            only = config.get("only")
+            report = {
+                name: read_branches(name, arm, config, root)
+                for name, arm in arms.items()
+                if arm.get("branches") and (only is None or name in only)
             }
     elif config.mode == "breadth":
         with threadpool_limits(8):

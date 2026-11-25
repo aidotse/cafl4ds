@@ -19,6 +19,7 @@
 #   off the 3-seed pilots (2-15 linear-canary points), and one re-init (the specificity control where the pilot
 #   passes it, else one more dose; P1.1.4.md). Then `features <card>`: the block features of every checkpoint the
 #   reader screen reads (branches, walks, IID drives, natural failures), on the same cards' arms.
+# Part 4b on MAE, `panel_mae <card>`: the breadth panel's tasks at the MAE walks' ends and the floor.
 set -u
 cd /home/mauricio/projects/cafl4ds
 SCENES='data.scenes=["city street",highway,residential]'
@@ -201,6 +202,24 @@ features_card1() {
   features1 1 mae_fail $WF "$OUT/drive/mae_fail_walk" $MAE  # the 64-d decoder: its own method and anchor
 }
 
+# Part 4b on MAE: the walks' ends and the floor on P1.2.5's breadth tasks (Part C's panel beside the gate tasks), kNN
+# and linear, no fine-tunes, as P1.2.5 read the JE arms' panel. On the same val query (checked).
+PANEL='tasks=[scene,"presence_cell:traffic light",weather,"large_cell:car,bus,truck:0.02","presence_cell:bus","presence_cell:pedestrian"]'
+panel_mae() {  # card
+  name=mae_panel; link ladder/$name
+  [ -f $OUT/ladder/$name/summary.json ] && return
+  f=$SH/ladder/encoders_$name.yaml
+  { echo "- {name: floor, kind: well, path: $WR, fewshot: false}"
+    for s in 1 2 3 4 5; do
+      echo "- {name: walk_s${s}_end, kind: checkpoint, path: $OUT/drive/mae_walk/checkpoints/s$s/final.pt, fewshot: false}"
+    done; } > $f
+  run $1 python scripts/read_adaptation.py $GATE cls_rungs=false "$SCENES" $MAE $DEC "$PANEL" fewshot.enabled=false \
+    'fewshot.tasks=[]' '~encoders' encoders_file=$f hydra.run.dir=$SH/ladder/$name
+  cmp -s <(uv run python -c "import numpy as n;print(n.load('outputs/p125/ladder/dino_simsiam/pool.npz')['query_index'].tolist())") \
+    <(uv run python -c "import numpy as n;print(n.load('$OUT/ladder/$name/pool.npz')['query_index'].tolist())") \
+    || echo "QUERY MISMATCH $name"
+}
+
 card0() {
   drive 0 drive/dino_simsiam_iid_6to15 s15 $DIET "$SCENES" $SIM $PROTECT optim.lr=9e-5 stream.order=iid well=$WS $CKPTS "$STEPS" \
     'seeds=[6,7,8,9,10,11,12,13,14,15]'
@@ -235,6 +254,7 @@ case "${1:-}" in
   stage2) stage2_card$2 > $SH/stage2_card$2.log 2>&1 ;;
   features) features_card$2 > $SH/features_card$2.log 2>&1 ;;
   branch_reads_mae) branch_reads_mae $2 > $SH/branch_reads_mae.log 2>&1 ;;
-  *) echo "usage: $0 card0|card1|reads|reads1 <je|dd|mae> <card>|pilots_fine <card>|stage2 <card>|features <card>|branch_reads_mae <card>"; exit 1 ;;
+  panel_mae) panel_mae $2 > $SH/panel_mae.log 2>&1 ;;
+  *) echo "usage: $0 card0|card1|reads|reads1 <je|dd|mae> <card>|pilots_fine <card>|stage2 <card>|features <card>|branch_reads_mae <card>|panel_mae <card>"; exit 1 ;;
 esac
 echo "P114_${1}_DONE"

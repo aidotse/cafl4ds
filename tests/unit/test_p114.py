@@ -19,7 +19,16 @@ from cafl4ds.models.vit import TinyViTEncoder
 from cafl4ds.null_envelope import drop_profile, gap, gap_fast, injected_mdd, injected_power, split_masks
 from cafl4ds.reading_protocol import adjudicate_split, direction, finetune_drop, finetune_drop_consecutive
 from cafl4ds.ssl.dino import DINO, build_dino, momentum_at
-from scripts.analyze_p114 import LadderSet, _perm_p, _welch_ci, three_panels, wilson_interval
+from scripts.analyze_p114 import (
+    LadderSet,
+    _open_ladders,
+    _own_name,
+    _perm_p,
+    _rows_any,
+    _welch_ci,
+    three_panels,
+    wilson_interval,
+)
 
 sys.path.insert(0, str(Path(__file__).parent))
 from test_p125 import _DINO_SMALL, _tiny_vit  # noqa: E402
@@ -317,6 +326,22 @@ def test_ladder_set_maps_index_and_drive_seed_naming(tmp_path: Path) -> None:
     _ladder_dir(tmp_path / "other", {}, np.arange(1, 5))
     with pytest.raises(ValueError, match="val query"):
         LadderSet(tmp_path, ["old", "other"])
+
+
+def test_power_rows_read_seed_named_dirs_and_the_floor(tmp_path: Path) -> None:
+    """Parts 4 and 4b ask by index (``walk_s0``); a seed-named dir answers with its ``walk_s1``, the floor as is."""
+    query = np.arange(4)
+    _ladder_dir(tmp_path / "mae", {"walk_s1_end": np.array([1.0, 0, 0, 0]), "floor": np.ones(4)}, query)
+    _ladder_dir(tmp_path / "old", {"walk_s0_end": np.array([0.0, 0, 0, 0])}, query)
+    ladders = _open_ladders(tmp_path, [{"dir": "mae", "names": "seed"}, "old"])
+    assert _own_name("walk_s0_t00846", "seed") == "walk_s1_t00846" and _own_name("floor", "seed") == "floor"
+    rows = _rows_any(ladders, ["walk_s0_end"], "scene|knn")
+    assert rows is not None and rows.tolist() == [[1.0, 0, 0, 0]]
+    assert _rows_any(ladders, ["floor"], "scene|knn") is not None
+    assert _rows_any(ladders[1:], ["walk_s0_end"], "scene|knn").tolist() == [[0.0, 0, 0, 0]]  # type: ignore[union-attr]
+    _ladder_dir(tmp_path / "other", {}, np.arange(1, 5))
+    with pytest.raises(ValueError, match="val query"):
+        _open_ladders(tmp_path, ["old", "other"])
 
 
 def test_finetune_drop_consecutive_needs_a_run_of_drops() -> None:

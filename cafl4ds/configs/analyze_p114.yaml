@@ -2,7 +2,8 @@
 # `root` holds the drives (outputs/ in the main checkout; the run dirs live on the project share).
 root: outputs
 mode: bands # bands (Part 1) | power (Part 4) | breadth (Part 4b)
-arm_set: arms # the arms mode=bands reads: arms (Part 1a) | arms_1b (Part 1b)
+arm_set: arms # the arms mode=bands / branches read: arms (Part 1a) | arms_1b (Part 1b)
+only: null # mode=branches: a list of arm names to read (null = every arm with `branches`)
 out: ${root}/p114/${mode}.json
 
 # Part 1 — the healthy null and the single-drive bands, per arm. `iid_seeds` / `check_seeds` pick the
@@ -62,6 +63,17 @@ arms_1b:
     # A sensitivity check for the fine-tune corroboration: Part G's walks without the protections (a known
     # fine-tune loss), read against this arm's healthy seeds. Descriptive: their recipe differs.
     natural: { ladders: [p125/ladder/dino_simsiam_np], seeds: [1, 2, 3, 4, 5] }
+    branches:
+      ladder: p114/ladder/branch_dino_simsiam
+      control: reinit4
+      natural: { unprotected: [p125/partG/drive/dino_simsiam_np_walk] }
+      features:
+        dir: p114/features/dino_simsiam
+        iid: dino_simsiam_iid_6to15
+        iid_seeds: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+        walk: dino_simsiam_p9e-5_walk
+        walk_seeds: [1, 2, 3, 4, 5]
+        natural: { unprotected: { run: dino_simsiam_np_walk, seeds: [1, 2, 3, 4, 5] } }
   mae_je:
     backbone: je
     walk: [p125/drive/mae_je_walk]
@@ -72,6 +84,17 @@ arms_1b:
     referee_null: true
     inject_power: true
     natural: { ladders: [p125/ladder/mae_je_np], seeds: [1, 2, 3, 4, 5] }
+    branches:
+      ladder: p114/ladder/branch_mae_je
+      control: reinit2
+      natural: { unprotected: [p125/partG/drive/mae_je_np_walk] }
+      features:
+        dir: p114/features/mae_je
+        iid: mae_je_iid_6to15
+        iid_seeds: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+        walk: mae_je_walk
+        walk_seeds: [1, 2, 3, 4, 5]
+        natural: { unprotected: { run: mae_je_np_walk, seeds: [1, 2, 3, 4, 5] } }
   dino_dino:
     backbone: je
     walk: [p125/drive/dino_dino_walk]
@@ -81,6 +104,21 @@ arms_1b:
     ladders: [p125/ladder/dino_dino, p125/ladder_ft/dino_dino, { dir: p114/ladder/dino_dino_iid, names: seed }]
     referee_null: true
     inject_power: true
+    branches:
+      ladder: p114/ladder/branch_dino_dino
+      control: null # no re-init passed: re-init 4 is a fifth dose
+      # No well, so the harness anchored drift to each run's first reading: a branch's drift restarts at 0 at
+      # step 846 while the walks' and IID drives' run from step 0. Not comparable to the bands; the per-block
+      # lenses (anchored at DINO's released checkpoint) read drift on this arm instead.
+      unreadable: [cka_drift, cosine_drift, cka_drift_proj, cosine_drift_proj]
+      natural: { collapse_3e-4: [p125/partE/hi/dino_lr3e-4], collapse_1e-3: [p125/partE/hi/dino_lr1e-3] }
+      # Part E's collapse drives saved only their end: no per-block read of them here.
+      features:
+        dir: p114/features/dino_dino
+        iid: dino_dino_iid_4to15
+        iid_seeds: [4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+        walk: dino_dino_walk
+        walk_seeds: [1, 2, 3, 4, 5]
   mae:
     backbone: mae
     walk: [p114/drive/mae_walk]
@@ -90,6 +128,51 @@ arms_1b:
     ladders: [{ dir: p114/ladder/mae, names: seed }]
     referee_null: true
     inject_power: true
+    branches:
+      ladder: p114/ladder/branch_mae
+      control: reinit2
+      natural: { old_recipe: [p114/drive/mae_fail_walk] }
+      features:
+        dir: p114/features/mae
+        iid: mae_iid
+        iid_seeds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        walk: mae_walk
+        walk_seeds: [1, 2, 3, 4, 5]
+        # its own method and anchor (the 64-d decoder's well), read against the repaired arm's bands
+        natural: { old_recipe: { dir: p114/features/mae_fail, run: mae_fail_walk, seeds: [1, 2, 3] } }
+
+# Parts 2 and 3 (mode=branches, arm_set=arms_1b): each arm's `branches` (its branch ladder, the specificity
+# control if one passed the pilot, the natural failures read descriptively). The referee reads each branch
+# against its twin at the start state, step 1,269 and the end; the control is confirmed when no linear or
+# fine-tune read's seed-mean paired difference falls below -control_sd_multiple twin SDs. The readers are the
+# health vector's label-free signals, each its own single-drive panel; the bar: <= loo_max leave-one-out
+# false alarms on IID seeds 1-10, quiet on >= walks_quiet of the 5 walks, quiet on every twin and the
+# control at every reading, firing on every called seed at the branch's first reading (by late_by beside it).
+branches:
+  dir: p114/branch
+  checkpoints: [t00846, t01269, end]
+  control_sd_multiple: 1.0
+  loo_max: 2
+  walks_quiet: 4
+  late_by: 1269
+  readers:
+    je: [rankme, uniformity, alignment, cka_drift, cosine_drift, mean_feature_var, offdiag_cov, rankme_proj,
+      uniformity_proj, alignment_proj, cka_drift_proj, cosine_drift_proj, mean_feature_var_proj, offdiag_cov_proj]
+    mae: [rankme, uniformity, alignment, cka_drift, cosine_drift, mean_feature_var, offdiag_cov]
+  # The per-block readers, from the block features (`features` per arm): P1.1.2's lenses, one panel per lens
+  # over every layer, and P1.1.3's middle-block panel (plain CKA drift, blocks 4-11, one threshold), as fixed
+  # there: span 3 and floor 0.25 over the IID drives' 6 saved checkpoints; each branch at its start state
+  # (after the damage), step 1,269 and its end.
+  lens:
+    workers: 4 # x 2 torch threads each: the 8-thread cap beside the HPU jobs
+    stems: [step00100, step00212, step00423, step00846, step01269, final]
+    end_step: 1692
+    branch_stems: [step00846, step01269, final]
+    lenses: [cka_drift, dcka_drift, rankme]
+    panels: { middle: [block04, block05, block06, block07, block08, block09, block10, block11] }
+    span: 3
+    floor: 0.25
+    alpha: 0.05
 
 # The `degradation` label's fine-tune corroboration of a kNN fire: min (fixed before 1b: a read below every
 # healthy seed's at any checkpoint at or after the fire), consecutive (the same on two consecutive checkpoints),
@@ -152,12 +235,14 @@ n_query_stratum: 300
 # Part 4 — the referee's power on past regimes, from P1.2.5's per-image ladder reads at every walk checkpoint.
 power:
   # per arm, its ladder dirs (sharing the val query); each rung is read from the first dir holding it. The
-  # fine-tunes of MAE-init JE and DINO-init DINO were read apart (DINO's after P1.2.5's fine-tune fix).
+  # fine-tunes of MAE-init JE and DINO-init DINO were read apart (DINO's after P1.2.5's fine-tune fix). MAE's
+  # walks are P1.1.4's (seed-named); its breadth tasks were read apart, at the walks' ends and the floor.
   ladders:
     dino_simsiam: [p125/ladder/dino_simsiam_p9e-5]
     mae_je: [p125/ladder/mae_je, p125/ladder_ft/mae_je]
     dino_dino: [p125/ladder/dino_dino, p125/ladder_ft/dino_dino]
-  seeds: [0, 1, 2, 3, 4] # walk_s<i>_* (the drives' seeds 1-5)
+    mae: [{ dir: p114/ladder/mae, names: seed }, { dir: p114/ladder/mae_panel, names: seed }]
+  seeds: [0, 1, 2, 3, 4] # walk_s<i>_* in index naming (the drives' seeds 1-5)
   checkpoints: [t00100, t00212, t00423, t00846, t01269, end]
   tasks: [scene, "presence_cell:traffic light"]
   rungs: [knn, linear, ft10, ft100]
