@@ -75,6 +75,19 @@ def read_backbone(bb: str, config: DictConfig) -> dict[str, Any]:
             )
             for shape in config.shapes
         }
+        # The same sustained drop, starting only at reading `sustained_from` (the healthy seeds coincide early).
+        late = int(config.get("sustained_from", 0))
+        if late:
+            injected[f"sustained_from_{late}"] = injected_mdd(
+                matrix,
+                "sustained",
+                n_inject=int(config.n_inject),
+                n_groups=int(config.n_groups),
+                alpha=float(config.alpha),
+                power=float(config.power),
+                seed=int(config.seed),
+                first=late,
+            )
         out["channels"][str(channel)] = {
             "t_mdd_p110": t_mdd,
             "injected": injected,

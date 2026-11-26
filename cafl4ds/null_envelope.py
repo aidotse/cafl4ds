@@ -437,16 +437,17 @@ def gap_fast(walk: np.ndarray, iid: np.ndarray, alpha: float = 0.05) -> dict[str
     }
 
 
-def drop_profile(n_checkpoints: int, shape: str, last: int | None = None) -> np.ndarray:
+def drop_profile(n_checkpoints: int, shape: str, last: int | None = None, first: int = 0) -> np.ndarray:
     """A unit drop's profile over a drive: ``sustained`` (every reading), ``last_quarter``, or ``single``.
 
     ``last`` is the index of the drive's last usable reading (default: the last); the last quarter and
-    the single reading end there.
+    the single reading end there. ``first`` starts a sustained drop later: at the first readings the
+    healthy seeds nearly coincide, so a drop there is caught at once, though no real gap can exist yet.
     """
     end = n_checkpoints - 1 if last is None else last
     profile = np.zeros(n_checkpoints)
     if shape == "sustained":
-        profile[:] = 1.0
+        profile[first:] = 1.0
     elif shape == "last_quarter":
         profile[max(0, end + 1 - math.ceil((end + 1) / 4)) : end + 1] = 1.0
     elif shape == "single":
@@ -500,6 +501,7 @@ def injected_mdd(
     seed: int = 0,
     hi: float = 0.05,
     tol: float = 5e-4,
+    first: int = 0,
 ) -> dict[str, float]:
     """The drop the walk-vs-IID test catches ``power`` of the time, by injection into healthy seeds (B2).
 
@@ -518,6 +520,7 @@ def injected_mdd(
         seed: The group sampler's seed.
         hi: The first upper bracket (doubled until caught, up to 1.0).
         tol: The bisection's resolution.
+        first: The reading a ``sustained`` drop starts at (see :func:`drop_profile`).
 
     Returns:
         ``mdd`` (``inf`` if not reached at 1.0), ``power_at_mdd``, ``n_groups``, ``n_splits``.
@@ -525,7 +528,7 @@ def injected_mdd(
     x = np.asarray(iid, dtype=float)
     n = x.shape[0]
     finite_cols = np.flatnonzero(np.isfinite(x).any(axis=0))
-    profile = drop_profile(x.shape[1], shape, int(finite_cols[-1]))
+    profile = drop_profile(x.shape[1], shape, int(finite_cols[-1]), first)
     masks = split_masks(n, n_inject)
     rng = np.random.default_rng(seed)
     pick = masks if masks.shape[0] <= n_groups else masks[rng.choice(masks.shape[0], n_groups, replace=False)]

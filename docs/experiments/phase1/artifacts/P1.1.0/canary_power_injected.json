@@ -37,12 +37,19 @@
               "power_at_mdd": 0.815,
               "n_groups": 200.0,
               "n_splits": 252.0
+            },
+            "sustained_from_10": {
+              "mdd": 0.019531250000000003,
+              "power_at_mdd": 0.815,
+              "n_groups": 200.0,
+              "n_splits": 252.0
             }
           },
           "ratio": {
             "sustained": 0.6140014910427353,
             "last_quarter": 0.7675018638034191,
-            "single": 2.260641853384616
+            "single": 2.260641853384616,
+            "sustained_from_10": 0.6977289670940174
           }
         },
         "linear_acc": {
@@ -65,12 +72,19 @@
               "power_at_mdd": 0.815,
               "n_groups": 200.0,
               "n_splits": 252.0
+            },
+            "sustained_from_10": {
+              "mdd": 0.030859375,
+              "power_at_mdd": 0.805,
+              "n_groups": 200.0,
+              "n_splits": 252.0
             }
           },
           "ratio": {
             "sustained": 0.779184221670695,
             "last_quarter": 1.444088090829688,
-            "single": 2.3063852961452573
+            "single": 2.3063852961452573,
+            "sustained_from_10": 0.820740713493132
           }
         },
         "knn_acc_daytime": {
@@ -93,12 +107,19 @@
               "power_at_mdd": 0.81,
               "n_groups": 200.0,
               "n_splits": 252.0
+            },
+            "sustained_from_10": {
+              "mdd": 0.024609375000000003,
+              "power_at_mdd": 0.825,
+              "n_groups": 200.0,
+              "n_splits": 252.0
             }
           },
           "ratio": {
             "sustained": 0.49108274713399164,
             "last_quarter": 0.5600066414685869,
-            "single": 0.5600066414685869
+            "single": 0.5600066414685869,
+            "sustained_from_10": 0.5427756678849381
           }
         },
         "linear_acc_daytime": {
@@ -121,12 +142,19 @@
               "power_at_mdd": 0.825,
               "n_groups": 200.0,
               "n_splits": 252.0
+            },
+            "sustained_from_10": {
+              "mdd": 0.043750000000000004,
+              "power_at_mdd": 0.825,
+              "n_groups": 200.0,
+              "n_splits": 252.0
             }
           },
           "ratio": {
             "sustained": 0.7135131092303386,
             "last_quarter": 1.0102215308904794,
-            "single": 2.1687972726110285
+            "single": 2.1687972726110285,
+            "sustained_from_10": 0.7912224577603755
           }
         },
         "knn_acc_dawn_dusk": {
@@ -149,12 +177,19 @@
               "power_at_mdd": 0.8,
               "n_groups": 200.0,
               "n_splits": 252.0
+            },
+            "sustained_from_10": {
+              "mdd": 0.03984375000000001,
+              "power_at_mdd": 0.815,
+              "n_groups": 200.0,
+              "n_splits": 252.0
             }
           },
           "ratio": {
             "sustained": 0.47171962553619184,
             "last_quarter": 1.1869074448975148,
-            "single": 2.8759680395593636
+            "single": 2.8759680395593636,
+            "sustained_from_10": 0.7760548678176061
           }
         },
         "linear_acc_dawn_dusk": {
@@ -177,12 +212,19 @@
               "power_at_mdd": 0.8,
               "n_groups": 200.0,
               "n_splits": 252.0
+            },
+            "sustained_from_10": {
+              "mdd": 0.04062500000000001,
+              "power_at_mdd": 0.82,
+              "n_groups": 200.0,
+              "n_splits": 252.0
             }
           },
           "ratio": {
             "sustained": 0.691114752915821,
             "last_quarter": 1.132251829245068,
-            "single": 2.1101056817749
+            "single": 2.1101056817749,
+            "sustained_from_10": 0.7646375989706956
           }
         },
         "knn_acc_night": {
@@ -205,12 +247,19 @@
               "power_at_mdd": 0.82,
               "n_groups": 200.0,
               "n_splits": 252.0
+            },
+            "sustained_from_10": {
+              "mdd": 0.0328125,
+              "power_at_mdd": 0.81,
+              "n_groups": 200.0,
+              "n_splits": 252.0
             }
           },
           "ratio": {
             "sustained": 0.6820846115629763,
             "last_quarter": 0.9066734470776149,
-            "single": 1.8383012092124118
+            "single": 1.8383012092124118,
+            "sustained_from_10": 0.6987208216010977
           }
         },
         "linear_acc_night": {
@@ -233,12 +282,19 @@
               "power_at_mdd": 0.83,
               "n_groups": 200.0,
               "n_splits": 252.0
+            },
+            "sustained_from_10": {
+              "mdd": 0.05234375000000001,
+              "power_at_mdd": 0.8,
+              "n_groups": 200.0,
+              "n_splits": 252.0
             }
           },
           "ratio": {
             "sustained": 0.8025508973994252,
             "last_quarter": 1.4941801260525887,
-            "single": 2.055313273827796
+            "single": 2.055313273827796,
+            "sustained_from_10": 0.8743237418823007
           }
         }
       }
@@ -277,12 +333,19 @@
               "power_at_mdd": 0.845,
               "n_groups": 200.0,
               "n_splits": 252.0
+            },
+            "sustained_from_10": {
+              "mdd": 0.014453125,
+              "power_at_mdd": 0.845,
+              "n_groups": 200.0,
+              "n_splits": 252.0
             }
           },
           "ratio": {
             "sustained": 0.6425970564659439,
             "last_quarter": 1.0648751221435644,
-            "single": 2.643827889459884
+            "single": 2.643827889459884,
+            "sustained_from_10": 0.6793168882639979
           }
         },
         "linear_acc": {
@@ -305,12 +368,19 @@
               "power_at_mdd": 0.805,
               "n_groups": 200.0,
               "n_splits": 252.0
+            },
+            "sustained_from_10": {
+              "mdd": 0.0234375,
+              "power_at_mdd": 0.81,
+              "n_groups": 200.0,
+              "n_splits": 252.0
             }
           },
           "ratio": {
             "sustained": 0.6576543874097134,
             "last_quarter": 1.4021687882508984,
-            "single": 2.9780576033647397
+            "single": 2.9780576033647397,
+            "sustained_from_10": 0.7445144008411849
           }
         },
         "knn_acc_daytime": {
@@ -333,12 +403,19 @@
               "power_at_mdd": 0.835,
               "n_groups": 200.0,
               "n_splits": 252.0
+            },
+            "sustained_from_10": {
+              "mdd": 0.028515625000000003,
+              "power_at_mdd": 0.805,
+              "n_groups": 200.0,
+              "n_splits": 252.0
             }
           },
           "ratio": {
             "sustained": 0.5984236605270721,
             "last_quarter": 1.215844897578813,
-            "single": 1.2253436858411475
+            "single": 1.2253436858411475,
+            "sustained_from_10": 0.6934115431504169
           }
         },
         "linear_acc_daytime": {
@@ -361,12 +438,19 @@
               "power_at_mdd": 0.82,
               "n_groups": 200.0,
               "n_splits": 252.0
+            },
+            "sustained_from_10": {
+              "mdd": 0.03671875000000001,
+              "power_at_mdd": 0.815,
+              "n_groups": 200.0,
+              "n_splits": 252.0
             }
           },
           "ratio": {
             "sustained": 0.7842346765613758,
             "last_quarter": 1.5684693531227516,
-            "single": 2.5529341598700097
+            "single": 2.5529341598700097,
+            "sustained_from_10": 0.7842346765613758
           }
         },
         "knn_acc_dawn_dusk": {
@@ -389,12 +473,19 @@
               "power_at_mdd": 0.84,
               "n_groups": 200.0,
               "n_splits": 252.0
+            },
+            "sustained_from_10": {
+              "mdd": 0.029296875,
+              "power_at_mdd": 0.81,
+              "n_groups": 200.0,
+              "n_splits": 252.0
             }
           },
           "ratio": {
             "sustained": 0.7350683486979004,
             "last_quarter": 1.2811191220163407,
-            "single": 2.2997138337834313
+            "single": 2.2997138337834313,
+            "sustained_from_10": 0.7875732307477504
           }
         },
         "linear_acc_dawn_dusk": {
@@ -417,12 +508,19 @@
               "power_at_mdd": 0.845,
               "n_groups": 200.0,
               "n_splits": 252.0
+            },
+            "sustained_from_10": {
+              "mdd": 0.033984375000000004,
+              "power_at_mdd": 0.8,
+              "n_groups": 200.0,
+              "n_splits": 252.0
             }
           },
           "ratio": {
             "sustained": 0.681319477494504,
             "last_quarter": 1.2310204195639334,
-            "single": 1.757494561264232
+            "single": 1.757494561264232,
+            "sustained_from_10": 0.6735772107047938
           }
         },
         "knn_acc_night": {
@@ -445,12 +543,19 @@
               "power_at_mdd": 0.84,
               "n_groups": 200.0,
               "n_splits": 252.0
+            },
+            "sustained_from_10": {
+              "mdd": 0.026953125,
+              "power_at_mdd": 0.81,
+              "n_groups": 200.0,
+              "n_splits": 252.0
             }
           },
           "ratio": {
             "sustained": 0.652947395924588,
             "last_quarter": 1.0664807466768271,
-            "single": 3.177677326832995
+            "single": 3.177677326832995,
+            "sustained_from_10": 0.7508895053132763
           }
         },
         "linear_acc_night": {
@@ -473,12 +578,19 @@
               "power_at_mdd": 0.805,
               "n_groups": 200.0,
               "n_splits": 252.0
+            },
+            "sustained_from_10": {
+              "mdd": 0.04101562500000001,
+              "power_at_mdd": 0.805,
+              "n_groups": 200.0,
+              "n_splits": 252.0
             }
           },
           "ratio": {
             "sustained": 0.7014563033387203,
             "last_quarter": 0.8785917334747607,
-            "single": 2.997131477901805
+            "single": 2.997131477901805,
+            "sustained_from_10": 0.74396880657137
           }
         }
       }

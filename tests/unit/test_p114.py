@@ -276,6 +276,7 @@ def test_drop_profile_shapes_end_at_the_last_usable_reading() -> None:
     assert drop_profile(8, "sustained").tolist() == [1.0] * 8
     assert drop_profile(8, "last_quarter").tolist() == [0, 0, 0, 0, 0, 0, 1, 1]
     assert drop_profile(8, "single", last=5).tolist() == [0, 0, 0, 0, 0, 1, 0, 0]
+    assert drop_profile(8, "sustained", first=3).tolist() == [0, 0, 0, 1, 1, 1, 1, 1]
     with pytest.raises(ValueError, match="unknown"):
         drop_profile(8, "ramp")
 

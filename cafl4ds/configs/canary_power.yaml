@@ -16,6 +16,9 @@ t_mdd_dir: "${null_root}/warm/{bb}_o0.0_iid"
 arbiters: [knn_acc, linear_acc, knn_acc_daytime, linear_acc_daytime, knn_acc_dawn_dusk, linear_acc_dawn_dusk,
   knn_acc_night, linear_acc_night]
 shapes: [sustained, last_quarter, single]
+# A sustained drop starting at this reading too: at the first readings the healthy seeds nearly coincide,
+# so a drop held from step 0 is caught there, where no real walk-vs-IID gap can exist yet.
+sustained_from: 10
 n_inject: 5
 n_groups: 200
 alpha: 0.05
