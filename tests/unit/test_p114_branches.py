@@ -1,5 +1,6 @@
 """P1.1.4 Parts 2 and 3 — the branch read: kinds, the referee's paired reads, the control and the reader bar."""
 
+import json
 import math
 from pathlib import Path
 from typing import Any
@@ -10,6 +11,7 @@ from omegaconf import OmegaConf
 
 from cafl4ds.reading_protocol import calibrate_panel
 from scripts.analyze_p114_branches import (
+    _lens_inputs,
     _on_grid,
     branch_kinds,
     control_verdict,
@@ -183,3 +185,47 @@ def test_reader_bar_skips_the_twins_start_state() -> None:
     assert reader_bar(e, {"noise0p5": [1, 2, 3]}, _CFG)["twins"]
     e["kinds"]["dose0"][1]["fired_after_first"] = True
     assert not reader_bar(e, {"noise0p5": [1, 2, 3]}, _CFG)["twins"]
+
+
+def test_lens_inputs_read_a_promoted_cache_and_write_nothing_beside_the_features(tmp_path: Path) -> None:
+    """The per-block screen's inputs come from the features dir's own cache; nothing is computed or written there."""
+    fdir = tmp_path / "p114" / "features" / "arm"
+    fdir.mkdir(parents=True)
+    keys = [
+        f"features/arm_{order}/s{seed}/{stem}.pt"
+        for order in ("iid", "walk")
+        for seed in (1, 2)
+        for stem in ("step00100", "final")
+    ]
+    (fdir / "index.json").write_text(json.dumps([{"features": k} for k in keys]), encoding="utf-8")
+    cache = {k: {"cka_drift@block04": float(i)} for i, k in enumerate(keys)}
+    (fdir / "lens_values.json").write_text(json.dumps(cache), encoding="utf-8")
+    (tmp_path / "p114" / "branch" / "arm_dose0").mkdir(parents=True)  # its features unread: nan
+    config = OmegaConf.create(
+        {
+            "out": str(tmp_path / "report" / "branches.json"),
+            "branches": {
+                "dir": "p114/branch",
+                "seeds": [1, 2],
+                "lens": {"workers": 1, "stems": ["step00100", "final"], "branch_stems": ["final"], "end_step": 1692},
+            },
+        }
+    )
+    arm = OmegaConf.create(
+        {
+            "branches": {
+                "features": {
+                    "dir": "p114/features/arm",
+                    "iid": "arm_iid",
+                    "iid_seeds": [1, 2],
+                    "walk": "arm_walk",
+                    "walk_seeds": [1, 2],
+                }
+            }
+        }
+    )
+    before = sorted(p.name for p in fdir.iterdir())
+    inputs = _lens_inputs("arm", arm, config, tmp_path)
+    assert inputs["iid"]["cka_drift@block04"].tolist() == [[0.0, 1.0], [2.0, 3.0]]
+    assert inputs["grid"] == [100, 1692] and list(inputs["branch"]) == ["dose0"]
+    assert sorted(p.name for p in fdir.iterdir()) == before

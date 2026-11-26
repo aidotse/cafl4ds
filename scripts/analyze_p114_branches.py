@@ -31,6 +31,7 @@ from pathlib import Path
 from typing import Any, Protocol
 
 import numpy as np
+from hydra.utils import to_absolute_path
 from loguru import logger
 from omegaconf import DictConfig
 
@@ -494,7 +495,13 @@ def _lens_inputs(name: str, arm: DictConfig, config: DictConfig, root: Path) -> 
     from scripts.analyze_lenses import lens_table  # noqa: PLC0415  (spawns workers; only this mode needs it)
 
     lc, fc = config.branches.lens, arm.branches.features
-    table = lens_table(root / str(fc.dir), int(lc.workers))
+    out_dir = Path(to_absolute_path(str(config.out))).parent
+
+    def _table(fdir: str) -> dict[str, dict[str, float]]:
+        """A features dir's lens values: its own cache read, new values cached beside the report."""
+        return lens_table(root / fdir, int(lc.workers), out_dir / f"lens_values_{Path(fdir).name}.json")
+
+    table = _table(str(fc.dir))
     stems, b_stems = list(lc.stems), list(lc.branch_stems)
     grid = [_stem_step(s, int(lc.end_step)) for s in stems]
     signals = sorted({s for row in table.values() for s in row})
@@ -502,7 +509,7 @@ def _lens_inputs(name: str, arm: DictConfig, config: DictConfig, root: Path) -> 
     seeds = list(config.branches.get("seeds", [1, 2, 3]))
     natural = {}
     for nat, spec in (fc.get("natural") or {}).items():
-        ntable = lens_table(root / str(spec.dir), int(lc.workers)) if spec.get("dir") else table
+        ntable = _table(str(spec.dir)) if spec.get("dir") else table
         natural[nat] = (lens_matrix(ntable, str(spec.run), list(spec.seeds), stems, signals), list(spec.seeds))
     return {
         "stems": stems,
