@@ -234,3 +234,14 @@ def test_skipped_checkpoints_cannot_fire_and_do_not_break_calibration() -> None:
     spike[50] = -100.0  # a wild reading at a skipped checkpoint
     spike[50] = np.nan
     assert np.isfinite(bands.sd).all() and not call(spike, bands)["fired"]
+
+
+def test_a_smoothed_rule_reads_no_z_at_a_skipped_checkpoint() -> None:
+    """A skipped reading carries no z, though its window holds earlier ones; the final z is the last real one."""
+    null = _ar1(10, seed=19)
+    bands = calibrate(null, "knn_acc", window=5)
+    drive = _ar1(1, seed=20)[0]
+    drive[-1] = np.nan  # the last reading follows a short batch
+    z = zscores(drive, bands)
+    assert np.isnan(z[-1]) and np.isfinite(z[:-1]).all()
+    assert call(drive, bands)["final_z"] == pytest.approx(z[-2])

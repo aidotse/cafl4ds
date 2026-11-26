@@ -8,6 +8,7 @@ from types import ModuleType
 
 import numpy as np
 import pytest
+from omegaconf import OmegaConf
 
 _SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "read_forgetting_lenses.py"
 
@@ -53,3 +54,19 @@ def test_unpaired_reads_each_forgetting_arm_alone_against_the_healthy_arms() -> 
     out = _module().unpaired(pc, healthy, ["cka_drift@block05"], alpha=0.05, floor=0.25)
     assert [r["fired"] for r in out["pc"]] == [True, False]
     assert out["summary"]["loo_false_alarms"] == "0/6"
+
+
+def test_remap_mounts_swaps_whole_path_components_only() -> None:
+    """Recorded container mounts become host paths; a longer name that merely shares the prefix is left alone."""
+    cfg = OmegaConf.create(
+        {
+            "encoder": {"state_dict_path": "/mnt/cifar100/mae.pth"},
+            "data": [{"root": "/mnt/stl10"}, {"root": "/mnt/stl100/x"}],
+            "steps": 3,
+        }
+    )
+    mounts = [{"from": "/mnt/cifar100", "to": "/host/data/cifar100"}, {"from": "/mnt/stl10/", "to": "/host/stl10"}]
+    out = _module().remap_mounts(cfg, mounts)
+    assert out.encoder.state_dict_path == "/host/data/cifar100/mae.pth"
+    assert [d.root for d in out.data] == ["/host/stl10", "/mnt/stl100/x"]
+    assert out.steps == 3

@@ -327,7 +327,8 @@ def twonn_id(z: TensorLike, discard_fraction: float = 0.1) -> float:
     if not 0.0 <= discard_fraction < 1.0:
         raise ValueError(f"discard_fraction must be in [0, 1); got {discard_fraction}.")
     zt = _check_matrix(_as_tensor(z)).to(torch.float64)
-    dist = torch.cdist(zt, zt)
+    # The direct (non-matrix-multiply) path, so a duplicate row reads a distance of exactly 0.
+    dist = torch.cdist(zt, zt, compute_mode="donot_use_mm_for_euclid_dist")
     dist.fill_diagonal_(float("inf"))
     r = dist.topk(2, dim=1, largest=False).values  # [N, 2]: r1, r2 per sample
     keep = r[:, 0] > 0
@@ -447,8 +448,8 @@ def linear_cka(x: TensorLike, y: TensorLike) -> float:
     Raises:
         ValueError: If ``x`` and ``y`` have a different number of samples.
     """
-    xt = _check_matrix(_as_tensor(x), "x")
-    yt = _check_matrix(_as_tensor(y), "y")
+    xt = _check_matrix(_as_tensor(x), "x").to(torch.float64)
+    yt = _check_matrix(_as_tensor(y), "y").to(torch.float64)
     if xt.shape[0] != yt.shape[0]:
         raise ValueError(f"CKA needs matching sample counts; got {xt.shape[0]} vs {yt.shape[0]}.")
     xc = xt - xt.mean(dim=0, keepdim=True)
@@ -500,7 +501,8 @@ def debiased_linear_cka(x: TensorLike, y: TensorLike) -> float:
     the regime of a ViT-B block (768 features) on a few hundred probe images. The unbiased HSIC
     removes that floor, so unrelated representations read ~0 and the value is comparable across
     feature widths. Same invariances as :func:`linear_cka` (orthogonal transforms, isotropic
-    scaling). Being an unbiased estimate of a ratio, it can stray slightly outside ``[0, 1]``.
+    scaling). It never exceeds 1: the unbiased HSIC is an inner product of U-centred kernels, so
+    Cauchy–Schwarz bounds the ratio. Unrelated representations can read slightly below 0.
 
     Args:
         x: First representation ``[N, d_x]``.

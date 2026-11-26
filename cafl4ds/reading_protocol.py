@@ -15,7 +15,8 @@ The rule, per instrument:
 * **Smoothing.** An optional trailing mean over ``window`` checkpoints trades detection delay for
   noise — the canary jitters reading to reading. The window is shorter (and the mean noisier) over a
   trajectory's first checkpoints, so each ``z`` is scaled by the smoothed residual's own SD at its
-  window length, under the residuals' AR(1) autocorrelation.
+  window length, under the residuals' AR(1) autocorrelation. A skipped reading yields no ``z``,
+  even though its trailing window holds earlier readings.
 * **Scale.** A local SD of the raw residual per checkpoint, from the null seeds' leave-one-out
   residuals — each seed against the mean of the *others*, so the spread is the one a new trajectory
   will meet. It is pooled over the seeds *and* a band of ``±span`` neighbouring checkpoints: five
@@ -370,9 +371,11 @@ def zscores(trajectory: np.ndarray, bands: Bands) -> np.ndarray:
         bands: The calibrated rule.
 
     Returns:
-        ``z`` with the trajectory's shape (two-sided rules return ``|z|``).
+        ``z`` with the trajectory's shape (two-sided rules return ``|z|``); ``nan`` at a skipped
+        (``nan``) reading, even when its trailing window holds earlier readings.
     """
-    r = trailing_mean(apply_transform(trajectory, bands.transform) - bands.mean, bands.window)
+    x = apply_transform(trajectory, bands.transform) - bands.mean
+    r = np.where(np.isnan(x), np.nan, trailing_mean(x, bands.window))
     scale = bands.sd * smoothing_profile(bands.rho, bands.window, r.shape[-1])
     with np.errstate(divide="ignore", invalid="ignore"):
         z = np.where(scale > 0, r / np.where(scale > 0, scale, 1.0), np.where(r == 0, 0.0, np.inf * np.sign(r)))
@@ -398,17 +401,19 @@ def call(trajectory: np.ndarray, bands: Bands) -> Call:
 
     Returns:
         ``fired``, ``first`` (index of the first firing checkpoint, ``None`` if quiet), ``max_z``,
-        ``frac_fired`` (share of checkpoints over threshold), ``final_z``.
+        ``frac_fired`` (share of checkpoints over threshold), ``final_z`` (at the last reading not
+        skipped, ``nan`` if every reading is).
     """
     z = zscores(trajectory, bands)
     over = np.nan_to_num(z, nan=-np.inf) > bands.threshold
     first = int(np.argmax(over)) if over.any() else None
+    read = z[~np.isnan(z)]
     return {
         "fired": bool(over.any()),
         "first": first,
-        "max_z": float(np.nanmax(z)),
+        "max_z": float(np.max(read)) if read.size else float("nan"),
         "frac_fired": float(over.mean()),
-        "final_z": float(z[-1]),
+        "final_z": float(read[-1]) if read.size else float("nan"),
     }
 
 

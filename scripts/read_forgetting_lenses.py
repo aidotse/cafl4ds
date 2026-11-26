@@ -59,6 +59,31 @@ def _harness() -> ModuleType:
     return module
 
 
+def remap_mounts(cfg: DictConfig, mounts: list[dict[str, str]]) -> DictConfig:
+    """A run's recorded config with each container mount (``from``) replaced by its host path (``to``).
+
+    The re-runs record the container's data mounts (``/mnt/cifar100``, …) in ``.hydra/config.yaml``; a read
+    on the host needs the same files under their host paths. A prefix matches whole path components only.
+    """
+
+    def swap(value: object) -> object:
+        if isinstance(value, dict):
+            return {k: swap(v) for k, v in value.items()}
+        if isinstance(value, list):
+            return [swap(v) for v in value]
+        if isinstance(value, str):
+            for mount in mounts:
+                src, dst = str(mount["from"]).rstrip("/"), str(mount["to"]).rstrip("/")
+                if value == src or value.startswith(f"{src}/"):
+                    return dst + value[len(src) :]
+        return value
+
+    out = OmegaConf.create(swap(OmegaConf.to_container(cfg, resolve=False)))
+    if not isinstance(out, DictConfig):
+        raise TypeError("a run's config must be a mapping.")
+    return out
+
+
 def reproduction(new: dict[str, Any], promoted: dict[str, Any], tolerance: float) -> dict[str, Any]:
     """Each arm's BWT against the promoted run's, and whether the gate verdict matches."""
     out: dict[str, Any] = {}
@@ -109,7 +134,10 @@ def unpaired(
 def read_seed(config: DictConfig, harness: ModuleType, seed: int) -> dict[str, Any]:
     """Every lens's phase-B change per arm for one seed, plus the anchor check and the recorded-drift check."""
     run = Path(to_absolute_path(str(config.runs).format(seed=seed)))
-    cfg = OmegaConf.load(run / ".hydra" / "config.yaml")
+    loaded = OmegaConf.load(run / ".hydra" / "config.yaml")
+    if not isinstance(loaded, DictConfig):
+        raise TypeError(f"{run}: .hydra/config.yaml is not a mapping.")
+    cfg = remap_mounts(loaded, list(config.get("mounts", [])))
     split = harness._task_split(cfg)
     saved = json.loads((run / "states" / "task_a_probe.json").read_text(encoding="utf-8"))
     if harness.task_a_fingerprint(split) != saved:

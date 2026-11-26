@@ -119,12 +119,21 @@ def seed_matrix(rows: list[dict[str, Any]], signal: str, arm: str = "live") -> n
 
 
 def checkpoint_steps(rows: list[dict[str, Any]], arm: str = "live") -> list[int]:
-    """The stream step of each checkpoint (from the first seed), for aligning two arms' grids."""
-    first = min(int(r["seed"]) for r in rows if r.get("arm") == arm)
-    pairs = sorted(
-        (int(r["checkpoint_index"]), int(r["step"])) for r in rows if r.get("arm") == arm and int(r["seed"]) == first
-    )
-    return [step for _, step in pairs]
+    """The stream step of each checkpoint, for aligning two arms' grids.
+
+    Raises:
+        ValueError: If the seeds do not share one step grid (their readings would be misaligned).
+    """
+    by_seed: dict[int, list[tuple[int, int]]] = {}
+    for r in rows:
+        if r.get("arm") == arm:
+            by_seed.setdefault(int(r["seed"]), []).append((int(r["checkpoint_index"]), int(r["step"])))
+    grids = {seed: [step for _, step in sorted(pairs)] for seed, pairs in by_seed.items()}
+    first = grids[min(grids)]
+    differing = [seed for seed, grid in grids.items() if grid != first]
+    if differing:
+        raise ValueError(f"seeds {sorted(differing)} checkpoint on a different step grid than seed {min(grids)}.")
+    return first
 
 
 def t_multiplier(df: int) -> float:
@@ -247,6 +256,44 @@ def gap(walk: np.ndarray, iid: np.ndarray, alpha: float = 0.05) -> dict[str, flo
         "d_crit": d_crit,
         "n_perm": float(null.size),
     }
+
+
+def _average_ranks(x: np.ndarray) -> np.ndarray:
+    """Ranks ``0..n-1``, ties sharing the mean of their positions."""
+    order = np.argsort(x, kind="mergesort")
+    ranks = np.empty(x.size)
+    ranks[order] = np.arange(x.size, dtype=float)
+    for value in np.unique(x):
+        tied = x == value
+        ranks[tied] = ranks[tied].mean()
+    return ranks
+
+
+def spearman_exact(x: np.ndarray | list[float], y: np.ndarray | list[float]) -> tuple[float, float]:
+    """Spearman's rho of two short series, with its exact two-sided permutation p over every ordering of ``y``.
+
+    For the few levels of a sweep (5 overlap levels: 120 orderings) the exact p is cheap, and its floor is
+    explicit: ``2 / n!`` without ties (1/60 at 5 levels).
+
+    Args:
+        x: The levels (e.g. the overlap fractions).
+        y: One value per level.
+
+    Returns:
+        ``(rho, p)``; ``(nan, nan)`` if either series is constant.
+
+    Raises:
+        ValueError: If the series differ in length, or hold fewer than 3 or more than 8 values.
+    """
+    xs, ys = np.asarray(x, dtype=float), np.asarray(y, dtype=float)
+    if xs.shape != ys.shape or not 3 <= xs.size <= 8:
+        raise ValueError(f"need two equal-length series of 3-8 values; got {xs.size} and {ys.size}.")
+    rx, ry = _average_ranks(xs), _average_ranks(ys)
+    if np.std(rx) == 0 or np.std(ry) == 0:
+        return math.nan, math.nan
+    rho = float(np.corrcoef(rx, ry)[0, 1])
+    null = np.array([np.corrcoef(rx, ry[list(p)])[0, 1] for p in itertools.permutations(range(ys.size))])
+    return rho, float(np.mean(np.abs(null) >= abs(rho) - 1e-12))
 
 
 def wilson_halfwidth(p: float, n: int, z: float = 1.959964) -> float:

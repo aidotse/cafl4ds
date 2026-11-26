@@ -12,11 +12,13 @@ Example::
 """
 
 import json
+import math
 import sys
 from pathlib import Path
 from typing import Any
 
 import hydra
+import numpy as np
 from hydra.utils import to_absolute_path
 from loguru import logger
 from omegaconf import DictConfig
@@ -30,6 +32,7 @@ from cafl4ds.null_envelope import (
     read_corpus,
     seed_matrix,
     signal_columns,
+    spearman_exact,
 )
 
 logger.remove()
@@ -124,6 +127,42 @@ def _table(title: str, reports: dict[str, dict[str, Any]], field: str, sub: str)
     return "\n".join(lines)
 
 
+def familiarity_trend(
+    per_level: dict[str, dict[str, Any]], fields: tuple[str, ...] = ("final", "max_abs")
+) -> dict[str, Any]:
+    """Does any signal's IID movement trend with familiarity? Spearman over the overlap levels, per signal and field.
+
+    Each test is exact (:func:`cafl4ds.null_envelope.spearman_exact`); the summary gives the smallest p beside
+    the number of tests, since a sweep of 5 levels across ~20 signals and two movement fields runs dozens.
+
+    Args:
+        per_level: ``pair_report`` per level, keyed ``o=<overlap>``.
+        fields: The ``iid_movement`` fields tested (net change, largest excursion).
+
+    Returns:
+        ``levels``, ``tests`` (``<signal>/<field> -> {rho, p}``), ``n_tests``, ``min_p``, ``n_below_alpha``
+        (at 0.05) and ``p_floor`` (the smallest attainable p).
+    """
+    levels = list(per_level)
+    x = [float(lvl.split("=", 1)[1]) for lvl in levels]
+    signals = sorted(set.intersection(*(set(r["signals"]) for r in per_level.values())))
+    tests: dict[str, dict[str, float]] = {}
+    for signal in signals:
+        for field in fields:
+            y = [float(per_level[lvl]["signals"][signal]["iid_movement"][field]) for lvl in levels]
+            rho, p = spearman_exact(x, y)
+            tests[f"{signal}/{field}"] = {"rho": rho, "p": p}
+    ps = [t["p"] for t in tests.values() if np.isfinite(t["p"])]
+    return {
+        "levels": x,
+        "tests": tests,
+        "n_tests": len(ps),
+        "min_p": min(ps) if ps else None,
+        "n_below_alpha": sum(p < 0.05 for p in ps),
+        "p_floor": 2.0 / math.factorial(len(x)),
+    }
+
+
 def analyze(config: DictConfig) -> dict[str, Any]:
     """Build the full null report over the sweep (Hydra-free core, unit-testable)."""
     root = Path(to_absolute_path(str(config.root)))
@@ -137,6 +176,9 @@ def analyze(config: DictConfig) -> dict[str, Any]:
                 counts = _query_counts(root, f"warm/{bb}_o{overlap}_iid", config)
                 per_level[f"o={overlap}"] = pair_report(walk, iid, alpha=alpha, n_query=counts)
         report["warm"][bb] = per_level
+        if len(per_level) >= 3:
+            report.setdefault("familiarity_trend", {})[bb] = trend = familiarity_trend(per_level)
+            logger.info(f"[{bb} warm] familiarity trend: min p {trend['min_p']:.3f} over {trend['n_tests']} tests")
         if per_level:
             logger.info("\n" + _table(f"[{bb} warm] walk-vs-IID max |d|", per_level, "gap", "max_abs_d"))
             logger.info("\n" + _table(f"[{bb} warm] permutation p (max over checkpoints)", per_level, "gap", "p_max"))

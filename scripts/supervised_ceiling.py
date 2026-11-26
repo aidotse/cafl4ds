@@ -118,6 +118,19 @@ def train_ceiling(
     return trace
 
 
+def selected_epoch(trace: list[dict[str, float]]) -> dict[str, float] | None:
+    """The epoch the selection set picks (its best balanced accuracy, the first on a tie), and its drive read.
+
+    The fair ceiling: ``best_drive_bacc`` takes the maximum over epochs on the drive pool, the very set it
+    scores, so it reads high (the P1.1 audit's A3). ``None`` without a selection set or a trace.
+    """
+    rows = [r for r in trace if "selection_bacc" in r]
+    if not rows:
+        return None
+    pick = max(rows, key=lambda r: r["selection_bacc"])  # max keeps the first of equal scores
+    return {k: pick[k] for k in ("epoch", "selection_bacc", "drive_bacc")}
+
+
 def _encoder(config: DictConfig) -> torch.nn.Module:
     """The encoder to read: as configured, or — with ``well=<path>`` — a saved SSL well's encoder."""
     encoder = instantiate(config.encoder)
@@ -178,7 +191,9 @@ def run(config: DictConfig, out_dir: Path) -> dict[str, Any]:
         "chance": 1.0 / num_classes,
         "references": references,
         "trained_encoder_probes": probe_read(frozen(model.encoder), fit, drive, knn_k),
+        # Optimistic: the best epoch on the set it scores. `selected` is the fair read (see selected_epoch).
         "best_drive_bacc": max((r["drive_bacc"] for r in trace), default=None),
+        "selected": selected_epoch(trace),
         "final": trace[-1] if trace else None,
         "trace": trace,
     }
@@ -186,7 +201,8 @@ def run(config: DictConfig, out_dir: Path) -> dict[str, Any]:
     out = out_dir / "supervised_ceiling.json"
     out.write_text(json.dumps(report, indent=2), encoding="utf-8")
     logger.info(
-        f"supervised ceiling: best drive bacc {report['best_drive_bacc']} | final {report['final']} | "
+        f"supervised ceiling: selection-chosen epoch {report['selected']} | best drive bacc "
+        f"{report['best_drive_bacc']} (optimistic) | final {report['final']} | "
         f"trained-encoder probes {report['trained_encoder_probes']} | wrote {out}"
     )
     return report

@@ -1,0 +1,27 @@
+# P1.1 audit B2 — the canary's power for the test P1.1.0 actually ran (CPU, about a minute).
+#
+#   uv run python scripts/analyze_canary_power.py
+#
+# P1.1.0 quoted a single-checkpoint t-test MDD, but its walk-vs-IID verdicts come from the exact
+# permutation test of the maximum |d| over checkpoints, 5 walk seeds against 5 IID seeds. Here that
+# test's power is measured by injection: 5 of 10 healthy IID drives play the walk, a known drop is
+# subtracted from their canary readings, and the same 252-split test is run against the other 5.
+null_root: outputs/p110_deep
+root: outputs/p111
+backbones: [je, mae]
+# The 10 healthy IID drives on P1.1.0's deep setup (overlap 0): its seeds 0-4, then P1.1.1's 5-9.
+seeds_dirs: ["${null_root}/warm/{bb}_o0.0_iid", "${root}/heldout/{bb}_iid"]
+# P1.1.0's 5 IID seeds alone, for its own single-checkpoint t-test MDD beside the injected one.
+t_mdd_dir: "${null_root}/warm/{bb}_o0.0_iid"
+arbiters: [knn_acc, linear_acc, knn_acc_daytime, linear_acc_daytime, knn_acc_dawn_dusk, linear_acc_dawn_dusk,
+  knn_acc_night, linear_acc_night]
+shapes: [sustained, last_quarter, single]
+n_inject: 5
+n_groups: 200
+alpha: 0.05
+power: 0.8
+seed: 0
+out: ${null_root}/canary_power_injected.json
+# Fallback query counts for corpora whose manifest predates `n_probe_query` (as analyze_null).
+n_query_pooled: 405
+n_query_stratum: 135

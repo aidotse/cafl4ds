@@ -75,10 +75,16 @@ def _lens_job(job: tuple[str, str]) -> tuple[str, dict[str, float]]:
     return path, lens_values(torch.load(path), _WELL[well])
 
 
-def lens_table(fdir: Path, workers: int) -> dict[str, dict[str, float]]:
-    """``features/<run>/s<seed>/<name>.pt -> {signal: value}`` for every indexed checkpoint, cached in the dir."""
-    cache = fdir / "lens_values.json"
-    table: dict[str, dict[str, float]] = json.loads(cache.read_text(encoding="utf-8")) if cache.is_file() else {}
+def lens_table(fdir: Path, workers: int, cache: Path) -> dict[str, dict[str, float]]:
+    """``features/<run>/s<seed>/<name>.pt -> {signal: value}`` for every indexed checkpoint, cached at ``cache``.
+
+    A ``lens_values.json`` beside the features (a promoted cache) is read but never written; values it
+    lacks are computed and written to ``cache`` alone, so the inputs are left untouched.
+    """
+    table: dict[str, dict[str, float]] = {}
+    for stored in (fdir / "lens_values.json", cache):
+        if stored.is_file():
+            table.update(json.loads(stored.read_text(encoding="utf-8")))
     index = json.loads((fdir / "index.json").read_text(encoding="utf-8"))
     todo = [
         (str(fdir / e["features"]), str(fdir / "features" / "well.pt")) for e in index if e["features"] not in table
@@ -89,6 +95,7 @@ def lens_table(fdir: Path, workers: int) -> dict[str, dict[str, float]]:
         with multiprocessing.get_context("spawn").Pool(workers) as pool:
             for path, values in pool.imap_unordered(_lens_job, todo):
                 table[str(Path(path).relative_to(fdir))] = values
+        cache.parent.mkdir(parents=True, exist_ok=True)
         cache.write_text(json.dumps(table), encoding="utf-8")
     return table
 
@@ -107,8 +114,26 @@ def encoder_change(checkpoint: Path, mode: str, k: int, scale: float, seed: int)
     linears = [m for block in encoder.blocks for m in block.modules() if isinstance(m, nn.Linear)]
     before = [m.weight.detach().clone() for m in linears]
     branch.damage_top_blocks(encoder, mode, k, scale, seed=seed)
-    num = sum(float((m.weight.detach() - b).pow(2).sum()) for m, b in zip(linears, before, strict=True))
-    return float((num / sum(float(b.pow(2).sum()) for b in before)) ** 0.5)
+    # float64 sums: a float32 reduction's rounding depends on the thread count, so the value would too.
+    num = sum(
+        float((m.weight.detach().double() - b.double()).pow(2).sum()) for m, b in zip(linears, before, strict=True)
+    )
+    return float((num / sum(float(b.double().pow(2).sum()) for b in before)) ** 0.5)
+
+
+def checkpoint_path(recorded: str, root: Path) -> Path:
+    """A branch's parent checkpoint, from the path its report recorded inside the container.
+
+    The record starts with the container's ``/workspace/`` mount; the rest is resolved under ``root``
+    (the repo checkout whose ``outputs/`` and ``wells/`` hold the runs).
+
+    Raises:
+        FileNotFoundError: If the checkpoint is not under ``root``.
+    """
+    path = root / str(recorded).removeprefix("/workspace/")
+    if not path.is_file():
+        raise FileNotFoundError(f"{path} not found: set checkpoint_root to the checkout holding the runs.")
+    return path
 
 
 def _grid(null_root: Path, bb: str) -> list[tuple[str, int]]:
@@ -261,7 +286,7 @@ def read_arms(
                 data = json.loads(report.read_text(encoding="utf-8"))
                 seed, rec = int(data["config"]["seed"]), data["config"]["branch"]
                 dmg = rec["damage"]
-                parent = Path(to_absolute_path(str(rec["checkpoint"]).replace("/workspace/", "")))
+                parent = checkpoint_path(rec["checkpoint"], Path(to_absolute_path(str(config.checkpoint_root))))
                 post = table[f"features/{arm_dir.name}/s{seed}/post_damage.pt"]
                 pre = table[f"features/{bb}_o0.0_{order}/s{seed}/step00065.pt"]
                 final = table[f"features/{arm_dir.name}/s{seed}/final.pt"]
@@ -369,7 +394,8 @@ def analyze(config: DictConfig) -> dict[str, Any]:
     report: dict[str, Any] = {}
     for bb in config.backbones:
         fdir = Path(to_absolute_path(str(config.features).format(bb=bb)))
-        table = lens_table(fdir, int(config.workers))
+        cache = Path(to_absolute_path(str(config.out))).parent / f"lens_values_{bb}.json"
+        table = lens_table(fdir, int(config.workers), cache)
         grid = _grid(null_root, bb)
         stems, seeds = [stem for stem, _ in grid], list(range(5))
         iid = _lens_nulls(table, f"{bb}_o0.0_iid", stems, seeds)

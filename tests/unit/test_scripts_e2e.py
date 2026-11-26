@@ -468,11 +468,23 @@ def test_supervised_ceiling_trains_and_reports_against_its_references(tmp_path: 
     assert {"train_bacc", "drive_bacc", "selection_bacc"} <= set(report["final"])
     assert set(report["references"]) == {"encoder_at_init", "pixels"}
     assert 0.0 <= report["best_drive_bacc"] <= 1.0
+    assert report["selected"]["epoch"] in (1.0, 2.0)
     assert (tmp_path / "supervised_ceiling.json").is_file()
     # epochs=0 is the probe-only read of the encoder as built
     config.epochs = 0
     probe_only = script.run(config, tmp_path)
-    assert probe_only["trace"] == [] and probe_only["best_drive_bacc"] is None
+    assert probe_only["trace"] == [] and probe_only["best_drive_bacc"] is None and probe_only["selected"] is None
+
+
+def test_supervised_ceiling_picks_the_epoch_on_the_selection_set_not_the_drive_pool() -> None:
+    """The fair ceiling reads the drive pool at the selection set's best epoch (the first on a tie)."""
+    trace = [
+        {"epoch": 1.0, "selection_bacc": 0.60, "drive_bacc": 0.75},  # the drive pool's best: optimistic
+        {"epoch": 2.0, "selection_bacc": 0.64, "drive_bacc": 0.72},
+        {"epoch": 3.0, "selection_bacc": 0.64, "drive_bacc": 0.70},
+    ]
+    pick = _load_script("supervised_ceiling").selected_epoch(trace)
+    assert pick == {"epoch": 2.0, "selection_bacc": 0.64, "drive_bacc": 0.72}
 
 
 def test_supervised_ceiling_reads_a_saved_ssl_well(tmp_path: Path) -> None:
