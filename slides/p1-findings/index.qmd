@@ -139,7 +139,7 @@ Deck.chart("ch-status", (el) => {
 **The audits**
 
 - P1.0: <span class="audit" data-study="P1.0"></span>
-- P1.1: <span class="audit" data-study="P1.1"></span>; it reopens P1.1, and P1.1.4 rebuilds the readers
+- P1.1: <span class="audit" data-study="P1.1"></span>; P1.1 closes complete (qualified), after P1.1.4 rebuilt the readers on P1.3's setup
 - P1.2: <span class="audit" data-study="P1.2"></span>
 
 :::
@@ -154,8 +154,8 @@ Deck.chart("ch-status", (el) => {
 | :--- | :--- |
 | Thresholds tuned on **toy models and data** (tiny ViT, STL-10 / CIFAR); STL-10 **cannot even induce forgetting** | Move to **BDD100K** with a pretrained **ViT-B**: real correlation (time of day, weather, scene), not synthetic class blocks |
 | A "healthy" comparison arm that **drifts with the very signal** being read | A **certified frozen start** to anchor drift, and a matched **shuffled (IID) control** as the null (P1.1.0) |
-| In our target corner (correlated, single pass), the collapse suite thins to **one marginal reader** | A **collapse dial** on the real backbone; read projector **and** backbone rank together (P1.1.1) |
-| **No label-free reader** for MAE quality; forgetting readable only with labels | A labelled **canary** as referee, with a measured power; the **CKA-drift** search (P1.1.1–P1.1.3) |
+| In our target corner (correlated, single pass), the collapse suite thins to **one marginal reader** | A **collapse dial** on the real backbone; projector rank calls collapse, backbone rank read **separately** (P1.1.1) |
+| **No label-free reader** for MAE quality; forgetting readable only with labels | A labelled **canary** as live alarm and a **referee** that judges (P1.1.4); the **CKA-drift** search (P1.1.1–P1.1.3) |
 | MAE **resists** forgetting; every crater recoverable | First ask whether adapting even **helps** (P1.2), before chasing forgetting (P1.3) |
 
 :::
@@ -186,10 +186,11 @@ P1.1: can we <i>read</i> degradation on real data? &nbsp;·&nbsp; P1.2: is conti
 
 **Reads.**
 
-- **Canary:** a small labelled image set, never trained on. At every checkpoint, kNN and a linear probe predict its
-    scene (3 classes) from frozen features: the referee for "information lost"
+- **Canary:** a small labelled image set, never trained on. At every checkpoint inside the drive, kNN and a linear
+    probe predict its scene (3 classes) from frozen features: a cheap, live alarm
 - **Health signals:** rank, drift, uniformity (label-free)
-- **Readout ladder** on held-out val: kNN, linear probe, few-shot
+- **Readout ladder** on held-out val: kNN, linear probe, few-shot, per regime. The **referee** that judges "information
+    lost" (P1.1.4)
 
 **A gain** is always the adapted model against **its own start, frozen**, on the same images, with seed × image
 intervals.
@@ -325,17 +326,19 @@ Deck.chart("ch-canary", (el) => {
     point estimate; the 95% bound is 1 in 3 (audit B3)
 - **On one drive, a 6–8 pt drop in canary accuracy is called on every seed; a ~3 pt drop mostly goes unseen.** Both
     backbones; walk and IID read the same. A 5-seed comparison resolves ~2–4.5 pts
-- All measured on P1.1's setup: a 119-step drive, MAE with an undersized decoder (audit C1, D1)
+- Since P1.1.4 the canary is the **live alarm**; the readout ladder, read per regime, is the **referee** that judges
 
 :::
 
 ::::
 
+<div class="setup-note">Setup: P1.1.0–P1.1.1, a 119-step drive on BDD val from MAE-started wells, MAE with its undersized decoder, no fine-tuning protections. These numbers hold for that setup only: P1.1.4 re-fitted them for P1.3, and P1.3 re-fits them again on its retuned recipes.</div>
+
 ::: footer
 cafl4ds · Phase 1 findings · P1.1 · <span class="audit" data-study="P1.1"></span>
 :::
 
-## JE's compression is not collapse, over a short drive
+## JE's compression is benign, over a short drive
 
 :::: {.columns}
 
@@ -372,15 +375,20 @@ Deck.chart("ch-compression", (el) => {
 
 ::: {.column width="45%" .side}
 
-- The walk **compresses JE's projector**: rank falls ~20%
-- Over this 119-step drive it is **benign**: undone within 10 shuffled steps, and the backbone's rank holds
-- **Forced collapse** also cuts the **backbone's** rank (−40%), so we read the two ranks together
-- The audit scopes both (C3, C4). The 3-class canary barely sees collapse, and no fine-tune rung was read. Over a full
-    pass the walk does cost kNN (P1.2). And two knobs collapse the projector with the backbone's rank flat
+- The walk **compresses JE's projector**: rank falls ~23%
+- Over this 119-step drive it is **benign**: undone within 10 shuffled steps. Over a full pass the walk does cost kNN
+    (P1.2), so "benign" is a short-horizon verdict (audit C3)
+- **Forced collapse** on this knob also cut the **backbone's** rank (−38%). But two other knobs collapse the projector
+    with the backbone's rank flat, so it is **no tiebreaker** (audit C4)
+- **Read separately, as in Phase 0:** the projector calls collapse; the backbone's rank says whether it reached the
+    encoder. P1.4 tests the knobs against the referee, as an ablation
 
 :::
 
 ::::
+
+<div class="setup-note">Setup: P1.1.0–P1.1.1, a 119-step drive on BDD val from MAE-started wells, MAE with its undersized decoder, no fine-tuning protections. These numbers hold for that setup only: P1.1.4 re-fitted them for P1.3, and P1.3 re-fits them again on its retuned recipes.</div>
+
 
 ::: footer
 cafl4ds · Phase 1 findings · P1.1 · <span class="audit" data-study="P1.1"></span>
@@ -433,13 +441,17 @@ Deck.chart("ch-cka", (el) => {
     *and* stays quiet on a harmless control (P1.1.2)
 - Natural forgetting is **invisible at the output** but clear in **blocks 4–11**: 1.4–1.8× more drift, every seed
     (P1.1.3)
-- Read alone, without a twin: **4 of 5** forgetting runs on blocks 4–11, but those blocks were chosen on the same
-    runs. On all 12 blocks it is **3 of 5** (audit B1); the output catches 0
-- A **change detector**, not a quality reader; validated on MAE only, while P1.3 reads forgetting on JE (audit D4)
+- Read alone, without a twin: **4 of 5** forgetting runs, also with the blocks **re-chosen out of sample**, leaving
+    each pair out (audit B1). Only five pairs, so P1.3 re-scores it on new data; the output catches 0
+- A **change detector**, not a quality reader. It now serves MAE's plasticity arm, still without a specificity
+    anchor (→ P1.6)
 
 :::
 
 ::::
+
+<div class="setup-note">Setup: the forgetting event is Phase 0's (P0.3.9: a ViT-B MAE switched between datasets, five seed pairs); the BDD screen ran on P1.1's old setup, MAE's undersized decoder included. P1.3 re-scores the middle-block panel on its own MAE drives, on the repaired recipe.</div>
+
 
 ::: footer
 cafl4ds · Phase 1 findings · P1.1 · <span class="audit" data-study="P1.1"></span>
@@ -490,14 +502,12 @@ Deck.chart("ch-audit", (el) => {
 
 - **No result-changing bug.** Every headline number recomputes from the raw corpora, and every analysis re-runs to its
     promoted report
-- **Three numbers carry a wider scope than their test:** the middle-block read is in-sample (B1), the canary's power
-    bounds sustained gaps only (B2), the false-alarm rate is a point estimate (B3)
-- **Later evidence moved under three conclusions:** MAE's undersized decoder (C1), "benign" compression (C3), the
-    two-rank collapse reader (C4)
-- **The structural gap:** everything was calibrated on a setup P1.3 no longer runs (D1–D5). So P1.1 reopens, and a new
-    sub-study, P1.1.4, rebuilds the readers
-- Remediation is **proposed, not yet agreed**: no disposition yet. This deck shows the audit's scoping wherever a slide
-    repeats a flagged claim
+- **Claims narrowed, no verdict moved:** the canary's power holds for sustained losses (B2), the false-alarm rate is a
+    point estimate (B3); the middle-block read, re-scored out of sample, stays 4 of 5 (B1)
+- **Later evidence carried back:** MAE's undersized decoder (C1), "benign" as a short-horizon verdict (C3), backbone
+    rank withdrawn as a collapse tiebreaker (C4)
+- **The structural gap became P1.1.4** (D1–D5), audited in turn (G): its gate holds; two canary readings corrected
+- **Closed: P1.1 complete, qualified.** Carried on: P1.3's gate, P1.4's collapse ablation, P1.6's label-free channel
 
 :::
 
@@ -507,7 +517,7 @@ Deck.chart("ch-audit", (el) => {
 cafl4ds · Phase 1 findings · P1.1 · <span class="audit" data-study="P1.1"></span>
 :::
 
-## The setup moved: what P1.3's arms can be read with
+## P1.1.4: the readers, rebuilt where P1.3 runs
 
 :::: {.columns}
 
@@ -520,23 +530,23 @@ Deck.chart("ch-coverage", (el) => {
   const P = P1, C = P.C;
   const rows = P.data("coverage");
   const arms = P.uniq(rows.map((r) => r.arm)), pieces = P.uniq(rows.map((r) => r.piece));
-  const S = { old: [C.yellow, "P1.1, on the old setup"], none_found: [C.red, "searched; none passed"], missing: ["#5d6d7e", "never built for this arm"] };
-  const short = { old: "old setup", none_found: "none passed", missing: "never built" };
+  const S = { pass: [C.green, "meets its bar"], qualified: [C.yellow, "delivered, with a caveat"], none: [C.red, "searched; none passed"] };
+  const short = { pass: "passes", qualified: "caveated", none: "none" };
   const data = rows.map((r) => ({
     value: [pieces.indexOf(r.piece), arms.indexOf(r.arm), 1], r,
     itemStyle: { color: Deck.alpha(S[r.state][0], 0.88), borderColor: "#1d2733", borderWidth: 6 },
-    label: { show: true, formatter: `${short[r.state]}\n→ P1.1.4 part ${r.part}`, fontSize: 18, lineHeight: 26,
-      color: r.state === "old" ? "#1d2733" : "#fff" },
+    label: { show: true, formatter: short[r.state], fontSize: 20, fontWeight: "bold",
+      color: r.state === "qualified" ? "#1d2733" : "#fff" },
   }));
   P.draw(el, {
     tooltip: { trigger: "item", extraCssText: "max-width: 620px; white-space: normal;",
-      formatter: (p) => `${p.data.r.arm} · ${p.data.r.piece}<br>${p.data.r.note}<br>P1.1.4 part ${p.data.r.part}` },
-    grid: { left: 290, right: 20, top: 80, bottom: 90 },
+      formatter: (p) => `${p.data.r.arm} · ${p.data.r.piece}<br>${p.data.r.note}` },
+    grid: { left: 250, right: 20, top: 80, bottom: 90 },
     legend: P.legend({ data: Object.values(S).map((x) => x[1]) }),
     xAxis: { type: "category", data: pieces, position: "top", axisLabel: { fontSize: 19, color: C.text, interval: 0,
       formatter: (v) => v.replace(" of ", "\nof ").replace(", ", ",\n").replace("-free ", "-free\n") },
       axisTick: { show: false }, axisLine: { show: false } },
-    yAxis: { type: "category", data: arms, inverse: true, axisLabel: { fontSize: 20, color: C.text, formatter: (v) => v.replace(" (", "\n(") },
+    yAxis: { type: "category", data: arms, inverse: true, axisLabel: { fontSize: 20, color: C.text },
       axisTick: { show: false }, axisLine: { show: false } },
     series: [
       { type: "heatmap", data },
@@ -551,12 +561,120 @@ Deck.chart("ch-coverage", (el) => {
 
 ::: {.column width="40%" .side}
 
-- P1.3 runs **three arms**, maybe four, on BDD train: passes of ~1,700+ steps, settled heads, MAE's repaired decoder,
-    the fine-tuning protections. P1.1 calibrated **one hybrid JE and the old MAE**, on a 119-step drive
-- **P1.1's method transfers; its numbers do not** (audit D1)
-- **P1.1.4 rebuilds them per arm** with the method unchanged: healthy bands (1a on existing drives, 1b on fresh
-    seeds), damage of known size and a reader screen (2, 3), the referee's power on past regimes (4)
-- **It gates P1.3:** degradation is read on an arm only once its readers pass. Status: designed, awaiting runs
+- P1.2 moved P1.3: longer passes, new recipes, a DINO start. **P1.1's method transfers; its numbers do not.** So
+    P1.1.4 re-ran the method on P1.3's four arms (hover for detail)
+- **Label side: every arm holds its false-alarm bars** on 15 fresh healthy drives. P1.3 can read degradation through
+    labels on all four
+- **Label-free:** MAE (no specificity anchor) and DINO-init DINO (provisional). **None on the JE arms**, where P1.3
+    reads forgetting: a healthy walk moves them as far from IID as real damage does
+- **The canary is coarser than the referee:** on a past regime it can read a gain where the referee reads a loss
+
+:::
+
+::::
+
+<div class="setup-note">Setup: P1.2.5's one-pass drives of BDD train, on the handover recipes. P1.3 retunes and lengthens the horizon, so it re-fits the bands and re-checks these reads on its own drives; read them as one-pass results.</div>
+
+::: footer
+cafl4ds · Phase 1 findings · P1.1 · <span class="audit" data-study="P1.1"></span>
+:::
+
+## The first natural forgetting, at the edge of resolution
+
+:::: {.columns}
+
+::: {.column width="60%"}
+
+```{=html}
+<div id="ch-referee-tod" class="chart"></div>
+<script>
+Deck.chart("ch-referee-tod", (el) => {
+  const P = P1, C = P.C;
+  const all = P.data("referee_tod");
+  const pts = all.filter((r) => r.checkpoint), spans = all.filter((r) => r.span_from !== undefined);
+  const mdd = all.find((r) => r.mdd_pts).mdd_pts;
+  const T = { daytime: C.yellow, "dawn/dusk": C.orange, night: C.blue };
+  const series = Object.entries(T).map(([tod, color]) => ({
+    type: "line", name: tod, z: 3, lineStyle: { width: 4, color }, itemStyle: { color },
+    data: pts.filter((r) => r.tod === tod).map((r) => ({ value: [r.step, r.gap_pts, r.p],
+      symbolSize: r.p < 0.05 ? 20 : 9, itemStyle: { color, borderColor: r.p < 0.05 ? "#fff" : color, borderWidth: r.p < 0.05 ? 3 : 0 } })),
+    tooltip: { formatter: (p) => `${tod} frames, step ${p.value[0]}<br>walk − IID: ${P.signed(p.value[1])} pts<br>exact p ${p.value[2].toFixed(3)}` },
+  }));
+  series.push({ type: "line", data: [], markArea: { silent: true, data: spans.map((r) => [
+    { xAxis: r.span_from, itemStyle: { color: Deck.alpha(T[r.tod], 0.07) },
+      label: { show: true, position: "insideTop", formatter: `stream in\n${r.tod}`, color: C.muted, fontSize: 17 } },
+    { xAxis: r.span_to }]) } });
+  series.push(P.marks({ zeroY: true, yLine: { y: -mdd, color: C.red, text: `MDD, daytime (${mdd})` } }));
+  P.draw(el, {
+    title: P.title("MAE-init JE: walk minus IID on the val referee, scene linear, by time of day"),
+    legend: P.legend(), grid: { left: 100, right: 30, top: 60, bottom: 150 },
+    xAxis: P.axis("Step of the drive", { min: 0, max: 1750, scale: false, splitLine: { show: false } }),
+    yAxis: P.axis("Walk − IID (pts; large dot: p < 0.05)", { min: -3, max: 3, scale: false, nameGap: 60 }),
+    series,
+  });
+});
+</script>
+```
+
+:::
+
+::: {.column width="40%" .side}
+
+- Once the stream **leaves daytime**, the walk's daytime read falls **1.8 pts** below IID (1.4 at the end): forgetting
+    on a regime behind, the kind P1.3 is built to read
+- It already trailed by 0.8 at step 100, then closed. **One arm**; the others show no such loss on this read
+- **Three sizes now line up:** the gain from adapting (**2–4 pts**, P1.2), this loss (**1.4–1.8**), and what the
+    referee resolves (**~2**, best rung, largest slices)
+- One pass cannot separate them. **That is P1.3's job:** a longer horizon, dense checkpoints, held-out pools sized to
+    a 2-pt target in advance
+
+:::
+
+::::
+
+<div class="setup-note">Setup: P1.2.5's one-pass drives of BDD train, on the handover recipes. P1.3 retunes and lengthens the horizon, so it re-fits the bands and re-checks these reads on its own drives; read them as one-pass results.</div>
+
+::: footer
+cafl4ds · Phase 1 findings · P1.1 · <span class="audit" data-study="P1.1"></span>
+:::
+
+## What P1.3 inherits
+
+:::: {.columns}
+
+::: {.column width="48%"}
+
+<div class="card">
+<h3 style="color: #FECB00;">The gate, per arm</h3>
+
+P1.3 reads degradation on an arm only once:
+
+1. Its label-side panels pass P1.1.4's false-alarm bars **on the recipe P1.3 reads**: re-fitted after retuning, on its
+    own IID controls (10 calibration seeds, 5 fresh)
+1. Its per-regime and breadth **held-out pools are sized**, and the **2-pt** past-regime target is pre-registered
+
+A label-free reader is **not** part of the gate. Numbers bind their setup: when the setup moves, they are re-run.
+
+</div>
+
+:::
+
+::: {.column width="4%"}
+:::
+
+::: {.column width="48%"}
+
+<div class="card">
+<h3 style="color: #FECB00;">Carried on</h3>
+
+- **Referee and canary:** the referee judges; the canary gets a modest upgrade (a continuous score, the traffic-light
+    task) and stays the live alarm
+- **MAE:** blocks 4–11 pre-registered and scored on P1.3's drives, out of sample
+- **P1.4:** collapse knobs as an ablation, projector and backbone read separately
+- **P1.6, the monitor track:** a JE reader scored against **the walk's own healthy spread**, MAE's specificity anchor,
+    and lead time over the canary, ready by Phase 3
+
+</div>
 
 :::
 
@@ -573,7 +691,7 @@ cafl4ds · Phase 1 findings · P1.1 · <span class="audit" data-study="P1.1"></s
 ## Adapting beats its frozen start, by 2–4 points
 
 ```{=html}
-<div id="ch-gates" class="chart tall"></div>
+<div id="ch-gates" class="chart tall" style="height: calc(var(--slide-h) * 0.69);"></div>
 <script>
 Deck.chart("ch-gates", (el) => {
   const P = P1, C = P.C;
@@ -605,6 +723,8 @@ JE passes every time it is tested. **MAE never gains** from its pretrained start
 SimSiam on DINO passes too, **+4.4 on scene at the rate a 3-seed grid chose** (G); **DINO's own objective does not clear
 zero**. Without the fine-tuning protections both JE starts still pass. Linear rung shown for every arm.
 :::
+
+<div class="setup-note">Setup: one pass of BDD train at 224 px, a fixed domain, the handover recipes. P1.3 retunes and lengthens the horizon: one-pass results, not how adaptation behaves in general.</div>
 
 ::: footer
 cafl4ds · Phase 1 findings · P1.2 · <span class="audit" data-study="P1.2"></span>
@@ -662,6 +782,8 @@ Deck.chart("ch-curve", (el) => {
 :::
 
 ::::
+
+<div class="setup-note">Setup: one pass of BDD train at 224 px, a fixed domain, the handover recipes. P1.3 retunes and lengthens the horizon: one-pass results, not how adaptation behaves in general.</div>
 
 ::: footer
 cafl4ds · Phase 1 findings · P1.2 · <span class="audit" data-study="P1.2"></span>
@@ -752,6 +874,8 @@ often an object appears in the stream does not predict a gain. Not shown: on **w
 reorganized, the information did not.
 :::
 
+<div class="setup-note">Setup: one pass of BDD train at 224 px, a fixed domain, the handover recipes. P1.3 retunes and lengthens the horizon: one-pass results, not how adaptation behaves in general.</div>
+
 ::: footer
 cafl4ds · Phase 1 findings · P1.2 · <span class="audit" data-study="P1.2"></span>
 :::
@@ -809,6 +933,8 @@ Deck.chart("ch-regime", (el) => {
 :::
 
 ::::
+
+<div class="setup-note">Setup: one pass of BDD train at 224 px, a fixed domain, the handover recipes. P1.3 retunes and lengthens the horizon: one-pass results, not how adaptation behaves in general.</div>
 
 ::: footer
 cafl4ds · Phase 1 findings · P1.2 · <span class="audit" data-study="P1.2"></span>
@@ -889,6 +1015,8 @@ models edge past frozen DINO on the linear probe; on kNN at the end of the drive
 leads.
 :::
 
+<div class="setup-note">Setup: one pass of BDD train at 224 px, a fixed domain, the handover recipes. P1.3 retunes and lengthens the horizon: one-pass results, not how adaptation behaves in general.</div>
+
 ::: footer
 cafl4ds · Phase 1 findings · P1.2 · <span class="audit" data-study="P1.2"></span>
 :::
@@ -944,6 +1072,8 @@ Deck.chart("ch-dino-lr", (el) => {
 :::
 
 ::::
+
+<div class="setup-note">Setup: one pass of BDD train at 224 px, a fixed domain, the handover recipes. P1.3 retunes and lengthens the horizon: one-pass results, not how adaptation behaves in general.</div>
 
 ::: footer
 cafl4ds · Phase 1 findings · P1.2 · <span class="audit" data-study="P1.2"></span>
@@ -1005,6 +1135,8 @@ Deck.chart("ch-protections", (el) => {
 
 ::::
 
+<div class="setup-note">Setup: one pass of BDD train at 224 px, a fixed domain, the handover recipes. P1.3 retunes and lengthens the horizon: one-pass results, not how adaptation behaves in general.</div>
+
 ::: footer
 cafl4ds · Phase 1 findings · P1.2 · <span class="audit" data-study="P1.2"></span>
 :::
@@ -1018,10 +1150,11 @@ cafl4ds · Phase 1 findings · P1.2 · <span class="audit" data-study="P1.2"></s
 <div class="card green">
 <h3 style="color: #4CAF50;">Trust</h3>
 
-- **The code:** P1.0's audit is closed; P1.1's audit finds no result-changing bug, and its numbers recompute from raw data
-- On P1.1's setup, a healthy drive is quiet, and on one drive the canary calls a 6–8 pt accuracy drop (~3 pts mostly
-    goes unseen)
-- MAE's natural forgetting shows in the **middle blocks**, 5/5 against its twin
+- **The code:** P1.0's and P1.1's audits are closed; no result-changing bug, and the numbers recompute from raw data
+- **P1.3 can read degradation through labels**, on all four arms: bands hold on 15 fresh drives, and the referee
+    resolves a 2-pt loss on a past regime (P1.1.4)
+- MAE's natural forgetting shows in the **middle blocks**: 5/5 against its twin, 4/5 alone out of sample (Phase 0's
+    recipe)
 - Adapting **beats its frozen start** on SimSiam-objective backbones, strong start included; on DINO the gain is
     **BDD-specific**
 - Within a pass, the linear gain **carries across regimes and holds**
@@ -1041,14 +1174,14 @@ cafl4ds · Phase 1 findings · P1.2 · <span class="audit" data-study="P1.2"></s
 <div class="card red">
 <h3 style="color: #E63946;">Not yet</h3>
 
-- **Readers for P1.3:** calibrated on a setup P1.3 does not run; P1.1.4 rebuilds them per arm
-- **No label-free forgetting reader on JE**, where P1.3 reads forgetting
+- **No label-free forgetting reader on JE**, where P1.3 reads forgetting; P1.6 builds one against the walk's own spread
+- **Natural forgetting so far:** 1.4–1.8 pts on one arm, at the edge of what the referee resolves
 - **Breadth:** 2–4 pts, firm on the gate tasks, on 0–2 of 4 panel tasks, so **Qualified**; gains below what the panel
     resolves: open, not ruled out
 - **Geometry:** kNN gains early and **erodes late**; SimSiam on DINO *loses* 17–20 pts kNN on weather; a recipe
     chosen on linear spends kNN and fine-tuning unseen
 - **Exit-gate tests (b) and (c):** degradation and the selection knob, not yet read
-- One pass, a fixed domain, 224 px
+- One pass, a fixed domain, 224 px: every number binds its setup, and P1.3 re-fits on its own
 
 </div>
 
@@ -1062,16 +1195,16 @@ cafl4ds · Phase 1 findings · P1.2 · <span class="audit" data-study="P1.2"></s
 
 ::: {.column width="52%" .side}
 
-1. **Agree the P1.1 audit's remediation, and run P1.1.4:** the healthy bands, damage and reader screen, and referee
-    power on each of P1.3's arms. It gates P1.3's degradation reads
-1. **Audit P1.2.** It decides whether DINO-init DINO joins P1.3 as a fourth arm, and settles the P1.1 numbers P1.2
-    repeats
-1. **P1.3, stability vs plasticity:** SimSiam on DINO, the MAE-init hybrid and MAE as equal arms over a longer horizon;
-    forgetting on JE, plasticity on MAE, every rung read through the drive, and **adapt once, then freeze** as the
-    control continuous learning must beat. On the same runs: does the stream degrade, and does the selection filter
+1. **Audit P1.2.** It also settles the P1.1 numbers P1.2 repeats
+1. **P1.3, stability vs plasticity:** SimSiam on DINO, the MAE-init hybrid, MAE and DINO-init DINO over a longer
+    horizon; forgetting on JE, plasticity on MAE, every rung read through the drive, and **adapt once, then freeze** as
+    the control continuous learning must beat. **Gated on P1.1.4:** bands re-fitted on its retuned recipes, pools
+    sized, the 2-pt target pre-registered. On the same runs: does the stream degrade, and does the selection filter
     move it?
-1. **P1.4** reads collapse off P1.3's runs; **P1.5** sweeps the start and the pressure; **P1.6** builds the FL and
-    monitor tracks in parallel
+1. **P1.4** reads collapse off P1.3's runs, with the collapse knobs as an ablation; **P1.5** sweeps the start and the
+    pressure
+1. **P1.6, the monitor track,** beside P1.3 and into Phase 2: a label-free JE reader against the walk's own healthy
+    spread, MAE's specificity anchor, and lead time, so Phase 3's loop has a live signal
 
 :::
 
@@ -1080,10 +1213,12 @@ cafl4ds · Phase 1 findings · P1.2 · <span class="audit" data-study="P1.2"></s
 <div class="card">
 <h3 style="color: #FECB00;">For discussion</h3>
 
-The loop exists to *protect what adaptation adds*. So far that is **2–4 points**, at or below what our monitor can see
-on one drive, and its kNN part does not last the pass.
+The loop exists to *protect what adaptation adds*. After one pass, the gain (**2–4 pts**), the first natural loss
+(**1.4–1.8 pts**) and what the referee resolves (**~2 pts**) are the same size, and the gain's kNN part does not last
+the pass.
 
-Is that enough to build on, or does Phase 1 lean toward **selection for efficiency** on a strong frozen backbone?
+If P1.3's longer horizon does not pull them apart, does Phase 1 lean toward **selection for efficiency** on a strong
+frozen backbone?
 
 </div>
 

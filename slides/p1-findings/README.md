@@ -49,7 +49,8 @@ only, so it runs on any checkout, and it names the source of every table.
     remediation counts as implemented once its finding's Conclusion is no longer *Pending*. Re-run after a status or
     audit change and the slide follows.
 - The P1.1 audit chart parses the audit's findings and their `[tag]` remediation types; the reader-coverage matrix is
-    transcribed from the audit and P1.1.4's design.
+    transcribed from P1.1.4's findings and the audit's section G. The per-time-of-day referee chart reads P1.1.4's
+    promoted `bands_1b.json`.
 - P1.1.1, P1.2.1, P1.2.2 and P1.2.4 numbers are transcribed from their docs' tables; P1.1.3 and P1.2.5 are read from the
     promoted artifacts in `docs/experiments/phase1/artifacts/`.
 
@@ -58,4 +59,5 @@ only, so it runs on any checkout, and it names the source of every table.
 Add a section (`# [0N]{.section-num} P1.x · <question> {#p1x}`) with its badge
 (`<span class="audit section-badge" data-study="P1.x"></span>`), and end each of its slides with the footer block the
 other sections use. Put its numbers in a new function in `make_p1_data.py`, reading promoted artifacts, and update the
-trust / not-yet and what-comes-next slides.
+trust / not-yet and what-comes-next slides. A slide whose numbers bind a setup that a later study will change ends with
+a `<div class="setup-note">Setup: …</div>` line before its footer, so the result is read as tied to that setup.

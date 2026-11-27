@@ -62,7 +62,7 @@ STUDY_LABELS = {
     "P1.3": "Stability–plasticity",
     "P1.4": "Collapse",
     "P1.5": "Init × pressure",
-    "P1.6": "FL + monitor",
+    "P1.6": "Monitor track",
 }
 
 
@@ -171,60 +171,96 @@ def audit_p11() -> None:
 
 
 def coverage() -> None:
-    """Which reading tools exist for each arm P1.3 runs, and the P1.1.4 part that rebuilds them.
+    """What P1.1.4 delivered, per arm P1.3 runs and per reading tool.
 
-    Transcribed from the P1.1 audit (C1, D1-D5) and P1.1.4.md's design (arms table, parts table). `state`: `old` (P1.1
-    calibrated it, on a setup P1.3 no longer runs), `none_found` (P1.1 searched; nothing passed), `missing` (never
-    built for this arm).
+    Transcribed from P1.1.4.md (Findings: 1b, Parts 2 and 3, Part 4) and the P1.1 audit (G5, G8, G9). `state`: `pass`
+    (meets its bar on P1.3's setup), `qualified` (delivered with a stated caveat), `none` (searched; nothing passed).
     """
-    old_setup = "P1.1's setup: 119-step drive on BDD val, fresh heads, no protections"
+    no_control = "Lands at the designed sizes on the referee; no re-init specificity control survived (Part 2)"
     table = [
-        ("DINO-init SimSiam", "Healthy bands", "missing", "No drive from a DINO start in P1.1 (D2)", "1a, 1b"),
-        ("DINO-init SimSiam", "Damage of known size", "missing", "No surgical damage on a DINO start (D2)", "2"),
-        ("DINO-init SimSiam", "Label-free reader", "missing", "Never screened on a DINO start (D4)", "2"),
-        ("DINO-init SimSiam", "Referee power, past regimes", "missing", "No plan sets it (D3)", "4"),
-        ("MAE-init JE", "Healthy bands", "old", old_setup + " (D1)", "1a, 1b"),
-        ("MAE-init JE", "Damage of known size", "old", "Canary calls 6–8 pts, misses ~3; " + old_setup, "2"),
+        (
+            "DINO-init SimSiam",
+            "Healthy bands",
+            "pass",
+            "All panels within their bars on 15 healthy drives; the degradation bar at its limit, 1 of 15 (G5)",
+        ),
+        ("DINO-init SimSiam", "Damage of known size", "qualified", no_control),
+        (
+            "DINO-init SimSiam",
+            "Label-free reader",
+            "none",
+            "None passes: the healthy walk leaves the IID bands as far as damage does",
+        ),
+        (
+            "DINO-init SimSiam",
+            "Referee power, past regimes",
+            "pass",
+            "100-shot fine-tune reaches 2 pts on the daytime slice (1.5-1.9)",
+        ),
+        ("MAE-init JE", "Healthy bands", "pass", "All panels within their bars on 15 healthy drives"),
+        ("MAE-init JE", "Damage of known size", "qualified", no_control),
         (
             "MAE-init JE",
             "Label-free reader",
-            "none_found",
-            "Backbone CKA drift nearly blind to JE damage; nearly every JE scalar fires on the healthy walk (D4)",
-            "2",
+            "none",
+            "None passes: the healthy walk leaves the IID bands by steps 100-423",
         ),
         (
             "MAE-init JE",
             "Referee power, past regimes",
-            "old",
-            "3-class canary, 3 time-of-day strata of 18 regimes (D3)",
-            "4",
+            "pass",
+            "100-shot fine-tune reaches 2 pts on the daytime slice (1.2-1.9)",
         ),
-        ("MAE", "Healthy bands", "old", "Small 64-d × 2 decoder, since repaired (C1, D1)", "1b"),
-        ("MAE", "Damage of known size", "old", "Small decoder (C1)", "3"),
+        ("MAE", "Healthy bands", "pass", "All panels within their bars on 15 healthy drives, repaired recipe"),
+        ("MAE", "Damage of known size", "qualified", no_control),
         (
             "MAE",
             "Label-free reader",
-            "old",
-            "CKA drift, blocks 4–11: 5/5 against its twin; alone, 4/5 on the chosen blocks, 3/5 on all (B1); "
-            "small decoder",
-            "3",
+            "qualified",
+            "CKA drift and the middle-block panel pass; no specificity anchor (G9)",
         ),
-        ("MAE", "Referee power, past regimes", "old", "3-class canary, 3 time-of-day strata of 18 regimes (D3)", "4"),
-        ("DINO-init DINO (provisional)", "Healthy bands", "missing", "Also its collapse watch (D5)", "1a, 1b"),
+        ("MAE", "Referee power, past regimes", "pass", "1-2 pts on the daytime slice, every rung"),
         (
-            "DINO-init DINO (provisional)",
-            "Damage of known size",
-            "missing",
-            "The encoder read is the teacher, an average of the student: damage must hit both (D5)",
-            "2",
+            "DINO-init DINO",
+            "Healthy bands",
+            "pass",
+            "All panels within their bars on 15 healthy drives; also its collapse watch",
         ),
-        ("DINO-init DINO (provisional)", "Label-free reader", "missing", "Never screened (D5)", "2"),
-        ("DINO-init DINO (provisional)", "Referee power, past regimes", "missing", "No plan sets it (D3)", "4"),
+        ("DINO-init DINO", "Damage of known size", "qualified", "Student and teacher damaged alike; " + no_control),
+        (
+            "DINO-init DINO",
+            "Label-free reader",
+            "qualified",
+            "Middle-block panel passes, provisionally: an encoder going still, a rule set after the results (G8)",
+        ),
+        (
+            "DINO-init DINO",
+            "Referee power, past regimes",
+            "qualified",
+            "Tight only because its encoder goes still; says nothing for P1.3's horizon",
+        ),
     ]
-    write(
-        "coverage",
-        [{"arm": a, "piece": p, "state": s, "note": n, "part": part} for a, p, s, n, part in table],
-    )
+    write("coverage", [{"arm": a, "piece": p, "state": st, "note": n} for a, p, st, n in table])
+
+
+def referee_tod() -> None:
+    """MAE-init JE: the walk minus its IID control on the val referee, scene linear, per time of day and checkpoint.
+
+    Source: P1.1.4/bands_1b.json `referee_null` (5 walks against 10 IID drives, exact permutation per checkpoint), the
+    P1.2.5 walk's regime map for where each time of day sits, and P1.1.4.md Part 4 for the read's MDD.
+    """
+    ref = load("P1.1.4/bands_1b.json")["mae_je"]["referee_null"]
+    rows = []
+    for tod in ("daytime", "dawn/dusk", "night"):
+        e = ref[f"scene|linear|tod:{tod}"]
+        for ck, gap, p in zip(e["checkpoints"], e["walk_minus_iid"], e["p_per_checkpoint"], strict=True):
+            rows.append({"tod": tod, "checkpoint": ck, "step": STEPS[ck], "gap_pts": 100 * gap, "p": p})
+    segs = load("P1.2.5/walk_segments.json")["segments"]
+    for tod in ("daytime", "dawn/dusk", "night"):
+        g = [x for x in segs if x["time_of_day"] == tod]
+        rows.append({"tod": tod, "span_from": g[0]["start_step"], "span_to": g[-1]["end_step"] + 25})
+    rows.append({"mdd_pts": 1.4, "mdd_note": "MDD of this read on the daytime slice (P1.1.4, Part 4)"})
+    write("referee_tod", rows)
 
 
 def walk() -> None:
@@ -540,6 +576,7 @@ if __name__ == "__main__":
         status,
         audit_p11,
         coverage,
+        referee_tod,
         walk,
         canary_power,
         compression_vs_collapse,
