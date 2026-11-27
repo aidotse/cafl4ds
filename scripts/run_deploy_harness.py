@@ -23,6 +23,8 @@ Examples:
 
 import copy
 import json
+import shutil
+import subprocess
 import sys
 from collections.abc import Iterable, Iterator
 from importlib.metadata import PackageNotFoundError, version
@@ -393,16 +395,20 @@ def _head_commit(git_dir: Path) -> str | None:
     return None
 
 
+def _repo_root(repo: Path | None = None) -> Path:
+    """The checkout the harness runs from (``repo`` if given): the repo root above ``scripts/``."""
+    return repo if repo is not None else Path(__file__).resolve().parents[1]
+
+
 def _git_sha(repo: Path | None = None) -> str | None:
-    """The code's git provenance: the checkout's HEAD commit, else the hatch-vcs version's local segment.
+    """The code's git commit: the checkout's HEAD, else the hatch-vcs version's local segment, else ``None``.
 
     The checkout comes first. The version is fixed when the package is installed, so on an editable
     install it goes stale with every commit; and in the Gaudi container the package comes from the
     image, whose version carries no local segment at all (the P1.1 audit's G11: every P1.1.4 manifest
-    had recorded ``null``). A checkout with local changes is not detected; the commit is the base the
-    run's code started from.
+    had recorded ``null``). Uncommitted changes are read separately, by :func:`_git_changes`.
     """
-    root = repo if repo is not None else Path(__file__).resolve().parents[1]
+    root = _repo_root(repo)
     sha = _head_commit(root / ".git")
     if sha is not None:
         return sha
@@ -412,8 +418,55 @@ def _git_sha(repo: Path | None = None) -> str | None:
             return local[1]
     except PackageNotFoundError:
         pass
-    logger.warning(f"no git provenance for this run: no readable {root / '.git'} and no version local segment.")
     return None
+
+
+def _git_changes(repo: Path | None = None) -> list[str] | None:
+    """The checkout's uncommitted changes, tracked and untracked (``git status --porcelain``).
+
+    ``[]`` for a clean tree; ``None`` when git cannot tell (no git binary, or not a checkout). The repo
+    is marked a safe directory for this one call, since in the container it belongs to another user.
+    """
+    root = _repo_root(repo)
+    git = shutil.which("git")
+    if git is None:
+        return None
+    try:
+        status = subprocess.run(  # noqa: S603 — fixed arguments; only the repo path varies
+            [git, "-c", f"safe.directory={root}", "-C", str(root), "status", "--porcelain"],
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=120,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return [line[3:] for line in status.stdout.splitlines() if line.strip()]
+
+
+def _provenance(repo: Path | None = None, max_paths: int = 50) -> dict[str, Any]:
+    """The run's code provenance for its manifest, read at launch: the commit, and whether the tree was dirty.
+
+    Raises:
+        RuntimeError: If no commit can be read, so a run never starts without provenance (P1.1 audit G11).
+    """
+    root = _repo_root(repo)
+    sha = _git_sha(root)
+    if sha is None:
+        raise RuntimeError(
+            f"no git provenance: {root / '.git'} is unreadable and the installed version has no commit. "
+            "Run from a checkout so the manifest can record the code."
+        )
+    changes = _git_changes(root)
+    if changes is None:
+        logger.warning(f"git could not read {root}'s working tree; git_dirty is recorded as unknown.")
+    elif changes:
+        logger.warning(f"running on {sha} with {len(changes)} uncommitted change(s); recorded in the manifest.")
+    return {
+        "git_sha": sha,
+        "git_dirty": None if changes is None else bool(changes),
+        "git_dirty_paths": (changes or [])[:max_paths],
+    }
 
 
 def _target_leaf(node: DictConfig) -> str:
@@ -457,6 +510,7 @@ def run_deploy(config: DictConfig, out_dir: Path) -> dict[str, Path]:
     Returns:
         The written corpus paths (from :func:`cafl4ds.deploy_corpus.write_corpus`).
     """
+    provenance = _provenance()  # read at launch: fails before any training, and before the code can change
     seeds = [int(s) for s in config.seeds] if config.get("seeds") else [int(config.seed)]
     reports_dir = out_dir / "reports"
     reports_dir.mkdir(parents=True, exist_ok=True)
@@ -475,7 +529,7 @@ def run_deploy(config: DictConfig, out_dir: Path) -> dict[str, Path]:
         reports.append((seed, report))
 
     manifest = {
-        "git_sha": _git_sha(),
+        **provenance,
         "n_seeds": len(seeds),
         "warm": bool(config.get("well")),
         "eval_every": int(config.eval_every),
