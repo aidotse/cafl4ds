@@ -223,6 +223,7 @@ def _check_options(
     well_overlap: float,
     select_support: int,
     select_query: int,
+    max_train_per_regime: int | None = None,
 ) -> None:
     """Validate :class:`RegimeStream`'s scalar options (raises ``ValueError``; see its constructor)."""
     if block_size is not None and block_size < 1:
@@ -235,6 +236,12 @@ def _check_options(
         raise ValueError(f"well_overlap must be in [0, 1]; got {well_overlap}.")
     if well_overlap > 0.0 and well_fraction == 0.0:
         raise ValueError("well_overlap needs well_fraction > 0 (with no reserved slice there is nothing to swap).")
+    if well_overlap > 0.0 and max_train_per_regime is not None:
+        # The well swaps in drive frames from the uncapped pool (fixed by canary_seed), while the cap
+        # keeps a per-drive-seed subset: the swapped frames could be ones the drive never streams.
+        raise ValueError(
+            "well_overlap cannot be combined with max_train_per_regime (the cap would drop swapped frames)."
+        )
     if (select_support > 0) != (select_query > 0):
         raise ValueError("the selection set needs both select_support_per_canary and select_query_per_canary > 0.")
 
@@ -315,7 +322,8 @@ class RegimeStream:
                 instead of the well's reserved slice — the familiarity knob. The well pool keeps its
                 size and the drive is unchanged, so only how much of the drive the well has already
                 seen varies (``0`` = disjoint, ``1`` = the well trains only on drive frames). Drawn
-                from ``canary_seed`` (fixed across drives). Needs ``well_fraction > 0``.
+                from ``canary_seed`` (fixed across drives). Needs ``well_fraction > 0``, and no
+                ``max_train_per_regime`` (the cap would drop swapped frames from the drive).
             select_support_per_canary: Support images per canary class for the **selection set** — a
                 second labelled reservation, used only to decide when a warm well is competent
                 (:attr:`selection_sets`), so the measurement probes are never selected on. Pooled over
@@ -331,7 +339,13 @@ class RegimeStream:
                 too few images to satisfy the requested held-out reservations.
         """
         _check_options(
-            block_size, order, well_fraction, well_overlap, select_support_per_canary, select_query_per_canary
+            block_size,
+            order,
+            well_fraction,
+            well_overlap,
+            select_support_per_canary,
+            select_query_per_canary,
+            max_train_per_regime,
         )
         self.order = order
         self.batch_size = batch_size
@@ -407,9 +421,10 @@ class RegimeStream:
         self._order_stream = self._build_order(era_key, train_mask, requested, max_train_per_regime)
         walk_sizes, self._walk_batch_eras = _batches(self._order_stream, batch_size, drop_last)
 
-        # The delivered `(era, image_index)` stream and its batch chunking, per `order`.
+        # The delivered `(era, image_index)` stream and its batch chunking, per `order`. Only the final
+        # batch can be dropped (`drop_last`), so the delivered frames are the order's first `sum(walk_sizes)`.
         if order == "walk":
-            self._delivered = self._order_stream
+            self._delivered = self._order_stream[: sum(walk_sizes)]
             self._iid_chunks: list[list[int]] | None = None
         else:
             kept = [idx for _, idx in self._order_stream][: sum(walk_sizes)]

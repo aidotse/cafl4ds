@@ -19,6 +19,7 @@ from cafl4ds.null_envelope import (
     read_corpus,
     seed_matrix,
     signal_columns,
+    spearman_exact,
     t_multiplier,
     wilson_halfwidth,
 )
@@ -161,6 +162,17 @@ def test_checkpoint_steps_reads_the_step_grid() -> None:
     assert checkpoint_steps(rows) == [0, 2, 4]
 
 
+def test_checkpoint_steps_rejects_seeds_on_different_grids() -> None:
+    """Every seed's grid is checked, not only the first's: a later seed on other steps is misaligned."""
+    rows = [
+        {"seed": float(seed), "arm": "live", "checkpoint_index": float(i), "step": float(stride * i)}
+        for seed, stride in ((0, 2), (1, 2), (2, 3))
+        for i in range(3)
+    ]
+    with pytest.raises(ValueError, match=r"seeds \[2\]"):
+        checkpoint_steps(rows)
+
+
 def test_wilson_halfwidth_matches_the_known_value_and_shrinks_with_n() -> None:
     """The Wilson half-width at p=0.5, n=100 is ~0.096, and it shrinks as n grows."""
     assert wilson_halfwidth(0.5, 100) == pytest.approx(0.0962, abs=1e-3)
@@ -178,3 +190,14 @@ def test_canary_power_reports_seed_spread_and_the_minimal_detectable_gap() -> No
     assert power["mdd"] == pytest.approx(t_multiplier(8) * sd * math.sqrt(2 / 5), rel=1e-6)
     assert power["sd_within"] == pytest.approx(0.0)  # flat trajectories: no checkpoint jitter
     assert power["ci95_halfwidth"] == pytest.approx(wilson_halfwidth(0.5, 135))
+
+
+def test_spearman_exact_reaches_its_floor_only_on_a_perfect_monotone_trend() -> None:
+    """At 5 levels a perfect trend has p = 2/120; a shuffled one is far from significant."""
+    rho, p = spearman_exact([0, 0.25, 0.5, 0.75, 1], [1.0, 2.0, 3.0, 5.0, 9.0])
+    assert rho == pytest.approx(1.0) and p == pytest.approx(2 / 120)
+    rho, p = spearman_exact([0, 0.25, 0.5, 0.75, 1], [3.0, 1.0, 5.0, 2.0, 4.0])
+    assert abs(rho) < 0.5 and p > 0.3
+    assert all(math.isnan(v) for v in spearman_exact([0, 1, 2], [1.0, 1.0, 1.0]))
+    with pytest.raises(ValueError):
+        spearman_exact([0, 1], [1.0, 2.0])

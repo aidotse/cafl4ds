@@ -2,12 +2,19 @@
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
 import pytest
 import torch
 
-from cafl4ds.block_features import block_features, layer_names
+from cafl4ds.block_features import _one_pass, block_features, layer_names
 from cafl4ds.models.vit import TinyViTEncoder
+from cafl4ds.ssl.dino import build_dino
 from cafl4ds.ssl.factory import build_mae, build_simsiam
+
+sys.path.insert(0, str(Path(__file__).parent))
+from test_p125 import _DINO_SMALL, _tiny_vit  # noqa: E402
 
 
 def _encoder() -> TinyViTEncoder:
@@ -65,3 +72,42 @@ def test_batching_hooks_and_mode_are_clean() -> None:
     assert all(not blk._forward_hooks for blk in method.encoder.blocks)  # pylint: disable=protected-access
     with pytest.raises(ValueError):
         block_features(method, images, batch_size=0)
+
+
+def test_a_method_reading_its_encoder_twice_keeps_one_pass() -> None:
+    """DINO's surfaces run the teacher twice: the reads are one pass's, the same as a single-pass method's."""
+    method = build_mae(_encoder())
+    once = block_features(method, _images())
+    surfaces = method.embedding_surfaces
+
+    def twice(imgs: torch.Tensor) -> dict[str, torch.Tensor]:
+        method.encoder.embed(imgs)
+        return surfaces(imgs)
+
+    method.embedding_surfaces = twice  # type: ignore[method-assign]
+    again = block_features(method, _images())
+    assert list(again) == list(once)
+    assert all(torch.allclose(once[k], again[k], atol=1e-6) for k in once)
+
+
+def test_one_pass_rejects_partial_or_differing_repeats() -> None:
+    """A capture that is not whole passes, or a repeat that differs, cannot be read."""
+    a, b = torch.zeros(2, 3), torch.ones(2, 3)
+    assert _one_pass([a, b, a, b], 2) == [a, b]
+    with pytest.raises(RuntimeError, match="captured"):
+        _one_pass([a, b, a], 2)
+    with pytest.raises(RuntimeError, match="differ"):
+        _one_pass([a, b, b, b], 2)
+
+
+def test_dino_reads_its_teacher_once() -> None:
+    """DINO's block reads are its teacher's (the encoder read), one pass, with both surfaces."""
+    method = build_dino(_tiny_vit(), **_DINO_SMALL)
+    feats = block_features(method, _images())
+    assert list(feats) == ["block01", "block02", "backbone", "proj"]
+    with torch.no_grad():
+        method.eval()
+        x = method.encoder._embed_patches(_images())  # pylint: disable=protected-access
+        cls = (method.encoder.cls_token + method.encoder.pos_embed[:, :1, :]).expand(x.shape[0], -1, -1)
+        x = method.encoder.blocks[0](torch.cat([cls, x], dim=1))
+    assert torch.allclose(feats["block01"], x[:, 1:, :].mean(dim=1), atol=1e-6)

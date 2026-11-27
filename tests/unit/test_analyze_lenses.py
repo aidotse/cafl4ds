@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 from types import ModuleType
 
 import numpy as np
+import pytest
 
 from cafl4ds.reading_protocol import fit_bands
 
@@ -58,3 +60,27 @@ def test_screen_counts_called_quiet_and_reinit4_seeds_per_reader() -> None:
     # twonn places re-init 4 (8.0) above one noise dose (0.1), below the other (9.0)
     assert twonn["ladder"] == {"noise1.0": 9.0, "reinit4": 8.0, "noise0.3": 0.1}
     assert twonn["reinit4_above_noise_doses"] == 1
+
+
+def test_checkpoint_path_resolves_the_container_record_under_a_chosen_root(tmp_path: Path) -> None:
+    """The recorded ``/workspace/`` path resolves under ``checkpoint_root``, not the working directory."""
+    target = tmp_path / "outputs" / "run" / "step00065.pt"
+    target.parent.mkdir(parents=True)
+    target.write_bytes(b"")
+    module = _module()
+    assert module.checkpoint_path("/workspace/outputs/run/step00065.pt", tmp_path) == target
+    with pytest.raises(FileNotFoundError, match="checkpoint_root"):
+        module.checkpoint_path("/workspace/outputs/run/missing.pt", tmp_path)
+
+
+def test_lens_table_reads_a_promoted_cache_and_never_writes_beside_the_features(tmp_path: Path) -> None:
+    """Every checkpoint the promoted cache covers is read from it; the features dir is left untouched."""
+    fdir = tmp_path / "features_mae"
+    fdir.mkdir()
+    (fdir / "index.json").write_text(json.dumps([{"features": "features/a/s0/final.pt"}]), encoding="utf-8")
+    promoted = {"features/a/s0/final.pt": {"cka_drift@block01": 0.1}}
+    (fdir / "lens_values.json").write_text(json.dumps(promoted), encoding="utf-8")
+    before = sorted(p.name for p in fdir.iterdir())
+    cache = tmp_path / "run" / "lens_values_mae.json"
+    assert _module().lens_table(fdir, 1, cache) == promoted
+    assert sorted(p.name for p in fdir.iterdir()) == before and not cache.exists()  # nothing computed, nothing written

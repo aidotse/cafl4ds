@@ -68,6 +68,7 @@ checkpoint_steps: [] # with checkpoint_legs=steps (P1.2.1): save before these st
 resume:
   checkpoint: null
   step: 0
+  save_start: false # P1.1.4: with checkpoint_legs, also save the branch's start state (after any damage)
 # The surgical positive control, applied to the resumed state: `reinit` | `noise` the top `k` encoder
 # blocks (`scale` = noise SD as a multiple of each weight tensor's SD). `none` / k=0 is the dose-0 twin.
 damage:

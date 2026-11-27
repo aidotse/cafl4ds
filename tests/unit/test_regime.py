@@ -412,6 +412,24 @@ def test_well_overlap_needs_a_well_fraction() -> None:
         RegimeStream(_source(), well_overlap=0.5)
 
 
+def test_well_overlap_rejects_a_per_regime_cap() -> None:
+    """A cap keeps a per-drive-seed subset, so frames the well swapped in could never stream: rejected."""
+    with pytest.raises(ValueError, match="max_train_per_regime"):
+        RegimeStream(_source(), well_fraction=0.5, well_overlap=0.5, max_train_per_regime=2)
+
+
+@pytest.mark.parametrize("order", ["walk", "iid"])
+def test_delivered_pool_excludes_the_dropped_last_batch(order: str) -> None:
+    """With ``drop_last`` the drive pool (and the familiarity it feeds) holds only frames actually streamed."""
+    stream = RegimeStream(
+        _source(), batch_size=7, support_per_canary=3, query_per_canary=3, drop_last=True, order=order
+    )
+    streamed = sorted(_contents(list(stream)))
+    pool = stream.labelled_pool("drive")
+    assert sorted(tuple(img.flatten().tolist()) for img in pool.images) == streamed
+    assert sum(e["n_images"] for e in stream.era_composition().values()) == len(streamed)
+
+
 @pytest.mark.parametrize("overlap", [-0.1, 1.1])
 def test_well_overlap_rejects_out_of_range(overlap: float) -> None:
     """``well_overlap`` must lie in [0, 1]."""

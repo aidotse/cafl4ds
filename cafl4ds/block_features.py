@@ -25,6 +25,26 @@ def layer_names(depth: int, surfaces: list[str]) -> list[str]:
     return [f"block{i + 1:02d}" for i in range(depth)] + list(surfaces)
 
 
+def _one_pass(captured: list[torch.Tensor], depth: int) -> list[torch.Tensor]:
+    """The block outputs of one encoder pass, when a method's surfaces run the encoder several times.
+
+    DINO's surfaces read the teacher twice on the same images (the pooled embedding, then ``cls`` for the
+    projector): in eval mode the passes are the same, so the first is kept, once each repeat is checked.
+
+    Raises:
+        RuntimeError: If the captures are not whole passes, or a repeated pass differs from the first.
+    """
+    if not captured or len(captured) % depth:
+        raise RuntimeError(f"captured {len(captured)} block outputs for {depth} blocks.")
+    first = captured[:depth]
+    for start in range(depth, len(captured), depth):
+        if not all(
+            torch.allclose(a, b, atol=1e-5) for a, b in zip(first, captured[start : start + depth], strict=True)
+        ):
+            raise RuntimeError("the encoder's repeated passes differ: the block reads are ambiguous.")
+    return first
+
+
 def block_features(method: SSLMethod, images: torch.Tensor, batch_size: int = 128) -> dict[str, torch.Tensor]:
     """Pooled per-block features and the monitor's surfaces for ``images``, on the CPU.
 
@@ -56,10 +76,9 @@ def block_features(method: SSLMethod, images: torch.Tensor, batch_size: int = 12
             for start in range(0, images.shape[0], batch_size):
                 captured.clear()
                 surfaces = method.embedding_surfaces(images[start : start + batch_size])
-                if len(captured) != len(blocks):
-                    raise RuntimeError(f"captured {len(captured)} block outputs for {len(blocks)} blocks.")
+                block_outs = _one_pass(captured, len(blocks))
                 names = layer_names(len(blocks), list(surfaces))
-                for name, z in zip(names, [*captured, *surfaces.values()], strict=True):
+                for name, z in zip(names, [*block_outs, *surfaces.values()], strict=True):
                     chunks.setdefault(name, []).append(z.detach().float().cpu())
     finally:
         for handle in handles:

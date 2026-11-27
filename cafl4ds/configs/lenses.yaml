@@ -30,5 +30,11 @@ min_batch: 8
 canary: linear_acc # the per-seed dent the readers are ranked against
 canary_window: 5 # end-of-drive canary: the mean of the last readings (P1.1.1's smoothing)
 dose0: none
-workers: 12
+# The checkout whose outputs/ and wells/ hold the runs: each branch's parent checkpoint is recorded
+# under the container's /workspace/ and resolved here (for the encoder-wide weight change).
+checkpoint_root: .
+# Lens computation when no cache covers a checkpoint (2 torch threads each); keep it modest on a shared node.
+workers: 4
+# New lens values are cached beside `out` (lens_values_{bb}.json); a promoted lens_values.json in the
+# features dir is read, never written.
 out: outputs/p112/lens_report.json

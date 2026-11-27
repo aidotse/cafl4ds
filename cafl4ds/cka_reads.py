@@ -67,7 +67,10 @@ def stratum_values(
 
 
 def _run(gap: np.ndarray, level: float) -> int:
-    """Consecutive readings from the first above ``level`` (a skipped, nan reading neither counts nor breaks)."""
+    """Consecutive readings above ``level`` counted from the first one (``0`` if it is not above).
+
+    A skipped (``nan``) reading neither counts nor breaks the run.
+    """
     n = 0
     for g in gap:
         if not np.isfinite(g):
@@ -88,9 +91,9 @@ def jolt(gap: np.ndarray, steps: list[int], threshold: float, settle: int = 10) 
         settle: Readings from this many steps after the first on count as settled.
 
     Returns:
-        ``peak`` and ``peak_step``; ``over_threshold`` / ``over_2sd`` — consecutive readings from the
-        first above each level; ``settled_abs_median`` — the median ``|gap|`` once settled, the floor
-        two runs of the same seed differ by.
+        ``peak`` and ``peak_step``; ``over_threshold`` / ``over_2sd`` — consecutive readings above each
+        level from the jolt's first reading on (``0`` if that one is not above); ``settled_abs_median`` —
+        the median ``|gap|`` once settled, the floor two runs of the same seed differ by.
     """
     g = np.asarray(gap, dtype=float)
     i = int(np.nanargmax(g))

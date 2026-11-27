@@ -9,7 +9,8 @@ both, all label-free reads. Each checkpoint's features land in ``features/<run>/
 
 Three sources, all from the run dirs' own records:
 
-* the **well** (``config.well``) — every lens's reference, ``features/well.pt``;
+* the **well** (``config.well``) — every lens's reference, ``features/well.pt``; with no well (DINO-init
+  DINO), the method as built, its pretrained start;
 * **drives** (``lens.drives``) — every leg checkpoint in ``checkpoints/s<seed>/index.json`` and
   ``final.pt``;
 * **branches** (``lens.branches``) — ``final.pt`` per seed, plus ``post_damage.pt``: the state right
@@ -87,22 +88,33 @@ class _Reader:
 
     def __init__(self, config: DictConfig, images: torch.Tensor, out: Path) -> None:
         self.method: SSLMethod = instantiate(config.ssl, encoder=instantiate(config.encoder))
+        # The method as built: the anchor of an arm with no well (DINO-init DINO resumes DINO's released checkpoint).
+        self.initial = {k: v.detach().clone() for k, v in self.method.state_dict().items()}
         self.method.to(config.device)
         self.images = images
         self.out = out
         self.batch_size = int(config.lens.batch_size)
         self.index: list[dict[str, Any]] = []
 
-    def read(self, checkpoint: str | Path, dest: Path, damage: dict[str, Any] | None = None) -> None:
-        """Read ``checkpoint`` (damaged first if ``damage`` is given) into ``dest`` unless it exists."""
-        entry: dict[str, Any] = {"checkpoint": str(checkpoint), "features": str(dest.relative_to(self.out))}
+    def read(self, checkpoint: str | Path | None, dest: Path, damage: dict[str, Any] | None = None) -> None:
+        """Read ``checkpoint`` (damaged first if ``damage`` is given) into ``dest`` unless it exists.
+
+        ``None`` reads the method as built (its pretrained start), the anchor of an arm with no well.
+        """
+        entry: dict[str, Any] = {
+            "checkpoint": str(checkpoint or "initial"),
+            "features": str(dest.relative_to(self.out)),
+        }
         if not dest.is_file():
-            warmup.load_well(self.method, checkpoint)
+            if checkpoint is None:
+                self.method.load_state_dict(self.initial)
+            else:
+                warmup.load_well(self.method, checkpoint)
             if damage is not None:
                 entry["damage"] = {
                     **damage,
-                    **branch.damage_top_blocks(
-                        self.method.encoder, damage["mode"], damage["k"], damage["scale"], seed=damage["seed"]
+                    **branch.damage_method(
+                        self.method, damage["mode"], damage["k"], damage["scale"], seed=damage["seed"]
                     ),
                 }
             feats = block_features(self.method, self.images, batch_size=self.batch_size)
@@ -139,7 +151,8 @@ def extract(config: DictConfig, out: Path) -> list[dict[str, Any]]:
     """Extract the well's, the drives' and the branches' per-block features into ``out``; return the index."""
     torch.manual_seed(int(config.seed))
     reader = _Reader(config, _save_probe(config, out), out)
-    reader.read(to_absolute_path(str(config.well)), out / "features" / "well.pt")
+    anchor = to_absolute_path(str(config.well)) if config.get("well") else None
+    reader.read(anchor, out / "features" / "well.pt")
     for run in config.lens.drives:
         _drive(reader, Path(to_absolute_path(str(run))))
     for run in config.lens.branches:

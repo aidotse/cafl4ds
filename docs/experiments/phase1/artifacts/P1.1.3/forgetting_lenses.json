@@ -1805,5 +1805,215 @@
       "healthy_mean": -0.4979569148722426,
       "spearman_vs_pc_bwt": -0.35909242322980395
     }
+  },
+  "single_lopo": {
+    "folds": [
+      {
+        "held_out": 0,
+        "panel": [
+          "cka_drift@backbone",
+          "cka_drift@block04",
+          "cka_drift@block05",
+          "cka_drift@block06",
+          "cka_drift@block07",
+          "cka_drift@block08",
+          "cka_drift@block09",
+          "cka_drift@block10",
+          "cka_drift@block11"
+        ],
+        "all_healthy": {
+          "threshold": 2.390532240996137,
+          "pc": {
+            "fired": true,
+            "max_z": 3.79273366573534,
+            "signal": "cka_drift@block08"
+          },
+          "twin": {
+            "fired": false,
+            "max_z": 0.3775443508967824,
+            "signal": "cka_drift@backbone"
+          }
+        },
+        "train_healthy": {
+          "threshold": 5.4777875110046494,
+          "pc": {
+            "fired": false,
+            "max_z": 4.484644125863576,
+            "signal": "cka_drift@block06"
+          },
+          "twin": {
+            "fired": false,
+            "max_z": 0.4115977657209451,
+            "signal": "cka_drift@backbone"
+          }
+        }
+      },
+      {
+        "held_out": 1,
+        "panel": [
+          "cka_drift@block04",
+          "cka_drift@block05",
+          "cka_drift@block06",
+          "cka_drift@block07",
+          "cka_drift@block08",
+          "cka_drift@block09",
+          "cka_drift@block10",
+          "cka_drift@block11"
+        ],
+        "all_healthy": {
+          "threshold": 3.070266674021819,
+          "pc": {
+            "fired": true,
+            "max_z": 5.181504104040751,
+            "signal": "cka_drift@block08"
+          },
+          "twin": {
+            "fired": false,
+            "max_z": 1.1934600899293388,
+            "signal": "cka_drift@block08"
+          }
+        },
+        "train_healthy": {
+          "threshold": 6.734123972359315,
+          "pc": {
+            "fired": true,
+            "max_z": 6.812462399666645,
+            "signal": "cka_drift@block08"
+          },
+          "twin": {
+            "fired": false,
+            "max_z": 1.8546067890550768,
+            "signal": "cka_drift@block08"
+          }
+        }
+      },
+      {
+        "held_out": 2,
+        "panel": [
+          "cka_drift@block04",
+          "cka_drift@block05",
+          "cka_drift@block06",
+          "cka_drift@block07",
+          "cka_drift@block08",
+          "cka_drift@block09",
+          "cka_drift@block10",
+          "cka_drift@block11"
+        ],
+        "all_healthy": {
+          "threshold": 3.070266674021819,
+          "pc": {
+            "fired": true,
+            "max_z": 3.4899495295922005,
+            "signal": "cka_drift@block08"
+          },
+          "twin": {
+            "fired": false,
+            "max_z": 1.1947408230486865,
+            "signal": "cka_drift@block10"
+          }
+        },
+        "train_healthy": {
+          "threshold": 5.524531596112723,
+          "pc": {
+            "fired": false,
+            "max_z": 3.501011239845365,
+            "signal": "cka_drift@block09"
+          },
+          "twin": {
+            "fired": false,
+            "max_z": 1.8588867583634407,
+            "signal": "cka_drift@block10"
+          }
+        }
+      },
+      {
+        "held_out": 3,
+        "panel": [
+          "cka_drift@block04",
+          "cka_drift@block05",
+          "cka_drift@block06",
+          "cka_drift@block07",
+          "cka_drift@block08",
+          "cka_drift@block09",
+          "cka_drift@block10",
+          "cka_drift@block11"
+        ],
+        "all_healthy": {
+          "threshold": 3.070266674021819,
+          "pc": {
+            "fired": false,
+            "max_z": 2.9954736025112574,
+            "signal": "cka_drift@block09"
+          },
+          "twin": {
+            "fired": false,
+            "max_z": 0.7025910462512552,
+            "signal": "cka_drift@block04"
+          }
+        },
+        "train_healthy": {
+          "threshold": 4.038423106584702,
+          "pc": {
+            "fired": false,
+            "max_z": 2.6857394806366446,
+            "signal": "cka_drift@block09"
+          },
+          "twin": {
+            "fired": false,
+            "max_z": 0.825524807421234,
+            "signal": "cka_drift@block04"
+          }
+        }
+      },
+      {
+        "held_out": 4,
+        "panel": [
+          "cka_drift@block04",
+          "cka_drift@block05",
+          "cka_drift@block06",
+          "cka_drift@block07",
+          "cka_drift@block08",
+          "cka_drift@block09",
+          "cka_drift@block10",
+          "cka_drift@block11"
+        ],
+        "all_healthy": {
+          "threshold": 3.070266674021819,
+          "pc": {
+            "fired": true,
+            "max_z": 4.318022279585065,
+            "signal": "cka_drift@block08"
+          },
+          "twin": {
+            "fired": false,
+            "max_z": 0.29191155565867827,
+            "signal": "cka_drift@block05"
+          }
+        },
+        "train_healthy": {
+          "threshold": 2.9006145018232754,
+          "pc": {
+            "fired": true,
+            "max_z": 3.6622987794334403,
+            "signal": "cka_drift@block08"
+          },
+          "twin": {
+            "fired": false,
+            "max_z": 0.31468764572505536,
+            "signal": "cka_drift@block05"
+          }
+        }
+      }
+    ],
+    "summary": {
+      "all_healthy": {
+        "fires_on_pc": "4/5",
+        "fires_on_twin": "0/5"
+      },
+      "train_healthy": {
+        "fires_on_pc": "2/5",
+        "fires_on_twin": "0/5"
+      }
+    }
   }
 }

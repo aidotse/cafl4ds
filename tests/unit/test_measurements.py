@@ -216,6 +216,13 @@ def test_twonn_invariant_to_rotation_and_scale() -> None:
     assert twonn_id(3.0 * z @ _orthonormal(12, 12, g)) == pytest.approx(twonn_id(z), rel=1e-4)
 
 
+def test_twonn_leaves_duplicates_out_of_the_fit() -> None:
+    """A duplicated sample has ``r1 = 0`` exactly, so it carries no ratio (a matrix-multiply distance is not 0)."""
+    z = torch.randn(150, 40, generator=_gen(), dtype=torch.float64) * 7.3 + 11.0
+    with pytest.raises(ValueError, match="distinct samples"):
+        twonn_id(torch.cat([z, z]))  # every sample duplicated: nothing left to fit
+
+
 def test_twonn_matches_scikit_dimension() -> None:
     """The in-house fit agrees with the reference implementation (``skdim.id.TwoNN``)."""
     skdim = pytest.importorskip("skdim")

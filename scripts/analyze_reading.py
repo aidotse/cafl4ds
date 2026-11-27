@@ -50,8 +50,24 @@ logger.add(sys.stdout, level="INFO")
 
 
 def _union(dirs: list[str], bb: str) -> list[dict[str, Any]] | None:
-    """The corpus rows of every run dir in ``dirs`` (``{bb}`` filled in) that has one, pooled (seeds disjoint)."""
-    pooled = [r for d in dirs if (rows := _rows(Path(to_absolute_path(d.format(bb=bb))))) is not None for r in rows]
+    """The corpus rows of every run dir in ``dirs`` (``{bb}`` filled in) that has one, pooled.
+
+    Raises:
+        ValueError: If two dirs share a seed (pooled, one seed's readings would overwrite the other's).
+    """
+    pooled: list[dict[str, Any]] = []
+    owner: dict[int, str] = {}
+    for d in dirs:
+        rows = _rows(Path(to_absolute_path(d.format(bb=bb))))
+        if rows is None:
+            continue
+        for seed in {int(r["seed"]) for r in rows}:
+            if seed in owner:
+                raise ValueError(
+                    f"seed {seed} appears in both {owner[seed]} and {d}; pooled corpora need disjoint seeds."
+                )
+            owner[seed] = d
+        pooled.extend(rows)
     return pooled or None
 
 

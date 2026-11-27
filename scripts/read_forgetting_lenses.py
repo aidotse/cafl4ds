@@ -16,11 +16,16 @@ by seed. Three steps, in order:
    sign-flip test of the maximum paired t over all of them (:func:`cafl4ds.cka_reads.sign_flip_max_t`)
    — the search over lenses and layers paid for inside the test.
 4. **Single drive** (follow-up). Each PC arm read alone against the healthy arms' bands (:func:`unpaired`),
-   for the middle-block panel and the pooled backbone — no twin.
+   for the middle-block panel and the pooled backbone — no twin. The middle panel was chosen on these
+   same pairs, so :func:`leave_one_pair_out` also re-chooses it on four pairs and reads the fifth
+   (P1.1 audit, B1).
 
 Example::
 
     uv run python scripts/read_forgetting_lenses.py
+    # B1's out-of-sample read alone, added to an existing report (no saved states needed):
+    uv run python scripts/read_forgetting_lenses.py \
+        from_report=docs/experiments/phase1/artifacts/P1.1.3/forgetting_lenses.json
 """
 
 import importlib.util
@@ -57,6 +62,31 @@ def _harness() -> ModuleType:
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def remap_mounts(cfg: DictConfig, mounts: list[dict[str, str]]) -> DictConfig:
+    """A run's recorded config with each container mount (``from``) replaced by its host path (``to``).
+
+    The re-runs record the container's data mounts (``/mnt/cifar100``, …) in ``.hydra/config.yaml``; a read
+    on the host needs the same files under their host paths. A prefix matches whole path components only.
+    """
+
+    def swap(value: object) -> object:
+        if isinstance(value, dict):
+            return {k: swap(v) for k, v in value.items()}
+        if isinstance(value, list):
+            return [swap(v) for v in value]
+        if isinstance(value, str):
+            for mount in mounts:
+                src, dst = str(mount["from"]).rstrip("/"), str(mount["to"]).rstrip("/")
+                if value == src or value.startswith(f"{src}/"):
+                    return dst + value[len(src) :]
+        return value
+
+    out = OmegaConf.create(swap(OmegaConf.to_container(cfg, resolve=False)))
+    if not isinstance(out, DictConfig):
+        raise TypeError("a run's config must be a mapping.")
+    return out
 
 
 def reproduction(new: dict[str, Any], promoted: dict[str, Any], tolerance: float) -> dict[str, Any]:
@@ -106,10 +136,65 @@ def unpaired(
     }
 
 
+def select_blocks(pc: list[dict[str, float]], healthy: list[dict[str, float]], layers: list[str]) -> list[str]:
+    """Item 5's rule for the middle panel: the layers where PC's change exceeds its twin's on every seed given."""
+    return [layer for layer in layers if all(p[layer] > h[layer] for p, h in zip(pc, healthy, strict=True))]
+
+
+def leave_one_pair_out(
+    pc: list[dict[str, float]], healthy: list[dict[str, float]], alpha: float, floor: float
+) -> dict[str, Any]:
+    """The single-drive read with the panel chosen out of sample (P1.1 audit, B1).
+
+    For each held-out seed, the layers are chosen by :func:`select_blocks` on the other seeds' pairs only,
+    then the held-out PC arm is read alone. Two nulls: ``all_healthy`` keeps every healthy arm in the bands
+    (the held-out twin played no part in the choice), ``train_healthy`` drops the held-out twin too, so the
+    held-out pair is wholly unseen — at the cost of a smaller null and a more conservative threshold.
+    """
+    layers = sorted(k for k in pc[0] if k.startswith("cka_drift@"))
+    folds = []
+    for i in range(len(pc)):
+        keep = [j for j in range(len(pc)) if j != i]
+        panel = select_blocks([pc[j] for j in keep], [healthy[j] for j in keep], layers)
+        settings = dict.fromkeys(panel, {"span": 0, "floor": floor})
+        fold: dict[str, Any] = {"held_out": i, "panel": panel}
+        for name, null in (("all_healthy", healthy), ("train_healthy", [healthy[j] for j in keep])):
+            rules = calibrate_panel({sig: np.array([[h[sig]] for h in null]) for sig in panel}, settings, alpha)
+            fold[name] = {
+                "threshold": rules[panel[0]].threshold,
+                "pc": panel_read(pc[i], rules, 0),
+                "twin": panel_read(healthy[i], rules, 0),
+            }
+        folds.append(fold)
+    summary = {
+        name: {
+            "fires_on_pc": f"{sum(f[name]['pc']['fired'] for f in folds)}/{len(folds)}",
+            "fires_on_twin": f"{sum(f[name]['twin']['fired'] for f in folds)}/{len(folds)}",
+        }
+        for name in ("all_healthy", "train_healthy")
+    }
+    return {"folds": folds, "summary": summary}
+
+
+def lopo_from_report(path: Path, alpha: float, floor: float) -> dict[str, Any]:
+    """Re-run :func:`leave_one_pair_out` from a written report's per-seed changes (no saved states needed)."""
+    report: dict[str, Any] = json.loads(path.read_text())
+    seeds = sorted(report["seeds"], key=int)
+    pc = [report["seeds"][s]["pc"]["change"] for s in seeds]
+    healthy = [report["seeds"][s]["healthy"]["change"] for s in seeds]
+    report["single_lopo"] = leave_one_pair_out(pc, healthy, alpha, floor)
+    path.write_text(dumps_valid(report) + "\n", encoding="utf-8")
+    logger.info(f"single-drive, panel chosen leave-one-pair-out: {report['single_lopo']['summary']} -> {path}")
+    return report
+
+
 def read_seed(config: DictConfig, harness: ModuleType, seed: int) -> dict[str, Any]:
     """Every lens's phase-B change per arm for one seed, plus the anchor check and the recorded-drift check."""
     run = Path(to_absolute_path(str(config.runs).format(seed=seed)))
-    cfg = OmegaConf.load(run / ".hydra" / "config.yaml")
+    loaded = OmegaConf.load(run / ".hydra" / "config.yaml")
+    if not isinstance(loaded, DictConfig):
+        raise TypeError(f"{run}: .hydra/config.yaml is not a mapping.")
+    cfg = remap_mounts(loaded, list(config.get("mounts", [])))
     split = harness._task_split(cfg)
     saved = json.loads((run / "states" / "task_a_probe.json").read_text(encoding="utf-8"))
     if harness.task_a_fingerprint(split) != saved:
@@ -175,6 +260,7 @@ def analyze(config: DictConfig) -> dict[str, Any]:
         )
         for name, layers in config.single.items()
     }
+    single_lopo = leave_one_pair_out(pc, healthy, float(config.alpha), float(config.floor))
     every = sorted(pc[0])
     all_diffs = paired_diffs(pc, healthy, every)
     bwt = np.array([per_seed[s]["pc_bwt"] for s in seeds])
@@ -184,6 +270,7 @@ def analyze(config: DictConfig) -> dict[str, Any]:
             "test": test,
             "per_lens": per_lens,
             "single": single,
+            "single_lopo": single_lopo,
             "per_reader": {
                 r: {
                     "diffs": all_diffs[:, i].tolist(),
@@ -211,7 +298,10 @@ def analyze(config: DictConfig) -> dict[str, Any]:
 
 @hydra.main(version_base=None, config_path="../cafl4ds/configs", config_name="forgetting_lenses")  # type: ignore[misc]
 def main(config: DictConfig) -> None:
-    """Reproduce, read the saved states per block, and test."""
+    """Reproduce, read the saved states per block, and test; or, with ``from_report``, only the B1 re-read."""
+    if config.get("from_report"):
+        lopo_from_report(Path(to_absolute_path(str(config.from_report))), float(config.alpha), float(config.floor))
+        return
     analyze(config)
 
 

@@ -1205,3 +1205,12 @@ body.reveal-viewport {
 .reveal .legs .leg-pass { color: var(--green); font-weight: bold; }
 .reveal .legs .leg-open { color: var(--muted); font-weight: bold; }
 .portrait .reveal .card { font-size: 0.68em; height: auto; }
+
+/* A setup caveat on slides whose numbers bind a setup that later studies change: in flow, pinned to the bottom */
+.reveal .slides section.slide.level2 > .setup-note {
+  margin-top: auto; margin-bottom: 0; padding-top: 18px;
+  font-size: 0.44em; line-height: 1.35; color: var(--muted);
+  padding-left: 16px; border-left: 4px solid var(--orange);
+}
+.reveal .slides section.slide.level2:has(> .setup-note)::after { display: none; }
+.reveal .setup-note::before { content: "⚑ "; color: var(--orange); }

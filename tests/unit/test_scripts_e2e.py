@@ -202,6 +202,45 @@ def test_p111_branches_resume_damage_and_recover_from_a_leg_checkpoint(tmp_path:
     assert [h["step"] for h in report["arms"]["live"]["health"]] == list(range(5))
 
 
+def test_p114_branch_saves_its_damaged_start_state_and_the_steps_after_it(tmp_path: Path) -> None:
+    """P1.1.4: ``resume.save_start`` saves the branch's start (after the damage), then the later steps and the end."""
+    well_out = tmp_path / "je_well.pt"
+    warm_cfg = _compose(
+        "warm_well",
+        [*_P11_DIET, "warmup.window=2", "warmup.min_steps=2", "warmup.max_steps=4", f"well_out={well_out}"],
+    )
+    _load_script("warm_well").warm(warm_cfg)
+    script = _load_script("run_deploy_harness")
+    base = [*_P11_DIET, "eval_every=1", f"well={well_out}"]
+    script.run_deploy(_compose("deploy", [*base, "checkpoint_legs=true"]), tmp_path / "drive")
+    index = json.loads((tmp_path / "drive" / "checkpoints" / "s0" / "index.json").read_text())
+    start = int(index[1]["batches_seen"])
+    ckpt = tmp_path / "drive" / "checkpoints" / "s{seed}" / f"step{start:05d}.pt"
+    later = start + 2
+    overrides = [
+        *base,
+        f"resume.checkpoint='{ckpt}'",
+        f"resume.step={start}",
+        "resume.save_start=true",
+        "checkpoint_legs=steps",
+        f"checkpoint_steps=[1,{start},{later}]",
+        "damage.mode=noise",
+        "damage.k=2",
+        "damage.scale=0.5",
+    ]
+    out = tmp_path / "noise"
+    script.run_deploy(_compose("deploy", overrides), out)
+    saved = [e["file"] for e in json.loads((out / "checkpoints" / "s0" / "index.json").read_text())]
+    assert saved == [f"step{start:05d}.pt", f"step{later:05d}.pt", "final.pt"]
+    # the saved start is the parent's state damaged exactly as the branch recorded it
+    report = json.loads(next((out / "reports").glob("*.json")).read_text())
+    parent = torch.load(str(ckpt).format(seed=0), map_location="cpu")
+    start_state = torch.load(out / "checkpoints" / "s0" / f"step{start:05d}.pt", map_location="cpu")
+    assert report["config"]["branch"]["damage"]["rel_change"] > 0.0
+    changed = [k for k, v in parent.items() if not torch.equal(v, start_state[k])]
+    assert changed and all("blocks" in k for k in changed)
+
+
 def test_p112_extracts_block_features_that_reproduce_the_branch_record(tmp_path: Path) -> None:
     """P1.1.2: the extracted leg checkpoint and rebuilt post-damage state read as the branch recorded them."""
     well_out = tmp_path / "je_well.pt"
@@ -246,6 +285,27 @@ def test_p112_extracts_block_features_that_reproduce_the_branch_record(tmp_path:
     torch.save({**probe, "query_groups": probe["query_groups"].flip(0) + 1}, out / "probe.pt")
     with pytest.raises(ValueError, match="query_groups"):
         _load_script("extract_block_features")._save_probe(cfg, out)
+
+
+def test_p114_block_features_anchor_on_the_built_method_without_a_well(tmp_path: Path) -> None:
+    """P1.1.4: with no well, the anchor is the method as built, read after a checkpoint changed the loaded state."""
+    harness = _load_script("run_deploy_harness")
+    harness.run_deploy(_compose("deploy", [*_P11_DIET, "eval_every=2", "checkpoint_legs=true"]), tmp_path / "drive")
+    cfg = _compose("deploy", [*_P11_DIET, "well=null", f"lens.drives=[{tmp_path / 'drive'}]"])
+    script = _load_script("extract_block_features")
+    first = tmp_path / "lens"
+    entries = script.extract(cfg, first)
+    assert entries[0]["checkpoint"] == "initial"
+    # read the anchor again after the drive's checkpoints were loaded: the built state was restored, not the last one
+    second = tmp_path / "lens2"
+    torch.manual_seed(int(cfg.seed))  # as extract() does: the toy method's random init is the "built" state here
+    reader = script._Reader(cfg, script._save_probe(cfg, second), second)
+    final = tmp_path / "drive" / "checkpoints" / "s0" / "final.pt"
+    reader.read(final, second / "final.pt")
+    reader.read(None, second / "well.pt")
+    a, b = torch.load(first / "features" / "well.pt"), torch.load(second / "well.pt")
+    assert all(torch.allclose(a[k], b[k]) for k in a)
+    assert not torch.allclose(a["backbone"], torch.load(second / "final.pt")["backbone"])
 
 
 def test_p111_recovery_needs_a_checkpoint_to_recover_from(tmp_path: Path) -> None:
@@ -408,11 +468,23 @@ def test_supervised_ceiling_trains_and_reports_against_its_references(tmp_path: 
     assert {"train_bacc", "drive_bacc", "selection_bacc"} <= set(report["final"])
     assert set(report["references"]) == {"encoder_at_init", "pixels"}
     assert 0.0 <= report["best_drive_bacc"] <= 1.0
+    assert report["selected"]["epoch"] in (1.0, 2.0)
     assert (tmp_path / "supervised_ceiling.json").is_file()
     # epochs=0 is the probe-only read of the encoder as built
     config.epochs = 0
     probe_only = script.run(config, tmp_path)
-    assert probe_only["trace"] == [] and probe_only["best_drive_bacc"] is None
+    assert probe_only["trace"] == [] and probe_only["best_drive_bacc"] is None and probe_only["selected"] is None
+
+
+def test_supervised_ceiling_picks_the_epoch_on_the_selection_set_not_the_drive_pool() -> None:
+    """The fair ceiling reads the drive pool at the selection set's best epoch (the first on a tie)."""
+    trace = [
+        {"epoch": 1.0, "selection_bacc": 0.60, "drive_bacc": 0.75},  # the drive pool's best: optimistic
+        {"epoch": 2.0, "selection_bacc": 0.64, "drive_bacc": 0.72},
+        {"epoch": 3.0, "selection_bacc": 0.64, "drive_bacc": 0.70},
+    ]
+    pick = _load_script("supervised_ceiling").selected_epoch(trace)
+    assert pick == {"epoch": 2.0, "selection_bacc": 0.64, "drive_bacc": 0.72}
 
 
 def test_supervised_ceiling_reads_a_saved_ssl_well(tmp_path: Path) -> None:

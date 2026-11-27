@@ -1,12 +1,43 @@
-"""P1.1.4 — the referee-power core (Part 4) and the false-alarm count (Part 1)."""
+"""P1.1.4 — the referee power, the split adjudication and the damage branches' engineering.
 
+Part 4's referee-power core, Part 1's false-alarm count and split adjudication, and Part 2's damage on
+DINO's method (student and teacher alike) and its resumed momentum ramp.
+"""
+
+import copy
+import json
 import math
+import sys
+from pathlib import Path
 
 import numpy as np
 import pytest
+import torch
+from omegaconf import OmegaConf
 
 from cafl4ds import referee_power as rp
-from scripts.analyze_p114 import wilson_interval
+from cafl4ds.branch import damage_method, damage_top_blocks, top_blocks
+from cafl4ds.models.vit import TinyViTEncoder
+from cafl4ds.null_envelope import drop_profile, gap, gap_fast, injected_mdd, injected_power, split_masks
+from cafl4ds.reading_protocol import adjudicate_split, direction, finetune_drop, finetune_drop_consecutive
+from cafl4ds.ssl.dino import DINO, build_dino, momentum_at
+from scripts.analyze_p114 import (
+    LadderSet,
+    _open_ladders,
+    _own_name,
+    _perm_p,
+    _perm_p_columns,
+    _referee_slice_null,
+    _rows_any,
+    _welch_ci,
+    injected_canary_power,
+    referee_read,
+    three_panels,
+    wilson_interval,
+)
+
+sys.path.insert(0, str(Path(__file__).parent))
+from test_p125 import _DINO_SMALL, _tiny_vit  # noqa: E402
 
 
 def test_change_noise_point_is_the_seed_mean_bacc_fall() -> None:
@@ -34,6 +65,17 @@ def test_change_noise_components_are_centred_and_sized() -> None:
     sd = out["image_noise"][:, 1].std()
     assert sd == pytest.approx(math.sqrt(0.1 / n / s), rel=0.15)
     assert abs(out["image_noise"][:, 1].mean()) < sd / 5
+
+
+def test_change_noise_seed_part_matches_the_unbiased_standard_error() -> None:
+    """The seed draws' SD is the unbiased s / √S, not the plain bootstrap's √((S − 1) / S) of it (G4)."""
+    labels = np.array([0, 0, 1, 1])
+    start = np.ones((5, 4))  # balanced accuracy 1 for every seed
+    later = [np.array([[1, 1, 1, 1], [0, 1, 1, 1], [0, 0, 1, 1], [0, 1, 0, 1], [0, 0, 0, 1]], dtype=float)]
+    falls = np.array([0.0, 0.25, 0.5, 0.5, 0.75])  # each seed's balanced-accuracy fall
+    out = rp.change_noise(start, later, labels, n_boot=40_000)
+    assert out["loss"] == pytest.approx([falls.mean()])
+    assert out["seed_noise"][:, 0].std() == pytest.approx(falls.std(ddof=1) / math.sqrt(5), rel=0.03)
 
 
 def test_mdd_matches_the_gaussian_formula_at_one_checkpoint() -> None:
@@ -83,3 +125,334 @@ def test_wilson_interval() -> None:
     assert lo == pytest.approx(0.0119, abs=1e-3) and hi == pytest.approx(0.2983, abs=1e-3)
     with pytest.raises(ValueError):
         wilson_interval(3, 2)
+
+
+# ---- the split adjudication (Part 1) -------------------------------------------------------------------------
+
+
+def test_adjudicate_split_reads_information_and_geometry_apart() -> None:
+    """Linear canary = degradation; kNN canary = geometry unless a fine-tune rung drops with it."""
+    assert adjudicate_split({}) == "quiet"
+    assert adjudicate_split({"label_free": True}) == "movement"
+    assert adjudicate_split({"label_free": True, "canary_knn": True}) == "geometry"
+    assert adjudicate_split({"canary_knn": True}, finetune=None) == "geometry"  # corroboration unread
+    assert adjudicate_split({"canary_knn": True}, finetune=False) == "geometry"
+    assert adjudicate_split({"canary_knn": True}, finetune=True) == "degradation"
+    assert adjudicate_split({"canary_linear": True}, finetune=False) == "degradation"
+
+
+def test_finetune_drop_counts_only_checkpoints_at_or_after_the_fire_with_a_healthy_read() -> None:
+    """Below every healthy seed at an eligible checkpoint drops; earlier checkpoints and unread ones do not count."""
+    steps = {"t00100": 100.0, "t00846": 846.0, "end": math.inf}
+    healthy = {"t00100": [0.60, 0.62], "end": [0.60, 0.61]}
+    assert finetune_drop({"t00100": 0.50, "end": 0.605}, healthy, steps, after=500) is False  # the drop came before
+    assert finetune_drop({"t00100": 0.50, "end": 0.59}, healthy, steps, after=500) is True
+    assert finetune_drop({"t00846": 0.10}, healthy, steps, after=500) is None  # no healthy read at 846
+    assert finetune_drop({"t00100": 0.50}, healthy, steps, after=0) is True
+
+
+def test_three_panels_split_the_canary_by_rung() -> None:
+    """The label-free signals stay one panel; the canary channels split into linear and kNN."""
+    rows = [{"rankme": 1.0, "knn_acc": 0.5, "knn_acc_night": 0.5, "linear_acc": 0.6}]
+    out = three_panels(rows, ["rankme", "uniformity"], ["knn_acc", "linear_acc", "knn_acc_night", "linear_acc_night"])
+    assert out == {
+        "label_free": ["rankme"],
+        "canary_linear": ["linear_acc"],
+        "canary_knn": ["knn_acc", "knn_acc_night"],
+    }
+
+
+def test_welch_interval_and_exact_permutation() -> None:
+    """The Welch interval covers the difference; the permutation p of a complete separation is 2 / C(10, 5)."""
+    a, b = np.array([1.0, 1.1, 1.2, 1.3, 1.4]), np.array([0.0, 0.1, 0.2, 0.3, 0.4])
+    diff, lo, hi = _welch_ci(a, b)
+    assert diff == pytest.approx(1.0) and lo < 1.0 < hi and lo > 0
+    assert _perm_p(a, b) == pytest.approx(2 / 252)
+    assert _perm_p(a, a.copy()) == 1.0
+
+
+# ---- damage on DINO's method and the resumed momentum (Part 2's engineering) ---------------------------------
+
+
+def _tiny_dino() -> DINO:
+    method = build_dino(_tiny_vit(), **_DINO_SMALL)
+    with torch.no_grad():  # a trained student, apart from the teacher
+        for p in method.student.parameters():
+            p.add_(0.05 * torch.randn_like(p))
+    return method
+
+
+def _snapshot(module: torch.nn.Module) -> dict[str, torch.Tensor]:
+    return {k: v.detach().clone() for k, v in module.state_dict().items()}
+
+
+@pytest.mark.parametrize(("mode", "k", "scale"), [("none", 2, 1.0), ("reinit", 0, 0.0), ("noise", 2, 0.0)])
+def test_damage_method_at_dose_zero_is_a_no_op_on_the_whole_method(mode: str, k: int, scale: float) -> None:
+    """Dose 0 leaves teacher, student, heads and centre bit for bit."""
+    method = _tiny_dino()
+    before = _snapshot(method)
+    out = damage_method(method, mode, k, scale=scale)
+    assert out["rel_change"] == 0.0 and out["twin_rel_change"] == 0.0
+    assert all(torch.equal(before[n], v) for n, v in method.state_dict().items())
+
+
+@pytest.mark.parametrize(("mode", "scale"), [("reinit", 0.0), ("noise", 0.5)])
+def test_damage_method_hits_teacher_and_student_alike_and_nothing_else(mode: str, scale: float) -> None:
+    """The same damage reaches both backbones: equal blocks stay equal; heads and centre stay as they were."""
+    method = _tiny_dino()
+    with torch.no_grad():  # make the damaged block equal in both, to test "equal stays equal"
+        top_blocks(method.student, 1)[0].load_state_dict(top_blocks(method.encoder, 1)[0].state_dict())
+    before = _snapshot(method)
+    out = damage_method(method, mode, 1, scale=scale, seed=3)
+    assert out["rel_change"] > 0 and out["twin_rel_change"] > 0
+    teacher, student = top_blocks(method.encoder, 1)[0].state_dict(), top_blocks(method.student, 1)[0].state_dict()
+    assert all(torch.equal(teacher[n], student[n]) for n in teacher)
+    after = method.state_dict()
+    changed = {n for n in before if not torch.equal(before[n], after[n])}
+    last = f"blocks.{len(method.encoder.blocks) - 1}."
+    assert changed and all(n.startswith((f"encoder.{last}", f"student.{last}")) for n in changed)
+
+
+def test_damage_method_noise_keeps_the_teacher_student_difference() -> None:
+    """Under noise the two get the same delta, so the moving average's lag behind the student is unchanged."""
+    method = _tiny_dino()
+    t, s = top_blocks(method.encoder, 2), top_blocks(method.student, 2)
+    gap = [(a.mlp.fc1.weight - b.mlp.fc1.weight).clone() for a, b in zip(t, s, strict=True)]
+    damage_method(method, "noise", 2, scale=0.7, seed=1)
+    for g, a, b in zip(gap, t, s, strict=True):
+        assert torch.allclose(a.mlp.fc1.weight - b.mlp.fc1.weight, g, atol=1e-6)
+
+
+def test_damage_without_a_twin_is_p111s_draw() -> None:
+    """A method with no student (SimSiam, MAE) is damaged exactly as P1.1.1 damaged it."""
+    torch.manual_seed(0)
+    enc = TinyViTEncoder(img_size=8, patch_size=4, embed_dim=16, depth=4, num_heads=2)
+    holder = torch.nn.Module()
+    holder.encoder = copy.deepcopy(enc)
+    out = damage_method(holder, "noise", 2, scale=0.3, seed=4)
+    damage_top_blocks(enc, "noise", 2, scale=0.3, seed=4)
+    assert "twin_rel_change" not in out
+    assert all(
+        torch.equal(a, b) for a, b in zip(enc.state_dict().values(), holder.encoder.state_dict().values(), strict=False)
+    )
+
+
+def test_damage_rejects_a_mismatched_twin() -> None:
+    """A twin whose blocks differ in shape is refused."""
+    a = TinyViTEncoder(img_size=8, patch_size=4, embed_dim=16, depth=4, num_heads=2)
+    b = TinyViTEncoder(img_size=8, patch_size=4, embed_dim=8, depth=4, num_heads=2)
+    with pytest.raises(ValueError, match="twin"):
+        damage_top_blocks(a, "noise", 2, scale=0.1, twin=b)
+
+
+def test_resumed_dino_continues_the_drives_momentum_ramp() -> None:
+    """set_horizon(total, start=s): the next update uses the momentum the drive would have used at step s + 1."""
+    method = _tiny_dino()
+    method.set_horizon(10, start=6)
+    before = method.encoder.norm.weight.clone()
+    method.after_step()
+    m = momentum_at(7, 10, 0.996)
+    assert m > momentum_at(1, 10, 0.996)
+    assert torch.allclose(method.encoder.norm.weight, m * before + (1 - m) * method.student.norm.weight)
+    with pytest.raises(ValueError, match="start"):
+        method.set_horizon(10, start=11)
+
+
+def test_gap_fast_matches_the_loop_with_skips_and_tied_checkpoints() -> None:
+    """The vectorized null reproduces P1.1.0's loop, skipped readings and a shared start included."""
+    rng = np.random.default_rng(3)
+    for trial in range(12):
+        walk = rng.normal(size=(5, 9)) * 0.02 + 0.6
+        iid = rng.normal(size=(6, 9)) * 0.02 + 0.6 + 0.01 * trial
+        walk[rng.random(walk.shape) < 0.1] = np.nan
+        iid[rng.random(iid.shape) < 0.1] = np.nan
+        walk[:, 0] = iid[:, 0] = 0.5  # every drive reads the same start
+        a, b = gap(walk, iid), gap_fast(walk, iid)
+        for key in a:
+            assert math.isclose(a[key], b[key], rel_tol=1e-9, abs_tol=1e-12), (trial, key)
+
+
+def test_gap_fast_reads_coinciding_unrepresentable_readings_as_no_gap() -> None:
+    """Readings that coincide across arms read as no gap, even off the binary grid."""
+    walk, iid = np.full((5, 3), 0.1), np.full((5, 3), 0.1)
+    walk[:, 1] += np.linspace(0, 0.01, 5)
+    iid[:, 1] += np.linspace(0, 0.01, 5)
+    assert gap_fast(walk, iid)["max_abs_d"] == pytest.approx(0.0, abs=1e-9)
+
+
+def test_split_masks_enumerate_every_split_once() -> None:
+    """Every split of the seeds appears exactly once."""
+    masks = split_masks(6, 2)
+    assert masks.shape == (15, 6)
+    assert (masks.sum(axis=1) == 2).all()
+    assert len({tuple(r) for r in masks}) == 15
+
+
+def test_drop_profile_shapes_end_at_the_last_usable_reading() -> None:
+    """Each drop shape covers its share of the drive, ending at the last usable reading."""
+    assert drop_profile(8, "sustained").tolist() == [1.0] * 8
+    assert drop_profile(8, "last_quarter").tolist() == [0, 0, 0, 0, 0, 0, 1, 1]
+    assert drop_profile(8, "single", last=5).tolist() == [0, 0, 0, 0, 0, 1, 0, 0]
+    assert drop_profile(8, "sustained", first=3).tolist() == [0, 0, 0, 1, 1, 1, 1, 1]
+    with pytest.raises(ValueError, match="unknown"):
+        drop_profile(8, "ramp")
+
+
+def test_injected_power_rises_with_the_drop_and_holds_the_level_at_zero() -> None:
+    """No drop is rarely caught; a large one always is."""
+    rng = np.random.default_rng(0)
+    healthy = rng.normal(size=(10, 6)) * 0.01 + 0.6
+    masks = split_masks(10, 3)
+    groups = masks[rng.choice(len(masks), 40, replace=False)]
+    profile = drop_profile(6, "sustained")
+    at_zero = injected_power(healthy, profile, 0.0, groups, masks)
+    small, large = (injected_power(healthy, profile, d, groups, masks) for d in (0.005, 0.03))
+    assert at_zero <= 0.2
+    assert small <= large
+    assert large == 1.0
+
+
+def test_injected_mdd_is_larger_for_a_single_reading_than_a_sustained_drop() -> None:
+    """A drop held over the drive is caught at a smaller size than one at a single reading."""
+    rng = np.random.default_rng(1)
+    healthy = rng.normal(size=(10, 8)) * 0.01 + 0.6
+    sustained = injected_mdd(healthy, "sustained", n_inject=3, n_groups=30)
+    single = injected_mdd(healthy, "single", n_inject=3, n_groups=30)
+    assert sustained["mdd"] < single["mdd"]
+    assert sustained["power_at_mdd"] >= 0.8
+
+
+def _ladder_dir(path: Path, reads: dict[str, np.ndarray], query: np.ndarray) -> None:
+    """A minimal ladder dir: a 4-frame scene pool and one kNN read per encoder."""
+    path.mkdir(parents=True)
+    labels = np.array([0, 1, 0, 1])
+    np.savez(path / "pool.npz", query_index=query, stratum=np.zeros(4), regime=np.zeros(4), **{"labels|scene": labels})
+    (path / "summary.json").write_text("{}", encoding="utf-8")
+    for name, correct in reads.items():
+        np.savez(path / f"{name}.npz", **{"scene|knn": correct[None, :]})
+
+
+def test_ladder_set_maps_index_and_drive_seed_naming(tmp_path: Path) -> None:
+    """P1.2.5's index naming and P1.1.4's drive-seed naming read the same drive; a mismatched query is refused."""
+    query = np.arange(4)
+    _ladder_dir(tmp_path / "old", {"walk_s0_end": np.array([1.0, 1, 0, 0])}, query)
+    _ladder_dir(tmp_path / "new", {"iid_s6_end": np.array([1.0, 1, 1, 1])}, query)
+    ladders = LadderSet(tmp_path, ["old", {"dir": "new", "names": "seed"}])
+    assert ladders.read("walk", 1, "end", "scene|knn") == pytest.approx(0.5)
+    assert ladders.read("iid", 6, "end", "scene|knn") == pytest.approx(1.0)
+    assert math.isnan(ladders.read("iid", 1, "end", "scene|knn"))
+    _ladder_dir(tmp_path / "other", {}, np.arange(1, 5))
+    with pytest.raises(ValueError, match="val query"):
+        LadderSet(tmp_path, ["old", "other"])
+
+
+def test_power_rows_read_seed_named_dirs_and_the_floor(tmp_path: Path) -> None:
+    """Parts 4 and 4b ask by index (``walk_s0``); a seed-named dir answers with its ``walk_s1``, the floor as is."""
+    query = np.arange(4)
+    _ladder_dir(tmp_path / "mae", {"walk_s1_end": np.array([1.0, 0, 0, 0]), "floor": np.ones(4)}, query)
+    _ladder_dir(tmp_path / "old", {"walk_s0_end": np.array([0.0, 0, 0, 0])}, query)
+    ladders = _open_ladders(tmp_path, [{"dir": "mae", "names": "seed"}, "old"])
+    assert _own_name("walk_s0_t00846", "seed") == "walk_s1_t00846" and _own_name("floor", "seed") == "floor"
+    rows = _rows_any(ladders, ["walk_s0_end"], "scene|knn")
+    assert rows is not None and rows.tolist() == [[1.0, 0, 0, 0]]
+    assert _rows_any(ladders, ["floor"], "scene|knn") is not None
+    assert _rows_any(ladders[1:], ["walk_s0_end"], "scene|knn").tolist() == [[0.0, 0, 0, 0]]  # type: ignore[union-attr]
+    _ladder_dir(tmp_path / "other", {}, np.arange(1, 5))
+    with pytest.raises(ValueError, match="val query"):
+        _open_ladders(tmp_path, ["old", "other"])
+
+
+def _tod_ladder(path: Path, reads: dict[str, np.ndarray]) -> None:
+    """A ladder dir whose 8 scene frames split 4 / 2 / 2 over three times of day (val's strata are unequal)."""
+    path.mkdir(parents=True)
+    np.savez(
+        path / "pool.npz",
+        query_index=np.arange(8),
+        stratum=np.array([0, 0, 0, 0, 1, 1, 2, 2]),
+        regime=np.zeros(8),
+        **{"labels|scene": np.array([0, 1, 0, 1, 0, 1, 0, 1])},
+    )
+    names = {"stratum_names": {"0": "daytime", "1": "dawn/dusk", "2": "night"}}
+    (path / "summary.json").write_text(json.dumps(names), encoding="utf-8")
+    for name, correct in reads.items():
+        np.savez(path / f"{name}.npz", **{"scene|knn": correct[None, :]})
+
+
+def test_referee_read_weights_each_time_of_day_equally_when_balanced(tmp_path: Path) -> None:
+    """``all`` weights the strata by their frames; ``tod_balanced`` gives each a third, as the canary does (G2)."""
+    correct = np.array([1.0, 1, 1, 1, 0, 0, 0, 0])  # daytime all right, the rest all wrong
+    _tod_ladder(tmp_path / "lad", {"walk_s0_end": correct})
+    ladders = LadderSet(tmp_path, ["lad"])
+    assert referee_read(ladders, "walk", 1, "scene|knn", "all") == pytest.approx(0.5)
+    assert referee_read(ladders, "walk", 1, "scene|knn", "tod_balanced") == pytest.approx(1 / 3)
+    assert referee_read(ladders, "walk", 1, "scene|knn", "tod:daytime") == pytest.approx(1.0)
+
+
+def test_perm_p_columns_matches_the_loop() -> None:
+    """The all-splits-at-once permutation p equals :func:`_perm_p`, column by column."""
+    rng = np.random.default_rng(3)
+    a, b = rng.normal(size=(4, 3)), rng.normal(size=(6, 3)) + np.array([0.0, 1.0, 3.0])
+    expected = [_perm_p(a[:, k], b[:, k]) for k in range(3)]
+    assert _perm_p_columns(a, b).tolist() == pytest.approx(expected)
+
+
+def test_referee_slice_null_places_a_gap_in_time(tmp_path: Path) -> None:
+    """A walk that loses night frames at the second checkpoint only reads a gap there, with its exact p."""
+    reads = {}
+    for s in range(3):
+        reads[f"walk_s{s}_t00100"] = np.ones(8)
+        reads[f"walk_s{s}_end"] = np.array([1.0, 1, 1, 1, 1, 1, 0, 0])
+    for s in range(3, 7):
+        reads[f"iid_s{s}_t00100"] = reads[f"iid_s{s}_end"] = np.ones(8)
+    _tod_ladder(tmp_path / "lad", reads)
+    ladders = LadderSet(tmp_path, ["lad"])
+    out = _referee_slice_null(ladders, ([1, 2, 3], [4, 5, 6, 7]), "scene|knn", "tod:night", ["t00100", "end"])
+    assert out["walk_minus_iid"] == pytest.approx([0.0, -1.0])
+    assert out["p_per_checkpoint"] == pytest.approx([1.0, 1 / 35])
+    assert out["n_frames"] == 2
+
+
+def test_injected_canary_power_adds_a_late_sustained_drop() -> None:
+    """With ``sustained_from_step``, a sustained drop is also injected from the first reading at that step (G3)."""
+    rng = np.random.default_rng(4)
+    values = 0.6 + 0.01 * np.arange(8) * rng.normal(size=(8, 8))  # [seeds, readings]: spread grows from 0
+    rows = [
+        {"arm": "live", "seed": s, "checkpoint_index": k, "step": 25 * k, "knn_acc": float(values[s, k])}
+        for s in range(8)
+        for k in range(8)
+    ]
+    config = OmegaConf.create(
+        {
+            "alpha": 0.05,
+            "inject": {
+                "n_inject": 3,
+                "n_groups": 20,
+                "power": 0.8,
+                "seed": 0,
+                "shapes": ["sustained"],
+                "sustained_from_step": 100,
+            },
+        }
+    )
+    out = injected_canary_power(rows, ["knn_acc"], config, set())["knn_acc"]
+    assert set(out) == {"sustained", "sustained_from_100"}
+    late = injected_mdd(values, "sustained", n_inject=3, n_groups=20, first=4)  # step 100 is reading 4
+    assert out["sustained_from_100"]["mdd"] == pytest.approx(late["mdd"])
+    assert out["sustained_from_100"]["mdd"] > out["sustained"]["mdd"]  # the coinciding start no longer flatters it
+
+
+def test_finetune_drop_consecutive_needs_a_run_of_drops() -> None:
+    """One checkpoint below every healthy seed is not enough; two in a row are."""
+    steps = {"a": 100.0, "b": 200.0, "c": 300.0, "end": math.inf}
+    healthy = {c: [0.6, 0.62] for c in steps}
+    single = {"a": 0.5, "b": 0.61, "c": 0.5, "end": 0.61}
+    run = {"a": 0.61, "b": 0.5, "c": 0.5, "end": 0.61}
+    assert finetune_drop_consecutive(single, healthy, steps, 0.0) is False
+    assert finetune_drop_consecutive(run, healthy, steps, 0.0) is True
+    assert finetune_drop_consecutive(run, healthy, steps, 250.0) is False
+    assert finetune_drop_consecutive(run, healthy, steps, 1e9) is None
+
+
+def test_finetune_reads_are_harmful_when_they_fall() -> None:
+    """A fine-tune read is a one-sided panel: a fall is harm."""
+    assert direction("finetune_acc_scene|ft100") == -1

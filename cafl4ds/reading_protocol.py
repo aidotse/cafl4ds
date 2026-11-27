@@ -15,7 +15,8 @@ The rule, per instrument:
 * **Smoothing.** An optional trailing mean over ``window`` checkpoints trades detection delay for
   noise — the canary jitters reading to reading. The window is shorter (and the mean noisier) over a
   trajectory's first checkpoints, so each ``z`` is scaled by the smoothed residual's own SD at its
-  window length, under the residuals' AR(1) autocorrelation.
+  window length, under the residuals' AR(1) autocorrelation. A skipped reading yields no ``z``,
+  even though its trailing window holds earlier readings.
 * **Scale.** A local SD of the raw residual per checkpoint, from the null seeds' leave-one-out
   residuals — each seed against the mean of the *others*, so the spread is the one a new trajectory
   will meet. It is pooled over the seeds *and* a band of ``±span`` neighbouring checkpoints: five
@@ -49,13 +50,15 @@ from typing import Any, TypedDict
 import numpy as np
 
 # The harmful direction of each instrument: -1 = a fall is harm, +1 = a rise is harm. Anything not
-# listed is read two-sided. Canary slices (``knn_acc_night``, …) inherit their base's direction, and
+# listed is read two-sided. Canary slices (``knn_acc_night``, …) and fine-tune reads
+# (``finetune_acc_scene|ft100``) inherit their base's direction, and
 # so do per-layer reads (``<base>@<layer>``, P1.1.2's lenses: ``dcka_drift@block07``).
 _DIRECTION = {
     "rankme": -1,
     "rankme_proj": -1,
     "knn_acc": -1,
     "linear_acc": -1,
+    "finetune_acc": -1,
     "cka_drift": 1,
     "cka_drift_proj": 1,
     "cosine_drift": 1,
@@ -95,7 +98,7 @@ def direction(signal: str) -> int:
     signal = signal.split("@", 1)[0]
     if signal in _DIRECTION:
         return _DIRECTION[signal]
-    for base in ("knn_acc", "linear_acc"):
+    for base in ("knn_acc", "linear_acc", "finetune_acc"):
         if signal.startswith(f"{base}_"):
             return _DIRECTION[base]
     return 0
@@ -368,9 +371,11 @@ def zscores(trajectory: np.ndarray, bands: Bands) -> np.ndarray:
         bands: The calibrated rule.
 
     Returns:
-        ``z`` with the trajectory's shape (two-sided rules return ``|z|``).
+        ``z`` with the trajectory's shape (two-sided rules return ``|z|``); ``nan`` at a skipped
+        (``nan``) reading, even when its trailing window holds earlier readings.
     """
-    r = trailing_mean(apply_transform(trajectory, bands.transform) - bands.mean, bands.window)
+    x = apply_transform(trajectory, bands.transform) - bands.mean
+    r = np.where(np.isnan(x), np.nan, trailing_mean(x, bands.window))
     scale = bands.sd * smoothing_profile(bands.rho, bands.window, r.shape[-1])
     with np.errstate(divide="ignore", invalid="ignore"):
         z = np.where(scale > 0, r / np.where(scale > 0, scale, 1.0), np.where(r == 0, 0.0, np.inf * np.sign(r)))
@@ -396,17 +401,19 @@ def call(trajectory: np.ndarray, bands: Bands) -> Call:
 
     Returns:
         ``fired``, ``first`` (index of the first firing checkpoint, ``None`` if quiet), ``max_z``,
-        ``frac_fired`` (share of checkpoints over threshold), ``final_z``.
+        ``frac_fired`` (share of checkpoints over threshold), ``final_z`` (at the last reading not
+        skipped, ``nan`` if every reading is).
     """
     z = zscores(trajectory, bands)
     over = np.nan_to_num(z, nan=-np.inf) > bands.threshold
     first = int(np.argmax(over)) if over.any() else None
+    read = z[~np.isnan(z)]
     return {
         "fired": bool(over.any()),
         "first": first,
-        "max_z": float(np.nanmax(z)),
+        "max_z": float(np.max(read)) if read.size else float("nan"),
         "frac_fired": float(over.mean()),
-        "final_z": float(z[-1]),
+        "final_z": float(read[-1]) if read.size else float("nan"),
     }
 
 
@@ -459,6 +466,77 @@ def adjudicate(fired: dict[str, bool], arbiters: list[str]) -> str:
     if any(fired.get(a, False) for a in arbiters):
         return "degradation"
     if any(v for k, v in fired.items() if k not in arbiters):
+        return "movement"
+    return "quiet"
+
+
+def finetune_drop(
+    walk: dict[str, float], healthy: dict[str, list[float]], steps: dict[str, float], after: float
+) -> bool | None:
+    """Did a fine-tune read fall below every healthy seed's read, at a checkpoint at or after ``after``?
+
+    P1.1.4's corroboration for a kNN-canary fire: a geometry change counts as degradation only when
+    a fine-tune rung drops with it. Read per checkpoint against the healthy (IID) seeds' reads there.
+
+    Args:
+        walk: Checkpoint name → the drive's fine-tune read (balanced accuracy).
+        healthy: Checkpoint name → the healthy seeds' reads at that checkpoint.
+        steps: Checkpoint name → its drive step (the end as ``inf``).
+        after: The step the kNN panel first fired.
+
+    Returns:
+        ``True`` if any eligible checkpoint drops, ``False`` if none does, ``None`` if no checkpoint at
+        or after ``after`` has both the drive's read and a healthy one (the check cannot be made).
+    """
+    eligible = [c for c, v in walk.items() if steps[c] >= after and healthy.get(c) and np.isfinite(v)]
+    if not eligible:
+        return None
+    return any(walk[c] < min(healthy[c]) for c in eligible)
+
+
+def finetune_drop_consecutive(
+    walk: dict[str, float], healthy: dict[str, list[float]], steps: dict[str, float], after: float, run: int = 2
+) -> bool | None:
+    """:func:`finetune_drop`, required on ``run`` consecutive read checkpoints at or after ``after``.
+
+    The uncalibrated tightening of the corroboration: one checkpoint below every healthy seed happens
+    by chance on most healthy drives once several rungs and checkpoints are read; a run of them is rarer.
+
+    Returns:
+        ``True`` if ``run`` consecutive eligible checkpoints all drop, ``False`` if none do, ``None`` if
+        fewer than ``run`` checkpoints are eligible.
+    """
+    eligible = sorted(
+        (c for c, v in walk.items() if steps[c] >= after and healthy.get(c) and np.isfinite(v)), key=lambda c: steps[c]
+    )
+    if len(eligible) < run:
+        return None
+    below = [walk[c] < min(healthy[c]) for c in eligible]
+    return any(all(below[i : i + run]) for i in range(len(below) - run + 1))
+
+
+def adjudicate_split(fired: dict[str, bool], finetune: bool | None = None) -> str:
+    """P1.1.4's adjudication over three panels: information (linear canary) and geometry (kNN canary) apart.
+
+    * ``degradation`` — the linear canary panel fired; or the kNN canary panel fired and a fine-tune
+      rung dropped with it (``finetune`` is ``True``, see :func:`finetune_drop`).
+    * ``geometry`` — the kNN canary panel fired without either: the selection filter's input moved.
+      ``finetune`` ``None`` means the corroboration could not be read, so the label is provisional.
+    * ``movement`` — only the label-free panel fired.
+    * ``quiet`` — nothing fired.
+
+    Args:
+        fired: Panel → did it fire; keys ``label_free``, ``canary_linear``, ``canary_knn`` (missing = quiet).
+        finetune: The fine-tune corroboration for a kNN fire (``None`` = not available).
+
+    Returns:
+        ``"quiet"``, ``"movement"``, ``"geometry"`` or ``"degradation"``.
+    """
+    if fired.get("canary_linear", False):
+        return "degradation"
+    if fired.get("canary_knn", False):
+        return "degradation" if finetune else "geometry"
+    if fired.get("label_free", False):
         return "movement"
     return "quiet"
 

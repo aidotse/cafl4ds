@@ -53,7 +53,9 @@ def change_noise(
         ``loss`` ``[K]`` (the point estimate per later checkpoint); ``seed_noise`` and ``image_noise``
         ``[n_boot, K]`` — each resample's ``L`` minus ``loss``, the seeds resampled with the images
         fixed, and the images resampled within each class with the seeds fixed; both draws shared
-        across the ``K`` checkpoints.
+        across the ``K`` checkpoints. The seed draws are scaled by ``√(S / (S − 1))``: a bootstrap mean
+        over ``S`` seeds has variance ``(S − 1) / S`` times the unbiased ``s² / S``, which at 5 seeds
+        would understate the seed part by a fifth (the P1.1 audit's G4).
 
     Raises:
         ValueError: If the shapes disagree or ``later`` is empty.
@@ -69,7 +71,8 @@ def change_noise(
     loss = per_seed.mean(axis=0)
     rng = np.random.default_rng(seed)
     draw = rng.integers(0, n_seeds, size=(n_boot, n_seeds))
-    seed_noise = per_seed[draw].mean(axis=1) - loss  # [B, K]
+    unbias = math.sqrt(n_seeds / (n_seeds - 1)) if n_seeds > 1 else 1.0
+    seed_noise = (per_seed[draw].mean(axis=1) - loss) * unbias  # [B, K]
     classes = np.unique(labels)
     image = np.zeros((n_boot, len(diffs)))
     for c in classes:
