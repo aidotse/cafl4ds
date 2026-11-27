@@ -22,6 +22,8 @@ tested: [cka_drift, dcka_drift, procrustes_drift, rankme]
 single:
   middle: [block04, block05, block06, block07, block08, block09, block10, block11]
   pooled: [backbone]
+# Set to a written report to add only the leave-one-pair-out single-drive read to it (P1.1 audit, B1).
+from_report: null
 alpha: 0.05
 floor: 0.25
 device: cpu
