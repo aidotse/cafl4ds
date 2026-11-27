@@ -1,0 +1,7 @@
+# Rendered output (built by slides/build.sh, and in CI)
+index.html
+index_files/
+.quarto/
+
+/.quarto/
+**/*.quarto_ipynb

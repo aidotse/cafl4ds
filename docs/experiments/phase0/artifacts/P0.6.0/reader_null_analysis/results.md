@@ -9,26 +9,28 @@ Spearman ρ are n=5 (coarse, not significant) — directional only.
 
 | reader | fires (matched>0) | effect ratio vs null (eb40 / eb60) | crater-depth ρ (eb40 / eb60) | verdict |
 | -- | -- | -- | -- | -- |
-| `uniformity_proj` | 3/5 eb40, 4/5 eb60 (sign-flips) | 2.10 / 2.18 | +0.5 / −0.1 | **refuted** — mis-signals (flips) |
-| `alignment_proj` | **5/5 both** | 1.29 / 3.76 | −0.1 / −0.5 | **candidate regime-level 2nd reader** |
+| `uniformity_proj` | 3/5 eb40, 4/5 eb60 (sign-flips); 5/5 on P0.6.1's re-run | 2.10 / 2.18 | +0.5 / −0.1 | **refuted** — mis-signals (flips), unstable across runs |
+| `alignment_proj` | **5/5 both**; 2/5 on P0.6.1's re-run | 1.29 / 3.76 | −0.1 / −0.5 | **not carried** — regime-level, unstable across runs |
 | `cka_drift` | 5/5 eb40, 4/5 eb60 | 2.15 / 1.84 | −0.1 / **+0.9** | calibrated; magnitude-linked at the deep well |
 | `cosine_drift` | 5/5 both | 5.34 / 1.75 | −0.3 / −0.1 | calibrated (past-data-free at proj) |
 
 - `alignment_proj` **separates two-sided 5/5 same-direction at both eb40 and eb60** and **clears the healthy null** —
     thinly at eb40 (1.29×, only 2/5 seeds clear the null *max*; min margin +0.0135) and clearly at the deeper eb60
-    (3.76×, 5/5 clear the null *mean*). So "refuted" is wrong for it.
+    (3.76×, 5/5 clear the null *mean*). On these runs alone, "refuted" would be wrong for it.
 - But it **does not track crater depth** (ρ −0.1 eb40, −0.5 eb60) — it reads the far-shift *regime*, not forgetting
-    *magnitude*, the same limitation the P0.5 audit found for `alignment_strong`. → a **candidate second,
-    independent-mechanism reader** (invariance geometry, not representation displacement), certified against seed noise,
-    but not a magnitude-calibrated quality instrument.
-- `uniformity_proj` genuinely mis-signals — 2 sign-flips (seeds 2, 3 at eb40) — the "geometry does not port" negative is
-    earned by it alone.
+    *magnitude*, the same limitation the P0.5 audit found for `alignment_strong`.
+- `uniformity_proj` genuinely mis-signals — 2 sign-flips (seeds 2, 3 at eb40).
+- [P0.6.1](../../../P0.6.1.md) re-runs the same config and logs both readers on the same task-A canary
+    (`gate.reported.proj_{align,uniformity}_*` in `artifacts/P0.6.1/`): `alignment_proj` separates **2/5** and
+    `uniformity_proj` 5/5. Each geometry reader's count moves with the run, so neither is carried, and the "geometry
+    does not port" negative covers both. Drift separates 5/5 in both runs.
 
 ## Complementarity (D2)
 
 At **eb60 seed 3** the crater is real two-sided (BWT diff −0.075) but `cka` drift **misses** (margin −0.003,
 `cka_separates=False`) while `alignment_proj` **fires** (+0.146). So the readers are complementary — neither dominates
-on the sub-bar-but-two-sided seeds — which argues for keeping the panel plural, not crowning one reader.
+on the sub-bar-but-two-sided seeds. One seed of one run, though: with `alignment_proj` at 2/5 on P0.6.1's re-run, it
+does not make the panel plural.
 
 ## Drift magnitude vs crater depth (C3)
 

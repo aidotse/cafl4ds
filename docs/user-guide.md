@@ -31,7 +31,7 @@ This is an executive summary of the collection of tools / concepts used in this 
 - Multi-version testing: [nox](https://nox.thea.codes/) across Python 3.10–3.13
 - Dependency hygiene: [deptry](https://github.com/fpgmaas/deptry) (unused / missing / misplaced deps)
 - Security: secret scanning with [gitleaks](https://github.com/gitleaks/gitleaks), `uv audit` for dependency
-    vulnerabilities, and [zizmor](https://docs.zizmor.sh/) for GitHub Actions (see [Security](security.md))
+    vulnerabilities, and [zizmor](https://docs.zizmor.sh/) for GitHub Actions
 - Dependency updates: [Renovate](https://docs.renovatebot.com/) (`renovate.json`)
 - Documentation: [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) with API docs via
     [mkdocstrings](https://mkdocstrings.github.io/)
@@ -167,7 +167,7 @@ to push the version bump, and **how that plays out differs by platform** (detail
 
 ### Enable Automatic Dependency Updates
 
-This project includes a pre-configured [renovate.json](<(https://docs.renovatebot.com/)>) to keep your dependencies,
+This project includes a pre-configured [renovate.json](https://docs.renovatebot.com/) to keep your dependencies,
 pre-commit hooks, and CI actions up to date automatically. To activate it on GitHub:
 
 1. Navigate to the [Mend Renovate App](https://github.com/apps/renovate) on the GitHub Marketplace.
