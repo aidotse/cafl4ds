@@ -373,13 +373,47 @@ def _build(
     return report, stream.era_names, stream.era_composition()
 
 
-def _git_sha() -> str | None:
-    """The build's git provenance from the hatch-vcs version local segment (no subprocess)."""
+def _head_commit(git_dir: Path) -> str | None:
+    """The commit ``git_dir``'s HEAD points at, read from the files (no subprocess; ``None`` if unreadable)."""
+    try:
+        head = (git_dir / "HEAD").read_text(encoding="utf-8").strip()
+        if not head.startswith("ref: "):
+            return head or None
+        ref = head[len("ref: ") :]
+        loose = git_dir / ref
+        if loose.is_file():
+            return loose.read_text(encoding="utf-8").strip() or None
+        packed = git_dir / "packed-refs"
+        if packed.is_file():
+            for line in packed.read_text(encoding="utf-8").splitlines():
+                if line.endswith(f" {ref}") and not line.startswith(("#", "^")):
+                    return line.split(" ", 1)[0]
+    except OSError:
+        return None
+    return None
+
+
+def _git_sha(repo: Path | None = None) -> str | None:
+    """The code's git provenance: the checkout's HEAD commit, else the hatch-vcs version's local segment.
+
+    The checkout comes first. The version is fixed when the package is installed, so on an editable
+    install it goes stale with every commit; and in the Gaudi container the package comes from the
+    image, whose version carries no local segment at all (the P1.1 audit's G11: every P1.1.4 manifest
+    had recorded ``null``). A checkout with local changes is not detected; the commit is the base the
+    run's code started from.
+    """
+    root = repo if repo is not None else Path(__file__).resolve().parents[1]
+    sha = _head_commit(root / ".git")
+    if sha is not None:
+        return sha
     try:
         local = version("cafl4ds").split("+", 1)
+        if len(local) > 1:
+            return local[1]
     except PackageNotFoundError:
-        return None
-    return local[1] if len(local) > 1 else None
+        pass
+    logger.warning(f"no git provenance for this run: no readable {root / '.git'} and no version local segment.")
+    return None
 
 
 def _target_leaf(node: DictConfig) -> str:

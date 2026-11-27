@@ -57,7 +57,9 @@ arms_1b:
     iid: [p125/partG/drive/dino_simsiam_p9e-5_iid, p114/drive/dino_simsiam_iid_6to15]
     iid_seeds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     check_seeds: [11, 12, 13, 14, 15]
-    ladders: [p125/ladder/dino_simsiam_p9e-5, { dir: p114/ladder/dino_simsiam_iid, names: seed }]
+    # p114/ladder/dino_simsiam_iid_p125: IID seed 3's end with fine-tunes (its kNN fire's check; the P1.1 audit's G5).
+    ladders: [p125/ladder/dino_simsiam_p9e-5, { dir: p114/ladder/dino_simsiam_iid, names: seed },
+      { dir: p114/ladder/dino_simsiam_iid_p125, names: seed }]
     referee_null: true
     inject_power: true
     # A sensitivity check for the fine-tune corroboration: Part G's walks without the protections (a known
@@ -195,6 +197,8 @@ bars:
 referee_null:
   tasks: [scene, "presence_cell:traffic light"]
   rungs: [knn, linear, ft10, ft100]
+  # The same per time of day: which regime the walk loses on, on val (the P1.1 audit's G6).
+  slices: ["tod:daytime", "tod:dawn/dusk", "tod:night"]
 
 # Canary power for the test actually run (B2): a drop injected into 5 of the 15 IID seeds, tested against
 # the other 10 (exact max-over-checkpoints permutation, 3,003 splits), over n_groups random walk groups.
@@ -204,6 +208,8 @@ inject:
   power: 0.8
   seed: 0
   shapes: [sustained, last_quarter, single]
+  # A sustained drop from this step as well (the seeds coincide at the first readings; the P1.1 audit's G3).
+  sustained_from_step: 100
 
 # The `degradation` label's fine-tune corroboration: the rungs read, and the ladder checkpoints looked for.
 finetune_keys: [scene|ft10, scene|ft100, "presence_cell:traffic light|ft10", "presence_cell:traffic light|ft100"]
@@ -212,7 +218,10 @@ ladder_checkpoints: [t00100, t00212, t00423, t00846, t01269, end]
 # The canary against the val referee: per rung, the canary channel's slice -> the referee's scene slice.
 referee:
   rungs: [knn, linear]
-  slices: { pooled: all, daytime: "tod:daytime", dawn_dusk: "tod:dawn/dusk", night: "tod:night" }
+  # pooled_tod_balanced: the pooled canary against the referee with each time of day weighted equally, as the
+  # canary weights them (val weights them by share; the P1.1 audit's G2).
+  slices: { pooled: all, pooled_tod_balanced: tod_balanced, daytime: "tod:daytime", dawn_dusk: "tod:dawn/dusk",
+    night: "tod:night" }
 
 # P1.1.1's panels and settings (configs/reading_protocol.yaml), unchanged except the span: P1.2.5 logs
 # every 25 steps (69 readings), so +-8 readings covers the share of the drive P1.1.1's +-15 of ~120 did.
@@ -246,6 +255,8 @@ power:
   checkpoints: [t00100, t00212, t00423, t00846, t01269, end]
   tasks: [scene, "presence_cell:traffic light"]
   rungs: [knn, linear, ft10, ft100]
+  # The same per time of day: which regime the walk loses on, on val (the P1.1 audit's G6).
+  slices: ["tod:daytime", "tod:dawn/dusk", "tod:night"]
   # each past slice -> t0, the first checkpoint after the stream left it (P1.2.5's timeline: daytime clear
   # 0-325, the other daytime eras to ~800, dawn/dusk to ~925, then night, which is never left)
   past:

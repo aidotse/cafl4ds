@@ -5,6 +5,7 @@ DINO's method (student and teacher alike) and its resumed momentum ramp.
 """
 
 import copy
+import json
 import math
 import sys
 from pathlib import Path
@@ -12,6 +13,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 import torch
+from omegaconf import OmegaConf
 
 from cafl4ds import referee_power as rp
 from cafl4ds.branch import damage_method, damage_top_blocks, top_blocks
@@ -24,8 +26,12 @@ from scripts.analyze_p114 import (
     _open_ladders,
     _own_name,
     _perm_p,
+    _perm_p_columns,
+    _referee_slice_null,
     _rows_any,
     _welch_ci,
+    injected_canary_power,
+    referee_read,
     three_panels,
     wilson_interval,
 )
@@ -59,6 +65,17 @@ def test_change_noise_components_are_centred_and_sized() -> None:
     sd = out["image_noise"][:, 1].std()
     assert sd == pytest.approx(math.sqrt(0.1 / n / s), rel=0.15)
     assert abs(out["image_noise"][:, 1].mean()) < sd / 5
+
+
+def test_change_noise_seed_part_matches_the_unbiased_standard_error() -> None:
+    """The seed draws' SD is the unbiased s / √S, not the plain bootstrap's √((S − 1) / S) of it (G4)."""
+    labels = np.array([0, 0, 1, 1])
+    start = np.ones((5, 4))  # balanced accuracy 1 for every seed
+    later = [np.array([[1, 1, 1, 1], [0, 1, 1, 1], [0, 0, 1, 1], [0, 1, 0, 1], [0, 0, 0, 1]], dtype=float)]
+    falls = np.array([0.0, 0.25, 0.5, 0.5, 0.75])  # each seed's balanced-accuracy fall
+    out = rp.change_noise(start, later, labels, n_boot=40_000)
+    assert out["loss"] == pytest.approx([falls.mean()])
+    assert out["seed_noise"][:, 0].std() == pytest.approx(falls.std(ddof=1) / math.sqrt(5), rel=0.03)
 
 
 def test_mdd_matches_the_gaussian_formula_at_one_checkpoint() -> None:
@@ -343,6 +360,85 @@ def test_power_rows_read_seed_named_dirs_and_the_floor(tmp_path: Path) -> None:
     _ladder_dir(tmp_path / "other", {}, np.arange(1, 5))
     with pytest.raises(ValueError, match="val query"):
         _open_ladders(tmp_path, ["old", "other"])
+
+
+def _tod_ladder(path: Path, reads: dict[str, np.ndarray]) -> None:
+    """A ladder dir whose 8 scene frames split 4 / 2 / 2 over three times of day (val's strata are unequal)."""
+    path.mkdir(parents=True)
+    np.savez(
+        path / "pool.npz",
+        query_index=np.arange(8),
+        stratum=np.array([0, 0, 0, 0, 1, 1, 2, 2]),
+        regime=np.zeros(8),
+        **{"labels|scene": np.array([0, 1, 0, 1, 0, 1, 0, 1])},
+    )
+    names = {"stratum_names": {"0": "daytime", "1": "dawn/dusk", "2": "night"}}
+    (path / "summary.json").write_text(json.dumps(names), encoding="utf-8")
+    for name, correct in reads.items():
+        np.savez(path / f"{name}.npz", **{"scene|knn": correct[None, :]})
+
+
+def test_referee_read_weights_each_time_of_day_equally_when_balanced(tmp_path: Path) -> None:
+    """``all`` weights the strata by their frames; ``tod_balanced`` gives each a third, as the canary does (G2)."""
+    correct = np.array([1.0, 1, 1, 1, 0, 0, 0, 0])  # daytime all right, the rest all wrong
+    _tod_ladder(tmp_path / "lad", {"walk_s0_end": correct})
+    ladders = LadderSet(tmp_path, ["lad"])
+    assert referee_read(ladders, "walk", 1, "scene|knn", "all") == pytest.approx(0.5)
+    assert referee_read(ladders, "walk", 1, "scene|knn", "tod_balanced") == pytest.approx(1 / 3)
+    assert referee_read(ladders, "walk", 1, "scene|knn", "tod:daytime") == pytest.approx(1.0)
+
+
+def test_perm_p_columns_matches_the_loop() -> None:
+    """The all-splits-at-once permutation p equals :func:`_perm_p`, column by column."""
+    rng = np.random.default_rng(3)
+    a, b = rng.normal(size=(4, 3)), rng.normal(size=(6, 3)) + np.array([0.0, 1.0, 3.0])
+    expected = [_perm_p(a[:, k], b[:, k]) for k in range(3)]
+    assert _perm_p_columns(a, b).tolist() == pytest.approx(expected)
+
+
+def test_referee_slice_null_places_a_gap_in_time(tmp_path: Path) -> None:
+    """A walk that loses night frames at the second checkpoint only reads a gap there, with its exact p."""
+    reads = {}
+    for s in range(3):
+        reads[f"walk_s{s}_t00100"] = np.ones(8)
+        reads[f"walk_s{s}_end"] = np.array([1.0, 1, 1, 1, 1, 1, 0, 0])
+    for s in range(3, 7):
+        reads[f"iid_s{s}_t00100"] = reads[f"iid_s{s}_end"] = np.ones(8)
+    _tod_ladder(tmp_path / "lad", reads)
+    ladders = LadderSet(tmp_path, ["lad"])
+    out = _referee_slice_null(ladders, ([1, 2, 3], [4, 5, 6, 7]), "scene|knn", "tod:night", ["t00100", "end"])
+    assert out["walk_minus_iid"] == pytest.approx([0.0, -1.0])
+    assert out["p_per_checkpoint"] == pytest.approx([1.0, 1 / 35])
+    assert out["n_frames"] == 2
+
+
+def test_injected_canary_power_adds_a_late_sustained_drop() -> None:
+    """With ``sustained_from_step``, a sustained drop is also injected from the first reading at that step (G3)."""
+    rng = np.random.default_rng(4)
+    values = 0.6 + 0.01 * np.arange(8) * rng.normal(size=(8, 8))  # [seeds, readings]: spread grows from 0
+    rows = [
+        {"arm": "live", "seed": s, "checkpoint_index": k, "step": 25 * k, "knn_acc": float(values[s, k])}
+        for s in range(8)
+        for k in range(8)
+    ]
+    config = OmegaConf.create(
+        {
+            "alpha": 0.05,
+            "inject": {
+                "n_inject": 3,
+                "n_groups": 20,
+                "power": 0.8,
+                "seed": 0,
+                "shapes": ["sustained"],
+                "sustained_from_step": 100,
+            },
+        }
+    )
+    out = injected_canary_power(rows, ["knn_acc"], config, set())["knn_acc"]
+    assert set(out) == {"sustained", "sustained_from_100"}
+    late = injected_mdd(values, "sustained", n_inject=3, n_groups=20, first=4)  # step 100 is reading 4
+    assert out["sustained_from_100"]["mdd"] == pytest.approx(late["mdd"])
+    assert out["sustained_from_100"]["mdd"] > out["sustained"]["mdd"]  # the coinciding start no longer flatters it
 
 
 def test_finetune_drop_consecutive_needs_a_run_of_drops() -> None:

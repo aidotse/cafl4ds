@@ -61,6 +61,7 @@ from cafl4ds.null_envelope import (
     injected_mdd,
     read_corpus,
     signal_columns,
+    split_masks,
 )
 from cafl4ds.reading_protocol import (
     adjudicate_split,
@@ -367,6 +368,29 @@ def _perm_p(a: np.ndarray, b: np.ndarray) -> float:
     return float(np.mean(np.array(stats) >= observed - 1e-12))
 
 
+def _perm_p_columns(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    """:func:`_perm_p` for each column of ``a`` ``[n_a, K]`` against ``b`` ``[n_b, K]``, every split at once."""
+    pooled = np.vstack([a, b])
+    masks = split_masks(pooled.shape[0], a.shape[0])
+    stats = np.abs(masks @ pooled / a.shape[0] - (1 - masks) @ pooled / b.shape[0])
+    observed = np.abs(a.mean(axis=0) - b.mean(axis=0))
+    return np.mean(stats >= observed - 1e-12, axis=0)
+
+
+def referee_read(ladders: LadderSet, prefix: str, seed: int, key: str, spec: str) -> float:
+    """The referee's end read of one drive on ``key``, over the slice ``spec`` (see :func:`_slice_mask`).
+
+    ``tod_balanced`` is the mean of the per-time-of-day reads: each stratum weighted equally, as the
+    canary's stratified reservation weights them, where ``all`` weights them by their share of val (the
+    P1.1 audit's G2).
+    """
+    task = key.split("|", 1)[0]
+    if spec == "tod_balanced":
+        strata = ladders.ladder.summary["stratum_names"].values()
+        return float(np.mean([referee_read(ladders, prefix, seed, key, f"tod:{s}") for s in strata]))
+    return ladders.read(prefix, seed, "end", key, _slice_mask(ladders.ladder, task, spec))
+
+
 def referee_check(
     walk: list[dict[str, Any]], iid: list[dict[str, Any]], ladders: LadderSet, config: DictConfig, skip: set[int]
 ) -> dict[str, Any]:
@@ -389,12 +413,12 @@ def referee_check(
     out: dict[str, Any] = {}
     for rung in rc.rungs:
         for slice_name, spec in rc.slices.items():
-            channel = f"{rung}_acc" + ("" if slice_name == "pooled" else f"_{slice_name}")
-            keep = _slice_mask(ladders.ladder, "scene", str(spec))
+            pooled = str(spec) in ("all", "tod_balanced")  # both read against the canary's pooled channel
+            channel = f"{rung}_acc" + ("" if pooled else f"_{slice_name}")
             reads: dict[str, dict[str, np.ndarray]] = {}
             for arm_name, rows, seeds in (("walk", walk, walk_seeds), ("iid", iid, iid_seeds)):
                 m = _matrix(rows, channel, skip)
-                ref = [ladders.read(arm_name, s, "end", f"scene|{rung}", keep) for s in seeds]
+                ref = [referee_read(ladders, arm_name, s, f"scene|{rung}", str(spec)) for s in seeds]
                 reads[arm_name] = {
                     "canary_last": np.array([_last_finite(m[k]) for k in range(len(seeds))]),
                     "canary_smoothed": np.array(
@@ -407,7 +431,13 @@ def referee_check(
                     a: {k: v.tolist() for k, v in r.items()} | {"seeds": s}
                     for (a, r), s in zip(reads.items(), (walk_seeds, iid_seeds), strict=True)
                 },
-                "n_referee_frames": int(keep.sum()),
+                "n_referee_frames": int(
+                    (
+                        np.ones(ladders.ladder.pos["scene"].size, dtype=bool)
+                        if str(spec) == "tod_balanced"
+                        else _slice_mask(ladders.ladder, "scene", str(spec))
+                    ).sum()
+                ),
             }
             if np.isnan(reads["walk"]["referee"]).any() or np.isnan(reads["iid"]["referee"]).any():
                 entry["verdict"] = "no_referee_read"
@@ -564,29 +594,67 @@ def referee_null(ladders: LadderSet, walk_seeds: list[int], iid_seeds: list[int]
                 "iid_max": i.max(axis=0).tolist(),
                 "gap": gap_fast(w, i),
             }
+            for spec in config.referee_null.get("slices", []):
+                out[f"{key}|{spec}"] = _referee_slice_null(
+                    ladders, (walk_seeds, iid_seeds), key, str(spec), checkpoints
+                )
     return out
+
+
+def _referee_slice_null(
+    ladders: LadderSet, seeds: tuple[list[int], list[int]], key: str, spec: str, checkpoints: list[str]
+) -> dict[str, Any]:
+    """The referee's walk-vs-IID gap on one slice at every checkpoint, with each checkpoint's exact p.
+
+    Which regime a walk loses on, read on val rather than on the canary (the P1.1 audit's G6). Beside
+    the max-over-checkpoints test, each checkpoint's own two-sided exact permutation p, so a gap can be
+    placed in time (before or after the stream reaches the slice's regime).
+    """
+    keep = _slice_mask(ladders.ladder, key.split("|", 1)[0], spec)
+    reads = {
+        prefix: {s: [ladders.read(prefix, s, c, key, keep) for c in checkpoints] for s in ss}
+        for prefix, ss in zip(("walk", "iid"), seeds, strict=True)
+    }
+    full = {p: {s: v for s, v in r.items() if np.isfinite(v).all()} for p, r in reads.items()}
+    entry: dict[str, Any] = {"checkpoints": checkpoints, "n_frames": int(keep.sum())}
+    if len(full["walk"]) < 3 or len(full["iid"]) < 3:
+        return entry | {"gap": None}
+    w, i = np.array(list(full["walk"].values())), np.array(list(full["iid"].values()))
+    return entry | {
+        "walk_seeds": sorted(full["walk"]),
+        "iid_seeds": sorted(full["iid"]),
+        "walk_minus_iid": (w.mean(axis=0) - i.mean(axis=0)).tolist(),
+        "p_per_checkpoint": _perm_p_columns(w, i).tolist(),
+        "gap": gap_fast(w, i),
+    }
 
 
 def injected_canary_power(
     iid: list[dict[str, Any]], arbiters: list[str], config: DictConfig, skip: set[int]
 ) -> dict[str, Any]:
-    """The canary MDD for the test actually run (B2): a known drop injected into healthy seeds, per shape."""
+    """The canary MDD for the test actually run (B2): a known drop injected into healthy seeds, per shape.
+
+    With ``inject.sustained_from_step``, a sustained drop is also injected from the first reading at or
+    after that step: every drive starts from the same state, so the seeds nearly coincide at the first
+    readings, and a drop held there is caught against almost no spread (the P1.1 audit's G3).
+    """
     ic = config.inject
+    late_step = ic.get("sustained_from_step")
+    grid = checkpoint_steps(iid)
+    late = next(i for i, s in enumerate(grid) if s >= int(late_step)) if late_step is not None else None
     out: dict[str, Any] = {}
     for a in arbiters:
         m = _matrix(iid, a, skip)
-        out[a] = {
-            shape: injected_mdd(
-                m,
-                str(shape),
-                n_inject=int(ic.n_inject),
-                n_groups=int(ic.n_groups),
-                alpha=float(config.alpha),
-                power=float(ic.power),
-                seed=int(ic.seed),
-            )
-            for shape in ic.shapes
+        common: dict[str, Any] = {
+            "n_inject": int(ic.n_inject),
+            "n_groups": int(ic.n_groups),
+            "alpha": float(config.alpha),
+            "power": float(ic.power),
+            "seed": int(ic.seed),
         }
+        out[a] = {shape: injected_mdd(m, str(shape), **common) for shape in ic.shapes}
+        if late is not None:
+            out[a][f"sustained_from_{grid[late]}"] = injected_mdd(m, "sustained", first=late, **common)
         logger.info(f"  injected MDD {a}: " + ", ".join(f"{k} {v['mdd']:.4f}" for k, v in out[a].items()))
     return out
 
